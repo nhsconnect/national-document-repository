@@ -48,32 +48,31 @@ class BulkUploadReportService:
             pds_ods_code = item.get("PdsOdsCode", "")
             uploader_ods_code = item.get("UploaderOdsCode", "")
 
-            if upload_status == "complete":
-                total_successful += 1
+            if pds_ods_code and uploader_ods_code:
+                if upload_status == "complete":
+                    total_successful += 1
 
-                if uploader_ods_code not in ods_code_totals:
-                    ods_code_totals[uploader_ods_code] = 0
-                ods_code_totals[uploader_ods_code] += 1
+                    if uploader_ods_code not in ods_code_totals:
+                        ods_code_totals[uploader_ods_code] = 0
+                    ods_code_totals[uploader_ods_code] += 1
 
-                if uploader_ods_code != pds_ods_code:
-                    total_registered_elsewhere += 1
+                    if uploader_ods_code != pds_ods_code:
+                        total_registered_elsewhere += 1
 
-            elif upload_status == "suspended":
-                total_suspended += 1
+                elif upload_status == "suspended":
+                    total_suspended += 1
 
-            if upload_status == "failed":
-                failure_reason = item.get("FailureReason", "Unknown")
-                if failure_reason not in failure_reason_counts:
-                    failure_reason_counts[failure_reason] = 0
-                failure_reason_counts[failure_reason] += 1
+                if upload_status == "failed":
+                    failure_reason = item.get("FailureReason", "Unknown")
+                    if failure_reason not in failure_reason_counts:
+                        failure_reason_counts[failure_reason] = 0
+                    failure_reason_counts[failure_reason] += 1
 
         with open(f"/tmp/{file_name}", "w") as output_file:
             writer = csv.writer(output_file)
 
             writer.writerow(["Type", "Description", "Count"])
-
             writer.writerow(["Total", "Total Successful", total_successful])
-
             writer.writerow(
                 [
                     "Total",
@@ -81,11 +80,12 @@ class BulkUploadReportService:
                     total_registered_elsewhere,
                 ]
             )
-
             writer.writerow(["Total", "Suspended", total_suspended])
-
-            for ods_code, count in ods_code_totals.items():
-                writer.writerow(["Success by ODS", ods_code, count])
+            if ods_code_totals:
+                for ods_code, count in ods_code_totals.items():
+                    writer.writerow(["Success by ODS", ods_code, count])
+            else:
+                writer.writerow(["Success by ODS", "No ODS codes found", 0])
 
             for failure_reason, count in failure_reason_counts.items():
                 writer.writerow(["FailureReason", failure_reason, count])
