@@ -13,5 +13,3 @@ COPY . /lambdas
 
 ENTRYPOINT ["python", "scripts/batch_update_ods_code.py"]
 
-# CMD ["python", "scripts/batch_update_ods_code.py"]
-
