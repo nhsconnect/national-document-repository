@@ -32,7 +32,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
 )
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
-    PDS_PATIENT_DECEASED,
+    PDS_PATIENT_DECEASED_FORMAL,
     PDS_PATIENT_DECEASED_INFORMAL,
 )
 from tests.unit.utils.test_unicode_utils import (
@@ -82,7 +82,7 @@ def mock_pds_service(mocker):
 
 @pytest.fixture
 def mock_pds_service_patient_deceased_formal(mocker):
-    patient = Patient.model_validate(PDS_PATIENT_DECEASED)
+    patient = Patient.model_validate(PDS_PATIENT_DECEASED_FORMAL)
     mocker.patch(
         "services.bulk_upload_service.getting_patient_info_from_pds",
         return_value=patient,

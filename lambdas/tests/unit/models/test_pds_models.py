@@ -7,7 +7,7 @@ from models.pds_models import PatientDetails
 from tests.unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
-    PDS_PATIENT_DECEASED,
+    PDS_PATIENT_DECEASED_FORMAL,
     PDS_PATIENT_DECEASED_INFORMAL,
     PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME,
     PDS_PATIENT_NO_GIVEN_NAME_IN_HISTORIC_NAME,
@@ -116,7 +116,7 @@ def test_get_patient_details_for_informally_deceased_patient():
 
 
 def test_get_patient_details_for_formally_deceased_patient():
-    patient = create_patient(PDS_PATIENT_DECEASED)
+    patient = create_patient(PDS_PATIENT_DECEASED_FORMAL)
 
     expected_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(
         update={
@@ -360,7 +360,7 @@ def test_get_most_recent_name_return_none_if_no_active_name_found():
 
 
 def test_get_death_notification_status_return_the_death_notification_status():
-    test_patient = create_patient(PDS_PATIENT_DECEASED)
+    test_patient = create_patient(PDS_PATIENT_DECEASED_FORMAL)
     expected = DeathNotificationStatus.FORMAL
     actual = test_patient.get_death_notification_status()
 
@@ -377,7 +377,7 @@ def test_get_death_notification_status_return_the_death_notification_status_info
 
 
 def test_get_death_notification_status_return_none_if_extension_is_empty():
-    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED)
+    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED_FORMAL)
     test_pds_response["extension"] = []
 
     test_patient = create_patient(test_pds_response)
@@ -386,7 +386,7 @@ def test_get_death_notification_status_return_none_if_extension_is_empty():
 
 
 def test_get_death_notification_status_return_none_if_death_notification_status_object_is_malformed():
-    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED)
+    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED_FORMAL)
     test_pds_response["extension"] = [
         {
             "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
@@ -418,7 +418,7 @@ def test_get_death_notification_status_return_none_when_patient_not_deceased():
 
 
 def test_get_death_notification_status_return_none_when_patient_deceased_incorrect_deceased_code():
-    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED)
+    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED_FORMAL)
     test_pds_response["extension"] = [
         {
             "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
