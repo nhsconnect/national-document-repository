@@ -22,17 +22,14 @@ class BulkUploadReportService:
 
     def report_handler(self, report_type: str):
         start_time, end_time = self.get_times_for_scan()
-        formatted_date = end_time.strftime("%Y%m%d")  # Generate date string once
-
         report_data = self.get_dynamodb_report_items(
             int(start_time.timestamp()), int(end_time.timestamp())
         )
-
         if report_data:
             if report_type == ReportType.DAILY.value:
-                self.generate_daily_report(report_data, formatted_date)
+                self.generate_daily_report(report_data, start_time, end_time)
             elif report_type == ReportType.ODS.value:
-                self.generate_ods_reports(report_data, formatted_date)
+                self.generate_ods_reports(report_data, start_time, end_time)
         else:
             logger.info("No data found, no new report file to upload")
 
@@ -41,6 +38,7 @@ class BulkUploadReportService:
         file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}.csv"
         file_key = f"daily-reports/{file_name}"
 
+        # Prepare data for the CSV
         total_successful = len(
             [item for item in report_data if item["UploadStatus"] == "complete"]
         )
@@ -71,11 +69,13 @@ class BulkUploadReportService:
             {"Type": "Total", "Delimiter": "Suspended", "Count": suspended_total},
         ]
 
+        # Adding failure reason breakdown
         for reason, count in failure_reasons.items():
             csv_data.append(
                 {"Type": "FailureReason", "Delimiter": reason, "Count": count}
             )
 
+        # Write to CSV
         self.write_to_csv(file_key, csv_data)
 
         logger.info("Uploading daily report file to S3")
@@ -120,6 +120,7 @@ class BulkUploadReportService:
                 {"Type": "Total", "Delimiter": "Suspended", "Count": suspended_total},
             ]
 
+            # Adding failure reason breakdown
             for reason, count in failure_reasons.items():
                 csv_data.append(
                     {"Type": "FailureReason", "Delimiter": reason, "Count": count}
@@ -128,6 +129,7 @@ class BulkUploadReportService:
             file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}_{ods_code}.csv"
             file_key = f"daily-reports/{file_name}"
 
+            # Write to CSV
             self.write_to_csv(file_key, csv_data)
 
             logger.info(f"Uploading ODS report file for {ods_code} to S3")
