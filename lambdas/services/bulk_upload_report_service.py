@@ -12,7 +12,7 @@ from utils.audit_logging_setup import LoggingService
 logger = LoggingService(__name__)
 
 
-class BulkUploadReportServiceV2:
+class BulkUploadReportService:
     def __init__(self):
         self.db_service = DynamoDBService()
         self.s3_service = S3Service()
