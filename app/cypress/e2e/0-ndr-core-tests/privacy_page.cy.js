@@ -43,10 +43,9 @@ describe('Privacy Page', () => {
             );
             it('Should display the expected privacy policy details', { tags: 'regression' }, () => {
                 loginAndVisitPrivacyPolicyPage(role);
-                cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
-                    'have.text',
-                    'Privacy notice',
-                );
+                cy.get('.app-homepage-content h1', { timeout: 5000 })
+                    .first() // Get the first h1 element
+                    .should('have.text', 'Privacy notice');
                 cy.get('.app-homepage-content p', { timeout: 5000 }).should(
                     'include.text',
                     "If you use the 'Access and store digital patient documents' service using your",
