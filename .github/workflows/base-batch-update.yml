@@ -66,7 +66,7 @@ jobs:
       - name: Download task definition
         id: download-task
         run: |
-          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-service-task-ods-weekly-update --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-task-ods-weekly-update --query taskDefinition > task-definition.json
           echo "revision=$(cat task-definition.json | jq .revision)" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition
@@ -87,4 +87,4 @@ jobs:
       - name: De-register previous revision
         run: |
           aws ecs deregister-task-definition \
-            --task-definition ${{ inputs.sandbox }}-service-task-ods-weekly-update:${{ steps.download-task.outputs.revision }}
+            --task-definition ${{ inputs.sandbox }}-task-ods-weekly-update:${{ steps.download-task.outputs.revision }}
