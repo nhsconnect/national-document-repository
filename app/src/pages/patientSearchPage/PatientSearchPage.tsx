@@ -35,7 +35,7 @@ function PatientSearchPage() {
     const { ref: nhsNumberRef, ...searchProps } = register('nhsNumber', {
         required: incorrectFormatMessage,
         pattern: {
-            value: /(^[0-9]{10}$|^[0-9]{3}\s[0-9]{3}\s[0-9]{4}$|^[0-9]{3}-[0-9]{3}-[0-9]{4}$)/,
+            value: /(^[0-9]{10}\s*?$|^[0-9]{3}\s[0-9]{3}\s[0-9]{4}\s*?$|^[0-9]{3}-[0-9]{3}-[0-9]{4}\s*?$)/,
             message: incorrectFormatMessage,
         },
     });

@@ -262,8 +262,56 @@ describe('PatientSearchPage', () => {
             });
         });
 
+        it('allows NHS number with spaces at the end to be submitted', async () => {
+            const testNumber = '9000000000 ';
+
+            mockedAxios.get.mockImplementation(() =>
+                Promise.resolve({ data: buildPatientDetails() }),
+            );
+
+            renderPatientSearchPage();
+            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), testNumber);
+            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
+            });
+        });
+
+        it('allows NHS number with spaces to be submitted and spaces at the end', async () => {
+            const testNumber = '900 000 0000  ';
+
+            mockedAxios.get.mockImplementation(() =>
+                Promise.resolve({ data: buildPatientDetails() }),
+            );
+
+            renderPatientSearchPage();
+            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), testNumber);
+            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
+            });
+        });
+
         it('allows NHS number with dashes to be submitted', async () => {
             const testNumber = '900-000-0000';
+
+            mockedAxios.get.mockImplementation(() =>
+                Promise.resolve({ data: buildPatientDetails() }),
+            );
+
+            renderPatientSearchPage();
+            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), testNumber);
+            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
+            });
+        });
+
+        it('allows NHS number with dashes to be submitted and spaces at the end', async () => {
+            const testNumber = '900-000-0000 ';
 
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: buildPatientDetails() }),
