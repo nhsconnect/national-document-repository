@@ -15,14 +15,14 @@ type GetPatientDetailsResponse = {
 
 const getPatientDetails = async ({ nhsNumber, baseUrl, baseHeaders }: Args) => {
     const gatewayUrl = baseUrl + endpoints.PATIENT_SEARCH;
-    const trimmedNumber = nhsNumber.trimEnd();
+
     try {
         const { data }: GetPatientDetailsResponse = await axios.get(gatewayUrl, {
             headers: {
                 ...baseHeaders,
             },
             params: {
-                patientId: trimmedNumber,
+                patientId: nhsNumber,
             },
         });
         return data;
