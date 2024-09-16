@@ -6,6 +6,7 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+
 const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useRole');
 const mockedUseRole = useRole as jest.Mock;
@@ -31,6 +32,9 @@ describe('PrivacyPage', () => {
                 'Privacy notice',
                 'What happens with my personal information?',
                 'Feedback form privacy notice',
+                'Our permission to process and store patient data',
+                'Further information',
+                'Contact us',
             ];
             contentHeaders.forEach((str) => {
                 expect(screen.getByRole('heading', { name: str })).toBeInTheDocument();
@@ -40,8 +44,8 @@ describe('PrivacyPage', () => {
         it('renders legal privacy content', () => {
             render(<PrivacyPage />);
 
-            const contentHeaders = [
-                /If you access the Lloyd George patient records digital service using your/i,
+            const contents = [
+                /If you use the 'Access and store digital patient documents' service using your/i,
                 /credentials, your NHS Care Identity credentials are managed by NHS England/i,
                 /This means NHS England is the data controller for any personal information/i,
                 /that you provided to get NHS Care Identity credentials/i,
@@ -57,7 +61,27 @@ describe('PrivacyPage', () => {
                 /relevant information or services you have requested/i,
                 /This will help support us in developing this service/i,
             ];
-            contentHeaders.forEach((str) => {
+            contents.forEach((str) => {
+                expect(screen.getByText(str)).toBeInTheDocument();
+            });
+        });
+
+        it('renders our permission to process and store patient data content', () => {
+            render(<PrivacyPage />);
+
+            const contents = [
+                /This service has legal permission to process and store patient data through the/i,
+                /The National Data Processing Deed enables NHS England to:/i,
+                /act as the data processor for all GP practices in England/i,
+                /store the digitised Lloyd George records of patients registered at these GP practices/i,
+                /This deed operates under the/i,
+                /GP practices in England are automatically signed up to /i,
+                /the National Data Processing Deed, so you don't need to do anything./i,
+                /NHS England's role as a data controller/i,
+                /If you have any questions about the National Data Processing Deed,/i,
+                /or our privacy policy, you can contact the team on/i,
+            ];
+            contents.forEach((str) => {
                 expect(screen.getByText(str)).toBeInTheDocument();
             });
         });
@@ -75,6 +99,14 @@ describe('PrivacyPage', () => {
             expect(screen.getByTestId('gdpr-link')).toHaveAttribute(
                 'href',
                 'https://digital.nhs.uk/data-and-information/keeping-data-safe-and-benefitting-the-public/gdpr#:~:text=The%20GDPR%20came%20into%20effect,in%20line%20with%20the%20regulations',
+            );
+            expect(screen.getByTestId('permission-section-gdpr-link')).toHaveAttribute(
+                'href',
+                'https://digital.nhs.uk/data-and-information/keeping-data-safe-and-benefitting-the-public/gdpr#:~:text=The%20GDPR%20came%20into%20effect,in%20line%20with%20the%20regulations',
+            );
+            expect(screen.getByTestId('data-controller-link')).toHaveAttribute(
+                'href',
+                'https://www.england.nhs.uk/contact-us/privacy-notice/nhs-england-as-a-data-controller/',
             );
         });
 
