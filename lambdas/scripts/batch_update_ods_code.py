@@ -40,7 +40,6 @@ class BatchUpdate:
         self.logger = logging.getLogger("BatchUpdateOds")
 
     def main(self):
-        print("Started")
         self.logger.info("Starting batch update script")
         self.logger.info(f"Table to be updated: {self.table_name}")
 

@@ -57,3 +57,14 @@ jobs:
       sandbox: ndr-dev
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_ods_batch_update:
+    name: Deploy ODS Batch Update
+    needs: [ "run_tests" ]
+    uses: ./.github/workflows/base-batch-update.yml
+    with:
+      build_branch: ${{ github.event.pull_request.head.ref }}
+      environment: development
+      sandbox: ndr-dev
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
