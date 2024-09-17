@@ -43,5 +43,15 @@ def handle_lambda_exceptions(lambda_func: Callable):
                 body=LambdaError.GatewayError.create_error_body(),
                 methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
+        except Exception as e:
+            logger.error(
+                f"Unhandled exception: {str(e)}",
+                exc_info=True
+            )
+            return ApiGatewayResponse(
+                status_code=500,
+                body=LambdaError.InternalServerError.create_error_body(),
+                methods=event.get("httpMethod", "GET"),
+            ).create_api_gateway_response()
 
     return interceptor
