@@ -5,6 +5,8 @@ from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.lambda_exceptions import LambdaException
 from utils.lambda_response import ApiGatewayResponse
 
+from lambdas.enums.lambda_error import LambdaError
+
 
 class MockError(Enum):
     ErrorClient = {
@@ -28,6 +30,8 @@ def lambda_handler(event, context):
     if patient_id == "2234567890":
         error = MockError.ErrorKey
         raise LambdaException(400, error)
+    if patient_id == "unhandled":
+        raise Exception("Unhandled exception occurred")
     return ApiGatewayResponse(200, "OK", "GET").create_api_gateway_response()
 
 
@@ -64,6 +68,21 @@ def test_handle_lambda_exceptions_catch_and_handle_lambda_exception(
     body = json.dumps(MockError.ErrorKey.value)
     expected = ApiGatewayResponse(
         400,
+        body,
+        "GET",
+    ).create_api_gateway_response()
+    actual = lambda_handler(test_event, context)
+
+    assert actual == expected
+
+def test_handle_lambda_exceptions_catch_unhandled_exception(
+        valid_id_event, context
+):
+    test_event = valid_id_event.copy()
+    test_event["queryStringParameters"]["patientId"] = "unhandled"
+    body = LambdaError.InternalServerError.create_error_body()
+    expected = ApiGatewayResponse(
+        500,
         body,
         "GET",
     ).create_api_gateway_response()
