@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, memo } from 'react';
 
 type Props = { fileUrl: String };
 
@@ -13,4 +13,4 @@ const PdfViewer = ({ fileUrl }: Props) => {
     );
 };
 
-export default PdfViewer;
+export default memo(PdfViewer);
