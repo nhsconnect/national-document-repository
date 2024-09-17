@@ -262,8 +262,8 @@ describe('PatientSearchPage', () => {
             });
         });
 
-        it('allows NHS number with spaces at the end to be submitted', async () => {
-            const testNumber = '9000000000 ';
+        it('allows NHS number with spaces at beginning and end to be submitted', async () => {
+            const testNumber = '  9000000000 ';
 
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: buildPatientDetails() }),
