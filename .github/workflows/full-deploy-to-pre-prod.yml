@@ -110,6 +110,17 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
+  deploy_ods_batch_update:
+    name: Deploy ODS Batch Update
+    needs: ["tag_and_release"]
+    uses: ./.github/workflows/base-batch-update.yml
+    with:
+      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      environment: pre-prod
+      sandbox: pre-prod
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   
 
         

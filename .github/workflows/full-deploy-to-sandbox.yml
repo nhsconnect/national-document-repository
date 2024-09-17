@@ -30,8 +30,7 @@ jobs:
   view_action_parameters:
     name: View input params
     runs-on: ubuntu-latest
-    steps: 
-    
+    steps:
       - name: Display client passed variables
         run: |
           echo Build Branch: ${{ inputs.build_branch }}

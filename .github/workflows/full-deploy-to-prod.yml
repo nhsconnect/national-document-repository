@@ -60,6 +60,7 @@ jobs:
 
   publish_all_lambda_layers:
     name: Publish all Lambda Layers
+    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
     uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
     with:
       build_branch: ${{ inputs.tag_version }}
@@ -85,6 +86,17 @@ jobs:
     name: Deploy UI
     needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
     uses: ./.github/workflows/base-deploy-ui.yml
+    with:
+      build_branch: ${{ inputs.tag_version }}
+      environment: prod
+      sandbox: prod
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_ods_batch_update:
+    name: Deploy ODS Batch Update
+    needs: [ "lambda_test_job", "react_testing_job", "cypress_test_job" ]
+    uses: ./.github/workflows/base-batch-update.yml
     with:
       build_branch: ${{ inputs.tag_version }}
       environment: prod
