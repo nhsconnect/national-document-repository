@@ -9,6 +9,7 @@ import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getLloydGeorgeRecord from '../../../helpers/requests/getLloydGeorgeRecord';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
+import { act } from 'react-dom/test-utils';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
@@ -33,9 +34,9 @@ const mockUseBaseAPIHeaders = useBaseAPIHeaders as jest.Mock;
 describe('RecordCard Component', () => {
     const mockFullScreenHandler = jest.fn();
     const props = {
-        heading: 'Test Record',
+        heading: 'Mock Header Record',
         fullScreenHandler: mockFullScreenHandler,
-        detailsElement: <div>Details Element</div>,
+        detailsElement: <div>Mock Details Element</div>,
         downloadStage: DOWNLOAD_STAGE.INITIAL,
         isFullScreen: false,
     };
@@ -54,10 +55,8 @@ describe('RecordCard Component', () => {
         it('renders component', () => {
             render(<RecordCard {...props} />);
 
-            // add more default expectations
-
-            expect(screen.getByText('Test Record')).toBeInTheDocument();
-            expect(screen.getByText('Details Element')).toBeInTheDocument();
+            expect(screen.getByText('Mock Header Record')).toBeInTheDocument();
+            expect(screen.getByText('Mock Details Element')).toBeInTheDocument();
         });
 
         it('renders the "View in full screen" button when recordUrl is set', async () => {
@@ -78,7 +77,9 @@ describe('RecordCard Component', () => {
             await waitFor(() => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
             });
-            userEvent.click(screen.getByTestId('full-screen-btn'));
+            act(() => {
+                userEvent.click(screen.getByTestId('full-screen-btn'));
+            });
             await waitFor(() => {
                 expect(mockFullScreenHandler).toHaveBeenCalled();
             });
