@@ -19,9 +19,10 @@ type Props = {
     fullScreenHandler: (clicked: true) => void;
     detailsElement: ReactNode;
     downloadStage: DOWNLOAD_STAGE;
+    isFullScreen: boolean;
 };
 
-function RecordCard({ heading, fullScreenHandler, detailsElement }: Props) {
+function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }: Props) {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const config = useConfig();
@@ -91,6 +92,43 @@ function RecordCard({ heading, fullScreenHandler, detailsElement }: Props) {
         patientDetails?.nhsNumber,
     ]);
 
+    const Layout = ({ children }: { children: ReactNode }) => {
+        if (isFullScreen) {
+            return (
+                <Card className="lloydgeorge_record-stage_pdf">
+                    <Card.Content
+                        data-testid="pdf-card"
+                        className="lloydgeorge_record-stage_pdf-content"
+                    >
+                        <Card.Heading
+                            className="lloydgeorge_record-stage_pdf-content-label"
+                            headingLevel="h2"
+                        >
+                            {heading}
+                        </Card.Heading>
+                        {detailsElement}
+
+                        {recordUrl && (
+                            <button
+                                className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
+                                data-testid="full-screen-btn"
+                                onClick={() => {
+                                    fullScreenHandler(true);
+                                }}
+                            >
+                                View in full screen
+                            </button>
+                        )}
+                    </Card.Content>
+                    {recordUrl && (
+                        <div className="lloydgeorge_record-stage_pdf-expander">{children}</div>
+                    )}
+                </Card>
+            );
+        } else {
+            return children;
+        }
+    };
     return (
         <Card className="lloydgeorge_record-stage_pdf">
             <Card.Content data-testid="pdf-card" className="lloydgeorge_record-stage_pdf-content">
@@ -116,7 +154,9 @@ function RecordCard({ heading, fullScreenHandler, detailsElement }: Props) {
             </Card.Content>
             {recordUrl && (
                 <div className="lloydgeorge_record-stage_pdf-expander">
-                    <PdfViewer fileUrl={recordUrl} />;
+                    <Layout>
+                        <PdfViewer fileUrl={recordUrl} />;
+                    </Layout>
                 </div>
             )}
         </Card>

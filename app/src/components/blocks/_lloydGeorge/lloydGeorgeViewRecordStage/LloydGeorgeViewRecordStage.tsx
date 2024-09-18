@@ -220,6 +220,7 @@ function LloydGeorgeViewRecordStage({
                                     heading="Lloyd George record"
                                     fullScreenHandler={setFullScreen}
                                     detailsElement={<RecordDetails {...recordDetailsProps} />}
+                                    isFullScreen={fullScreen}
                                 />
                             </div>
                         </div>
@@ -229,6 +230,7 @@ function LloydGeorgeViewRecordStage({
                             heading="Lloyd George record"
                             fullScreenHandler={setFullScreen}
                             detailsElement={<RecordDetails {...recordDetailsProps} />}
+                            isFullScreen={fullScreen}
                         />
                     )}
                 </>
@@ -239,6 +241,7 @@ function LloydGeorgeViewRecordStage({
                         heading="Lloyd George record"
                         fullScreenHandler={setFullScreen}
                         detailsElement={<RecordDetails {...recordDetailsProps} />}
+                        isFullScreen={fullScreen}
                     />
                 </div>
             )}
