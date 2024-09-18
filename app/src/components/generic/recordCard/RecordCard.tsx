@@ -94,6 +94,8 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
 
     const Layout = ({ children }: { children: ReactNode }) => {
         if (isFullScreen) {
+            return children;
+        } else {
             return (
                 <Card className="lloydgeorge_record-stage_pdf">
                     <Card.Content
@@ -125,8 +127,6 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
                     )}
                 </Card>
             );
-        } else {
-            return children;
         }
     };
     return (
