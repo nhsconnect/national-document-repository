@@ -4,16 +4,15 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import getLloydGeorgeRecord from '../../../helpers/requests/getLloydGeorgeRecord';
 import PdfViewer from '../pdfViewer/PdfViewer';
 import { AxiosError } from 'axios';
-import { ErrorResponse } from '../../../types/generic/errorResponse';
 import { isMock } from '../../../helpers/utils/isLocal';
 import useConfig from '../../../helpers/hooks/useConfig';
-import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { useNavigate } from 'react-router';
-import { routes } from '../../../types/generic/routes';
 import usePatient from '../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import ProgressBar from '../progressBar/ProgressBar';
+import { routes } from '../../../types/generic/routes';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
 
 type Props = {
     heading: string;
@@ -41,36 +40,21 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
 
     useEffect(() => {
         const onSuccess = (presign_url: string) => {
+            setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             setRecordUrl(presign_url);
         };
 
         const onError = (e: AxiosError) => {
             const error = e as AxiosError;
-            const errorResponse = (error.response?.data as ErrorResponse) ?? {};
 
-            if (isMock(error)) {
-                if (!!config.mockLocal.recordUploaded) {
-                    onSuccess('/dev/testFile.pdf');
-                } else {
-                    setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
-                }
+            if (isMock(error) && !!config.mockLocal.recordUploaded) {
+                onSuccess('/dev/testFile.pdf');
+            } else if (error.response?.status === 403) {
+                navigate(routes.SESSION_EXPIRED);
+            } else if (error.response?.status && error.response?.status >= 500) {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
             } else {
-                if (error.response?.status === 504) {
-                    setDownloadStage(DOWNLOAD_STAGE.TIMEOUT);
-                } else if (
-                    error.response?.status === 404 ||
-                    (error.response?.status === 400 && errorResponse?.err_code === 'LGL_400')
-                ) {
-                    setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
-                } else if (error.response?.status === 403) {
-                    navigate(routes.SESSION_EXPIRED);
-                } else if (error.response?.status && error.response?.status >= 500) {
-                    navigate(routes.SERVER_ERROR + errorToParams(error));
-                } else if (error.response?.status === 423) {
-                    setDownloadStage(DOWNLOAD_STAGE.UPLOADING);
-                } else {
-                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
-                }
+                setDownloadStage(DOWNLOAD_STAGE.FAILED);
             }
         };
 
@@ -99,6 +83,15 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
         navigate,
         patientDetails?.nhsNumber,
     ]);
+
+    const Record = () => {
+        if (isLoading) {
+            return <ProgressBar status="Loading..." />;
+        } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
+            return null;
+        }
+        return <PdfViewer fileUrl={recordUrl} />;
+    };
 
     const RecordLayout = ({ children }: { children: ReactNode }) => {
         if (isFullScreen) {
@@ -137,7 +130,7 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
     };
     return (
         <RecordLayout>
-            {isLoading ? <PdfViewer fileUrl={recordUrl} /> : <ProgressBar status="Loading..." />}
+            <Record />
         </RecordLayout>
     );
 }

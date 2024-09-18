@@ -51,8 +51,10 @@ describe('RecordCard Component', () => {
     });
 
     describe('Rendering', () => {
-        it('renders the heading and detailsElement', () => {
+        it('renders component', () => {
             render(<RecordCard {...props} />);
+
+            // add more default expectations
 
             expect(screen.getByText('Test Record')).toBeInTheDocument();
             expect(screen.getByText('Details Element')).toBeInTheDocument();
@@ -68,13 +70,21 @@ describe('RecordCard Component', () => {
             });
         });
 
-        it('does not render the "View in full screen" button when recordUrl is not set', () => {
+        it('sets the page to full screen view when "View in full screen" is clicked', async () => {
+            mockGetLloydGeorgeRecord.mockResolvedValue(buildLgSearchResult());
+
             render(<RecordCard {...props} />);
 
-            expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
+            });
+            userEvent.click(screen.getByTestId('full-screen-btn'));
+            await waitFor(() => {
+                expect(mockFullScreenHandler).toHaveBeenCalled();
+            });
         });
 
-        it('renders PDFViewer component when recordUrl is present', async () => {
+        it('renders PDFViewer component when recordUrl is set', async () => {
             mockGetLloydGeorgeRecord.mockResolvedValue(buildLgSearchResult());
 
             render(<RecordCard {...props} />);
@@ -82,6 +92,37 @@ describe('RecordCard Component', () => {
             await waitFor(() => {
                 expect(screen.getByTestId('pdf-viewer')).toBeInTheDocument();
             });
+        });
+
+        it('renders a ProgressBar when in loading state', async () => {
+            render(<RecordCard {...props} downloadStage={DOWNLOAD_STAGE.PENDING} />);
+            expect(screen.getByText('Loading...')).toBeInTheDocument();
+        });
+
+        it('renders full-screen layout when isFullScreen state is true', async () => {
+            render(<RecordCard {...props} isFullScreen={true} />);
+            expect(screen.queryByTestId('pdf-card')).not.toBeInTheDocument(); // Shouldn't show the card layout
+        });
+
+        it('does not render the pdf details view when full-screen view is click', async () => {
+            mockGetLloydGeorgeRecord.mockResolvedValue(buildLgSearchResult());
+
+            render(<RecordCard {...props} />);
+
+            await waitFor(() => {
+                expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
+            });
+        });
+
+        it('does not render the "View in full screen" button or pdf view when recordUrl is not set', () => {
+            render(<RecordCard {...props} />);
+            expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
+        });
+
+        it('does not render PdfViewer when downloadStage is FAILED', async () => {
+            render(<RecordCard {...props} downloadStage={DOWNLOAD_STAGE.FAILED} />);
+            expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
         });
     });
 
