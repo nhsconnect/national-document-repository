@@ -34,23 +34,23 @@ jobs:
         working-directory: app
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
           fetch-depth: '0'
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
-
+          mask-aws-account-id: true
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
@@ -87,7 +87,7 @@ jobs:
       - name: Download task definition
         id: download-task
         run: |
-          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-ndr-service-task --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-task-app-cluster --query taskDefinition > task-definition.json
           echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
@@ -95,11 +95,11 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ./app/task-definition.json
-          container-name: ${{ inputs.sandbox }}-app-container
+          container-name: ${{ inputs.sandbox }}-container-app-cluster
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ./app/task-definition.json
           service: ${{ inputs.sandbox }}-ecs-cluster-service
@@ -109,4 +109,4 @@ jobs:
       - name: De-register previous revision
         run: |
           aws ecs deregister-task-definition \
-            --task-definition ${{ inputs.sandbox }}-ndr-service-task:${{ steps.download-task.outputs.revision }}
+            --task-definition ${{ inputs.sandbox }}-task-app-cluster:${{ steps.download-task.outputs.revision }}

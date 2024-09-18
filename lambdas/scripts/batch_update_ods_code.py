@@ -7,10 +7,12 @@ from typing import Dict
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.pds_models import Patient
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel, TypeAdapter, ValidationError
+from requests import HTTPError
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
-from services.pds_api_service import PdsApiService
+from utils.exceptions import PdsErrorException, PdsResponseValidationException
+from utils.utilities import get_pds_service
 
 Fields = DocumentReferenceMetadataFields
 
@@ -26,12 +28,12 @@ class ProgressForPatient(BaseModel):
 class BatchUpdate:
     def __init__(
         self,
-        table_name: str,
         progress_store_file_path: str = "batch_update_progress.json",
     ):
         self.progress_store = progress_store_file_path
-        self.table_name = table_name
-        self.pds_service = PdsApiService(SSMService())
+        self.table_name = os.getenv("table_name")
+        pds_service_class = get_pds_service()
+        self.pds_service = pds_service_class(SSMService())
         self.dynamo_service = DynamoDBService()
         self.progress: Dict[str, ProgressForPatient] = {}
 
@@ -80,7 +82,12 @@ class BatchUpdate:
             self.logger.info(
                 f"Updating record for NHS number {nhs_number} ({current_count} of {total_count})"
             )
-            self.update_patient_ods(nhs_number)
+            try:
+                self.update_patient_ods(nhs_number)
+            except (
+                Exception
+            ) as e:  # Catching generic Exception as there are many to catch and this Lambda is temporary
+                self.logger.error(str(e))
 
         self.logger.info("Finished updating all patient's ODS codes")
 
@@ -109,13 +116,25 @@ class BatchUpdate:
         time.sleep(0.2)  # buffer to avoid over stretching PDS API
         self.logger.debug("Getting the latest ODS code from PDS...")
 
-        pds_response = self.pds_service.pds_request(
-            nhs_number=nhs_number, retry_on_expired=True
-        )
-        pds_response.raise_for_status()
+        try:
+            pds_response = self.pds_service.pds_request(
+                nhs_number=nhs_number, retry_on_expired=True
+            )
+            pds_response.raise_for_status()
 
-        patient = Patient.model_validate(pds_response.json())
-        return patient.get_active_ods_code_for_gp()
+            pds_response_json = pds_response.json()
+
+            patient = Patient.model_validate(pds_response_json)
+
+            return patient.get_ods_code_or_inactive_status_for_gp()
+        except HTTPError as e:
+            raise PdsErrorException(
+                f"PDS returned a {e.response.status_code} code response for patient with NHS number {nhs_number}"
+            )
+        except ValidationError:
+            raise PdsResponseValidationException(
+                f"PDS returned an invalid response for patient with NHS number {nhs_number}"
+            )
 
     def initialise_new_job(self):
         all_entries = self.list_all_entries()
@@ -137,6 +156,8 @@ class BatchUpdate:
         except FileNotFoundError:
             self.logger.info("Cannot find a progress file. Will start a new job.")
             self.initialise_new_job()
+        except ValidationError as e:
+            self.logger.info(e)
 
     def found_previous_progress(self) -> bool:
         return os.path.isfile(self.progress_store)
@@ -212,15 +233,5 @@ def setup_logging_for_local_script():
 
 
 if __name__ == "__main__":
-    import argparse
-
     setup_logging_for_local_script()
-
-    parser = argparse.ArgumentParser(
-        prog="batch_update_ods_code.py",
-        description="A utility script to update the ODS Codes for all patients in a dynamoDB doc reference table",
-    )
-    parser.add_argument("table_name", type=str, help="The name of dynamodb table")
-    args = parser.parse_args()
-
-    BatchUpdate(table_name=args.table_name).main()
+    BatchUpdate().main()

@@ -1,0 +1,9 @@
+htmlcov
+tests
+.coveragerc
+.coverage
+Dockerfile
+**.md
+handlers
+venv
+services/mock_data

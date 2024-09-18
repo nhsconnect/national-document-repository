@@ -7,8 +7,10 @@ import jwt
 import requests
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
+from requests.adapters import HTTPAdapter
 from requests.models import HTTPError
 from services.patient_search_service import PatientSearch
+from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import PdsErrorException
 
@@ -18,6 +20,17 @@ logger = LoggingService(__name__)
 class PdsApiService(PatientSearch):
     def __init__(self, ssm_service):
         self.ssm_service = ssm_service
+
+        retry_strategy = Retry(
+            total=3,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET"],
+            backoff_factor=1,
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+
+        self.session = requests.Session()
+        self.session.mount("https://", adapter)
 
     def pds_request(self, nhs_number: str, retry_on_expired: bool):
         try:
@@ -41,7 +54,10 @@ class PdsApiService(PatientSearch):
             }
 
             url_endpoint = endpoint + "Patient/" + nhs_number
-            pds_response = requests.get(url=url_endpoint, headers=authorization_header)
+            pds_response = self.session.get(
+                url=url_endpoint, headers=authorization_header
+            )
+
             if pds_response.status_code == 401 and retry_on_expired:
                 return self.pds_request(nhs_number, retry_on_expired=False)
 
@@ -49,7 +65,7 @@ class PdsApiService(PatientSearch):
 
         except (ClientError, JSONDecodeError) as e:
             logger.error(str(e), {"Result": "Error when getting ssm parameters"})
-            raise PdsErrorException("Failed to preform patient search")
+            raise PdsErrorException("Failed to perform patient search")
 
     def get_new_access_token(self):
         logger.info("Getting new PDS access token")
