@@ -93,8 +93,8 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
     ]);
 
     const Layout = ({ children }: { children: ReactNode }) => {
-        if (isFullScreen) {
-            return children;
+        if (isFullScreen && children) {
+            return <div>{children}</div>;
         } else {
             return (
                 <Card className="lloydgeorge_record-stage_pdf">
@@ -122,44 +122,15 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
                             </button>
                         )}
                     </Card.Content>
-                    {recordUrl && (
-                        <div className="lloydgeorge_record-stage_pdf-expander">{children}</div>
-                    )}
+                    {recordUrl && <div>{children}</div>}
                 </Card>
             );
         }
     };
     return (
-        <Card className="lloydgeorge_record-stage_pdf">
-            <Card.Content data-testid="pdf-card" className="lloydgeorge_record-stage_pdf-content">
-                <Card.Heading
-                    className="lloydgeorge_record-stage_pdf-content-label"
-                    headingLevel="h2"
-                >
-                    {heading}
-                </Card.Heading>
-                {detailsElement}
-
-                {recordUrl && (
-                    <button
-                        className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
-                        data-testid="full-screen-btn"
-                        onClick={() => {
-                            fullScreenHandler(true);
-                        }}
-                    >
-                        View in full screen
-                    </button>
-                )}
-            </Card.Content>
-            {recordUrl && (
-                <div className="lloydgeorge_record-stage_pdf-expander">
-                    <Layout>
-                        <PdfViewer fileUrl={recordUrl} />;
-                    </Layout>
-                </div>
-            )}
-        </Card>
+        <Layout>
+            <PdfViewer fileUrl={recordUrl} />;
+        </Layout>
     );
 }
 
