@@ -13,6 +13,7 @@ import { routes } from '../../../types/generic/routes';
 import usePatient from '../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
+import ProgressBar from '../progressBar/ProgressBar';
 
 type Props = {
     heading: string;
@@ -31,6 +32,13 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
     const patientDetails = usePatient();
     const mounted = useRef(false);
     const [downloadStage, setDownloadStage] = useState<DOWNLOAD_STAGE>(DOWNLOAD_STAGE.INITIAL);
+
+    const isLoading = [
+        DOWNLOAD_STAGE.INITIAL,
+        DOWNLOAD_STAGE.PENDING,
+        DOWNLOAD_STAGE.REFRESH,
+    ].includes(downloadStage);
+
     useEffect(() => {
         const onSuccess = (presign_url: string) => {
             setRecordUrl(presign_url);
@@ -92,8 +100,8 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
         patientDetails?.nhsNumber,
     ]);
 
-    const Layout = ({ children }: { children: ReactNode }) => {
-        if (isFullScreen && children) {
+    const RecordLayout = ({ children }: { children: ReactNode }) => {
+        if (isFullScreen) {
             return <div>{children}</div>;
         } else {
             return (
@@ -122,15 +130,15 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
                             </button>
                         )}
                     </Card.Content>
-                    {recordUrl && <div>{children}</div>}
+                    <div>{children}</div>
                 </Card>
             );
         }
     };
     return (
-        <Layout>
-            <PdfViewer fileUrl={recordUrl} />;
-        </Layout>
+        <RecordLayout>
+            {isLoading ? <PdfViewer fileUrl={recordUrl} /> : <ProgressBar status="Loading..." />}
+        </RecordLayout>
     );
 }
 

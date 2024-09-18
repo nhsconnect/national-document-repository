@@ -28,7 +28,6 @@ import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
-import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
 export type Props = {
@@ -264,7 +263,7 @@ const RecordDetails = ({
         case DOWNLOAD_STAGE.INITIAL:
         case DOWNLOAD_STAGE.PENDING:
         case DOWNLOAD_STAGE.REFRESH:
-            return <ProgressBar status="Loading..." />;
+            return null;
         case DOWNLOAD_STAGE.SUCCEEDED: {
             const detailsProps = {
                 lastUpdated,
