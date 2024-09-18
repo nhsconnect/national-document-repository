@@ -8,7 +8,6 @@ import {
     WarningCallout,
 } from 'nhsuk-react-components';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
-import PdfViewer from '../../../generic/pdfViewer/PdfViewer';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
@@ -34,7 +33,6 @@ import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientS
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
-    lloydGeorgeUrl: string;
     lastUpdated: string;
     numberOfFiles: number;
     totalFileSizeInByte: number;
@@ -44,14 +42,12 @@ export type Props = {
 
 function LloydGeorgeViewRecordStage({
     downloadStage,
-    lloydGeorgeUrl,
     lastUpdated,
     numberOfFiles,
     totalFileSizeInByte,
     setStage,
 }: Props) {
     const navigate = useNavigate();
-
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
@@ -221,7 +217,6 @@ function LloydGeorgeViewRecordStage({
                             <div className="lloydgeorge_record-stage_flex-row">
                                 <RecordCard
                                     downloadStage={downloadStage}
-                                    recordUrl={lloydGeorgeUrl}
                                     heading="Lloyd George record"
                                     fullScreenHandler={setFullScreen}
                                     detailsElement={<RecordDetails {...recordDetailsProps} />}
@@ -231,7 +226,6 @@ function LloydGeorgeViewRecordStage({
                     ) : (
                         <RecordCard
                             downloadStage={downloadStage}
-                            recordUrl={lloydGeorgeUrl}
                             heading="Lloyd George record"
                             fullScreenHandler={setFullScreen}
                             detailsElement={<RecordDetails {...recordDetailsProps} />}
@@ -240,7 +234,12 @@ function LloydGeorgeViewRecordStage({
                 </>
             ) : (
                 <div className="lloydgeorge_record-stage_fs">
-                    <PdfViewer fileUrl={lloydGeorgeUrl} />
+                    <RecordCard
+                        downloadStage={downloadStage}
+                        heading="Lloyd George record"
+                        fullScreenHandler={setFullScreen}
+                        detailsElement={<RecordDetails {...recordDetailsProps} />}
+                    />
                 </div>
             )}
         </div>
