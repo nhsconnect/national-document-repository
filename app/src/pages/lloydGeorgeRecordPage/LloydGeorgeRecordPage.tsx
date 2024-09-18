@@ -98,7 +98,7 @@ function LloydGeorgeRecordPage() {
                 }
             }
         };
-        if (!mounted.current || downloadStage === DOWNLOAD_STAGE.REFRESH) {
+        if (!mounted.current) {
             mounted.current = true;
             setDownloadStage(DOWNLOAD_STAGE.PENDING);
             void onPageLoad();

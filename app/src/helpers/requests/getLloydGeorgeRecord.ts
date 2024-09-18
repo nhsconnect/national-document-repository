@@ -21,7 +21,7 @@ async function getLloydGeorgeRecord({
     baseHeaders,
 }: Args): Promise<LloydGeorgeStitchResult> {
     const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
-
+    console.log('NEW TRIGGER CALL');
     const { data } = await axios.get(gatewayUrl, {
         headers: {
             ...baseHeaders,
