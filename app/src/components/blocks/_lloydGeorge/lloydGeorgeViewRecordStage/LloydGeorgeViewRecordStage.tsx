@@ -37,6 +37,8 @@ export type Props = {
     totalFileSizeInByte: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     stage: LG_RECORD_STAGE;
+    refreshRecord: () => void;
+    cloudFrontUrl: string;
 };
 
 function LloydGeorgeViewRecordStage({
@@ -45,6 +47,8 @@ function LloydGeorgeViewRecordStage({
     numberOfFiles,
     totalFileSizeInByte,
     setStage,
+    refreshRecord,
+    cloudFrontUrl,
 }: Props) {
     const navigate = useNavigate();
     const [fullScreen, setFullScreen] = useState(false);
@@ -220,6 +224,8 @@ function LloydGeorgeViewRecordStage({
                                     fullScreenHandler={setFullScreen}
                                     detailsElement={<RecordDetails {...recordDetailsProps} />}
                                     isFullScreen={fullScreen}
+                                    refreshRecord={refreshRecord}
+                                    cloudFrontUrl={cloudFrontUrl}
                                 />
                             </div>
                         </div>
@@ -230,6 +236,8 @@ function LloydGeorgeViewRecordStage({
                             fullScreenHandler={setFullScreen}
                             detailsElement={<RecordDetails {...recordDetailsProps} />}
                             isFullScreen={fullScreen}
+                            refreshRecord={refreshRecord}
+                            cloudFrontUrl={cloudFrontUrl}
                         />
                     )}
                 </>
@@ -241,6 +249,8 @@ function LloydGeorgeViewRecordStage({
                         fullScreenHandler={setFullScreen}
                         detailsElement={<RecordDetails {...recordDetailsProps} />}
                         isFullScreen={fullScreen}
+                        refreshRecord={refreshRecord}
+                        cloudFrontUrl={cloudFrontUrl}
                     />
                 </div>
             )}

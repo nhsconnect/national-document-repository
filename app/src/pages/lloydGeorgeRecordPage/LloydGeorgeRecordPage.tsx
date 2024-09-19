@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 
 import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
@@ -34,18 +34,25 @@ function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    const mounted = useRef(false);
 
     const [numberOfFiles, setNumberOfFiles] = useState(0);
     const [totalFileSizeInByte, setTotalFileSizeInByte] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
-    useEffect(() => {
-        const onSuccess = (files_count: number, updated_date: string, file_size: number) => {
+    const [cloudFrontUrl, setCloudFrontUrl] = useState('');
+
+    const refreshRecord = async () => {
+        const onSuccess = (
+            files_count: number,
+            updated_date: string,
+            file_size: number,
+            presign_url: string,
+        ) => {
             setNumberOfFiles(files_count);
             setLastUpdated(getFormattedDatetime(new Date(updated_date)));
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             setTotalFileSizeInByte(file_size);
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
+            setCloudFrontUrl(presign_url);
         };
 
         const onError = (e: AxiosError) => {
@@ -54,7 +61,7 @@ function LloydGeorgeRecordPage() {
 
             if (isMock(error)) {
                 if (!!config.mockLocal.recordUploaded) {
-                    onSuccess(1, moment().format(), 59000);
+                    onSuccess(1, moment().format(), 59000, '/dev/testFile.pdf');
                 } else {
                     setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
                 }
@@ -78,37 +85,20 @@ function LloydGeorgeRecordPage() {
             }
         };
 
-        const onPageLoad = async () => {
-            const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-            try {
-                const { number_of_files, total_file_size_in_byte, last_updated } =
-                    await getLloydGeorgeRecord({
-                        nhsNumber,
-                        baseUrl,
-                        baseHeaders,
-                    });
+        const nhsNumber: string = patientDetails?.nhsNumber ?? '';
+        try {
+            const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
+                await getLloydGeorgeRecord({
+                    nhsNumber,
+                    baseUrl,
+                    baseHeaders,
+                });
 
-                onSuccess(number_of_files, last_updated, total_file_size_in_byte);
-            } catch (e) {
-                onError(e as AxiosError);
-            }
-        };
-        if (!mounted.current) {
-            mounted.current = true;
-            void onPageLoad();
+            onSuccess(number_of_files, last_updated, total_file_size_in_byte, presign_url);
+        } catch (e) {
+            onError(e as AxiosError);
         }
-    }, [
-        patientDetails,
-        baseUrl,
-        baseHeaders,
-        setDownloadStage,
-        downloadStage,
-        setLastUpdated,
-        setNumberOfFiles,
-        setTotalFileSizeInByte,
-        navigate,
-        config,
-    ]);
+    };
 
     return (
         <>
@@ -123,6 +113,8 @@ function LloydGeorgeRecordPage() {
                             lastUpdated={lastUpdated}
                             totalFileSizeInByte={totalFileSizeInByte}
                             numberOfFiles={numberOfFiles}
+                            refreshRecord={refreshRecord}
+                            cloudFrontUrl={cloudFrontUrl}
                         />
                     }
                 />
