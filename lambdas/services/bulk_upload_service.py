@@ -50,7 +50,6 @@ class BulkUploadService:
         self.pdf_content_type = "application/pdf"
 
         self.file_path_cache = {}
-        self.accepted_reason = None
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -90,6 +89,7 @@ class BulkUploadService:
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
         patient_ods_code = ""
+        accepted_reason = None
         try:
             staging_metadata_json = message["body"]
             staging_metadata = StagingMetadata.model_validate_json(
@@ -119,7 +119,9 @@ class BulkUploadService:
                 validate_filename_with_patient_details(file_names, pds_patient_details)
             )
             if is_name_validation_based_on_historic_name:
-                self.concatenate_acceptance_reason("Patient matched on historical name")
+                accepted_reason = self.concatenate_acceptance_reason(
+                    accepted_reason, "Patient matched on historical name"
+                )
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")
             patient_death_notification_status = (
@@ -129,9 +131,13 @@ class BulkUploadService:
                 deceased_accepted_reason = (
                     f"Patient is deceased - {patient_death_notification_status.name}"
                 )
-                self.concatenate_acceptance_reason(deceased_accepted_reason)
+                accepted_reason = self.concatenate_acceptance_reason(
+                    accepted_reason, deceased_accepted_reason
+                )
             if patient_ods_code is PatientOdsInactiveStatus.RESTRICTED:
-                self.concatenate_acceptance_reason("PDS record is restricted")
+                accepted_reason = self.concatenate_acceptance_reason(
+                    accepted_reason, "PDS record is restricted"
+                )
 
         except (
             LGInvalidFilesException,
@@ -246,7 +252,7 @@ class BulkUploadService:
         self.dynamo_repository.write_report_upload_to_dynamo(
             staging_metadata,
             UploadStatus.COMPLETE,
-            self.accepted_reason,
+            accepted_reason,
             patient_ods_code,
         )
 
@@ -342,9 +348,6 @@ class BulkUploadService:
         # where some filepaths begin with '/' and some does not.
         return filepath.lstrip("/")
 
-    def concatenate_acceptance_reason(self, new_reason):
-        self.accepted_reason = (
-            self.accepted_reason + ", " + new_reason
-            if self.accepted_reason
-            else new_reason
-        )
+    @staticmethod
+    def concatenate_acceptance_reason(previous_reasons: str | None, new_reason: str):
+        return previous_reasons + ", " + new_reason if previous_reasons else new_reason
