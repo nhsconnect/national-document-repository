@@ -83,7 +83,7 @@ function RecordCard({
     const Record = () => {
         if (isLoading) {
             return (
-                <div className="flex-center w-100">
+                <div className="pl-7">
                     <ProgressBar status="Loading..." />
                 </div>
             );
