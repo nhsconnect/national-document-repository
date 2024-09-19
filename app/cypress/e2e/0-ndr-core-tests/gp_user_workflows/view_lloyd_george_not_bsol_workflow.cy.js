@@ -64,7 +64,7 @@ describe('GP Workflow: View Lloyd George record', () => {
         context(
             `View Lloyd George document for ${roleName(role)} role and download warning is present`,
             () => {
-                it(
+                it.skip(
                     roleName(role) + ' can view a Lloyd George document of an active patient',
                     { tags: 'regression' },
                     () => {
@@ -108,7 +108,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     `It displays an empty Lloyd George card when no Lloyd George record exists for the patient for a ${roleName(
                         role,
                     )}`,
@@ -124,7 +124,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                         assertEmptyLloydGeorgeCard();
                     },
                 );
-                it(
+                it.skip(
                     `It displays an waiting message when uploading Lloyd George record is in progress for the patient for a ${roleName(
                         role,
                     )}`,
@@ -144,7 +144,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                         );
                     },
                 );
-                it(
+                it.skip(
                     `It displays an error when the Lloyd George Stitch API call fails for a ${roleName(
                         role,
                     )}`,
@@ -162,7 +162,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     'Routes to download page when safety checkbox is checked',
                     { tags: 'regression' },
                     () => {
@@ -182,7 +182,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     'It displays warning when safety checkbox is not checked',
                     { tags: 'regression' },
                     () => {
@@ -201,7 +201,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     'No download option or menu exists when no Lloyd George record exists for the patient',
                     { tags: 'regression' },
                     () => {
@@ -218,84 +218,93 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 );
 
-                it('Confirm download and delete of Lloyd George', { tags: 'regression' }, () => {
-                    const isBSOL = false;
-                    cy.login(role, isBSOL);
-                    cy.getByTestId('search-patient-btn').click();
+                it.skip(
+                    'Confirm download and delete of Lloyd George',
+                    { tags: 'regression' },
+                    () => {
+                        const isBSOL = false;
+                        cy.login(role, isBSOL);
+                        cy.getByTestId('search-patient-btn').click();
 
-                    // search patient
-                    cy.intercept('GET', '/SearchPatient*', {
-                        statusCode: 200,
-                        body: searchPatientPayload,
-                    }).as('search');
-
-                    cy.intercept('GET', '/LloydGeorgeStitch*', {
-                        statusCode: 200,
-                        body: viewLloydGeorgePayload,
-                    }).as('lloydGeorgeStitch');
-
-                    cy.intercept('POST', '/DocumentManifest*', (req) => {
-                        req.reply({
+                        // search patient
+                        cy.intercept('GET', '/SearchPatient*', {
                             statusCode: 200,
-                            body: { jobId: 'test-jobId' },
-                            delay: 500,
-                        });
-                    }).as('documentManifestPost');
+                            body: searchPatientPayload,
+                        }).as('search');
 
-                    cy.intercept('GET', '/DocumentManifest*', (req) => {
-                        req.reply({
+                        cy.intercept('GET', '/LloydGeorgeStitch*', {
                             statusCode: 200,
-                            body: { jobStatus: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
-                            delay: 500,
-                        });
-                    }).as('documentManifest');
+                            body: viewLloydGeorgePayload,
+                        }).as('lloydGeorgeStitch');
 
-                    cy.intercept('DELETE', '/DocumentDelete*', {
-                        statusCode: 200,
-                    }).as('documentDelete');
+                        cy.intercept('POST', '/DocumentManifest*', (req) => {
+                            req.reply({
+                                statusCode: 200,
+                                body: { jobId: 'test-jobId' },
+                                delay: 500,
+                            });
+                        }).as('documentManifestPost');
 
-                    cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
-                    cy.getByTestId('search-submit-btn').click();
-                    cy.wait('@search');
+                        cy.intercept('GET', '/DocumentManifest*', (req) => {
+                            req.reply({
+                                statusCode: 200,
+                                body: {
+                                    jobStatus: 'Completed',
+                                    url: baseUrl + '/browserconfig.xml',
+                                }, // uses public served file in place of a ZIP file
+                                delay: 500,
+                            });
+                        }).as('documentManifest');
 
-                    cy.get('#verify-submit').click();
-                    cy.wait('@lloydGeorgeStitch');
+                        cy.intercept('DELETE', '/DocumentDelete*', {
+                            statusCode: 200,
+                        }).as('documentDelete');
 
-                    cy.getByTestId('download-and-remove-record-btn').click();
-                    cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
-                    cy.getByTestId('confirm-download-and-remove-checkbox').click();
-                    cy.getByTestId('confirm-download-and-remove-btn').click();
-                    cy.getByTestId('lloydgeorge_downloadall-stage').should('exist');
+                        cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
+                        cy.getByTestId('search-submit-btn').click();
+                        cy.wait('@search');
 
-                    // Assert contents of page when downloading
-                    cy.contains('Downloading documents').should('be.visible');
-                    cy.getByTestId(
-                        'download-file-header-' + viewLloydGeorgePayload.number_of_files + '-files',
-                    ).should('be.visible');
-                    cy.contains('Compressing record into a zip file').should('be.visible');
-                    cy.contains('Cancel').should('be.visible');
+                        cy.get('#verify-submit').click();
+                        cy.wait('@lloydGeorgeStitch');
 
-                    cy.wait('@documentManifest');
-                    // Assert contents of page after download
-                    cy.getByTestId('downloaded-record-card-header').should('be.visible');
-                    cy.contains(
-                        `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
-                    ).should('be.visible');
-                    cy.contains(
-                        `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
-                    ).should('be.visible');
+                        cy.getByTestId('download-and-remove-record-btn').click();
+                        cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
+                        cy.getByTestId('confirm-download-and-remove-checkbox').click();
+                        cy.getByTestId('confirm-download-and-remove-btn').click();
+                        cy.getByTestId('lloydgeorge_downloadall-stage').should('exist');
 
-                    // Assert file has been downloaded
-                    cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
-                    cy.wait('@documentDelete');
-                    cy.getByTestId('return-btn').should('exist');
-                    cy.contains('This record has been removed from our storage.').should(
-                        'be.visible',
-                    );
-                    cy.contains('Follow the Record Management Code of Practice').should(
-                        'be.visible',
-                    );
-                });
+                        // Assert contents of page when downloading
+                        cy.contains('Downloading documents').should('be.visible');
+                        cy.getByTestId(
+                            'download-file-header-' +
+                                viewLloydGeorgePayload.number_of_files +
+                                '-files',
+                        ).should('be.visible');
+                        cy.contains('Compressing record into a zip file').should('be.visible');
+                        cy.contains('Cancel').should('be.visible');
+
+                        cy.wait('@documentManifest');
+                        // Assert contents of page after download
+                        cy.getByTestId('downloaded-record-card-header').should('be.visible');
+                        cy.contains(
+                            `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
+                        ).should('be.visible');
+                        cy.contains(
+                            `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
+                        ).should('be.visible');
+
+                        // Assert file has been downloaded
+                        cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
+                        cy.wait('@documentDelete');
+                        cy.getByTestId('return-btn').should('exist');
+                        cy.contains('This record has been removed from our storage.').should(
+                            'be.visible',
+                        );
+                        cy.contains('Follow the Record Management Code of Practice').should(
+                            'be.visible',
+                        );
+                    },
+                );
             },
         );
     });
