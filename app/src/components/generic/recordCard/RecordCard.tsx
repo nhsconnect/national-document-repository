@@ -82,7 +82,11 @@ function RecordCard({
 
     const Record = () => {
         if (isLoading) {
-            return <ProgressBar status="Loading..." />;
+            return (
+                <div className="flex-center w-100">
+                    <ProgressBar status="Loading..." />
+                </div>
+            );
         }
         return <PdfViewer fileUrl={cloudFrontUrl} />;
     };
