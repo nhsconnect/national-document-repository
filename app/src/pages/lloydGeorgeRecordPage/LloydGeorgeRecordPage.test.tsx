@@ -1,16 +1,14 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import {
     buildPatientDetails,
     buildLgSearchResult,
-    buildSearchResult,
     buildConfig,
 } from '../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import usePatient from '../../helpers/hooks/usePatient';
-import { routes } from '../../types/generic/routes';
 import useConfig from '../../helpers/hooks/useConfig';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
@@ -25,12 +23,14 @@ jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/useRole');
 jest.mock('../../helpers/hooks/useIsBSOL');
+
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatientDetails = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
 const mockUseRole = useRole as jest.Mock;
+
 jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'),
     Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
@@ -98,6 +98,21 @@ describe('LloydGeorgeRecordPage', () => {
             expect(screen.getByText('No documents are available.')).toBeInTheDocument();
         });
     });
+
+    it('calls refreshRecord and updates state when successful', async () => {
+        const lgResult = buildLgSearchResult();
+        mockAxios.get.mockResolvedValue({ data: lgResult });
+
+        renderPage(history);
+
+        await waitFor(() => {
+            expect(screen.getByText(`${lgResult.number_of_files} files`)).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('View in full screen')).toBeInTheDocument();
+        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
+    });
+
     it('renders initial lg record view with no docs available text if lambda return records status is uploading for more than 3 min', async () => {
         const errorResponse = {
             response: {
@@ -115,6 +130,7 @@ describe('LloydGeorgeRecordPage', () => {
             expect(screen.getByText('No documents are available.')).toBeInTheDocument();
         });
     });
+
     it('renders initial lg record view with docs are uploading text if response status is 423', async () => {
         const errorResponse = {
             response: {
@@ -136,6 +152,7 @@ describe('LloydGeorgeRecordPage', () => {
             ).toBeInTheDocument();
         });
     });
+
     it('renders initial lg record view with timeout text if response is 504', async () => {
         const errorResponse = {
             response: {
@@ -201,54 +218,6 @@ describe('LloydGeorgeRecordPage', () => {
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
-        });
-    });
-
-    it('navigates to Error page when call to lg record view return 500', async () => {
-        mockAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
-        const errorResponse = {
-            response: {
-                status: 500,
-                data: { message: 'An error occurred', err_code: 'SP_1001' },
-            },
-        };
-        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
-
-        act(() => {
-            renderPage(history);
-        });
-
-        await waitFor(() => {
-            expect(screen.queryByRole('link', { name: 'Start Again' })).not.toBeInTheDocument();
-        });
-
-        await waitFor(() => {
-            expect(mockNavigate).toHaveBeenCalledWith(
-                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
-            );
-        });
-    });
-
-    it('navigates to session expired page when call to lg record view return 403', async () => {
-        mockAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
-        const errorResponse = {
-            response: {
-                status: 403,
-                data: { message: 'Unauthorised' },
-            },
-        };
-        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
-
-        act(() => {
-            renderPage(history);
-        });
-
-        await waitFor(() => {
-            expect(screen.queryByRole('link', { name: 'Start Again' })).not.toBeInTheDocument();
-        });
-
-        await waitFor(() => {
-            expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
     });
 

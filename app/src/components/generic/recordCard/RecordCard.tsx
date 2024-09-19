@@ -4,7 +4,7 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../pdfViewer/PdfViewer';
 import ProgressBar from '../progressBar/ProgressBar';
 
-type Props = {
+export type Props = {
     heading: string;
     fullScreenHandler: (clicked: true) => void;
     detailsElement: ReactNode;
@@ -24,6 +24,7 @@ function RecordCard({
 }: Props) {
     const [isLoading, setIsLoading] = useState(true);
     const mounted = useRef(false);
+
     useEffect(() => {
         const onPageLoad = async () => {
             await refreshRecord();
@@ -34,51 +35,6 @@ function RecordCard({
             void onPageLoad();
         }
     }, [refreshRecord]);
-    // useEffect(() => {
-    //     const onSuccess = (presign_url: string) => {
-    //         setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-    //         setRecordUrl(presign_url);
-    //     };
-
-    //     const onError = (e: AxiosError) => {
-    //         const error = e as AxiosError;
-
-    //         if (isMock(error) && !!config.mockLocal.recordUploaded) {
-    //             onSuccess('/dev/testFile.pdf');
-    //         } else if (error.response?.status === 403) {
-    //             navigate(routes.SESSION_EXPIRED);
-    //         } else if (error.response?.status && error.response?.status >= 500) {
-    //             navigate(routes.SERVER_ERROR + errorToParams(error));
-    //         } else {
-    //             setDownloadStage(DOWNLOAD_STAGE.FAILED);
-    //         }
-    //     };
-
-    //     const onPageLoad = async () => {
-    //         const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-    //         try {
-    //             const { presign_url } = await getLloydGeorgeRecord({
-    //                 nhsNumber,
-    //                 baseUrl,
-    //                 baseHeaders,
-    //             });
-
-    //             onSuccess(presign_url);
-    //         } catch (e) {
-    //             onError(e as AxiosError);
-    //         }
-    //     };
-    //     if (!mounted.current) {
-    //         mounted.current = true;
-    //         void onPageLoad();
-    //     }
-    // }, [
-    //     baseHeaders,
-    //     baseUrl,
-    //     config.mockLocal.recordUploaded,
-    //     navigate,
-    //     patientDetails?.nhsNumber,
-    // ]);
 
     const Record = () => {
         if (isLoading) {
