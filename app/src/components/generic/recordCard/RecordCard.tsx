@@ -26,9 +26,9 @@ function RecordCard({ heading, fullScreenHandler, detailsElement, isFullScreen }
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const config = useConfig();
-    const [recordUrl, setRecordUrl] = useState('');
     const navigate = useNavigate();
     const patientDetails = usePatient();
+    const [recordUrl, setRecordUrl] = useState('');
     const mounted = useRef(false);
     const [downloadStage, setDownloadStage] = useState<DOWNLOAD_STAGE>(DOWNLOAD_STAGE.INITIAL);
 
