@@ -32,6 +32,15 @@ class BulkUploadReportService:
         else:
             logger.info("No data found, no new report file to upload")
 
+    def write_items_to_csv(
+        self,
+        file_name: str,
+        total_successful: int,
+        total_registered_elsewhere: int,
+        total_suspended: int,
+    ):
+        pass
+
     def generate_daily_report(self, report_data, start_time, end_time):
         formatted_date = end_time.strftime("%Y%m%d")
         file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}.csv"
@@ -187,18 +196,18 @@ class BulkUploadReportService:
 
     @staticmethod
     def get_times_for_scan() -> tuple[datetime, datetime]:
-        # current_time = datetime.datetime.now()
-        # today_date = datetime.datetime.today()
-        # start_timestamp = today_date - datetime.timedelta(days=30)
-        # start_timestamp = datetime.datetime.combine(start_timestamp, datetime.time.min)
-        # end_timestamp = current_time
-        # return start_timestamp, end_timestamp
-
         current_time = datetime.datetime.now()
-        end_report_time = datetime.time(7, 00, 00, 0)
         today_date = datetime.datetime.today()
-        end_timestamp = datetime.datetime.combine(today_date, end_report_time)
-        if current_time < end_timestamp:
-            end_timestamp -= datetime.timedelta(days=1)
-        start_timestamp = end_timestamp - datetime.timedelta(days=1)
+        start_timestamp = today_date - datetime.timedelta(days=30)
+        start_timestamp = datetime.datetime.combine(start_timestamp, datetime.time.min)
+        end_timestamp = current_time
         return start_timestamp, end_timestamp
+
+        # current_time = datetime.datetime.now()
+        # end_report_time = datetime.time(7, 00, 00, 0)
+        # today_date = datetime.datetime.today()
+        # end_timestamp = datetime.datetime.combine(today_date, end_report_time)
+        # if current_time < end_timestamp:
+        #     end_timestamp -= datetime.timedelta(days=1)
+        # start_timestamp = end_timestamp - datetime.timedelta(days=1)
+        # return start_timestamp, end_timestamp
