@@ -4,7 +4,6 @@ import os
 from typing import Optional
 
 from boto3.dynamodb.conditions import Attr
-from enums.report_types import ReportType
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -18,30 +17,19 @@ class BulkUploadReportService:
         self.s3_service = S3Service()
         self.reports_bucket = os.getenv("STATISTICAL_REPORTS_BUCKET_NAME")
 
-    def report_handler(self, report_type: str):
+    def report_handler(self):
         start_time, end_time = self.get_times_for_scan()
         report_data = self.get_dynamodb_report_items(
             int(start_time.timestamp()), int(end_time.timestamp())
         )
 
         if report_data:
-            if report_type == ReportType.DAILY.value:
-                self.generate_daily_report(report_data, start_time, end_time)
-            elif report_type == ReportType.ODS.value:
-                self.generate_ods_reports(report_data, start_time, end_time)
+            self.generate_summary_report(report_data, start_time, end_time)
+            self.generate_ods_reports(report_data, start_time, end_time)
         else:
             logger.info("No data found, no new report file to upload")
 
-    def write_items_to_csv(
-        self,
-        file_name: str,
-        total_successful: int,
-        total_registered_elsewhere: int,
-        total_suspended: int,
-    ):
-        pass
-
-    def generate_daily_report(self, report_data, start_time, end_time):
+    def generate_summary_report(self, report_data, start_time, end_time):
         formatted_date = end_time.strftime("%Y%m%d")
         file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}.csv"
         file_key = f"daily-reports/{file_name}"
@@ -75,6 +63,24 @@ class BulkUploadReportService:
                 if failure_reason not in failure_reason_counts:
                     failure_reason_counts[failure_reason] = 0
                 failure_reason_counts[failure_reason] += 1
+
+        extra_row_values = []
+        if ods_code_totals:
+            for ods_code, count in ods_code_totals.items():
+                extra_row_values.append(["Success by ODS", ods_code, count])
+        else:
+            extra_row_values.append(["Success by ODS", "No ODS codes found", 0])
+
+        for failure_reason, count in failure_reason_counts.items():
+            extra_row_values.append(["FailureReason", failure_reason, count])
+
+        self.write_items_to_csv(
+            file_name=file_key,
+            total_successful=total_successful,
+            total_registered_elsewhere=total_registered_elsewhere,
+            total_suspended=total_suspended,
+            extra_rows=extra_row_values,
+        )
 
         with open(f"/tmp/{file_name}", "w") as output_file:
             writer = csv.writer(output_file)
@@ -137,21 +143,17 @@ class BulkUploadReportService:
                         failure_reason_counts[failure_reason] = 0
                     failure_reason_counts[failure_reason] += 1
 
-            with open(f"/tmp/{file_key}", "w") as output_file:
-                writer = csv.writer(output_file)
+            extra_row_values = []
+            for failure_reason, count in failure_reason_counts.items():
+                extra_row_values.append(["FailureReason", failure_reason, count])
 
-                writer.writerow(["Type", "Description", "Count"])
-                writer.writerow(["Total", "Total Successful", total_successful])
-                writer.writerow(
-                    [
-                        "Total",
-                        "Successful - Registered Elsewhere",
-                        total_registered_elsewhere,
-                    ]
-                )
-                writer.writerow(["Total", "Suspended", total_suspended])
-                for failure_reason, count in failure_reason_counts.items():
-                    writer.writerow(["FailureReason", failure_reason, count])
+            self.write_items_to_csv(
+                file_name=file_key,
+                total_successful=total_successful,
+                total_registered_elsewhere=total_registered_elsewhere,
+                total_suspended=total_suspended,
+                extra_rows=extra_row_values,
+            )
 
             logger.info(f"Uploading ODS report file for {ods_code} to S3")
             self.s3_service.upload_file(
@@ -159,6 +161,31 @@ class BulkUploadReportService:
                 file_key=file_key,
                 file_name=f"/tmp/{file_key}",
             )
+
+    def write_items_to_csv(
+        self,
+        file_name: str,
+        total_successful: int,
+        total_registered_elsewhere: int,
+        total_suspended: int,
+        extra_rows: [],
+    ):
+        with open(f"/tmp/{file_name}", "w") as output_file:
+            writer = csv.writer(output_file)
+
+            writer.writerow(["Type", "Description", "Count"])
+            writer.writerow(["Total", "Total Successful", total_successful])
+            writer.writerow(
+                [
+                    "Total",
+                    "Successful - Registered Elsewhere",
+                    total_registered_elsewhere,
+                ]
+            )
+            writer.writerow(["Total", "Suspended", total_suspended])
+
+            for row in extra_rows:
+                writer.writerow(row)
 
     def group_data_by_ods_code(self, report_data):
         ods_reports = {}
