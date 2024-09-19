@@ -1,10 +1,10 @@
 from services.bulk_upload_service import BulkUploadService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import BulkUploadException
 from utils.lambda_response import ApiGatewayResponse
-from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 
 logger = LoggingService(__name__)
 

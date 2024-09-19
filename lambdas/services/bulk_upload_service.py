@@ -3,6 +3,7 @@ import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
@@ -49,6 +50,7 @@ class BulkUploadService:
         self.pdf_content_type = "application/pdf"
 
         self.file_path_cache = {}
+        self.accepted_reason = None
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -113,12 +115,11 @@ class BulkUploadService:
             patient_ods_code = (
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
-            accepted_reason = None
             is_name_validation_based_on_historic_name = (
                 validate_filename_with_patient_details(file_names, pds_patient_details)
             )
             if is_name_validation_based_on_historic_name:
-                accepted_reason = "Patient matched on historical name"
+                self.concatenate_acceptance_reason("Patient matched on historical name")
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")
             patient_death_notification_status = (
@@ -128,11 +129,9 @@ class BulkUploadService:
                 deceased_accepted_reason = (
                     f"Patient is deceased - {patient_death_notification_status.name}"
                 )
-                accepted_reason = (
-                    (deceased_accepted_reason + ", " + accepted_reason)
-                    if accepted_reason
-                    else deceased_accepted_reason
-                )
+                self.concatenate_acceptance_reason(deceased_accepted_reason)
+            if patient_ods_code is PatientOdsInactiveStatus.RESTRICTED:
+                self.concatenate_acceptance_reason("PDS record is restricted")
 
         except (
             LGInvalidFilesException,
@@ -245,7 +244,10 @@ class BulkUploadService:
         )
         logger.info("Reporting transaction successful")
         self.dynamo_repository.write_report_upload_to_dynamo(
-            staging_metadata, UploadStatus.COMPLETE, accepted_reason, patient_ods_code
+            staging_metadata,
+            UploadStatus.COMPLETE,
+            self.accepted_reason,
+            patient_ods_code,
         )
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
@@ -339,3 +341,10 @@ class BulkUploadService:
         # Handle the filepaths irregularity in the given example of metadata.csv,
         # where some filepaths begin with '/' and some does not.
         return filepath.lstrip("/")
+
+    def concatenate_acceptance_reason(self, new_reason):
+        self.accepted_reason = (
+            self.accepted_reason + ", " + new_reason
+            if self.accepted_reason
+            else new_reason
+        )
