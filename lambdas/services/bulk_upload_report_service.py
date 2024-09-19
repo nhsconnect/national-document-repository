@@ -67,7 +67,9 @@ class BulkUploadReportService:
 
         for ods_code, ods_data in grouped_ods_data.items():
             logger.info(f"Generating ODS report file for {ods_code}")
-            ods_report = self.generate_individual_ods_report(ods_code, grouped_ods_data)
+            ods_report = self.generate_individual_ods_report(
+                ods_code, grouped_ods_data[ods_code]
+            )
 
             logger.info(f"Uploading ODS report file for {ods_code} to S3")
             file_key = f"daily_statistical_report_bulk_upload_summary_{generated_at}_uploaded_by_{ods_code}.csv"
@@ -78,7 +80,7 @@ class BulkUploadReportService:
         return ods_reports
 
     def generate_individual_ods_report(
-        self, ods_code: str, ods_report_data: dict
+        self, ods_code: str, ods_report_data: list[dict]
     ) -> OdsReport:
         total_successful = set()
         total_registered_elsewhere = set()
@@ -100,8 +102,8 @@ class BulkUploadReportService:
             if upload_status == "suspended":
                 total_suspended.add(nhs_number)
 
-            if upload_status == "failed":
-                failure_reason = item.get("FailureReason", "Unknown")
+            failure_reason = item.get(MetadataReport.FailureReason, "")
+            if failure_reason:
                 if failure_reason not in failure_reasons:
                     failure_reasons[failure_reason] = 0
                 failure_reasons[failure_reason] += 1
@@ -142,7 +144,7 @@ class BulkUploadReportService:
             extra_row_values.append(["Success by ODS", "No ODS codes found", 0])
 
         self.write_items_to_csv(
-            file_name=file_key,
+            file_name=file_name,
             total_successful=total_successful,
             total_registered_elsewhere=total_registered_elsewhere,
             total_suspended=total_suspended,
@@ -166,7 +168,7 @@ class BulkUploadReportService:
             total_successful=ods_report.total_successful,
             total_registered_elsewhere=ods_report.total_registered_elsewhere,
             total_suspended=ods_report.total_suspended,
-            extra_rows=ods_report.failure_reasons,
+            extra_rows=extra_row_values,
         )
 
         self.s3_service.upload_file(
