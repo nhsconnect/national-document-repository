@@ -403,7 +403,7 @@ describe('GP Workflow: View Lloyd George record', () => {
     });
 
     context('Delete Lloyd George document', () => {
-        it.only('displays an error when the document manifest backend API call fails as a PCSE user', () => {
+        it('displays an error when the document manifest backend API call fails as a PCSE user', () => {
             beforeEachConfiguration(Roles.PCSE);
             cy.intercept('GET', '/SearchDocumentReferences*', {
                 statusCode: 200,
