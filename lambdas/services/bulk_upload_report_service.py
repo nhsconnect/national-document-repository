@@ -30,6 +30,17 @@ class OdsReport:
             failure_reasons = {}
         self.failure_reasons = failure_reasons
 
+    def __eq__(self, other):
+        if isinstance(other, OdsReport):
+            return (
+                self.ods_code == other.ods_code
+                and self.total_successful == other.total_successful
+                and self.total_registered_elsewhere == other.total_registered_elsewhere
+                and self.total_suspended == other.total_suspended
+                and self.failure_reasons == other.failure_reasons
+            )
+        return False
+
 
 class BulkUploadReportService:
     def __init__(self):
@@ -243,18 +254,18 @@ class BulkUploadReportService:
 
     @staticmethod
     def get_times_for_scan() -> tuple[datetime, datetime]:
-        current_time = datetime.datetime.now()
-        today_date = datetime.datetime.today()
-        start_timestamp = today_date - datetime.timedelta(days=30)
-        start_timestamp = datetime.datetime.combine(start_timestamp, datetime.time.min)
-        end_timestamp = current_time
-        return start_timestamp, end_timestamp
-
         # current_time = datetime.datetime.now()
-        # end_report_time = datetime.time(7, 00, 00, 0)
         # today_date = datetime.datetime.today()
-        # end_timestamp = datetime.datetime.combine(today_date, end_report_time)
-        # if current_time < end_timestamp:
-        #     end_timestamp -= datetime.timedelta(days=1)
-        # start_timestamp = end_timestamp - datetime.timedelta(days=1)
+        # start_timestamp = today_date - datetime.timedelta(days=30)
+        # start_timestamp = datetime.datetime.combine(start_timestamp, datetime.time.min)
+        # end_timestamp = current_time
         # return start_timestamp, end_timestamp
+
+        current_time = datetime.datetime.now()
+        end_report_time = datetime.time(7, 00, 00, 0)
+        today_date = datetime.datetime.today()
+        end_timestamp = datetime.datetime.combine(today_date, end_report_time)
+        if current_time < end_timestamp:
+            end_timestamp -= datetime.timedelta(days=1)
+        start_timestamp = end_timestamp - datetime.timedelta(days=1)
+        return start_timestamp, end_timestamp
