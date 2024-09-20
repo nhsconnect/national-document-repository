@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from unittest.mock import call
 
@@ -12,6 +13,7 @@ from tests.unit.conftest import (
     TEST_NHS_NUMBER,
     TEST_UUID,
 )
+from tests.unit.helpers.data.bulk_upload.test_data import readfile
 from tests.unit.helpers.data.dynamo_scan_response import (
     EXPECTED_RESPONSE,
     MOCK_EMPTY_RESPONSE,
@@ -173,25 +175,21 @@ def test_get_dynamo_data_with_no_start_key(bulk_upload_report_service):
 
 
 def test_get_dynamo_data_with_no_items(bulk_upload_report_service):
-    mock_start_time = 1688395630
-    mock_end_time = 1688195630
     bulk_upload_report_service.db_service.scan_table.side_effect = [MOCK_EMPTY_RESPONSE]
 
     actual = bulk_upload_report_service.get_dynamodb_report_items(
-        mock_start_time, mock_end_time
+        MOCK_START_REPORT_TIME, MOCK_END_REPORT_TIME
     )
 
     assert actual == []
     bulk_upload_report_service.db_service.scan_table.assert_called_once()
 
 
-def test_get_dynamo_data_with_bad_response(set_env, bulk_upload_report_service):
-    mock_start_time = 1688395630
-    mock_end_time = 1688195630
+def test_get_dynamo_data_with_bad_response(bulk_upload_report_service):
     bulk_upload_report_service.db_service.scan_table.side_effect = [UNEXPECTED_RESPONSE]
 
     actual = bulk_upload_report_service.get_dynamodb_report_items(
-        mock_start_time, mock_end_time
+        MOCK_START_REPORT_TIME, MOCK_END_REPORT_TIME
     )
 
     assert actual is None
@@ -271,36 +269,23 @@ def test_generate_individual_ods_report_creates_ods_report(
     mock_write_items_to_csv.assert_called()
 
 
-def test_write_items_to_csv(mocker, bulk_upload_report_service):
+def test_generate_individual_ods_report_writes_csv_report(bulk_upload_report_service):
     mock_ods_report_data = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
-    expected = OdsReport(
-        TEST_CURRENT_GP_ODS,
-        1,
-        0,
-        0,
-        {"File name not matching Lloyd George naming convention": 1},
-    )
-    mock_write_csv = mocker.patch(
-        "services.bulk_upload_report_service.BulkUploadReportService.write_items_to_csv"
-    )
+    mock_file_name = f"daily_statistical_report_bulk_upload_summary_{MOCK_END_REPORT_TIME}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv"
+
     bulk_upload_report_service.generate_individual_ods_report(
-        TEST_CURRENT_GP_ODS, mock_ods_report_data, MOCK_END_REPORT_TIME
+        TEST_CURRENT_GP_ODS,
+        mock_ods_report_data,
+        MOCK_END_REPORT_TIME.strftime("%Y%m%d"),
     )
-    extra_rows = [
-        ["FailureReason", "File name not matching Lloyd George naming convention", 1]
-    ]
-    mock_write_csv.assert_called()
-    mock_write_csv.assert_called_with(
-        file_name=f"daily_statistical_report_bulk_upload_summary_{MOCK_END_REPORT_TIME}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv",
-        total_successful=expected.total_successful,
-        total_registered_elsewhere=expected.total_registered_elsewhere,
-        total_suspended=expected.total_suspended,
-        extra_rows=extra_rows,
-    )
+    expected = readfile("expected_bulk_upload_report.csv")
+    with open(f"/tmp/{mock_file_name}") as test_file:
+        actual = test_file.read()
+        assert expected == actual
+    os.remove(f"/tmp/{mock_file_name}")
 
 
 def test_generate_ods_reports_with_multiple_ods(bulk_upload_report_service):
-    datetime(2012, 1, 14, 7, 0, 0, 0)
     mock_ods_report_data = [
         MOCK_DATA_COMPLETE_UPLOAD,
         MOCK_DATA_FAILED_UPLOAD,

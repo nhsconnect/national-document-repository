@@ -170,7 +170,7 @@ class BulkUploadReportService:
         total_suspended: int,
         extra_rows: [],
     ):
-        with open(f"/tmp/{file_name}", "w") as output_file:
+        with open(f"/tmp/{file_name}", "w", newline="") as output_file:
             writer = csv.writer(output_file)
 
             writer.writerow(["Type", "Description", "Count"])
