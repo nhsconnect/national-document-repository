@@ -24,6 +24,8 @@ from tests.unit.models.test_bulk_upload_status import (
     MOCK_DATA_FAILED_UPLOAD,
 )
 
+MOCK_END_REPORT_TIME = datetime(2012, 1, 14, 7, 0, 0, 0)
+MOCK_START_REPORT_TIME = datetime(2012, 1, 13, 7, 0, 0, 0)
 MOCK_BULK_REPORT_TABLE_RESPONSE = [
     {
         "Timestamp": 1688395680,
@@ -63,18 +65,39 @@ def mock_get_db_report_items(bulk_upload_report_service, mocker):
     yield mocker.patch.object(bulk_upload_report_service, "get_dynamodb_report_items")
 
 
+@pytest.fixture
+def mock_write_items_to_csv(bulk_upload_report_service, mocker):
+    yield mocker.patch.object(bulk_upload_report_service, "write_items_to_csv")
+
+
+@pytest.fixture
+def mock_get_db_with_data(mocker, bulk_upload_report_service):
+    yield mocker.patch.object(
+        bulk_upload_report_service,
+        "get_dynamodb_report_items",
+        return_value=[MOCK_DATA_COMPLETE_UPLOAD],
+    )
+
+
+@pytest.fixture
+def mock_get_times_for_scan(bulk_upload_report_service, mocker):
+    yield mocker.patch.object(
+        bulk_upload_report_service,
+        "get_times_for_scan",
+        return_value=(MOCK_START_REPORT_TIME, MOCK_END_REPORT_TIME),
+    )
+
+
 @freeze_time("2012-01-14 7:20:01")
 def test_get_time_for_scan_after_7am(bulk_upload_report_service):
-    expected_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
-    expected_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
 
     (
         actual_start_time,
         actual_end_time,
     ) = bulk_upload_report_service.get_times_for_scan()
 
-    assert expected_start_report_time == actual_start_time
-    assert expected_end_report_time == actual_end_time
+    assert MOCK_START_REPORT_TIME == actual_start_time
+    assert MOCK_END_REPORT_TIME == actual_end_time
 
 
 @freeze_time("2012-01-14 6:59:59")
@@ -106,10 +129,8 @@ def test_get_time_for_scan_at_7am(bulk_upload_report_service):
 
 
 def test_get_dynamo_data_2_calls(bulk_upload_report_service):
-    mock_start_time = 1688395630
-    mock_end_time = 1688195630
-    mock_filter = Attr("Timestamp").gt(mock_start_time) & Attr("Timestamp").lt(
-        mock_end_time
+    mock_filter = Attr("Timestamp").gt(MOCK_START_REPORT_TIME) & Attr("Timestamp").lt(
+        MOCK_END_REPORT_TIME
     )
     mock_last_key = {"FileName": "Screenshot 2023-08-15 at 16.17.56.png"}
     bulk_upload_report_service.db_service.scan_table.side_effect = [
@@ -118,7 +139,7 @@ def test_get_dynamo_data_2_calls(bulk_upload_report_service):
     ]
 
     actual = bulk_upload_report_service.get_dynamodb_report_items(
-        mock_start_time, mock_end_time
+        MOCK_START_REPORT_TIME, MOCK_END_REPORT_TIME
     )
 
     assert actual == EXPECTED_RESPONSE * 2
@@ -135,15 +156,13 @@ def test_get_dynamo_data_2_calls(bulk_upload_report_service):
 
 
 def test_get_dynamo_data_with_no_start_key(bulk_upload_report_service):
-    mock_start_time = 1688395630
-    mock_end_time = 1688195630
-    mock_filter = Attr("Timestamp").gt(mock_start_time) & Attr("Timestamp").lt(
-        mock_end_time
+    mock_filter = Attr("Timestamp").gt(MOCK_START_REPORT_TIME) & Attr("Timestamp").lt(
+        MOCK_END_REPORT_TIME
     )
     bulk_upload_report_service.db_service.scan_table.side_effect = [MOCK_RESPONSE]
 
     actual = bulk_upload_report_service.get_dynamodb_report_items(
-        mock_start_time, mock_end_time
+        MOCK_START_REPORT_TIME, MOCK_END_REPORT_TIME
     )
 
     assert actual == EXPECTED_RESPONSE
@@ -180,76 +199,49 @@ def test_get_dynamo_data_with_bad_response(set_env, bulk_upload_report_service):
 
 
 def test_report_handler_no_items_return(
-    mocker, bulk_upload_report_service, caplog, mock_get_db_report_items
+    bulk_upload_report_service,
+    caplog,
+    mock_get_db_report_items,
+    mock_write_items_to_csv,
+    mock_get_times_for_scan,
 ):
-    mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
-    mock_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
-    mock_get_time = mocker.patch.object(
-        bulk_upload_report_service,
-        "get_times_for_scan",
-        return_value=(mock_start_report_time, mock_end_report_time),
-    )
 
     expected_message = "No data found, no new report file to upload"
     mock_get_db_report_items.return_value = []
-
-    mock_write_csv = mocker.patch(
-        "services.bulk_upload_report_service.BulkUploadReportService.write_items_to_csv"
-    )
-
     bulk_upload_report_service.report_handler()
 
-    mock_get_time.assert_called_once()
+    mock_get_times_for_scan.assert_called_once()
     mock_get_db_report_items.assert_called_once()
     mock_get_db_report_items.assert_called_with(
-        int(mock_start_report_time.timestamp()),
-        int(mock_end_report_time.timestamp()),
+        int(MOCK_START_REPORT_TIME.timestamp()),
+        int(MOCK_END_REPORT_TIME.timestamp()),
     )
 
-    mock_write_csv.assert_not_called()
+    mock_write_items_to_csv.assert_not_called()
     bulk_upload_report_service.s3_service.upload_file.assert_not_called()
 
     assert caplog.records[-1].msg == expected_message
 
 
-@pytest.fixture
-def mock_get_db_with_data(mocker, bulk_upload_report_service):
-    yield mocker.patch.object(
-        bulk_upload_report_service,
-        "get_dynamodb_report_items",
-        return_value=[MOCK_DATA_COMPLETE_UPLOAD],
-    )
-
-
 def test_report_handler_with_items(
-    mocker, bulk_upload_report_service, mock_get_db_with_data
+    bulk_upload_report_service,
+    mock_get_db_with_data,
+    mock_write_items_to_csv,
+    mock_get_times_for_scan,
 ):
-    mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
-    mock_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
-    mock_date_string = mock_end_report_time.strftime("%Y%m%d")
-
-    mock_get_time = mocker.patch.object(
-        bulk_upload_report_service,
-        "get_times_for_scan",
-        return_value=(mock_start_report_time, mock_end_report_time),
-    )
-
-    mock_write_csv = mocker.patch.object(
-        bulk_upload_report_service, "write_items_to_csv"
-    )
-
+    mock_date_string = MOCK_END_REPORT_TIME.strftime("%Y%m%d")
     mock_file_name = (
         f"daily_statistical_report_bulk_upload_summary_{mock_date_string}.csv"
     )
     bulk_upload_report_service.report_handler()
 
-    mock_get_time.assert_called_once()
+    mock_get_times_for_scan.assert_called_once()
     mock_get_db_with_data.assert_called_once_with(
-        int(mock_start_report_time.timestamp()),
-        int(mock_end_report_time.timestamp()),
+        int(MOCK_START_REPORT_TIME.timestamp()),
+        int(MOCK_END_REPORT_TIME.timestamp()),
     )
 
-    mock_write_csv.assert_called()
+    mock_write_items_to_csv.assert_called()
 
     bulk_upload_report_service.s3_service.upload_file.assert_called()
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
@@ -260,9 +252,8 @@ def test_report_handler_with_items(
 
 
 def test_generate_individual_ods_report_creates_ods_report(
-    bulk_upload_report_service, mocker
+    bulk_upload_report_service, mock_write_items_to_csv
 ):
-    mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
     mock_ods_report_data = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
     expected = OdsReport(
         TEST_CURRENT_GP_ODS,
@@ -272,14 +263,15 @@ def test_generate_individual_ods_report_creates_ods_report(
         {"File name not matching Lloyd George naming convention": 1},
     )
     actual = bulk_upload_report_service.generate_individual_ods_report(
-        TEST_CURRENT_GP_ODS, mock_ods_report_data, mock_end_report_time
+        TEST_CURRENT_GP_ODS, mock_ods_report_data, MOCK_END_REPORT_TIME
     )
 
     assert actual.__eq__(expected)
+    bulk_upload_report_service.s3_service.upload_file.assert_called()
+    mock_write_items_to_csv.assert_called()
 
 
-def test_csv_written_with_correct_items(mocker, bulk_upload_report_service):
-    mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
+def test_write_items_to_csv(mocker, bulk_upload_report_service):
     mock_ods_report_data = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
     expected = OdsReport(
         TEST_CURRENT_GP_ODS,
@@ -292,14 +284,14 @@ def test_csv_written_with_correct_items(mocker, bulk_upload_report_service):
         "services.bulk_upload_report_service.BulkUploadReportService.write_items_to_csv"
     )
     bulk_upload_report_service.generate_individual_ods_report(
-        TEST_CURRENT_GP_ODS, mock_ods_report_data, mock_end_report_time
+        TEST_CURRENT_GP_ODS, mock_ods_report_data, MOCK_END_REPORT_TIME
     )
     extra_rows = [
         ["FailureReason", "File name not matching Lloyd George naming convention", 1]
     ]
     mock_write_csv.assert_called()
     mock_write_csv.assert_called_with(
-        file_name=f"daily_statistical_report_bulk_upload_summary_{mock_end_report_time}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv",
+        file_name=f"daily_statistical_report_bulk_upload_summary_{MOCK_END_REPORT_TIME}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv",
         total_successful=expected.total_successful,
         total_registered_elsewhere=expected.total_registered_elsewhere,
         total_suspended=expected.total_suspended,
@@ -308,7 +300,7 @@ def test_csv_written_with_correct_items(mocker, bulk_upload_report_service):
 
 
 def test_generate_ods_reports_with_multiple_ods(bulk_upload_report_service):
-    mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
+    datetime(2012, 1, 14, 7, 0, 0, 0)
     mock_ods_report_data = [
         MOCK_DATA_COMPLETE_UPLOAD,
         MOCK_DATA_FAILED_UPLOAD,
@@ -317,7 +309,7 @@ def test_generate_ods_reports_with_multiple_ods(bulk_upload_report_service):
     ]
 
     actual = bulk_upload_report_service.generate_ods_reports(
-        mock_ods_report_data, mock_end_report_time
+        mock_ods_report_data, MOCK_END_REPORT_TIME
     )
     assert len(actual) == 2
 
