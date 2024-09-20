@@ -41,3 +41,14 @@ class OdsReport:
         if failure_reasons is None:
             failure_reasons = {}
         self.failure_reasons = failure_reasons
+
+    def __eq__(self, other):
+        if isinstance(other, OdsReport):
+            return (
+                self.ods_code == other.ods_code
+                and self.total_successful == other.total_successful
+                and self.total_registered_elsewhere == other.total_registered_elsewhere
+                and self.total_suspended == other.total_suspended
+                and self.failure_reasons == other.failure_reasons
+            )
+        return False
