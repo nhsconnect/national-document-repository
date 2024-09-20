@@ -5,30 +5,12 @@ from typing import Optional
 
 from boto3.dynamodb.conditions import Attr
 from enums.metadata_report import MetadataReport
+from models.bulk_upload_status import OdsReport
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
-
-
-class OdsReport:
-    def __init__(
-        self,
-        ods_code: str,
-        total_successful=0,
-        total_registered_elsewhere=0,
-        total_suspended=0,
-        failure_reasons=None,
-    ):
-        self.ods_code = ods_code
-        self.total_successful = total_successful
-        self.total_registered_elsewhere = total_registered_elsewhere
-        self.total_suspended = total_suspended
-
-        if failure_reasons is None:
-            failure_reasons = {}
-        self.failure_reasons = failure_reasons
 
 
 class BulkUploadReportService:
@@ -66,27 +48,23 @@ class BulkUploadReportService:
             grouped_ods_data[uploader_ods_code].append(item)
 
         for ods_code, ods_data in grouped_ods_data.items():
-            logger.info(f"Generating ODS report file for {ods_code}")
             ods_report = self.generate_individual_ods_report(
-                ods_code, grouped_ods_data[ods_code]
+                ods_code, grouped_ods_data[ods_code], generated_at
             )
-
-            logger.info(f"Uploading ODS report file for {ods_code} to S3")
-            file_key = f"daily_statistical_report_bulk_upload_summary_{generated_at}_uploaded_by_{ods_code}.csv"
-            self.upload_ods_report(file_key, ods_report)
-
             ods_reports.append(ods_report)
 
         return ods_reports
 
     def generate_individual_ods_report(
-        self, ods_code: str, ods_report_data: list[dict]
+        self, ods_code: str, ods_report_data: list[dict], generated_at: str
     ) -> OdsReport:
         total_successful = set()
         total_registered_elsewhere = set()
         total_suspended = set()
-        failure_reasons = {}
-        patients_and_failures = {}
+        failures_per_patient = {}
+        unique_failures = {}
+
+        logger.info(f"Generating ODS report file for {ods_code}")
 
         for item in ods_report_data:
             nhs_number = item.get(MetadataReport.NhsNumber)
@@ -105,28 +83,46 @@ class BulkUploadReportService:
 
             failure_reason = item.get(MetadataReport.FailureReason, "")
             if failure_reason:
-                if nhs_number not in patients_and_failures:
-                    patients_and_failures.update({nhs_number: failure_reason})
+                if nhs_number not in unique_failures:
+                    unique_failures.update({nhs_number: failure_reason})
 
-        for reason in patients_and_failures.values():
-            if reason not in failure_reasons:
-                failure_reasons[reason] = 0
-            failure_reasons[reason] += 1
+        for reason in unique_failures.values():
+            if reason not in failures_per_patient:
+                failures_per_patient[reason] = 0
+            failures_per_patient[reason] += 1
 
         ods_report = OdsReport(
             ods_code=ods_code,
             total_successful=len(total_successful),
             total_registered_elsewhere=len(total_registered_elsewhere),
             total_suspended=len(total_suspended),
-            failure_reasons=failure_reasons,
+            failure_reasons=failures_per_patient,
+        )
+
+        extra_row_values = []
+        for failure_reason, count in ods_report.failure_reasons.items():
+            extra_row_values.append(["FailureReason", failure_reason, count])
+
+        file_key = f"daily_statistical_report_bulk_upload_summary_{generated_at}_uploaded_by_{ods_code}.csv"
+
+        self.write_items_to_csv(
+            file_name=file_key,
+            total_successful=ods_report.total_successful,
+            total_registered_elsewhere=ods_report.total_registered_elsewhere,
+            total_suspended=ods_report.total_suspended,
+            extra_rows=extra_row_values,
+        )
+
+        logger.info(f"Uploading ODS report file for {ods_code} to S3")
+        self.s3_service.upload_file(
+            s3_bucket_name=self.reports_bucket,
+            file_key=file_key,
+            file_name=f"/tmp/{file_key}",
         )
 
         return ods_report
 
     def generate_summary_report(self, ods_reports: list[OdsReport], generated_at: str):
-        file_name = f"daily_statistical_report_bulk_upload_summary_{generated_at}.csv"
-        file_key = f"daily-reports/{file_name}"
-
         total_successful = 0
         total_registered_elsewhere = 0
         total_suspended = 0
@@ -148,6 +144,9 @@ class BulkUploadReportService:
         else:
             extra_row_values.append(["Success by ODS", "No ODS codes found", 0])
 
+        file_name = f"daily_statistical_report_bulk_upload_summary_{generated_at}.csv"
+        file_key = f"daily-reports/{file_name}"
+
         self.write_items_to_csv(
             file_name=file_name,
             total_successful=total_successful,
@@ -161,25 +160,6 @@ class BulkUploadReportService:
             s3_bucket_name=self.reports_bucket,
             file_key=file_key,
             file_name=f"/tmp/{file_name}",
-        )
-
-    def upload_ods_report(self, file_key: str, ods_report: OdsReport):
-        extra_row_values = []
-        for failure_reason, count in ods_report.failure_reasons.items():
-            extra_row_values.append(["FailureReason", failure_reason, count])
-
-        self.write_items_to_csv(
-            file_name=file_key,
-            total_successful=ods_report.total_successful,
-            total_registered_elsewhere=ods_report.total_registered_elsewhere,
-            total_suspended=ods_report.total_suspended,
-            extra_rows=extra_row_values,
-        )
-
-        self.s3_service.upload_file(
-            s3_bucket_name=self.reports_bucket,
-            file_key=file_key,
-            file_name=f"/tmp/{file_key}",
         )
 
     def write_items_to_csv(
