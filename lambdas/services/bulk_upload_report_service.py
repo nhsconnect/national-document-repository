@@ -86,6 +86,7 @@ class BulkUploadReportService:
         total_registered_elsewhere = set()
         total_suspended = set()
         failure_reasons = {}
+        patients_and_failures = {}
 
         for item in ods_report_data:
             nhs_number = item.get(MetadataReport.NhsNumber)
@@ -104,9 +105,13 @@ class BulkUploadReportService:
 
             failure_reason = item.get(MetadataReport.FailureReason, "")
             if failure_reason:
-                if failure_reason not in failure_reasons:
-                    failure_reasons[failure_reason] = 0
-                failure_reasons[failure_reason] += 1
+                if nhs_number not in patients_and_failures:
+                    patients_and_failures.update({nhs_number: failure_reason})
+
+        for reason in patients_and_failures.values():
+            if reason not in failure_reasons:
+                failure_reasons[reason] = 0
+            failure_reasons[reason] += 1
 
         ods_report = OdsReport(
             ods_code=ods_code,
