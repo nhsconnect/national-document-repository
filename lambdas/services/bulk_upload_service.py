@@ -19,6 +19,7 @@ from utils.exceptions import (
     DocumentInfectedException,
     InvalidMessageException,
     PatientRecordAlreadyExistException,
+    PdsErrorException,
     PdsTooManyRequestsException,
     S3FileNotFoundException,
     VirusScanFailedException,
@@ -56,7 +57,17 @@ class BulkUploadService:
             try:
                 logger.info(f"Processing message {index} of {len(records)}")
                 self.handle_sqs_message(message)
-            except PdsTooManyRequestsException as error:
+            except (
+                ClientError,
+                InvalidMessageException,
+                LGInvalidFilesException,
+                KeyError,
+                TypeError,
+                AttributeError,
+            ) as error:
+                logger.info(f"Fail to process current message due to error: {error}")
+                logger.info("Continue on next message")
+            except (PdsTooManyRequestsException, PdsErrorException, Exception) as error:
                 logger.error(error)
 
                 logger.info(
@@ -75,16 +86,6 @@ class BulkUploadService:
                 raise BulkUploadException(
                     "Bulk upload process paused due to PDS rate limit reached"
                 )
-            except (
-                ClientError,
-                InvalidMessageException,
-                LGInvalidFilesException,
-                KeyError,
-                TypeError,
-                AttributeError,
-            ) as error:
-                logger.info(f"Fail to process current message due to error: {error}")
-                logger.info("Continue on next message")
 
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
