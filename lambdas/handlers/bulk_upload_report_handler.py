@@ -12,7 +12,7 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[
-        "STATISTICAL_REPORTS_BUCKET_NAME",
+        "STATISTICAL_REPORTS_BUCKET",
         "BULK_UPLOAD_DYNAMODB_NAME",
     ]
 )

@@ -17,7 +17,7 @@ class BulkUploadReportService:
     def __init__(self):
         self.db_service = DynamoDBService()
         self.s3_service = S3Service()
-        self.reports_bucket = os.getenv("STATISTICAL_REPORTS_BUCKET_NAME")
+        self.reports_bucket = os.getenv("STATISTICAL_REPORTS_BUCKET")
 
     def report_handler(self):
         start_time, end_time = self.get_times_for_scan()

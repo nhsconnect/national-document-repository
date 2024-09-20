@@ -49,13 +49,18 @@ MOCK_BULK_REPORT_TABLE_RESPONSE = [
 ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def bulk_upload_report_service(set_env, mocker):
     patched_bulk_upload_report_service = BulkUploadReportService()
     mocker.patch.object(patched_bulk_upload_report_service, "db_service")
     mocker.patch.object(patched_bulk_upload_report_service, "s3_service")
 
     yield patched_bulk_upload_report_service
+
+
+@pytest.fixture
+def mock_get_db_report_items(bulk_upload_report_service, mocker):
+    yield mocker.patch.object(bulk_upload_report_service, "get_dynamodb_report_items")
 
 
 @freeze_time("2012-01-14 7:20:01")
@@ -175,7 +180,7 @@ def test_get_dynamo_data_with_bad_response(set_env, bulk_upload_report_service):
 
 
 def test_report_handler_no_items_return(
-    mocker, set_env, bulk_upload_report_service, caplog
+    mocker, bulk_upload_report_service, caplog, mock_get_db_report_items
 ):
     mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
     mock_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
@@ -186,11 +191,7 @@ def test_report_handler_no_items_return(
     )
 
     expected_message = "No data found, no new report file to upload"
-
-    mock_get_db = mocker.patch(
-        "services.bulk_upload_report_service.BulkUploadReportService.get_dynamodb_report_items",
-        return_value=[],
-    )
+    mock_get_db_report_items.return_value = []
 
     mock_write_csv = mocker.patch(
         "services.bulk_upload_report_service.BulkUploadReportService.write_items_to_csv"
@@ -199,8 +200,8 @@ def test_report_handler_no_items_return(
     bulk_upload_report_service.report_handler()
 
     mock_get_time.assert_called_once()
-    mock_get_db.assert_called_once()
-    mock_get_db.assert_called_with(
+    mock_get_db_report_items.assert_called_once()
+    mock_get_db_report_items.assert_called_with(
         int(mock_start_report_time.timestamp()),
         int(mock_end_report_time.timestamp()),
     )
@@ -258,7 +259,9 @@ def test_report_handler_with_items(
     )
 
 
-def test_generate_ods_report_object_creation(bulk_upload_report_service, mocker):
+def test_generate_individual_ods_report_creates_ods_report(
+    bulk_upload_report_service, mocker
+):
     mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
     mock_ods_report_data = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
     expected = OdsReport(

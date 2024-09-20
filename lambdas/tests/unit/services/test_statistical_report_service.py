@@ -10,7 +10,10 @@ from polars.testing import assert_frame_equal
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.statistical_report_service import StatisticalReportService
-from tests.unit.conftest import MOCK_STATISTICS_REPORT_BUCKET, MOCK_STATISTICS_TABLE
+from tests.unit.conftest import (
+    MOCK_STATISTICS_REPORT_BUCKET_NAME,
+    MOCK_STATISTICS_TABLE,
+)
 from tests.unit.helpers.data.statistic.mock_data_build_utils import (
     build_random_application_data,
     build_random_organisation_data,
@@ -347,5 +350,5 @@ def test_store_report_to_s3(set_env, mock_s3_service, mock_temp_folder):
     service.store_report_to_s3(mock_weekly_summary)
 
     mock_s3_service.upload_file.assert_called_with(
-        expected_local_file_path, MOCK_STATISTICS_REPORT_BUCKET, expected_filename
+        expected_local_file_path, MOCK_STATISTICS_REPORT_BUCKET_NAME, expected_filename
     )
