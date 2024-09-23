@@ -216,7 +216,7 @@ def test_get_dynamo_data_with_bad_response(bulk_upload_report_service):
     bulk_upload_report_service.db_service.scan_table.assert_called_once()
 
 
-def test_report_handler_no_items_return(
+def test_report_handler_no_items_returns_expected_log(
     bulk_upload_report_service,
     caplog,
     mock_get_db_report_items,
@@ -241,12 +241,14 @@ def test_report_handler_no_items_return(
     assert caplog.records[-1].msg == expected_message
 
 
-def test_report_handler_with_items(
+def test_report_handler_with_items_uploads_summary_report_to_bucket(
     bulk_upload_report_service,
     mock_get_db_with_data,
     mock_write_items_to_csv,
     mock_get_times_for_scan,
+    caplog,
 ):
+    expected_message = "Successfully processed daily summary report"
     mock_date_string = MOCK_END_REPORT_TIME.strftime("%Y%m%d")
     mock_file_name = (
         f"daily_statistical_report_bulk_upload_summary_{mock_date_string}.csv"
@@ -267,6 +269,7 @@ def test_report_handler_with_items(
         file_key=f"daily-reports/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
+    assert caplog.records[-1].msg == expected_message
 
 
 def test_generate_individual_ods_report_creates_ods_report(
