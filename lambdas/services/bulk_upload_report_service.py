@@ -30,10 +30,10 @@ class BulkUploadReportService:
             ods_reports: list[OdsReport] = self.generate_ods_reports(
                 report_data, generated_at
             )
-            logger.info("Successfully generated daily ODS reports")
+            logger.info("Successfully processed daily ODS reports")
 
             self.generate_summary_report(ods_reports, generated_at)
-            logger.info("Successfully generated daily summary report")
+            logger.info("Successfully processed daily summary report")
 
         else:
             logger.info("No data found, no new report file to upload")
