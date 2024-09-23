@@ -44,10 +44,10 @@ LloydGeorgeRecordsStored = CloudwatchLogsQueryParams(
 )
 
 LloydGeorgeRecordsSearched = CloudwatchLogsQueryParams(
-    lambda_name="PatientSearchLambda",
+    lambda_name="SearchPatientDetailsLambda",
     query_string="""
         fields @timestamp, Message, Authorisation.selected_organisation.org_ods_code AS ods_code
-        | filter Message = 'User has searched for patient records' 
+        | filter Message = 'Searched for patient details' 
         | stats count() AS daily_count_searched BY ods_code
     """,
 )
