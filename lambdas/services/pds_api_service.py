@@ -10,9 +10,9 @@ from enums.pds_ssm_parameters import SSMParameter
 from requests.adapters import HTTPAdapter
 from requests.models import HTTPError
 from services.patient_search_service import PatientSearch
-from urllib3 import Retry
+from urllib3 import HTTPConnectionPool, Retry
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import PdsErrorException
+from utils.exceptions import PdsErrorException, PdsTooManyRequestsException
 
 logger = LoggingService(__name__)
 
@@ -66,6 +66,10 @@ class PdsApiService(PatientSearch):
         except (ClientError, JSONDecodeError) as e:
             logger.error(str(e), {"Result": "Error when getting ssm parameters"})
             raise PdsErrorException("Failed to perform patient search")
+
+        except HTTPConnectionPool as e:
+            logger.error(str(e), {"Result": "Error when calling PDS"})
+            raise PdsTooManyRequestsException("Failed to perform patient search")
 
     def get_new_access_token(self):
         logger.info("Getting new PDS access token")

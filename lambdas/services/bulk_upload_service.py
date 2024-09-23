@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 
@@ -19,6 +20,7 @@ from utils.exceptions import (
     DocumentInfectedException,
     InvalidMessageException,
     PatientRecordAlreadyExistException,
+    PdsErrorException,
     PdsTooManyRequestsException,
     S3FileNotFoundException,
     VirusScanFailedException,
@@ -48,7 +50,7 @@ class BulkUploadService:
         self.s3_repository = BulkUploadS3Repository()
 
         self.pdf_content_type = "application/pdf"
-
+        self.unhandled_messages = []
         self.file_path_cache = {}
 
     def process_message_queue(self, records: list):
@@ -56,7 +58,7 @@ class BulkUploadService:
             try:
                 logger.info(f"Processing message {index} of {len(records)}")
                 self.handle_sqs_message(message)
-            except PdsTooManyRequestsException as error:
+            except (PdsTooManyRequestsException, PdsErrorException) as error:
                 logger.error(error)
 
                 logger.info(
@@ -79,12 +81,23 @@ class BulkUploadService:
                 ClientError,
                 InvalidMessageException,
                 LGInvalidFilesException,
-                KeyError,
-                TypeError,
-                AttributeError,
+                Exception,
             ) as error:
-                logger.info(f"Fail to process current message due to error: {error}")
+                self.unhandled_messages.append(message)
+                logger.info(f"Failed to process current message due to error: {error}")
                 logger.info("Continue on next message")
+
+        logger.info(
+            f"Finish Processing successfully {len(records) - len(self.unhandled_messages)} of {len(records)} messages"
+        )
+        if self.unhandled_messages:
+            logger.info("Unable to process the following messages:")
+            for message in self.unhandled_messages:
+                message_body = json.loads(message.get("body", "{}"))
+                request_context.patient_nhs_no = message_body.get(
+                    "NHS-NO", "no number found"
+                )
+                logger.info(message_body)
 
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
