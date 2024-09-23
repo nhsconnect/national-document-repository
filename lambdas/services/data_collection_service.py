@@ -20,6 +20,7 @@ from utils.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
     LloydGeorgeRecordsDeleted,
     LloydGeorgeRecordsDownloaded,
+    LloydGeorgeRecordsSearched,
     LloydGeorgeRecordsStored,
     LloydGeorgeRecordsViewed,
     UniqueActiveUserIds,
@@ -171,6 +172,9 @@ class DataCollectionService:
             LloydGeorgeRecordsDeleted
         )
         daily_count_stored = self.get_cloud_watch_query_result(LloydGeorgeRecordsStored)
+        daily_count_searched = self.get_cloud_watch_query_result(
+            LloydGeorgeRecordsSearched
+        )
 
         joined_query_result = self.join_results_by_ods_code(
             [
@@ -180,11 +184,15 @@ class DataCollectionService:
                 daily_count_downloaded,
                 daily_count_deleted,
                 daily_count_stored,
+                daily_count_searched,
             ]
         )
 
         organisation_data_for_all_ods_code = [
-            OrganisationData(date=self.today_date, **organisation_data_properties)
+            OrganisationData(
+                date=self.today_date,
+                **organisation_data_properties,
+            )
             for organisation_data_properties in joined_query_result
         ]
 
