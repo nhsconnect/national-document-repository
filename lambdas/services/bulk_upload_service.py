@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 
@@ -87,16 +88,16 @@ class BulkUploadService:
                 logger.info("Continue on next message")
 
         logger.info(
-            f"Finish Processing {len(records) - len(self.unhandled_messages)} of {len(records)}"
+            f"Finish Processing successfully {len(records) - len(self.unhandled_messages)} of {len(records)} messages"
         )
-        logger.info("Unable to process the following messages:")
-        logger.info(
-            "NHS number: "
-            + message.get("body", "").get("nhs_number")
-            + "\nmessage: "
-            + message
-            for message in self.unhandled_messages
-        )
+        if self.unhandled_messages:
+            logger.info("Unable to process the following messages:")
+            for message in self.unhandled_messages:
+                message_body = json.loads(message.get("body", "{}"))
+                request_context.patient_nhs_no = message_body.get(
+                    "NHS-NO", "no number found"
+                )
+                logger.info(message_body)
 
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
