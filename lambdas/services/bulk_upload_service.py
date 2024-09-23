@@ -49,7 +49,7 @@ class BulkUploadService:
         self.s3_repository = BulkUploadS3Repository()
 
         self.pdf_content_type = "application/pdf"
-
+        self.unhandled_messages = []
         self.file_path_cache = {}
 
     def process_message_queue(self, records: list):
@@ -82,8 +82,21 @@ class BulkUploadService:
                 LGInvalidFilesException,
                 Exception,
             ) as error:
+                self.unhandled_messages.append(message)
                 logger.info(f"Failed to process current message due to error: {error}")
                 logger.info("Continue on next message")
+
+        logger.info(
+            f"Finish Processing {len(records) - len(self.unhandled_messages)} of {len(records)}"
+        )
+        logger.info("Unable to process the following messages:")
+        logger.info(
+            "NHS number: "
+            + message.get("body", "").get("nhs_number")
+            + "\nmessage: "
+            + message
+            for message in self.unhandled_messages
+        )
 
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
