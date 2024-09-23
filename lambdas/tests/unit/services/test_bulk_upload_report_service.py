@@ -10,7 +10,6 @@ from tests.unit.conftest import (
     MOCK_BULK_REPORT_TABLE_NAME,
     MOCK_STATISTICS_REPORT_BUCKET_NAME,
     TEST_CURRENT_GP_ODS,
-    TEST_NHS_NUMBER,
     TEST_UUID,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import readfile
@@ -32,8 +31,18 @@ MOCK_BULK_REPORT_TABLE_RESPONSE = [
     {
         "Timestamp": 1688395680,
         "Date": "2012-01-13",
-        "NhsNumber": TEST_NHS_NUMBER,
-        "FilePath": f"/{TEST_NHS_NUMBER}/1of1_Lloyd_George_Record_[NAME]_[{TEST_NHS_NUMBER}_[DOB].pdf",
+        "NhsNumber": "9000000011",
+        "FilePath": "/9000000011/1of1_Lloyd_George_Record_[NAME]_[9000000011]_[DOB].pdf",
+        "UploaderOdsCode": "TEST",
+        "UploadStatus": "complete",
+        "ID": TEST_UUID,
+        "PdsOdsCode": "TEST",
+    },
+    {
+        "Timestamp": 1688395680,
+        "Date": "2012-01-13",
+        "NhsNumber": "9000000011",
+        "FilePath": "/9000000011/1of1_Lloyd_George_Record_[NAME]_[9000000011]_[DOB].pdf",
         "UploaderOdsCode": "TEST",
         "UploadStatus": "complete",
         "ID": TEST_UUID,
@@ -43,7 +52,18 @@ MOCK_BULK_REPORT_TABLE_RESPONSE = [
         "Timestamp": 1688395681,
         "Date": "2012-01-13",
         "NhsNumber": "9000000010",
-        "FilePath": "/9000000010/1of1_Lloyd_George_Record_[NAME_2]_[9000000010]_[DOB].pdf",
+        "FilePath": "/9000000010/1of2_Lloyd_George_Record_[NAME_2]_[9000000010]_[DOB].pdf",
+        "UploaderOdsCode": "TEST",
+        "FailureReason": "Could not find the given patient on PDS",
+        "UploadStatus": "failed",
+        "ID": TEST_UUID,
+        "PdsOdsCode": "",
+    },
+    {
+        "Timestamp": 1688395681,
+        "Date": "2012-01-13",
+        "NhsNumber": "9000000010",
+        "FilePath": "/9000000010/2of2_Lloyd_George_Record_[NAME_2]_[9000000010]_[DOB].pdf",
         "UploaderOdsCode": "TEST",
         "FailureReason": "Could not find the given patient on PDS",
         "UploadStatus": "failed",
@@ -271,12 +291,13 @@ def test_generate_individual_ods_report_creates_ods_report(
 
 def test_generate_individual_ods_report_writes_csv_report(bulk_upload_report_service):
     mock_ods_report_data = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
-    mock_file_name = f"daily_statistical_report_bulk_upload_summary_{MOCK_END_REPORT_TIME}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv"
+    mock_date = 20120114
+    mock_file_name = f"daily_statistical_report_bulk_upload_summary_{mock_date}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv"
 
     bulk_upload_report_service.generate_individual_ods_report(
         TEST_CURRENT_GP_ODS,
         mock_ods_report_data,
-        MOCK_END_REPORT_TIME.strftime("%Y%m%d"),
+        mock_date,
     )
     expected = readfile("expected_bulk_upload_report.csv")
     with open(f"/tmp/{mock_file_name}") as test_file:
@@ -284,54 +305,58 @@ def test_generate_individual_ods_report_writes_csv_report(bulk_upload_report_ser
         assert expected == actual
     os.remove(f"/tmp/{mock_file_name}")
 
-
-def test_generate_ods_reports_with_multiple_ods(bulk_upload_report_service):
-    mock_ods_report_data = [
-        MOCK_DATA_COMPLETE_UPLOAD,
-        MOCK_DATA_FAILED_UPLOAD,
-        MOCK_BULK_REPORT_TABLE_RESPONSE[0],
-        MOCK_BULK_REPORT_TABLE_RESPONSE[1],
-    ]
-
-    actual = bulk_upload_report_service.generate_ods_reports(
-        mock_ods_report_data, MOCK_END_REPORT_TIME
+    bulk_upload_report_service.s3_service.upload_file.assert_called_with(
+        s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+        file_key=f"{mock_file_name}",
+        file_name=f"/tmp/{mock_file_name}",
     )
-    assert len(actual) == 2
 
 
-def test_generate_summary_report_with_two_ods_reports(
-    mocker, bulk_upload_report_service
-):
-    mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
+def test_generate_summary_report_with_two_ods_reports(bulk_upload_report_service):
     mock_ods_report_data = [
         MOCK_DATA_COMPLETE_UPLOAD,
         MOCK_DATA_FAILED_UPLOAD,
         MOCK_BULK_REPORT_TABLE_RESPONSE[0],
-        MOCK_BULK_REPORT_TABLE_RESPONSE[1],
+        MOCK_BULK_REPORT_TABLE_RESPONSE[2],
     ]
-    mock_write_csv = mocker.patch(
-        "services.bulk_upload_report_service.BulkUploadReportService.write_items_to_csv"
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_summary_{MOCK_END_REPORT_TIME}.csv"
     )
 
     ods_reports = bulk_upload_report_service.generate_ods_reports(
-        mock_ods_report_data, mock_end_report_time
+        mock_ods_report_data, MOCK_END_REPORT_TIME
+    )
+    assert len(ods_reports) == 2
+    bulk_upload_report_service.generate_summary_report(
+        ods_reports, MOCK_END_REPORT_TIME
+    )
+    expected = readfile("expected_bulk_upload_summary_report.csv")
+    with open(f"/tmp/{mock_file_name}") as test_file:
+        actual = test_file.read()
+        assert expected == actual
+    os.remove(f"/tmp/{mock_file_name}")
+
+
+def test_reports_count_individual_patients_success_and_failures(
+    bulk_upload_report_service,
+):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_summary_{MOCK_END_REPORT_TIME}.csv"
+    )
+    mock_ods_report_data = [
+        MOCK_DATA_COMPLETE_UPLOAD,
+        MOCK_DATA_FAILED_UPLOAD,
+    ] + MOCK_BULK_REPORT_TABLE_RESPONSE
+
+    ods_reports = bulk_upload_report_service.generate_ods_reports(
+        mock_ods_report_data, MOCK_END_REPORT_TIME
     )
 
     bulk_upload_report_service.generate_summary_report(
-        ods_reports, mock_end_report_time
+        ods_reports, MOCK_END_REPORT_TIME
     )
-
-    extra_rows = [
-        ["FailureReason", "File name not matching Lloyd George naming convention", 1],
-        ["FailureReason", "Could not find the given patient on PDS", 1],
-        ["Success by ODS", "Y12345", 1],
-        ["Success by ODS", "TEST", 1],
-    ]
-    mock_write_csv.assert_called()
-    mock_write_csv.assert_called_with(
-        file_name=f"daily_statistical_report_bulk_upload_summary_{mock_end_report_time}.csv",
-        total_successful=2,
-        total_registered_elsewhere=0,
-        total_suspended=0,
-        extra_rows=extra_rows,
-    )
+    expected = readfile("expected_bulk_upload_summary_report.csv")
+    with open(f"/tmp/{mock_file_name}") as test_file:
+        actual = test_file.read()
+        assert expected == actual
+    os.remove(f"/tmp/{mock_file_name}")

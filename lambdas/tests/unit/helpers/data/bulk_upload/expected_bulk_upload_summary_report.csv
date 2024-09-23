@@ -1,0 +1,8 @@
+Type,Description,Count
+Total,Total Successful,2
+Total,Successful - Registered Elsewhere,0
+Total,Suspended,0
+FailureReason,File name not matching Lloyd George naming convention,1
+FailureReason,Could not find the given patient on PDS,1
+Success by ODS,Y12345,1
+Success by ODS,TEST,1
