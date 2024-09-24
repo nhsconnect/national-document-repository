@@ -38,6 +38,26 @@ function generateDaytimeBiasedData(
 
 function SpikeGraphPage({}: Props) {
     const [showTable, setShowTable] = useState(false); // Toggle between table and chart view
+    const [selectedReason, setSelectedReason] = useState('All'); // Store selected filter option
+
+    // Dropdown options for filtering
+    const failureReasons = ['All', 'Timeout', 'Validation Error', 'Network Issue'];
+
+    // Function to handle dropdown change
+    const handleReasonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedReason(e.target.value);
+    };
+
+    // Filtered data based on selected reason
+    const filteredSuccessData = generateDaytimeBiasedData(50, 150, 0, 20);
+    const filteredFailureData = generateDaytimeBiasedData(10, 50, 0, 10).map((value, index) => {
+        if (selectedReason === 'All') return value;
+        // Simulate some test failure reasons filtering logic based on selectedReason
+        if (selectedReason === 'Timeout' && index % 2 === 0) return value + 10;
+        if (selectedReason === 'Validation Error' && index % 3 === 0) return value + 20;
+        if (selectedReason === 'Network Issue' && index % 4 === 0) return value + 30;
+        return value;
+    });
 
     // Bar chart data for ChartJS
     const barData = {
@@ -45,14 +65,14 @@ function SpikeGraphPage({}: Props) {
         datasets: [
             {
                 label: 'Successes',
-                data: generateDaytimeBiasedData(50, 150, 0, 20),
+                data: filteredSuccessData,
                 backgroundColor: 'rgba(0, 114, 206, 0.5)',
                 borderColor: 'rgba(0, 114, 206, 0.8)',
                 borderWidth: 1,
             },
             {
                 label: 'Failures',
-                data: generateDaytimeBiasedData(10, 50, 0, 10),
+                data: filteredFailureData,
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
                 borderColor: 'rgba(255, 99, 132, 0.8)',
                 borderWidth: 1,
@@ -76,13 +96,13 @@ function SpikeGraphPage({}: Props) {
         },
     };
 
-    // Google Charts data
+    // Google Charts data (with failure reason filtering)
     const googleData = [
         ['Hour', 'Successes', 'Failures'],
-        ...hours.map((hour) => [
+        ...hours.map((hour, index) => [
             hour,
-            Math.floor(Math.random() * (150 - 50) + 50),
-            Math.floor(Math.random() * (50 - 10) + 10),
+            filteredSuccessData[index],
+            filteredFailureData[index],
         ]),
     ];
 
@@ -140,6 +160,20 @@ function SpikeGraphPage({}: Props) {
                     </Card.Content>
                 </Card>
             </noscript>
+
+            {/* Dropdown for selecting failure reason */}
+            <div style={{ marginBottom: '10px' }}>
+                <label htmlFor="failureReason" style={{ marginRight: '10px' }}>
+                    Select Failure Reason:
+                </label>
+                <select id="failureReason" onChange={handleReasonChange} value={selectedReason}>
+                    {failureReasons.map((reason) => (
+                        <option key={reason} value={reason}>
+                            {reason}
+                        </option>
+                    ))}
+                </select>
+            </div>
 
             {/* Toggle button to switch between chart and table */}
             <Button onClick={handleToggleView}>{showTable ? 'Show Graphs' : 'Show Tables'}</Button>
