@@ -1,0 +1,11 @@
+.chart-container {
+    display: flex;
+    justify-content: space-around; /* Space the charts out */
+    gap: 20px; /* Add some gap between charts */
+    padding: 20px; /* Add some padding */
+}
+
+.chart-container .nhsuk-card {
+    flex: 1; /* Make each card take up equal space */
+    min-width: 45%; /* Ensure each card takes at least 45% of the container width */
+}
