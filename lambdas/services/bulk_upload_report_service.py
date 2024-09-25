@@ -5,6 +5,8 @@ from typing import Optional
 
 from boto3.dynamodb.conditions import Attr
 from enums.metadata_report import MetadataReport
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from enums.upload_status import UploadStatus
 from models.bulk_upload_status import OdsReport
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
@@ -74,21 +76,46 @@ class BulkUploadReportService:
             nhs_number = item.get(MetadataReport.NhsNumber)
             upload_status = item.get(MetadataReport.UploadStatus)
             pds_ods_code = item.get(MetadataReport.PdsOdsCode)
+            time_stamp = item.get(MetadataReport.Timestamp)
+
             uploader_ods_code = item.get(
                 MetadataReport.UploaderOdsCode, "Could not find uploader ODS code"
             )
 
-            if upload_status == "complete":
+            if upload_status == UploadStatus.COMPLETE:
                 total_successful.add(nhs_number)
 
-                if uploader_ods_code != pds_ods_code:
+                if pds_ods_code == PatientOdsInactiveStatus.SUSPENDED:
+                    total_suspended.add(nhs_number)
+
+                elif uploader_ods_code != pds_ods_code:
                     total_registered_elsewhere.add(nhs_number)
 
-            failure_reason = item.get(MetadataReport.FailureReason, "")
-            if failure_reason and nhs_number not in failures_per_patient:
-                failures_per_patient.update({nhs_number: failure_reason})
+            elif upload_status == UploadStatus.FAILED:
+                failure_reason = item.get(MetadataReport.FailureReason, "")
+                if (
+                    failure_reason and nhs_number not in failures_per_patient
+                ) or failures_per_patient[nhs_number].get(
+                    MetadataReport.Timestamp
+                ) < time_stamp:
+                    failures_per_patient.update(
+                        {
+                            nhs_number: {
+                                MetadataReport.FailureReason: failure_reason,
+                                MetadataReport.Timestamp: time_stamp,
+                            }
+                        }
+                    )
 
-        for reason in failures_per_patient.values():
+        patient_to_remove = []
+        for patient in failures_per_patient:
+            if patient in total_successful:
+                patient_to_remove.append(patient)
+        for patient in patient_to_remove:
+            failures_per_patient.pop(patient)
+
+        for patient_data in failures_per_patient.values():
+            reason = patient_data.get(MetadataReport.FailureReason)
             if reason not in unique_failures:
                 unique_failures[reason] = 0
             unique_failures[reason] += 1
