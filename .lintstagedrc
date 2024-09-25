@@ -6,7 +6,7 @@
   "*.{css,scss,md}": [
     "./app/node_modules/prettier/bin/prettier.cjs --write"
     ],
-  "*.py": [
+  "lambda/**/*.py": [
     "./lambdas/venv/bin/python3 -m isort --profile black",
     "./lambdas/venv/bin/python3 -m black",
     "./lambdas/venv/bin/ruff check ./lambdas"
