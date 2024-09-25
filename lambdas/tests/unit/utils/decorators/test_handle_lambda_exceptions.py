@@ -75,9 +75,8 @@ def test_handle_lambda_exceptions_catch_and_handle_lambda_exception(
 
     assert actual == expected
 
-def test_handle_lambda_exceptions_catch_unhandled_exception(
-        valid_id_event, context
-):
+
+def test_handle_lambda_exceptions_catch_unhandled_exception(valid_id_event, context):
     test_event = valid_id_event.copy()
     test_event["queryStringParameters"]["patientId"] = "unhandled"
     body = LambdaError.InternalServerError.create_error_body()
