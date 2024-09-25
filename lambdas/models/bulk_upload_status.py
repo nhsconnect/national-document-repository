@@ -27,13 +27,13 @@ def date_string_yyyymmdd(time_now: datetime) -> str:
 class OdsReport:
     def __init__(
         self,
-        ods_code: str,
+        uploader_ods_code: str,
         total_successful=0,
         total_registered_elsewhere=0,
         total_suspended=0,
         failure_reasons=None,
     ):
-        self.ods_code = ods_code
+        self.uploader_ods_code = uploader_ods_code
         self.total_successful = total_successful
         self.total_registered_elsewhere = total_registered_elsewhere
         self.total_suspended = total_suspended
@@ -45,7 +45,7 @@ class OdsReport:
     def __eq__(self, other):
         if isinstance(other, OdsReport):
             return (
-                self.ods_code == other.ods_code
+                self.uploader_ods_code == other.uploader_ods_code
                 and self.total_successful == other.total_successful
                 and self.total_registered_elsewhere == other.total_registered_elsewhere
                 and self.total_suspended == other.total_suspended

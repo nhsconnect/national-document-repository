@@ -60,7 +60,7 @@ class BulkUploadReportService:
         return ods_reports
 
     def generate_individual_ods_report(
-        self, ods_code: str, ods_report_data: list[dict], generated_at: str
+        self, uploader_ods_code: str, ods_report_data: list[dict], generated_at: str
     ) -> OdsReport:
         total_successful = set()
         total_registered_elsewhere = set()
@@ -68,13 +68,15 @@ class BulkUploadReportService:
         failures_per_patient = {}
         unique_failures = {}
 
-        logger.info(f"Generating ODS report file for {ods_code}")
+        logger.info(f"Generating ODS report file for {uploader_ods_code}")
 
         for item in ods_report_data:
             nhs_number = item.get(MetadataReport.NhsNumber)
             upload_status = item.get(MetadataReport.UploadStatus)
             pds_ods_code = item.get(MetadataReport.PdsOdsCode)
-            uploader_ods_code = item.get(MetadataReport.UploaderOdsCode)
+            uploader_ods_code = item.get(
+                MetadataReport.UploaderOdsCode, "Could not find uploader ODS code"
+            )
 
             if upload_status == "complete":
                 total_successful.add(nhs_number)
@@ -82,32 +84,28 @@ class BulkUploadReportService:
                 if uploader_ods_code != pds_ods_code:
                     total_registered_elsewhere.add(nhs_number)
 
-            if upload_status == "suspended":
-                total_suspended.add(nhs_number)
-
             failure_reason = item.get(MetadataReport.FailureReason, "")
-            if failure_reason:
-                if nhs_number not in unique_failures:
-                    unique_failures.update({nhs_number: failure_reason})
+            if failure_reason and nhs_number not in failures_per_patient:
+                failures_per_patient.update({nhs_number: failure_reason})
 
-        for reason in unique_failures.values():
-            if reason not in failures_per_patient:
-                failures_per_patient[reason] = 0
-            failures_per_patient[reason] += 1
+        for reason in failures_per_patient.values():
+            if reason not in unique_failures:
+                unique_failures[reason] = 0
+            unique_failures[reason] += 1
 
         ods_report = OdsReport(
-            ods_code=ods_code,
+            uploader_ods_code=uploader_ods_code,
             total_successful=len(total_successful),
             total_registered_elsewhere=len(total_registered_elsewhere),
             total_suspended=len(total_suspended),
-            failure_reasons=failures_per_patient,
+            failure_reasons=unique_failures,
         )
 
         extra_row_values = []
         for failure_reason, count in ods_report.failure_reasons.items():
             extra_row_values.append(["FailureReason", failure_reason, count])
 
-        file_key = f"daily_statistical_report_bulk_upload_summary_{generated_at}_uploaded_by_{ods_code}.csv"
+        file_key = f"daily_statistical_report_bulk_upload_summary_{generated_at}_uploaded_by_{uploader_ods_code}.csv"
 
         self.write_items_to_csv(
             file_name=file_key,
@@ -117,7 +115,7 @@ class BulkUploadReportService:
             extra_rows=extra_row_values,
         )
 
-        logger.info(f"Uploading ODS report file for {ods_code} to S3")
+        logger.info(f"Uploading ODS report file for {uploader_ods_code} to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
             file_key=file_key,
@@ -137,14 +135,20 @@ class BulkUploadReportService:
             total_successful += report.total_successful
             total_registered_elsewhere += report.total_registered_elsewhere
             total_suspended += report.total_suspended
-            ods_code_totals[report.ods_code] = report.total_successful
+            ods_code_totals[report.uploader_ods_code] = report.total_successful
 
             for failure_reason, count in report.failure_reasons.items():
-                extra_row_values.append(["FailureReason", failure_reason, count])
+                extra_row_values.append(
+                    [
+                        f"FailureReason for {report.uploader_ods_code}",
+                        failure_reason,
+                        count,
+                    ]
+                )
 
         if ods_code_totals:
-            for ods_code, count in ods_code_totals.items():
-                extra_row_values.append(["Success by ODS", ods_code, count])
+            for uploader_ods_code, count in ods_code_totals.items():
+                extra_row_values.append(["Success by ODS", uploader_ods_code, count])
         else:
             extra_row_values.append(["Success by ODS", "No ODS codes found", 0])
 
@@ -194,10 +198,10 @@ class BulkUploadReportService:
     def group_by_uploader_ods_code(self, report_data):
         ods_reports = {}
         for item in report_data:
-            ods_code = item.get(MetadataReport.UploaderOdsCode, "Unknown")
-            if ods_code not in ods_reports:
-                ods_reports[ods_code] = []
-            ods_reports[ods_code].append(item)
+            uploader_ods_code = item.get(MetadataReport.UploaderOdsCode, "Unknown")
+            if uploader_ods_code not in ods_reports:
+                ods_reports[uploader_ods_code] = []
+            ods_reports[uploader_ods_code].append(item)
         return ods_reports
 
     def get_dynamodb_report_items(
