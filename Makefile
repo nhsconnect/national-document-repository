@@ -152,3 +152,12 @@ cypress-run:
 
 cypress-report:
 	TZ=GMT npm --prefix ./app run cypress-report
+
+performance_env:
+	rm -rf performance/tests/performance-venv || true
+	python3 -m venv ./performance/tests/performance-venv
+	./performance/tests/performance-venv install --upgrade pip
+	./performance/tests/performance-venv install -r ./performance/tests/requirements.txt
+
+performance_open:
+	locust -f .\performance\tests\locustfile.py

@@ -71,7 +71,6 @@ ENV/
 env.bak/
 venv.bak/
 
-
 # mkdocs documentation
 /site
 
@@ -105,3 +104,8 @@ batch_update_progress.json
 
 # jupyter notebook files
 *.ipynb
+
+
+# performance test
+#
+performance/tests/performance-venv
