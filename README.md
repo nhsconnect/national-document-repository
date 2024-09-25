@@ -8,6 +8,10 @@ Our Lambda function readme can be found [here](lambdas/README.md)
 
 Our React User Interface readme can be found [here](app/README.md)
 
+## Performance Testing Intro
+
+Our Performance Testing readme can be found [here](performance/README.md)0
+
 ## Installation
 
 - [Git](https://git-scm.com/)
