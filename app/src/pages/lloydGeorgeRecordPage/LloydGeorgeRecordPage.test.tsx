@@ -176,7 +176,6 @@ describe('LloydGeorgeRecordPage', () => {
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
-        expect(screen.getByText('View in full screen')).toBeInTheDocument();
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();

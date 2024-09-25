@@ -55,7 +55,6 @@ describe('LloydGeorgeViewRecordStage', () => {
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
-        expect(screen.getByText('View in full screen')).toBeInTheDocument();
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
@@ -99,6 +98,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 
     it("renders 'full screen' mode correctly", async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
 
@@ -121,6 +121,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 
     it("returns to previous view when 'Go back' link clicked during full screen", async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         renderComponent();
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
@@ -407,6 +408,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         });
 
         it('pass accessibility checks in full screen mode', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             renderComponent();
             const fullScreenButton = await screen.findByRole('button', {
                 name: 'View in full screen',
