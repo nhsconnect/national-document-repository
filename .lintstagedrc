@@ -12,4 +12,3 @@
     "./lambdas/venv/bin/ruff check ./lambdas"
   ]
 }
-
