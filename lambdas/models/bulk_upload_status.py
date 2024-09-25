@@ -28,27 +28,13 @@ class OdsReport:
     def __init__(
         self,
         uploader_ods_code: str,
-        total_successful=0,
-        total_registered_elsewhere=0,
-        total_suspended=0,
-        failure_reasons=None,
+        total_successful: int = 0,
+        total_registered_elsewhere: int = 0,
+        total_suspended: int = 0,
+        failure_reasons: dict = {},
     ):
         self.uploader_ods_code = uploader_ods_code
         self.total_successful = total_successful
         self.total_registered_elsewhere = total_registered_elsewhere
         self.total_suspended = total_suspended
-
-        if failure_reasons is None:
-            failure_reasons = {}
         self.failure_reasons = failure_reasons
-
-    def __eq__(self, other):
-        if isinstance(other, OdsReport):
-            return (
-                self.uploader_ods_code == other.uploader_ods_code
-                and self.total_successful == other.total_successful
-                and self.total_registered_elsewhere == other.total_registered_elsewhere
-                and self.total_suspended == other.total_suspended
-                and self.failure_reasons == other.failure_reasons
-            )
-        return False

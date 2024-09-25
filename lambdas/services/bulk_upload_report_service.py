@@ -51,9 +51,9 @@ class BulkUploadReportService:
                 grouped_ods_data[uploader_ods_code] = []
             grouped_ods_data[uploader_ods_code].append(item)
 
-        for ods_code, ods_data in grouped_ods_data.items():
+        for uploader_ods_code, ods_data in grouped_ods_data.items():
             ods_report = self.generate_individual_ods_report(
-                ods_code, grouped_ods_data[ods_code], generated_at
+                uploader_ods_code, ods_data, generated_at
             )
             ods_reports.append(ods_report)
 

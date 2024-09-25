@@ -287,7 +287,7 @@ def test_generate_individual_ods_report_creates_ods_report(
         TEST_CURRENT_GP_ODS, mock_ods_report_data, MOCK_END_REPORT_TIME
     )
 
-    assert actual.__eq__(expected)
+    assert actual.__dict__ == expected.__dict__
     bulk_upload_report_service.s3_service.upload_file.assert_called()
     mock_write_items_to_csv.assert_called()
 
