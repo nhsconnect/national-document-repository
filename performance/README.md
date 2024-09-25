@@ -37,6 +37,6 @@ To activate in Windows terminals, run:
 
 ## Locust Setup
 
-You will need to install the requirements for performance tests for linux user this can be done using the command for `make performance-env`
+You will need to install the requirements for performance tests for Linux user this can be done using the command for `make performance-env`
 
 Upon completion to run the locust tests navigate to the ./performance/tests directory and run the command `locust`

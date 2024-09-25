@@ -10,7 +10,7 @@ Our React User Interface readme can be found [here](app/README.md)
 
 ## Performance Testing Intro
 
-Our Performance Testing readme can be found [here](performance/README.md)0
+Our Performance Testing readme can be found [here](performance/README.md)
 
 ## Installation
 
