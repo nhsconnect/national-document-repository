@@ -47,11 +47,10 @@ class BulkUploadReportService:
 
         grouped_ods_data = {}
         for item in report_data:
-            uploader_ods_code = item.get(MetadataReport.UploaderOdsCode)
+            uploader_ods_code = item.get(MetadataReport.UploaderOdsCode, "")
 
-            if uploader_ods_code not in grouped_ods_data:
-                grouped_ods_data[uploader_ods_code] = []
-            grouped_ods_data[uploader_ods_code].append(item)
+            if uploader_ods_code is not None and item is not None:
+                grouped_ods_data.setdefault(uploader_ods_code, []).append(item)
 
         for uploader_ods_code, ods_data in grouped_ods_data.items():
             ods_report = self.generate_individual_ods_report(
