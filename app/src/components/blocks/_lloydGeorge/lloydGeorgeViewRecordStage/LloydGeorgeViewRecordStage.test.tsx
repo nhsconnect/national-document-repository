@@ -1,34 +1,37 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { LinkProps } from 'react-router-dom';
+import usePatient from '../../../../helpers/hooks/usePatient';
 import {
     buildConfig,
     buildLgSearchResult,
     buildPatientDetails,
 } from '../../../../helpers/test/testBuilders';
-import userEvent from '@testing-library/user-event';
-import LgRecordStage, { Props } from './LloydGeorgeViewRecordStage';
-import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
-import formatFileSize from '../../../../helpers/utils/formatFileSize';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
-import usePatient from '../../../../helpers/hooks/usePatient';
 import useRole from '../../../../helpers/hooks/useRole';
 import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
-import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import useConfig from '../../../../helpers/hooks/useConfig';
-import { LinkProps } from 'react-router-dom';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import formatFileSize from '../../../../helpers/utils/formatFileSize';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import userEvent from '@testing-library/user-event';
+import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import { routeChildren } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
-
+import LloydGeorgeViewRecordStage, { Props } from './LloydGeorgeViewRecordStage';
+import { createMemoryHistory } from 'history';
+import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
+import * as ReactRouter from 'react-router-dom';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
-
 jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useIsBSOL');
 jest.mock('../../../../helpers/hooks/useConfig');
+jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
+jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 
 jest.mock('react-router-dom', () => ({
-    Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
+    ...jest.requireActual('react-router-dom'),
+    Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));
 
@@ -81,7 +84,6 @@ describe('LloydGeorgeViewRecordStage', () => {
         async (stage) => {
             renderComponent({
                 downloadStage: stage,
-                lloydGeorgeUrl: '',
             });
 
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
@@ -422,17 +424,30 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 });
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
-    return <LgRecordStage {...props} setStage={mockSetStage} stage={LG_RECORD_STAGE.RECORD} />;
+    let history = createMemoryHistory({
+        initialEntries: ['/'],
+        initialIndex: 0,
+    });
+
+    return (
+        <ReactRouter.Router navigator={history} location={history.location}>
+            <LloydGeorgeViewRecordStage
+                {...props}
+                setStage={mockSetStage}
+                stage={LG_RECORD_STAGE.RECORD}
+            />
+        </ReactRouter.Router>
+    );
 };
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage' | 'stage'> = {
         downloadStage: DOWNLOAD_STAGE.SUCCEEDED,
-        lloydGeorgeUrl: mockPdf.presign_url,
         lastUpdated: mockPdf.last_updated,
         numberOfFiles: mockPdf.number_of_files,
         totalFileSizeInByte: mockPdf.total_file_size_in_byte,
-
+        refreshRecord: jest.fn(),
+        cloudFrontUrl: 'http://test.com',
         ...propsOverride,
     };
     render(<TestApp {...props} />);

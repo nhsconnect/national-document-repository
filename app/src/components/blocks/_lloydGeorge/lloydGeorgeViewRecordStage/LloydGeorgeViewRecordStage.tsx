@@ -8,7 +8,6 @@ import {
     WarningCallout,
 } from 'nhsuk-react-components';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
-import PdfViewer from '../../../generic/pdfViewer/PdfViewer';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
@@ -29,29 +28,29 @@ import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
-import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
-    lloydGeorgeUrl: string;
     lastUpdated: string;
     numberOfFiles: number;
     totalFileSizeInByte: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     stage: LG_RECORD_STAGE;
+    refreshRecord: () => void;
+    cloudFrontUrl: string;
 };
 
 function LloydGeorgeViewRecordStage({
     downloadStage,
-    lloydGeorgeUrl,
     lastUpdated,
     numberOfFiles,
     totalFileSizeInByte,
     setStage,
+    refreshRecord,
+    cloudFrontUrl,
 }: Props) {
     const navigate = useNavigate();
-
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
@@ -221,26 +220,38 @@ function LloydGeorgeViewRecordStage({
                             <div className="lloydgeorge_record-stage_flex-row">
                                 <RecordCard
                                     downloadStage={downloadStage}
-                                    recordUrl={lloydGeorgeUrl}
                                     heading="Lloyd George record"
                                     fullScreenHandler={setFullScreen}
                                     detailsElement={<RecordDetails {...recordDetailsProps} />}
+                                    isFullScreen={fullScreen}
+                                    refreshRecord={refreshRecord}
+                                    cloudFrontUrl={cloudFrontUrl}
                                 />
                             </div>
                         </div>
                     ) : (
                         <RecordCard
                             downloadStage={downloadStage}
-                            recordUrl={lloydGeorgeUrl}
                             heading="Lloyd George record"
                             fullScreenHandler={setFullScreen}
                             detailsElement={<RecordDetails {...recordDetailsProps} />}
+                            isFullScreen={fullScreen}
+                            refreshRecord={refreshRecord}
+                            cloudFrontUrl={cloudFrontUrl}
                         />
                     )}
                 </>
             ) : (
                 <div className="lloydgeorge_record-stage_fs">
-                    <PdfViewer fileUrl={lloydGeorgeUrl} />
+                    <RecordCard
+                        downloadStage={downloadStage}
+                        heading="Lloyd George record"
+                        fullScreenHandler={setFullScreen}
+                        detailsElement={<RecordDetails {...recordDetailsProps} />}
+                        isFullScreen={fullScreen}
+                        refreshRecord={refreshRecord}
+                        cloudFrontUrl={cloudFrontUrl}
+                    />
                 </div>
             )}
         </div>
@@ -262,7 +273,7 @@ const RecordDetails = ({
         case DOWNLOAD_STAGE.INITIAL:
         case DOWNLOAD_STAGE.PENDING:
         case DOWNLOAD_STAGE.REFRESH:
-            return <ProgressBar status="Loading..." />;
+            return null;
         case DOWNLOAD_STAGE.SUCCEEDED: {
             const detailsProps = {
                 lastUpdated,

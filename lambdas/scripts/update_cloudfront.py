@@ -84,6 +84,23 @@ def check_lambda_status(
     sys.exit(7)
 
 
+def invalidate_cloudfront_cache(distribution_id):
+    try:
+        invalidation_response = cloudfront_client.create_invalidation(
+            DistributionId=distribution_id,
+            InvalidationBatch={
+                "Paths": {"Quantity": 1, "Items": ["/*"]},
+                "CallerReference": str(time.time()),
+            },
+        )
+        print(
+            f"Cache invalidation started: {invalidation_response['Invalidation']['Id']}"
+        )
+    except ClientError as e:
+        print(f"Error invalidating cache: {e.response['Error']['Message']}")
+        sys.exit(12)
+
+
 def update_cloudfront_lambda_association(distribution_id, lambda_arn):
     """Update the CloudFront distribution with the new Lambda function version."""
     print(
@@ -144,6 +161,7 @@ if __name__ == "__main__":
 
         check_lambda_status(lambda_name, lambda_version)
         update_cloudfront_lambda_association(distribution_id, lambda_arn)
+        invalidate_cloudfront_cache(distribution_id)
         print("Lambda@Edge update process completed successfully.")
 
     except Exception as e:

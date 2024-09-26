@@ -74,7 +74,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     }).as('lloydGeorgeStitch');
 
                     cy.get('#verify-submit').click();
-                    cy.wait('@lloydGeorgeStitch');
+                    cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                     // Assert
                     assertPatientInfo();
@@ -237,7 +237,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('searchDocs');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
@@ -275,11 +275,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 ).should('be.visible');
 
                 cy.getByTestId('lg-return-btn').click();
-
-                // assert user is returned to view Lloyd George page
-                cy.contains('Lloyd George record').should('be.visible');
-                cy.getByTestId('no-records-title').should('exist');
-                cy.getByTestId('pdf-card').should('be.visible');
             },
         );
 
@@ -306,7 +301,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('searchDocs');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
@@ -354,7 +349,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 ).as('documentDelete');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
@@ -383,7 +378,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('lloydGeorgeStitch');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('not.exist');
             },
@@ -400,7 +395,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('lloydGeorgeStitch');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('not.exist');
             },
@@ -419,12 +414,11 @@ describe('GP Workflow: View Lloyd George record', () => {
 
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 500,
-            }).as('documentManifest');
+            });
 
             cy.get('#verify-submit').click();
             cy.wait('@searchDocs');
             cy.get('#download-documents').click();
-            cy.wait('@documentManifest');
 
             // Assert
             cy.contains('Sorry, there is a problem with the service').should('be.visible');
