@@ -8,7 +8,6 @@ from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.bulk_upload_status import date_string_yyyymmdd
 from models.staging_metadata import NHS_NUMBER_FIELD_NAME, MetadataFile, StagingMetadata
 from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
@@ -109,14 +108,17 @@ class BulkUploadMetadataService:
     def copy_metadata_to_dated_folder(self, metadata_filename: str):
         logger.info("Copying metadata CSV to dated folder")
 
-        current_date = date_string_yyyymmdd(datetime.now())
+        current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
         self.s3_service.copy_across_bucket(
             self.staging_bucket_name,
             metadata_filename,
             self.staging_bucket_name,
-            f"metadata/{current_date}.csv",
+            f"metadata/{current_datetime}.csv",
         )
+
+        # delete the original once we've copied it to the dated folder
+        self.s3_service.delete_object(self.staging_bucket_name, metadata_filename)
 
     def clear_temp_storage(self):
         logger.info("Clearing temp storage directory")

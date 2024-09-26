@@ -3,6 +3,7 @@ from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
+from freezegun import freeze_time
 from models.staging_metadata import METADATA_FILENAME
 from pydantic import ValidationError
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
@@ -249,23 +250,22 @@ def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(
         metadata_service.send_metadata_to_fifo_sqs(EXPECTED_PARSED_METADATA)
 
 
+@freeze_time("2024-01-01 12:34:56")
 def test_copy_metadata_to_dated_folder(
-    set_env, mocker, metadata_filename, mock_s3_service, metadata_service
+    set_env, metadata_filename, mock_s3_service, metadata_service
 ):
-    mock_date = mocker.patch(
-        "services.bulk_upload_metadata_service.date_string_yyyymmdd",
-        return_value="2024-01-01",
-    )
-
     metadata_service.copy_metadata_to_dated_folder(metadata_filename)
-
-    mock_date.assert_called_once_with(mocker.ANY)
 
     mock_s3_service.copy_across_bucket.assert_called_once_with(
         metadata_service.staging_bucket_name,
         metadata_filename,
         metadata_service.staging_bucket_name,
-        "metadata/2024-01-01.csv",
+        "metadata/2024-01-01_12-34.csv",
+    )
+
+    mock_s3_service.delete_object.assert_called_once_with(
+        metadata_service.staging_bucket_name,
+        metadata_filename,
     )
 
 
