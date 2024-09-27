@@ -348,25 +348,20 @@ class DataCollectionService:
 
         return joined_result
 
-    def get_user_login_data(self) -> list[ApplicationData]:
+    def get_user_login_data(self) -> list[dict]:
         query_result = self.get_cloud_watch_query_result(query_params=UserLogin)
-
-        role_ids_per_ods_code = defaultdict(set)
+        user_login_data = []
 
         for entry in query_result:
-            ods_code = entry["ods_code"]
-            role_id = entry["role_id"]
+            ods_code = entry.get("ods_code", "none")
+            role_ids = entry.get("role_ids", [])
 
-            hashed_role_id = hashlib.sha256(role_id.encode("utf-8")).hexdigest()
-            role_ids_per_ods_code[ods_code].add(hashed_role_id)
-
-        user_login_data = [
-            ApplicationData(
-                date=self.today_date,
-                ods_code=ods_code,
-                active_user_ids_hashed=list(role_ids),
+            user_login_data.append(
+                {
+                    "ods_code": ods_code,
+                    "distinct_user_count": entry.get("distinct_user_count", 0),
+                    "role_ids": role_ids,
+                }
             )
-            for ods_code, role_ids in role_ids_per_ods_code.items()
-        ]
 
         return user_login_data

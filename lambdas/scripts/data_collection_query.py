@@ -5,16 +5,35 @@ from decimal import Decimal
 
 from services.data_collection_service import DataCollectionService
 
-os.environ["WORKSPACE"] = ""
-os.environ["STATISTICS_TABLE"] = ""
-os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = ""
-os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = ""
-os.environ["LLOYD_GEORGE_BUCKET_NAME"] = ""
-os.environ["DOCUMENT_STORE_BUCKET_NAME"] = ""
+os.environ["WORKSPACE"] = "ndr-dev"
+os.environ["STATISTICS_TABLE"] = "ndr-dev_ApplicationStatistics"
+os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = "ndr-dev_DocumentReferenceMetadata"
+os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = "ndr-dev_LloydGeorgeReferenceMetadata"
+os.environ["LLOYD_GEORGE_BUCKET_NAME"] = "ndr-dev-lloyd-george-store"
+os.environ["DOCUMENT_STORE_BUCKET_NAME"] = "ndr-dev-ndr-document-store"
+
+# README:
+# Fill in above environment variables then run the following
+
+# make env
+# source ./lambdas/venv/bin/activate
+# PYTHONPATH=lambdas/. python3 lambdas/scripts/data_collection_query.py
 
 
-def check_env_vars(required_vars):
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
+def check_env_vars():
+    required_env = [
+        "WORKSPACE",
+        "STATISTICS_TABLE",
+        "DOCUMENT_STORE_DYNAMODB_NAME",
+        "LLOYD_GEORGE_DYNAMODB_NAME",
+        "LLOYD_GEORGE_BUCKET_NAME",
+        "DOCUMENT_STORE_BUCKET_NAME",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_SESSION_TOKEN",
+        "AWS_REGION",
+    ]
+    missing_vars = [var for var in required_env if not os.getenv(var)]
     if missing_vars:
         raise EnvironmentError(
             f"Missing required environment variables: {', '.join(missing_vars)}"
@@ -40,15 +59,7 @@ def convert_to_dict(item):
 
 
 def main():
-    required_env_vars = [
-        "WORKSPACE",
-        "STATISTICS_TABLE",
-        "DOCUMENT_STORE_DYNAMODB_NAME",
-        "LLOYD_GEORGE_DYNAMODB_NAME",
-        "LLOYD_GEORGE_BUCKET_NAME",
-        "DOCUMENT_STORE_BUCKET_NAME",
-    ]
-    check_env_vars(required_env_vars)
+    check_env_vars()
 
     service = DataCollectionService()
     statistic_data = service.collect_all_data()

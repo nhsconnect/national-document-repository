@@ -52,7 +52,7 @@ LloydGeorgeRecordsSearched = CloudwatchLogsQueryParams(
     """,
 )
 
-UserLogins = CloudwatchLogsQueryParams(
+UserLogin = CloudwatchLogsQueryParams(
     lambda_name="TokenRequestHandler",
     query_string="""
         fields @timestamp, 
