@@ -12,7 +12,7 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[
-        "STAGING_STORE_BUCKET_NAME",
+        "STATISTICAL_REPORTS_BUCKET",
         "BULK_UPLOAD_DYNAMODB_NAME",
     ]
 )
@@ -26,6 +26,6 @@ def lambda_handler(event, context):
 
     return ApiGatewayResponse(
         status_code=200,
-        body="Bulk upload report creation successful",
+        body="Bulk upload summary and ODS reports created successfully",
         methods="GET",
     ).create_api_gateway_response()

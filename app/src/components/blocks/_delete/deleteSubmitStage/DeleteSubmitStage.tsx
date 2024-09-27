@@ -58,7 +58,6 @@ const DeleteSubmitStageIndexView = ({ docType, recordType }: IndexViewProps) => 
     const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
     const noOptionSelectedError =
         'Select whether you want to permanently delete these patient files';
-
     const userIsGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
 
     const handleYesOption = async () => {
