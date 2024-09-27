@@ -24,6 +24,7 @@ from utils.cloudwatch_logs_query import (
     LloydGeorgeRecordsStored,
     LloydGeorgeRecordsViewed,
     UniqueActiveUserIds,
+    UserLogin,
 )
 from utils.common_query_filters import UploadCompleted
 from utils.utilities import flatten, get_file_key_from_s3_url
@@ -75,8 +76,11 @@ class DataCollectionService:
         )
         organisation_data = self.get_organisation_data(dynamodb_scan_result)
         application_data = self.get_application_data()
+        user_login_data = self.get_user_login_data()
 
-        return record_store_data + organisation_data + application_data
+        return (
+            record_store_data + organisation_data + application_data + user_login_data
+        )
 
     def write_to_dynamodb_table(self, all_statistic_data: list[StatisticData]):
         logger.info("Writing statistic data to dynamodb table")
@@ -343,3 +347,26 @@ class DataCollectionService:
         joined_result = list(joined_by_ods_code.values())
 
         return joined_result
+
+    def get_user_login_data(self) -> list[ApplicationData]:
+        query_result = self.get_cloud_watch_query_result(query_params=UserLogin)
+
+        role_ids_per_ods_code = defaultdict(set)
+
+        for entry in query_result:
+            ods_code = entry["ods_code"]
+            role_id = entry["role_id"]
+
+            hashed_role_id = hashlib.sha256(role_id.encode("utf-8")).hexdigest()
+            role_ids_per_ods_code[ods_code].add(hashed_role_id)
+
+        user_login_data = [
+            ApplicationData(
+                date=self.today_date,
+                ods_code=ods_code,
+                active_user_ids_hashed=list(role_ids),
+            )
+            for ods_code, role_ids in role_ids_per_ods_code.items()
+        ]
+
+        return user_login_data
