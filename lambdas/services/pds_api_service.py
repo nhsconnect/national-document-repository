@@ -8,9 +8,9 @@ import requests
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from requests.adapters import HTTPAdapter
-from requests.models import HTTPError
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 from services.patient_search_service import PatientSearch
-from urllib3 import HTTPConnectionPool, Retry
+from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import PdsErrorException, PdsTooManyRequestsException
 
@@ -67,7 +67,7 @@ class PdsApiService(PatientSearch):
             logger.error(str(e), {"Result": "Error when getting ssm parameters"})
             raise PdsErrorException("Failed to perform patient search")
 
-        except HTTPConnectionPool as e:
+        except (ConnectionError, Timeout, HTTPError) as e:
             logger.error(str(e), {"Result": "Error when calling PDS"})
             raise PdsTooManyRequestsException("Failed to perform patient search")
 

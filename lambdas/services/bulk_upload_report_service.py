@@ -28,7 +28,12 @@ class BulkUploadReportService:
         )
 
         if report_data:
+            logger.info(
+                f"Bulk upload reports for {str(start_time)} to {str(end_time)}.csv"
+            )
+
             generated_at = end_time.strftime("%Y%m%d")
+
             ods_reports: list[OdsReport] = self.generate_ods_reports(
                 report_data, generated_at
             )
@@ -36,6 +41,9 @@ class BulkUploadReportService:
 
             self.generate_summary_report(ods_reports, generated_at)
             logger.info("Successfully processed daily summary report")
+
+            self.generate_daily_report(report_data, start_time, end_time)
+            logger.info("Successfully processed daily report")
 
         else:
             logger.info("No data found, no new report file to upload")
@@ -133,7 +141,7 @@ class BulkUploadReportService:
 
         file_key = f"daily_statistical_report_bulk_upload_summary_{generated_at}_uploaded_by_{uploader_ods_code}.csv"
 
-        self.write_items_to_csv(
+        self.write_summary_data_to_csv(
             file_name=file_key,
             total_successful=ods_report.total_successful,
             total_registered_elsewhere=ods_report.total_registered_elsewhere,
@@ -181,7 +189,7 @@ class BulkUploadReportService:
         file_name = f"daily_statistical_report_bulk_upload_summary_{generated_at}.csv"
         file_key = f"daily-reports/{file_name}"
 
-        self.write_items_to_csv(
+        self.write_summary_data_to_csv(
             file_name=file_name,
             total_successful=total_successful,
             total_registered_elsewhere=total_registered_elsewhere,
@@ -196,8 +204,30 @@ class BulkUploadReportService:
             file_name=f"/tmp/{file_name}",
         )
 
-    def write_items_to_csv(
-        self,
+    def generate_daily_report(self, report_data: list, start_time: str, end_time: str):
+        file_name = f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
+
+        self.write_items_to_csv(report_data, f"/tmp/{file_name}")
+
+        logger.info("Uploading daily report file to S3")
+        self.s3_service.upload_file(
+            s3_bucket_name=self.reports_bucket,
+            file_key=f"daily-reports/{file_name}",
+            file_name=f"/tmp/{file_name}",
+        )
+
+    @staticmethod
+    def write_items_to_csv(items: list, csv_file_path: str):
+        logger.info("Writing scan results to csv file")
+        with open(csv_file_path, "w") as output_file:
+            field_names = MetadataReport.list()
+            dict_writer_object = csv.DictWriter(output_file, fieldnames=field_names)
+            dict_writer_object.writeheader()
+            for item in items:
+                dict_writer_object.writerow(item)
+
+    @staticmethod
+    def write_summary_data_to_csv(
         file_name: str,
         total_successful: int,
         total_registered_elsewhere: int,
