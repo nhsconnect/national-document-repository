@@ -117,7 +117,6 @@ class BulkUploadMetadataService:
             f"metadata/{current_datetime}.csv",
         )
 
-        # delete the original once we've copied it to the dated folder
         self.s3_service.delete_object(self.staging_bucket_name, metadata_filename)
 
     def clear_temp_storage(self):
