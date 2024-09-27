@@ -3,6 +3,7 @@ from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
+from freezegun import freeze_time
 from models.staging_metadata import METADATA_FILENAME
 from pydantic import ValidationError
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
@@ -30,11 +31,15 @@ def test_process_metadata_send_metadata_to_sqs_queue(
     mocker,
     metadata_filename,
     mock_sqs_service,
+    mock_s3_service,
     mock_download_metadata_from_s3,
     metadata_service,
 ):
     mock_download_metadata_from_s3.return_value = MOCK_METADATA_CSV
     mocker.patch("uuid.uuid4", return_value="123412342")
+
+    mock_s3_service.copy_across_bucket.return_value = None
+
     expected_calls = [
         call(
             group_id="bulk_upload_123412342",
@@ -243,6 +248,25 @@ def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(
 
     with pytest.raises(ClientError):
         metadata_service.send_metadata_to_fifo_sqs(EXPECTED_PARSED_METADATA)
+
+
+@freeze_time("2024-01-01 12:34:56")
+def test_copy_metadata_to_dated_folder(
+    set_env, metadata_filename, mock_s3_service, metadata_service
+):
+    metadata_service.copy_metadata_to_dated_folder(metadata_filename)
+
+    mock_s3_service.copy_across_bucket.assert_called_once_with(
+        metadata_service.staging_bucket_name,
+        metadata_filename,
+        metadata_service.staging_bucket_name,
+        "metadata/2024-01-01_12-34.csv",
+    )
+
+    mock_s3_service.delete_object.assert_called_once_with(
+        metadata_service.staging_bucket_name,
+        metadata_filename,
+    )
 
 
 def test_clear_temp_storage(set_env, mocker, mock_tempfile, metadata_service):
