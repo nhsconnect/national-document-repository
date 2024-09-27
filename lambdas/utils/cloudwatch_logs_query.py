@@ -52,6 +52,20 @@ LloydGeorgeRecordsSearched = CloudwatchLogsQueryParams(
     """,
 )
 
+UserLogins = CloudwatchLogsQueryParams(
+    lambda_name="TokenRequestHandler",
+    query_string="""
+        fields @timestamp, Message, 
+        Authorisation.selected_organisation.org_ods_code AS ods_code, 
+        Authorisation.nhs_user_id AS user_id, 
+        Authorisation.role_id AS role_id
+        | filter Message = 'User logged in successfully'
+        | stats count_distinct(user_id) as distinct_user_count, 
+        collect_set(role_id) as role_ids 
+        by ods_code
+    """,
+)
+
 
 UniqueActiveUserIds = CloudwatchLogsQueryParams(
     lambda_name="AuthoriserLambda",
