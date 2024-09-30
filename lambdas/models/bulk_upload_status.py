@@ -20,18 +20,21 @@ class BulkUploadReport(BaseModel):
     failure_reason: Optional[str] = None
 
 
-FieldNamesForBulkUploadReport = [
-    "NhsNumber",
-    "UploadStatus",
-    "FailureReason",
-    "PdsOdsCode",
-    "UploaderOdsCode",
-    "FilePath",
-    "Date",
-    "Timestamp",
-    "ID",
-]
-
-
 def date_string_yyyymmdd(time_now: datetime) -> str:
     return time_now.strftime("%Y-%m-%d")
+
+
+class OdsReport:
+    def __init__(
+        self,
+        uploader_ods_code: str,
+        total_successful: int = 0,
+        total_registered_elsewhere: int = 0,
+        total_suspended: int = 0,
+        failure_reasons: dict = {},
+    ):
+        self.uploader_ods_code = uploader_ods_code
+        self.total_successful = total_successful
+        self.total_registered_elsewhere = total_registered_elsewhere
+        self.total_suspended = total_suspended
+        self.failure_reasons = failure_reasons
