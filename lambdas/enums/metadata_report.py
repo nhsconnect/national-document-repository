@@ -11,3 +11,7 @@ class MetadataReport(StrEnum):
     Date = "Date"
     Timestamp = "Timestamp"
     ID = "ID"
+
+    @staticmethod
+    def list():
+        return [str(field) for field in MetadataReport]

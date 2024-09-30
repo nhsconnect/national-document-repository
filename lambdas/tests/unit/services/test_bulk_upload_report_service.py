@@ -88,6 +88,11 @@ def mock_get_db_report_items(bulk_upload_report_service, mocker):
 
 
 @pytest.fixture
+def mock_write_summary_data_to_csv(bulk_upload_report_service, mocker):
+    yield mocker.patch.object(bulk_upload_report_service, "write_summary_data_to_csv")
+
+
+@pytest.fixture
 def mock_write_items_to_csv(bulk_upload_report_service, mocker):
     yield mocker.patch.object(bulk_upload_report_service, "write_items_to_csv")
 
@@ -244,15 +249,17 @@ def test_report_handler_no_items_returns_expected_log(
 def test_report_handler_with_items_uploads_summary_report_to_bucket(
     bulk_upload_report_service,
     mock_get_db_with_data,
-    mock_write_items_to_csv,
+    mock_write_summary_data_to_csv,
     mock_get_times_for_scan,
     caplog,
 ):
-    expected_message = "Successfully processed daily summary report"
+    expected_messages = [
+        "Successfully processed daily ODS reports",
+        "Successfully processed daily summary report",
+        "Successfully processed daily report",
+    ]
+
     mock_date_string = MOCK_END_REPORT_TIME.strftime("%Y%m%d")
-    mock_file_name = (
-        f"daily_statistical_report_bulk_upload_summary_{mock_date_string}.csv"
-    )
     bulk_upload_report_service.report_handler()
 
     mock_get_times_for_scan.assert_called_once()
@@ -261,19 +268,35 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
         int(MOCK_END_REPORT_TIME.timestamp()),
     )
 
-    mock_write_items_to_csv.assert_called()
+    mock_write_summary_data_to_csv.assert_called()
 
-    bulk_upload_report_service.s3_service.upload_file.assert_called()
-    bulk_upload_report_service.s3_service.upload_file.assert_called_with(
-        s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/{mock_file_name}",
-        file_name=f"/tmp/{mock_file_name}",
-    )
-    assert caplog.records[-1].msg == expected_message
+    calls = [
+        call(
+            s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+            file_key=f"daily_statistical_report_bulk_upload_summary_{mock_date_string}_uploaded_by_Y12345.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{mock_date_string}_uploaded_by_Y12345.csv",
+        ),
+        call(
+            s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+            file_key=f"daily-reports/daily_statistical_report_bulk_upload_summary_{mock_date_string}.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{mock_date_string}.csv",
+        ),
+        call(
+            s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+            file_key=f"daily-reports/Bulk upload report for {str(MOCK_END_REPORT_TIME)}.csv",
+            file_name=f"/tmp/Bulk upload report for {str(MOCK_END_REPORT_TIME)}.csv",
+        ),
+    ]
+
+    bulk_upload_report_service.s3_service.upload_file.has_calls(calls)
+
+    log_message_match = set(expected_messages).issubset(caplog.messages)
+
+    assert log_message_match
 
 
 def test_generate_individual_ods_report_creates_ods_report(
-    bulk_upload_report_service, mock_write_items_to_csv
+    bulk_upload_report_service, mock_write_summary_data_to_csv
 ):
     mock_ods_report_data = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
     expected = OdsReport(
@@ -289,7 +312,7 @@ def test_generate_individual_ods_report_creates_ods_report(
 
     assert actual.__dict__ == expected.__dict__
     bulk_upload_report_service.s3_service.upload_file.assert_called()
-    mock_write_items_to_csv.assert_called()
+    mock_write_summary_data_to_csv.assert_called()
 
 
 def test_generate_individual_ods_report_writes_csv_report(bulk_upload_report_service):

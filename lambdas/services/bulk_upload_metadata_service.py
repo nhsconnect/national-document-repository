@@ -3,6 +3,7 @@ import os
 import shutil
 import tempfile
 import uuid
+from datetime import datetime
 from typing import Iterable
 
 import pydantic
@@ -29,16 +30,15 @@ class BulkUploadMetadataService:
 
     def process_metadata(self, metadata_filename: str):
         try:
-            logger.info(f"Fetching {metadata_filename} from bucket")
             metadata_file = self.download_metadata_from_s3(metadata_filename)
 
-            logger.info("Parsing bulk upload metadata")
             staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
-
             logger.info("Finished parsing metadata")
-            self.send_metadata_to_fifo_sqs(staging_metadata_list)
 
+            self.send_metadata_to_fifo_sqs(staging_metadata_list)
             logger.info("Sent bulk upload metadata to sqs queue")
+
+            self.copy_metadata_to_dated_folder(metadata_filename)
 
             self.clear_temp_storage()
 
@@ -59,6 +59,8 @@ class BulkUploadMetadataService:
             raise BulkUploadMetadataException(failure_msg)
 
     def download_metadata_from_s3(self, metadata_filename: str) -> str:
+        logger.info(f"Fetching {metadata_filename} from bucket")
+
         local_file_path = os.path.join(self.temp_download_dir, metadata_filename)
         self.s3_service.download_file(
             s3_bucket_name=self.staging_bucket_name,
@@ -69,6 +71,8 @@ class BulkUploadMetadataService:
 
     @staticmethod
     def csv_to_staging_metadata(csv_file_path: str) -> list[StagingMetadata]:
+        logger.info("Parsing bulk upload metadata")
+
         patients = {}
         with open(csv_file_path, mode="r") as csv_file_handler:
             csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
@@ -101,5 +105,20 @@ class BulkUploadMetadataService:
                 group_id=sqs_group_id,
             )
 
+    def copy_metadata_to_dated_folder(self, metadata_filename: str):
+        logger.info("Copying metadata CSV to dated folder")
+
+        current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M")
+
+        self.s3_service.copy_across_bucket(
+            self.staging_bucket_name,
+            metadata_filename,
+            self.staging_bucket_name,
+            f"metadata/{current_datetime}.csv",
+        )
+
+        self.s3_service.delete_object(self.staging_bucket_name, metadata_filename)
+
     def clear_temp_storage(self):
+        logger.info("Clearing temp storage directory")
         shutil.rmtree(self.temp_download_dir)
