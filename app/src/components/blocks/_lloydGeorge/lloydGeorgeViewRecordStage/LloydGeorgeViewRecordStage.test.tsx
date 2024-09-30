@@ -53,7 +53,6 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 
     it('renders an lg record', async () => {
-        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         renderComponent();
 
         await waitFor(() => {
