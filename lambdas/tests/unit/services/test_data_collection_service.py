@@ -39,12 +39,14 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     MOCK_LG_DOWNLOADED,
     MOCK_LG_STORED,
     MOCK_LG_VIEWED,
+    MOCK_PATIENT_SEARCHED,
     MOCK_UNIQUE_ACTIVE_USER_IDS,
 )
 from utils.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
     LloydGeorgeRecordsDeleted,
     LloydGeorgeRecordsDownloaded,
+    LloydGeorgeRecordsSearched,
     LloydGeorgeRecordsStored,
     LloydGeorgeRecordsViewed,
     UniqueActiveUserIds,
@@ -99,6 +101,8 @@ def mock_query_logs(mocker):
             return MOCK_LG_STORED
         elif query_params == UniqueActiveUserIds:
             return MOCK_UNIQUE_ACTIVE_USER_IDS
+        elif query_params == LloydGeorgeRecordsSearched:
+            return MOCK_PATIENT_SEARCHED
 
     patched_instance = mocker.patch(
         "services.data_collection_service.CloudwatchService",

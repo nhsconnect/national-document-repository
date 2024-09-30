@@ -45,6 +45,7 @@ MOCK_ORGANISATION_DATA = [
         daily_count_viewed=40,
         daily_count_downloaded=20,
         daily_count_deleted=2,
+        daily_count_searched=30,
     ),
     OrganisationData(
         statistic_id="mock_uuid",
@@ -56,6 +57,7 @@ MOCK_ORGANISATION_DATA = [
         daily_count_viewed=20,
         daily_count_downloaded=10,
         daily_count_deleted=1,
+        daily_count_searched=50,
     ),
 ]
 

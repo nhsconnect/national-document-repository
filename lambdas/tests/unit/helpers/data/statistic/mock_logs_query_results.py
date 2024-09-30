@@ -63,6 +63,19 @@ MOCK_LG_STORED = [
     },
 ]
 
+MOCK_PATIENT_SEARCHED = [
+    {
+        "ods_code": "Y12345",
+        "daily_count_searched": "30",
+    },
+    {
+        "ods_code": "H81109",
+        "daily_count_searched": "50",
+    },
+]
+
+MOCK_USER_LOGIN = []
+
 MOCK_RESPONSE_QUERY_IN_PROGRESS = {"status": "Running"}
 
 MOCK_RESPONSE_QUERY_FAILED = {"status": "Failed"}
