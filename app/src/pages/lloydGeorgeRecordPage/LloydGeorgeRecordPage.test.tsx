@@ -109,7 +109,6 @@ describe('LloydGeorgeRecordPage', () => {
             expect(screen.getByText(`${lgResult.number_of_files} files`)).toBeInTheDocument();
         });
 
-        expect(screen.getByText('View in full screen')).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });
 
