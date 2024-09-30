@@ -25,7 +25,7 @@ function RecordCard({
     refreshRecord,
 }: Props) {
     const role = useRole();
-    const userIsGpAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
+    const userIsGpClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
     const [isLoading, setIsLoading] = useState(true);
     const mounted = useRef(false);
 
@@ -69,7 +69,7 @@ function RecordCard({
                         </Card.Heading>
                         {detailsElement}
 
-                        {cloudFrontUrl && userIsGpAdmin && (
+                        {cloudFrontUrl && !userIsGpClinical && (
                             <button
                                 className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
                                 data-testid="full-screen-btn"
