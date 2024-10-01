@@ -226,7 +226,7 @@ class StatisticalReportService:
             self.s3_service.upload_file(
                 s3_bucket_name=self.reports_bucket,
                 file_key=file_key,
-                file_name=file_name,
+                file_name=f"/tmp/{file_name}",
             )
 
             logger.info("The weekly report is stored in s3 bucket.")

@@ -42,7 +42,7 @@ class BulkUploadReportService:
             self.generate_summary_report(ods_reports, generated_at)
             logger.info("Successfully processed daily summary report")
 
-            self.generate_daily_report(report_data, start_time, end_time)
+            self.generate_daily_report(report_data, end_time)
             logger.info("Successfully processed daily report")
 
         else:
@@ -204,24 +204,21 @@ class BulkUploadReportService:
             file_name=f"/tmp/{file_name}",
         )
 
-    def generate_daily_report(self, report_data: list, start_time: str, end_time: str):
-        csv_file_name = (
-            f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
-        )
-        self.write_items_to_csv(report_data, f"/tmp/{csv_file_name}")
+    def generate_daily_report(self, report_data: list, end_time: str):
+        date_dashes = end_time.strftime("%Y-%m-%d")
+        date_no_dashes = end_time.strftime("%Y%m%d")
+
+        file_name = f"daily_report_{date_no_dashes}.csv"
+        self.write_items_to_csv(report_data, f"/tmp/{file_name}")
 
         logger.info("Uploading daily report file to S3")
 
-        end_date_dashes = end_time.strftime("%Y-%m-%d")
-        end_date_no_dashes = end_time.strftime("%Y%m%d")
-
-        s3_file_name = f"daily_report_{end_date_no_dashes}.csv"
-        s3_file_key = f"daily-reports/{end_date_dashes}/{s3_file_name}"
+        file_key = f"daily-reports/{date_dashes}/{file_name}"
 
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=s3_file_key,
-            file_name=s3_file_name,
+            file_key=file_key,
+            file_name=f"/tmp/{file_name}",
         )
 
     @staticmethod

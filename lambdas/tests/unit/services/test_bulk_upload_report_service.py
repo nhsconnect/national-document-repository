@@ -286,7 +286,7 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
             file_key=f"daily-reports/{mock_date_string_with_dashes}/daily_report_{mock_date_string_without_dashes}.csv",
-            file_name=f"daily_report_{mock_date_string_without_dashes}.csv",
+            file_name=f"/tmp/daily_report_{mock_date_string_without_dashes}.csv",
         ),
     ]
 

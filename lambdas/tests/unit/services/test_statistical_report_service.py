@@ -344,8 +344,7 @@ def test_store_report_to_s3(set_env, mock_s3_service, mock_temp_folder):
     mock_weekly_summary = EXPECTED_WEEKLY_SUMMARY
     end_date_with_dashes = "2024-05-11"
 
-    expected_file_name = "statistical_report_20240505-20240511.csv"
-    expected_file_key = f"statistic-reports/{end_date_with_dashes}/{expected_file_name}"
+    file_name = "statistical_report_20240505-20240511.csv"
 
     service = StatisticalReportService()
 
@@ -353,8 +352,8 @@ def test_store_report_to_s3(set_env, mock_s3_service, mock_temp_folder):
 
     mock_s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=expected_file_key,
-        file_name=expected_file_name,
+        file_key=f"statistic-reports/{end_date_with_dashes}/{file_name}",
+        file_name=f"/tmp/{file_name}",
     )
 
 
