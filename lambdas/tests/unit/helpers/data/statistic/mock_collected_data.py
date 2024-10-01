@@ -6,8 +6,9 @@ from tests.unit.helpers.data.statistic.mock_dynamodb_and_s3_records import (
     TOTAL_FILE_SIZE_FOR_Y12345,
 )
 from tests.unit.helpers.data.statistic.mock_logs_query_results import (
-    HASHED_USER_ID_1,
-    HASHED_USER_ID_2,
+    HASHED_USER_ID_1_WITH_ADMIN_ROLE,
+    HASHED_USER_ID_1_WITH_PCSE_ROLE,
+    HASHED_USER_ID_2_WITH_CLINICAL_ROLE,
 )
 
 TODAY_DATE = datetime.today().strftime("%Y%m%d")
@@ -66,13 +67,16 @@ MOCK_APPLICATION_DATA = [
         statistic_id="mock_uuid",
         date=TODAY_DATE,
         ods_code="H81109",
-        active_user_ids_hashed=[HASHED_USER_ID_1, HASHED_USER_ID_2],
+        active_user_ids_hashed=[
+            HASHED_USER_ID_1_WITH_ADMIN_ROLE,
+            HASHED_USER_ID_2_WITH_CLINICAL_ROLE,
+        ],
     ),
     ApplicationData(
         statistic_id="mock_uuid",
         date=TODAY_DATE,
         ods_code="Y12345",
-        active_user_ids_hashed=[HASHED_USER_ID_1],
+        active_user_ids_hashed=[HASHED_USER_ID_1_WITH_PCSE_ROLE],
     ),
 ]
 
