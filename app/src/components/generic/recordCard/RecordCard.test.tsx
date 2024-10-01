@@ -9,11 +9,14 @@ import RecordCard, { Props } from './RecordCard';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import useRole from '../../../helpers/hooks/useRole';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('../../../helpers/hooks/useConfig');
+jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../helpers/requests/getLloydGeorgeRecord');
 jest.mock('axios');
@@ -29,6 +32,7 @@ const mockUsePatient = usePatient as jest.Mock;
 const mockUseConfig = useConfig as jest.Mock;
 const mockUseBaseAPIUrl = useBaseAPIUrl as jest.Mock;
 const mockUseBaseAPIHeaders = useBaseAPIHeaders as jest.Mock;
+const mockUseRole = useRole as jest.Mock;
 it('passes a test', () => {});
 
 describe('RecordCard Component', () => {
@@ -122,6 +126,14 @@ describe('RecordCard Component', () => {
             expect(screen.queryByTestId('pdf-card')).not.toBeInTheDocument(); // Shouldn't show the card layout
         });
 
+        it('renders the "View in full screen" button if the user is GP_ADMIN', async () => {
+            render(<RecordCard {...props} />);
+
+            await waitFor(() => {
+                expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
+            });
+        });
+
         it('does not render PdfViewer or full-screen button when cloudFrontUrl is empty', async () => {
             render(<RecordCard {...props} cloudFrontUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
@@ -135,6 +147,16 @@ describe('RecordCard Component', () => {
 
             await waitFor(() => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
+            });
+        });
+
+        it('does not render the "View in full screen" button if the user is GP_CLINICAL', async () => {
+            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+
+            render(<RecordCard {...props} />);
+
+            await waitFor(() => {
+                expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
             });
         });
 

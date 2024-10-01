@@ -59,7 +59,6 @@ describe('LloydGeorgeViewRecordStage', () => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
-
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
         expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();

@@ -109,7 +109,6 @@ describe('LloydGeorgeRecordPage', () => {
             expect(screen.getByText(`${lgResult.number_of_files} files`)).toBeInTheDocument();
         });
 
-        expect(screen.getByText('View in full screen')).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });
 
@@ -193,7 +192,6 @@ describe('LloydGeorgeRecordPage', () => {
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
-        expect(screen.getByText('View in full screen')).toBeInTheDocument();
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
