@@ -55,7 +55,6 @@ describe('RecordCard Component', () => {
         });
         mockUseBaseAPIUrl.mockReturnValue('https://example.com/api');
         mockUseBaseAPIHeaders.mockReturnValue({ Authorization: 'Bearer token' });
-        mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
     });
 
     describe('Rendering', () => {
