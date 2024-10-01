@@ -205,15 +205,23 @@ class BulkUploadReportService:
         )
 
     def generate_daily_report(self, report_data: list, start_time: str, end_time: str):
-        file_name = f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
-
-        self.write_items_to_csv(report_data, f"/tmp/{file_name}")
+        csv_file_name = (
+            f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
+        )
+        self.write_items_to_csv(report_data, f"/tmp/{csv_file_name}")
 
         logger.info("Uploading daily report file to S3")
+
+        end_date_dashes = end_time.strftime("%Y-%m-%d")
+        end_date_no_dashes = end_time.strftime("%Y%m%d")
+
+        s3_file_name = f"daily_report_{end_date_no_dashes}.csv"
+        s3_file_key = f"daily-reports/{end_date_dashes}/{s3_file_name}"
+
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=f"daily-reports/{file_name}",
-            file_name=f"/tmp/{file_name}",
+            file_key=s3_file_key,
+            file_name=s3_file_name,
         )
 
     @staticmethod

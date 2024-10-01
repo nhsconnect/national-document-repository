@@ -210,16 +210,31 @@ class StatisticalReportService:
 
     def store_report_to_s3(self, weekly_summary: pl.DataFrame) -> None:
         logger.info("Saving the weekly report as .csv")
-        file_name = f"statistical_report_{self.report_period}.csv"
         temp_folder = tempfile.mkdtemp()
+
+        file_name = f"statistical_report_{self.report_period}.csv"
         local_file_path = os.path.join(temp_folder, file_name)
+
+        start_date = self.get_end_date_with_dashes()
+        file_key = f"statistic-reports/{start_date}/{file_name}"
+
         try:
             weekly_summary.write_csv(local_file_path)
 
             logger.info("Uploading the csv report to S3 bucket...")
-            self.s3_service.upload_file(local_file_path, self.reports_bucket, file_name)
+
+            self.s3_service.upload_file(
+                s3_bucket_name=self.reports_bucket,
+                file_key=file_key,
+                file_name=file_name,
+            )
 
             logger.info("The weekly report is stored in s3 bucket.")
             logger.info(f"File name: {file_name}")
         finally:
             shutil.rmtree(temp_folder)
+
+    def get_end_date_with_dashes(self):
+        date_string = self.dates_to_collect[-1]
+        date_obj = datetime.strptime(date_string, "%Y%m%d")
+        return date_obj.strftime("%Y-%m-%d")

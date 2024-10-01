@@ -259,7 +259,9 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
         "Successfully processed daily report",
     ]
 
-    mock_date_string = MOCK_END_REPORT_TIME.strftime("%Y%m%d")
+    mock_date_string_without_dashes = MOCK_END_REPORT_TIME.strftime("%Y%m%d")
+    mock_date_string_with_dashes = MOCK_END_REPORT_TIME.strftime("%Y-%m-%d")
+
     bulk_upload_report_service.report_handler()
 
     mock_get_times_for_scan.assert_called_once()
@@ -273,22 +275,22 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
     calls = [
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily_statistical_report_bulk_upload_summary_{mock_date_string}_uploaded_by_Y12345.csv",
-            file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{mock_date_string}_uploaded_by_Y12345.csv",
+            file_key=f"daily_statistical_report_bulk_upload_summary_{mock_date_string_without_dashes}_uploaded_by_Y12345.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{mock_date_string_without_dashes}_uploaded_by_Y12345.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/daily_statistical_report_bulk_upload_summary_{mock_date_string}.csv",
-            file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{mock_date_string}.csv",
+            file_key=f"daily-reports/daily_statistical_report_bulk_upload_summary_{mock_date_string_without_dashes}.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{mock_date_string_without_dashes}.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/Bulk upload report for {str(MOCK_END_REPORT_TIME)}.csv",
-            file_name=f"/tmp/Bulk upload report for {str(MOCK_END_REPORT_TIME)}.csv",
+            file_key=f"daily-reports/{mock_date_string_with_dashes}/daily_report_{mock_date_string_without_dashes}.csv",
+            file_name=f"daily_report_{mock_date_string_without_dashes}.csv",
         ),
     ]
 
-    bulk_upload_report_service.s3_service.upload_file.has_calls(calls)
+    bulk_upload_report_service.s3_service.upload_file.assert_has_calls(calls)
 
     log_message_match = set(expected_messages).issubset(caplog.messages)
 
