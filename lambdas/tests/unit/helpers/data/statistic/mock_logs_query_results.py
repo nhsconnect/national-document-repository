@@ -66,11 +66,11 @@ MOCK_LG_STORED = [
 MOCK_PATIENT_SEARCHED = [
     {
         "ods_code": "Y12345",
-        "daily_count_searched": "30",
+        "daily_count_searched": "50",
     },
     {
         "ods_code": "H81109",
-        "daily_count_searched": "50",
+        "daily_count_searched": "30",
     },
 ]
 
