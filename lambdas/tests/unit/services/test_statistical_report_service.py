@@ -353,7 +353,7 @@ def test_store_report_to_s3(set_env, mock_s3_service, mock_temp_folder):
     mock_s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
         file_key=f"statistic-reports/{end_date_with_dashes}/{file_name}",
-        file_name=f"/tmp/{file_name}",
+        file_name=f"{mock_temp_folder}/{file_name}",
     )
 
 
