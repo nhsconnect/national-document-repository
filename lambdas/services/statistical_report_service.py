@@ -154,14 +154,20 @@ class StatisticalReportService:
 
         df = self.load_data_to_polars(application_data)
 
-        count_unique_ids = (
-            pl.concat_list("active_user_ids_hashed")
-            .flatten()
-            .unique()
-            .len()
-            .alias("active_users_count")
+        summarised_data = df.group_by("ods_code").agg(
+            [
+                pl.concat_list("active_user_ids_hashed")
+                .flatten()
+                .unique()
+                .apply(lambda col: str(col.to_list()))
+                .alias("unique_active_user_ids_hashed"),
+                pl.concat_list("active_user_ids_hashed")
+                .flatten()
+                .unique()
+                .len()
+                .alias("active_users_count"),
+            ]
         )
-        summarised_data = df.group_by("ods_code").agg(count_unique_ids)
         return summarised_data
 
     def join_dataframes_by_ods_code(
