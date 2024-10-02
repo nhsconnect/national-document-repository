@@ -25,6 +25,7 @@ const mockUseNavigate = jest.fn();
 const mockUsePatient = usePatient as jest.Mock;
 const mockPatientDetails = buildPatientDetails();
 const mockDownloadStage = jest.fn();
+const mockResetDocState = jest.fn();
 
 const testFileName1 = 'John_1';
 const testFileName2 = 'John_2';
@@ -178,6 +179,7 @@ const renderComponent = (history: MemoryHistory, numberOfFiles: number, recordTy
                 numberOfFiles={numberOfFiles}
                 recordType={recordType}
                 setDownloadStage={mockDownloadStage}
+                resetDocState={mockResetDocState}
             />
         </ReactRouter.Router>,
     );

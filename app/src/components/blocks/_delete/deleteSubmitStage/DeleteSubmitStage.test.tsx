@@ -39,7 +39,7 @@ let history: MemoryHistory = createMemoryHistory({
 const mockedUseRole = useRole as jest.Mock;
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;
-
+const mockResetState = jest.fn();
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 
@@ -343,6 +343,7 @@ const renderComponent = (docType: DOCUMENT_TYPE, history: MemoryHistory) => {
         numberOfFiles: mockLgSearchResult.number_of_files,
         docType,
         recordType: docType.toString(),
+        resetDocState: mockResetState,
     };
 
     return render(
