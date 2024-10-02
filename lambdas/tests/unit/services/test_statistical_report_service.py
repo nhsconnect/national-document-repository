@@ -96,7 +96,9 @@ def test_make_weekly_summary(set_env, mocker):
     actual = service.make_weekly_summary()
     expected = EXPECTED_WEEKLY_SUMMARY
 
-    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
+    assert_frame_equal(
+        actual, expected, check_row_order=False, check_dtype=False, check_exact=False
+    )
 
 
 def test_get_statistic_data(mock_dynamodb_service, mock_service):

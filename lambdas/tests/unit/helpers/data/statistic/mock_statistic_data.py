@@ -207,7 +207,11 @@ MOCK_APPLICATION_DATA_3 = ApplicationData(
 
 EXPECTED_SUMMARY_APPLICATION_DATA = pl.DataFrame(
     [
-        {"ods_code": "Z56789", "active_users_count": 1},
+        {
+            "ods_code": "Z56789",
+            "active_users_count": 1,
+            "unique_active_user_ids_hashed": "",
+        },
         {"ods_code": "Y12345", "active_users_count": 3},
     ],
 )
@@ -276,6 +280,9 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Number of patients": 4,
             "Total number of records": 18,
             "Total size of records in megabytes": 1.75,
+            "Unique active user ids hashed": str(
+                [str(SERIALISED_APPLICATION_DATA[0]["ActiveUserIdsHashed"][0])]
+            ),
             "Weekly count deleted": 1,
             "Weekly count downloaded": 4,
             "Weekly count searched": 0,
@@ -292,6 +299,13 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Number of patients": 10,
             "Total number of records": 20,
             "Total size of records in megabytes": 2.34,
+            "Unique active user ids hashed": str(
+                [
+                    str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][0]),
+                    str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][1]),
+                    str(SERIALISED_APPLICATION_DATA[2]["ActiveUserIdsHashed"][1]),
+                ]
+            ),
             "Weekly count deleted": 1 + 1,
             "Weekly count downloaded": 1 + 5,
             "Weekly count searched": 0,
