@@ -16,7 +16,7 @@ from tests.unit.helpers.data.dynamo_scan_response import (
     MOCK_EMPTY_RESPONSE,
     UNEXPECTED_RESPONSE,
 )
-from unit.helpers.data.bulk_upload.dynamo_responses import (
+from tests.unit.helpers.data.bulk_upload.dynamo_responses import (
     MOCK_REPORT_ITEMS_ALL,
     MOCK_REPORT_ITEMS_UPLOADER_1,
     MOCK_REPORT_RESPONSE_ALL,

@@ -15,7 +15,7 @@ class BulkUploadReport(BaseModel):
     model_config = ConfigDict(alias_generator=to_pascal, populate_by_name=True)
     id: str = Field(alias=MetadataReport.ID, default_factory=create_reference_id)
     nhs_number: str = Field(alias=MetadataReport.NhsNumber)
-    upload_status: UploadStatus = Field(alias=MetadataReport.UploadStatus)
+    upload_status: str = Field(alias=MetadataReport.UploadStatus)
     timestamp: int = Field(
         alias=MetadataReport.Timestamp,
         default_factory=lambda: int(datetime.now().timestamp()),

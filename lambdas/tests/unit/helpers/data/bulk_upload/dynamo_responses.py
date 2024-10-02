@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from models.bulk_upload_report import BulkUploadReport
-from unit.conftest import TEST_UUID
+from tests.unit.conftest import TEST_UUID
 
 TEST_UPLOADER_ODS_1 = "Y12345"
 TEST_UPLOADER_ODS_2 = "Z12345"
