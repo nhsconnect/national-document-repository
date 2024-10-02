@@ -1,6 +1,6 @@
 from enums.upload_status import UploadStatus
 from freezegun import freeze_time
-from models.bulk_upload_status import BulkUploadReport
+from models.bulk_upload_report import BulkUploadReport
 from tests.unit.conftest import TEST_UUID
 
 MOCK_DATA_COMPLETE_UPLOAD = {
