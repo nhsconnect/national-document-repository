@@ -108,7 +108,7 @@ def assume_role(params):
         f"{BASE_URL}:443/openam/oauth2/realms/root/realms/oidc/authorize"
         "?response_type=code"
         f"&client_id={os.getenv('CIS2_CLIENT_ID')}"
-        "&redirect_uri=https://ndr-dev.access-request-fulfilment.patient-deductions.nhs.uk/auth-callback"
+        "&redirect_uri=https://pre-prod.access-request-fulfilment.patient-deductions.nhs.uk/auth-callback"
         "&scope=openid%20profile%20nhsperson%20nationalrbacaccess%20selectedrole"
         f"&state={params['state']}"
         "&prompt="
@@ -171,14 +171,14 @@ def authenticate(state):
         "/realms/root/realms/oidc/authorize?"
         "response_type=code"
         f"&client_id={os.getenv('CIS2_CLIENT_ID')}"
-        "&redirect_uri=https://ndr-dev.access-request-fulfilment.patient-deductions.nhs.uk/auth-callback&"
+        "&redirect_uri=https://pre-prod.access-request-fulfilment.patient-deductions.nhs.uk/auth-callback&"
         "scope=openid%20profile%20nhsperson%20nationalrbacaccess%20selectedrole&"
         f"state={state}&prompt=&acr=AAL1_USERPASS&"
         f"acr_sig={os.getenv('CIS2_ACR_SIG')}"
     )
     roles_params = {
         "authId": authentication_response,
-        "username": "555053895106",
+        "username": "555053898109",
         "password": os.getenv("CIS2_AUTH_PASSWORD"),
         "goto": goto_url,
     }
@@ -188,7 +188,7 @@ def authenticate(state):
     ## Stage 3: Assume a role
     assume_roles_params = {
         "authId": roles_response,
-        "assumedRole": "555056245106",
+        "assumedRole": "555056251105",
         "state": state,
     }
     role_assumption_response = assume_role(assume_roles_params)
