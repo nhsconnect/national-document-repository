@@ -69,11 +69,14 @@ class DataCollectionService:
     def collect_all_data(self) -> list[StatisticData]:
         dynamodb_scan_result = self.scan_dynamodb_tables()
         s3_list_objects_result = self.get_all_s3_files_info()
+        record_store_data = []
+        organisation_data = []
+        if dynamodb_scan_result:
+            record_store_data = self.get_record_store_data(
+                dynamodb_scan_result, s3_list_objects_result
+            )
+            organisation_data = self.get_organisation_data(dynamodb_scan_result)
 
-        record_store_data = self.get_record_store_data(
-            dynamodb_scan_result, s3_list_objects_result
-        )
-        organisation_data = self.get_organisation_data(dynamodb_scan_result)
         application_data = self.get_application_data()
 
         return record_store_data + organisation_data + application_data
@@ -127,6 +130,7 @@ class DataCollectionService:
         dynamodb_scan_result: list[dict],
         s3_list_objects_result: list[dict],
     ) -> list[RecordStoreData]:
+
         total_number_of_records = self.get_total_number_of_records(dynamodb_scan_result)
 
         total_and_average_file_sizes = (
