@@ -40,17 +40,15 @@ function LloydGeorgeRecordPage() {
     const [lastUpdated, setLastUpdated] = useState('');
     const [cloudFrontUrl, setCloudFrontUrl] = useState('');
 
-    const refreshRecord = async () => {
-        const resetState = (isError: boolean = false) => {
-            setNumberOfFiles(0);
-            setLastUpdated('');
-            setTotalFileSizeInByte(0);
-            setCloudFrontUrl('');
-            if (!isError) {
-                setDownloadStage(DOWNLOAD_STAGE.INITIAL);
-            }
-        };
+    const resetDocState = () => {
+        setNumberOfFiles(0);
+        setLastUpdated('');
+        setTotalFileSizeInByte(0);
+        setCloudFrontUrl('');
+        setDownloadStage(DOWNLOAD_STAGE.INITIAL);
+    };
 
+    const refreshRecord = async () => {
         const onSuccess = (
             files_count: number,
             updated_date: string,
@@ -67,8 +65,6 @@ function LloydGeorgeRecordPage() {
         const onError = (e: AxiosError) => {
             const error = e as AxiosError;
             const errorResponse = (error.response?.data as ErrorResponse) ?? {};
-            const isError = true;
-            resetState(isError);
 
             if (isMock(error)) {
                 if (!!config.mockLocal.recordUploaded) {
@@ -96,7 +92,6 @@ function LloydGeorgeRecordPage() {
             }
         };
 
-        resetState();
         const nhsNumber: string = patientDetails?.nhsNumber ?? '';
         try {
             const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
@@ -147,6 +142,7 @@ function LloydGeorgeRecordPage() {
                             setDownloadStage={setDownloadStage}
                             numberOfFiles={numberOfFiles}
                             recordType="Lloyd George"
+                            resetDocState={resetDocState}
                         />
                     }
                 />
