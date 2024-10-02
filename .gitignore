@@ -109,3 +109,4 @@ batch_update_progress.json
 # performance test
 #
 performance/tests/performance-venv
+performance/tests/configuration/user_data.json
