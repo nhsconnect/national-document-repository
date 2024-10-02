@@ -41,6 +41,16 @@ function LloydGeorgeRecordPage() {
     const [cloudFrontUrl, setCloudFrontUrl] = useState('');
 
     const refreshRecord = async () => {
+        const resetState = (isError: boolean = false) => {
+            setNumberOfFiles(0);
+            setLastUpdated('');
+            setTotalFileSizeInByte(0);
+            setCloudFrontUrl('');
+            if (!isError) {
+                setDownloadStage(DOWNLOAD_STAGE.INITIAL);
+            }
+        };
+
         const onSuccess = (
             files_count: number,
             updated_date: string,
@@ -51,13 +61,14 @@ function LloydGeorgeRecordPage() {
             setLastUpdated(getFormattedDatetime(new Date(updated_date)));
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             setTotalFileSizeInByte(file_size);
-            setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             setCloudFrontUrl(presign_url);
         };
 
         const onError = (e: AxiosError) => {
             const error = e as AxiosError;
             const errorResponse = (error.response?.data as ErrorResponse) ?? {};
+            const isError = true;
+            resetState(isError);
 
             if (isMock(error)) {
                 if (!!config.mockLocal.recordUploaded) {
@@ -85,6 +96,7 @@ function LloydGeorgeRecordPage() {
             }
         };
 
+        resetState();
         const nhsNumber: string = patientDetails?.nhsNumber ?? '';
         try {
             const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
