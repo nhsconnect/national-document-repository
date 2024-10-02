@@ -9,12 +9,18 @@ import logging
 logger = logging.getLogger(__name__)
 load_dotenv()
 
+counter_variable = 0
+
 
 class TestFramework(HttpUser):
+    def on_start(self):
+        global counter_variable
+        counter_variable += 1
+
     @task
     def login_test(self):
         response = self.client.get(
-            "/dev/Auth/Login", allow_redirects=False, name="Initiate CIS2"
+            "/Auth/Login", allow_redirects=False, name="Initiate CIS2"
         )
         location_header = response.headers.get("Location")
         if location_header:
@@ -26,24 +32,25 @@ class TestFramework(HttpUser):
                 code = authenticate(state)
                 params = {"code": code, "state": state}
                 response = self.client.get(
-                    "/dev/Auth/TokenRequest",
+                    "/Auth/TokenRequest",
                     params=params,
                     name="Get CIS2 Token",
                 )
+                logger.info(response.json())
                 auth_headers = {
                     "Authorization": response.json().get("authorisation_token")
                 }
                 logger.info(auth_headers)
-                searchPatient = {"patientId": "9730787506"}
+                searchPatient = {"patientId": "9730786879"}
 
                 self.client.get(
-                    "/dev/SearchPatient",
+                    "/SearchPatient",
                     headers=auth_headers,
                     params=searchPatient,
                     name="Search for a Patient",
                 )
                 response = self.client.get(
-                    "/dev/LloydGeorgeStitch",
+                    "/LloydGeorgeStitch",
                     headers=auth_headers,
                     params=searchPatient,
                     name="Retrieve Presigned URL for LGS",
@@ -53,10 +60,11 @@ class TestFramework(HttpUser):
 
                 self.client.get(
                     lgs
-                    + "&origin=https://ndr-dev.access-request-fulfilment.patient-deductions.nhs.uk/patient/lloyd-george-record#toolbar=0",
+                    + "&origin=https://pre-prod.access-request-fulfilment.patient-deductions.nhs.uk/patient/lloyd-george-record#toolbar=0",
                     name="Download PDF Content",
                 )
-                self.client.get("/dev/Auth/Logout", headers=auth_headers, name="Logout")
+
+                self.client.get("/Auth/Logout", headers=auth_headers, name="Logout")
 
             except Exception:
                 logger.exception("Exception occurred", exc_info=True)
