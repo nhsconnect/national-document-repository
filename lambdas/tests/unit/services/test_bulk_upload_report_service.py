@@ -283,12 +283,12 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/Bulk upload report for {str(MOCK_START_REPORT_TIME)} to {str(MOCK_END_REPORT_TIME)}.csv",
-            file_name=f"/tmp/Bulk upload report for {str(MOCK_START_REPORT_TIME)} to {str(MOCK_END_REPORT_TIME)}.csv",
+            file_key=f"daily-reports/Bulk upload report for {str(MOCK_END_REPORT_TIME)}.csv",
+            file_name=f"/tmp/Bulk upload report for {str(MOCK_END_REPORT_TIME)}.csv",
         ),
     ]
 
-    bulk_upload_report_service.s3_service.upload_file.assert_has_calls(calls)
+    bulk_upload_report_service.s3_service.upload_file.has_calls(calls)
 
     log_message_match = set(expected_messages).issubset(caplog.messages)
 

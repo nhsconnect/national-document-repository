@@ -222,11 +222,11 @@ class DataCollectionService:
         for entry in query_result:
             ods_code = entry.get("ods_code", "")
             user_id = entry.get("user_id", "")
-            role_id = entry.get("role_id", "No role description")
+            user_role = entry.get("user_role", "No role description")
             role_code = entry.get("role_code", "No role code")
             hashed_user_id = hashlib.sha256(bytes(user_id, "utf8")).hexdigest()
             user_ids_per_ods_code[ods_code].append(
-                hashed_user_id + " - " + role_id + " - " + role_code
+                hashed_user_id + " - " + user_role + " - " + role_code
             )
         return user_ids_per_ods_code
 
