@@ -204,18 +204,6 @@ MOCK_APPLICATION_DATA_3 = ApplicationData(
         "cf1af742e351ce63d8ed275d4bec8d8f",
     ],
 )
-
-EXPECTED_SUMMARY_APPLICATION_DATA = pl.DataFrame(
-    [
-        {
-            "ods_code": "Z56789",
-            "active_users_count": 1,
-            "unique_active_user_ids_hashed": "",
-        },
-        {"ods_code": "Y12345", "active_users_count": 3},
-    ],
-)
-
 SERIALISED_APPLICATION_DATA = [
     {
         "Date": "20240510",
@@ -244,6 +232,30 @@ SERIALISED_APPLICATION_DATA = [
         ],
     },
 ]
+
+EXPECTED_SUMMARY_APPLICATION_DATA = pl.DataFrame(
+    [
+        {
+            "ods_code": "Z56789",
+            "active_users_count": 1,
+            "unique_active_user_ids_hashed": str(
+                [str(SERIALISED_APPLICATION_DATA[0]["ActiveUserIdsHashed"][0])]
+            ),
+        },
+        {
+            "ods_code": "Y12345",
+            "active_users_count": 3,
+            "unique_active_user_ids_hashed": str(
+                [
+                    str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][0]),
+                    str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][1]),
+                    str(SERIALISED_APPLICATION_DATA[2]["ActiveUserIdsHashed"][1]),
+                ]
+            ),
+        },
+    ],
+)
+
 
 ALL_MOCKED_STATISTIC_DATA = (
     [MOCK_RECORD_STORE_DATA_1, MOCK_RECORD_STORE_DATA_2, MOCK_RECORD_STORE_DATA_3],

@@ -159,7 +159,7 @@ class StatisticalReportService:
                 pl.concat_list("active_user_ids_hashed")
                 .flatten()
                 .unique()
-                .apply(lambda col: str(col.to_list()))
+                .apply(lambda col: str(col.sort().to_list()))
                 .alias("unique_active_user_ids_hashed"),
                 pl.concat_list("active_user_ids_hashed")
                 .flatten()
@@ -168,6 +168,7 @@ class StatisticalReportService:
                 .alias("active_users_count"),
             ]
         )
+
         return summarised_data
 
     def join_dataframes_by_ods_code(
