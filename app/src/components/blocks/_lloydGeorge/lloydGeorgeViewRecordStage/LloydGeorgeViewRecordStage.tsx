@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import {
     BackLink,
     Button,
@@ -60,6 +60,28 @@ function LloydGeorgeViewRecordStage({
         required: true,
     });
 
+    useEffect(() => {
+        if (fullScreen) {
+            // This ensures that the browser back button will navigate back out of full-screen mode when pressed.
+            window.history.pushState({ fullScreen: true }, '', window.location.href);
+        } else {
+            // This avoids cluttering the history stack with unnecessary entries and messing up the back function
+            window.history.replaceState(null, '', window.location.href);
+        }
+        const handleBackButton = (event: Event) => {
+            if (fullScreen) {
+                event.preventDefault();
+                setFullScreen(false);
+            }
+        };
+
+        window.addEventListener('popstate', handleBackButton);
+
+        return () => {
+            window.removeEventListener('popstate', handleBackButton);
+        };
+    }, [fullScreen]);
+
     const handleDownloadAndRemoveRecordButton = () => {
         if (downloadRemoveButtonClicked) {
             setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
@@ -118,6 +140,7 @@ function LloydGeorgeViewRecordStage({
                     onClick={(e) => {
                         e.preventDefault();
                         setFullScreen(false);
+                        window.history.back(); // ensures consistency between the UI and browser back button behaviors
                     }}
                 >
                     Exit full screen
