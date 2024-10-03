@@ -62,10 +62,8 @@ function LloydGeorgeViewRecordStage({
 
     useEffect(() => {
         if (fullScreen) {
-            // This ensures that the browser back button will navigate back out of full-screen mode when pressed.
             window.history.pushState({ fullScreen: true }, '', window.location.href);
         } else {
-            // This avoids cluttering the history stack with unnecessary entries and messing up the back function
             window.history.replaceState(null, '', window.location.href);
         }
         const handleBackButton = (event: Event) => {
@@ -140,7 +138,7 @@ function LloydGeorgeViewRecordStage({
                     onClick={(e) => {
                         e.preventDefault();
                         setFullScreen(false);
-                        window.history.back(); // ensures consistency between the UI and browser back button behaviors
+                        window.history.back();
                     }}
                 >
                     Exit full screen
