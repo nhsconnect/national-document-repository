@@ -11,11 +11,6 @@ from tests.unit.conftest import (
     MOCK_STATISTICS_REPORT_BUCKET_NAME,
     TEST_CURRENT_GP_ODS,
 )
-from tests.unit.helpers.data.bulk_upload.test_data import readfile
-from tests.unit.helpers.data.dynamo_scan_response import (
-    MOCK_EMPTY_RESPONSE,
-    UNEXPECTED_RESPONSE,
-)
 from tests.unit.helpers.data.bulk_upload.dynamo_responses import (
     MOCK_REPORT_ITEMS_ALL,
     MOCK_REPORT_ITEMS_UPLOADER_1,
@@ -23,6 +18,11 @@ from tests.unit.helpers.data.bulk_upload.dynamo_responses import (
     MOCK_REPORT_RESPONSE_ALL_WITH_LAST_KEY,
     TEST_UPLOADER_ODS_1,
     TEST_UPLOADER_ODS_2,
+)
+from tests.unit.helpers.data.bulk_upload.test_data import readfile
+from tests.unit.helpers.data.dynamo_scan_response import (
+    MOCK_EMPTY_RESPONSE,
+    UNEXPECTED_RESPONSE,
 )
 
 MOCK_END_REPORT_TIME = datetime(2012, 1, 14, 7, 0, 0, 0)
@@ -461,4 +461,25 @@ def test_generate_restricted_report_writes_csv(bulk_upload_report_service):
 
 
 def test_generate_rejected_report_writes_csv(bulk_upload_report_service):
-    pass
+    mock_file_name = f"daily_statistical_report_bulk_upload_rejected_{str(MOCK_START_REPORT_TIME)}.csv"
+
+    test_ods_reports = bulk_upload_report_service.generate_ods_reports(
+        MOCK_REPORT_ITEMS_ALL,
+        MOCK_TIMESTAMP,
+    )
+
+    bulk_upload_report_service.generate_rejected_report(
+        test_ods_reports, str(MOCK_START_REPORT_TIME)
+    )
+
+    expected = readfile("expected_rejected_report.csv")
+    with open(f"/tmp/{mock_file_name}") as test_file:
+        actual = test_file.read()
+        assert expected == actual
+    os.remove(f"/tmp/{mock_file_name}")
+
+    bulk_upload_report_service.s3_service.upload_file.assert_called_with(
+        s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+        file_key=f"daily-reports/{mock_file_name}",
+        file_name=f"/tmp/{mock_file_name}",
+    )

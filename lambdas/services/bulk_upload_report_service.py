@@ -269,9 +269,38 @@ class BulkUploadReportService:
         )
 
     def generate_rejected_report(self, ods_reports: list[OdsReport], generated_at: str):
-        # Rejected - filtering on UploadStatus = Failed
-        # As per current headings(excludeFilePath)
-        pass
+        file_name = f"daily_statistical_report_bulk_upload_rejected_{generated_at}.csv"
+        file_key = f"daily-reports/{file_name}"
+
+        headers = [
+            MetadataReport.NhsNumber,
+            MetadataReport.UploaderOdsCode,
+            MetadataReport.Date,
+            MetadataReport.FailureReason,
+        ]
+
+        data_rows = []
+        for report in ods_reports:
+            for nhs_number, report_item in report.failures_per_patient.items():
+                data_rows.append(
+                    [
+                        nhs_number,
+                        report_item[MetadataReport.UploaderOdsCode],
+                        report_item[MetadataReport.Date],
+                        report_item[MetadataReport.FailureReason],
+                    ]
+                )
+
+        self.write_additional_report_items_to_csv(
+            file_name=file_name, headers=headers, rows_to_write=data_rows
+        )
+
+        logger.info("Uploading daily success report file to S3")
+        self.s3_service.upload_file(
+            s3_bucket_name=self.reports_bucket,
+            file_key=file_key,
+            file_name=f"/tmp/{file_name}",
+        )
 
     @staticmethod
     def write_items_to_csv(items: list[BulkUploadReport], csv_file_path: str):

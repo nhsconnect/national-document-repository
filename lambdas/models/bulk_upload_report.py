@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Optional
 
 from enums.metadata_report import MetadataReport
-from enums.upload_status import UploadStatus
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_pascal
 from utils.audit_logging_setup import LoggingService

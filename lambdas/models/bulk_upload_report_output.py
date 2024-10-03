@@ -1,6 +1,7 @@
 from enums.metadata_report import MetadataReport
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
+from inflection import underscore
 from models.bulk_upload_report import BulkUploadReport
 from utils.audit_logging_setup import LoggingService
 
@@ -18,6 +19,7 @@ class ReportBase:
         self.total_suspended = set()
         self.total_deceased = set()
         self.total_restricted = set()
+        self.total_rejected = set()
 
     def get_total_successful_nhs_numbers(self):
         if self.total_successful:
@@ -51,6 +53,14 @@ class ReportBase:
     def get_total_restricted(self):
         unique_nhs_nums = [tr[0] for tr in self.total_restricted]
         return len(unique_nhs_nums)
+
+    def get_total_rejected(self):
+        if self.total_successful:
+            return sorted(self.total_rejected, key=lambda x: x[0])
+        return []
+
+    def get_total_rejected_count(self):
+        return len(self.get_total_rejected())
 
 
 class OdsReport(ReportBase):
@@ -111,10 +121,15 @@ class OdsReport(ReportBase):
         ) < item.timestamp:
             self.failures_per_patient.update(
                 {
-                    item.nhs_number: {
-                        MetadataReport.FailureReason: failure_reason,
-                        MetadataReport.Timestamp: item.timestamp,
-                    }
+                    item.nhs_number: item.dict(
+                        include={
+                            underscore(str(MetadataReport.Date)),
+                            underscore(str(MetadataReport.Timestamp)),
+                            underscore(str(MetadataReport.UploaderOdsCode)),
+                            underscore(str(MetadataReport.FailureReason)),
+                        },
+                        by_alias=True,
+                    )
                 }
             )
 
