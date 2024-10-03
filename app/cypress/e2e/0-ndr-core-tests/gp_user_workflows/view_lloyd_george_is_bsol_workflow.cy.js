@@ -216,15 +216,9 @@ describe('GP Workflow: View Lloyd George record', () => {
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
 
-                let request = 0;
-                const replies = [
-                    { statusCode: 200, body: viewLloydGeorgePayload },
-                    { statusCode: 404 },
-                ];
-
-                cy.intercept('GET', '/LloydGeorgeStitch*', (req) => {
-                    req.reply(replies[request]);
-                    request = request + 1;
+                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                    statusCode: 200,
+                    body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
 
                 cy.intercept('GET', '/SearchDocumentReferences*', {
