@@ -91,8 +91,8 @@ class BulkUploadReportService:
         self.write_summary_data_to_csv(
             file_name=file_key,
             total_successful=ods_report.get_total_successful_count(),
-            total_registered_elsewhere=ods_report.get_total_registered_elsewhere(),
-            total_suspended=ods_report.get_total_suspended(),
+            total_registered_elsewhere=ods_report.get_total_registered_elsewhere_count(),
+            total_suspended=ods_report.get_total_suspended_count(),
             extra_rows=ods_report.unsuccessful_reasons,
         )
 
@@ -116,10 +116,10 @@ class BulkUploadReportService:
         self.write_summary_data_to_csv(
             file_name=file_name,
             total_successful=summary_report.get_total_successful_count(),
-            total_registered_elsewhere=summary_report.get_total_registered_elsewhere(),
-            total_suspended=summary_report.get_total_suspended(),
-            total_deceased=summary_report.get_total_deceased(),
-            total_restricted=summary_report.get_total_restricted(),
+            total_registered_elsewhere=summary_report.get_total_registered_elsewhere_count(),
+            total_suspended=summary_report.get_total_suspended_count(),
+            total_deceased=summary_report.get_total_deceased_count(),
+            total_restricted=summary_report.get_total_restricted_count(),
             extra_rows=summary_report.success_summary + summary_report.reason_summary,
         )
 
@@ -195,7 +195,7 @@ class BulkUploadReportService:
             file_name=file_name, headers=headers, rows_to_write=data_rows
         )
 
-        logger.info("Uploading daily success report file to S3")
+        logger.info("Uploading daily suspended report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
             file_key=file_key,
@@ -229,7 +229,7 @@ class BulkUploadReportService:
             file_name=file_name, headers=headers, rows_to_write=data_rows
         )
 
-        logger.info("Uploading daily success report file to S3")
+        logger.info("Uploading daily deceased report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
             file_key=file_key,
@@ -261,7 +261,7 @@ class BulkUploadReportService:
             file_name=file_name, headers=headers, rows_to_write=data_rows
         )
 
-        logger.info("Uploading daily success report file to S3")
+        logger.info("Uploading daily restricted report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
             file_key=file_key,
@@ -295,7 +295,7 @@ class BulkUploadReportService:
             file_name=file_name, headers=headers, rows_to_write=data_rows
         )
 
-        logger.info("Uploading daily success report file to S3")
+        logger.info("Uploading daily rejected report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
             file_key=file_key,

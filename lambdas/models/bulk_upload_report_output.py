@@ -19,48 +19,31 @@ class ReportBase:
         self.total_suspended = set()
         self.total_deceased = set()
         self.total_restricted = set()
-        self.total_rejected = set()
 
     def get_total_successful_nhs_numbers(self):
         if self.total_successful:
             return [s[0] for s in self.total_successful]
         return []
 
-    def get_total_successful(self) -> list:
+    def get_total_successful_sorted(self) -> list:
         if self.total_successful:
             return sorted(self.total_successful, key=lambda x: x[0])
         return []
 
     def get_total_successful_count(self):
-        return len(self.get_total_successful_nhs_numbers())
+        return len(self.total_successful)
 
-    def get_total_registered_elsewhere_nhs_numbers(self):
-        if self.total_successful:
-            return [s[0] for s in self.total_registered_elsewhere]
-        return []
+    def get_total_registered_elsewhere_count(self):
+        return len(self.total_registered_elsewhere)
 
-    def get_total_registered_elsewhere(self):
-        return len(self.get_total_registered_elsewhere_nhs_numbers())
+    def get_total_suspended_count(self):
+        return len(self.total_suspended)
 
-    def get_total_suspended(self):
-        unique_nhs_nums = [ts[0] for ts in self.total_suspended]
-        return len(unique_nhs_nums)
+    def get_total_deceased_count(self):
+        return len(self.total_deceased)
 
-    def get_total_deceased(self):
-        unique_nhs_nums = [td[0] for td in self.total_deceased]
-        return len(unique_nhs_nums)
-
-    def get_total_restricted(self):
-        unique_nhs_nums = [tr[0] for tr in self.total_restricted]
-        return len(unique_nhs_nums)
-
-    def get_total_rejected(self):
-        if self.total_successful:
-            return sorted(self.total_rejected, key=lambda x: x[0])
-        return []
-
-    def get_total_rejected_count(self):
-        return len(self.get_total_rejected())
+    def get_total_restricted_count(self):
+        return len(self.total_restricted)
 
 
 class OdsReport(ReportBase):
