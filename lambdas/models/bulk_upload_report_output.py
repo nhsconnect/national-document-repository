@@ -20,9 +20,9 @@ class ReportBase:
         self.total_deceased = set()
         self.total_restricted = set()
 
-    def get_total_successful_nhs_numbers(self):
+    def get_total_successful_nhs_numbers(self) -> list:
         if self.total_successful:
-            return [s[0] for s in self.total_successful]
+            return [patient[0] for patient in self.total_successful]
         return []
 
     def get_total_successful_sorted(self) -> list:
@@ -45,19 +45,19 @@ class ReportBase:
             return sorted(self.total_restricted, key=lambda x: x[0])
         return []
 
-    def get_total_successful_count(self):
+    def get_total_successful_count(self) -> int:
         return len(self.total_successful)
 
-    def get_total_registered_elsewhere_count(self):
+    def get_total_registered_elsewhere_count(self) -> int:
         return len(self.total_registered_elsewhere)
 
-    def get_total_suspended_count(self):
+    def get_total_suspended_count(self) -> int:
         return len(self.total_suspended)
 
-    def get_total_deceased_count(self):
+    def get_total_deceased_count(self) -> int:
         return len(self.total_deceased)
 
-    def get_total_restricted_count(self):
+    def get_total_restricted_count(self) -> int:
         return len(self.total_restricted)
 
 
@@ -66,7 +66,7 @@ class OdsReport(ReportBase):
         self,
         generated_at: str,
         uploader_ods_code: str = "",
-        report_items: list[BulkUploadReport] = None,
+        report_items: list[BulkUploadReport] = [],
     ):
         super().__init__(generated_at)
         if report_items is None:
@@ -97,13 +97,10 @@ class OdsReport(ReportBase):
 
         if item.pds_ods_code == PatientOdsInactiveStatus.SUSPENDED:
             self.total_suspended.add((item.nhs_number, item.date))
-
-        if item.pds_ods_code == PatientOdsInactiveStatus.DECEASED:
+        elif item.pds_ods_code == PatientOdsInactiveStatus.DECEASED:
             self.total_deceased.add((item.nhs_number, item.date, item.failure_reason))
-
-        if item.pds_ods_code == PatientOdsInactiveStatus.RESTRICTED:
+        elif item.pds_ods_code == PatientOdsInactiveStatus.RESTRICTED:
             self.total_restricted.add((item.nhs_number, item.date))
-
         elif (
             item.uploader_ods_code != item.pds_ods_code
             and item.pds_ods_code not in PatientOdsInactiveStatus.list()
@@ -111,12 +108,15 @@ class OdsReport(ReportBase):
             self.total_registered_elsewhere.add((item.nhs_number, item.date))
 
     def process_failed_report_item(self, item: BulkUploadReport):
-        failure_reason = item.failure_reason
-        if (
-            failure_reason and item.nhs_number not in self.failures_per_patient
-        ) or self.failures_per_patient[item.nhs_number].get(
-            MetadataReport.Timestamp
-        ) < item.timestamp:
+        is_new_failure = item.nhs_number not in self.failures_per_patient
+
+        is_timestamp_newer = (
+            item.nhs_number in self.failures_per_patient
+            and self.failures_per_patient[item.nhs_number].get(MetadataReport.Timestamp)
+            < item.timestamp
+        )
+
+        if (item.failure_reason and is_new_failure) or is_timestamp_newer:
             self.failures_per_patient.update(
                 {
                     item.nhs_number: item.model_dump(
@@ -146,7 +146,7 @@ class OdsReport(ReportBase):
 
     def set_unsuccessful_reasons(self):
         self.unsuccessful_reasons = [
-            [str(MetadataReport.FailureReason), failure_reason, count]
+            [MetadataReport.FailureReason, failure_reason, count]
             for failure_reason, count in self.unique_failures.items()
         ]
 
