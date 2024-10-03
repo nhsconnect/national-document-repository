@@ -9,7 +9,3 @@ class PatientOdsInactiveStatus(StrEnum):
     @staticmethod
     def list() -> list[str]:
         return list(PatientOdsInactiveStatus.__members__.values())
-
-    @staticmethod
-    def str_list():
-        return [str(field) for field in PatientOdsInactiveStatus]

@@ -106,7 +106,7 @@ class OdsReport(ReportBase):
 
         elif (
             item.uploader_ods_code != item.pds_ods_code
-            and item.pds_ods_code not in PatientOdsInactiveStatus.str_list()
+            and item.pds_ods_code not in PatientOdsInactiveStatus.list()
         ):
             self.total_registered_elsewhere.add((item.nhs_number, item.date))
 
@@ -119,7 +119,7 @@ class OdsReport(ReportBase):
         ) < item.timestamp:
             self.failures_per_patient.update(
                 {
-                    item.nhs_number: item.dict(
+                    item.nhs_number: item.model_dump(
                         include={
                             underscore(str(MetadataReport.Date)),
                             underscore(str(MetadataReport.Timestamp)),
