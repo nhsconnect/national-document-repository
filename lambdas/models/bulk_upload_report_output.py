@@ -30,6 +30,21 @@ class ReportBase:
             return sorted(self.total_successful, key=lambda x: x[0])
         return []
 
+    def get_total_suspended_sorted(self) -> list:
+        if self.total_suspended:
+            return sorted(self.total_suspended, key=lambda x: x[0])
+        return []
+
+    def get_total_deceased_sorted(self) -> list:
+        if self.total_deceased:
+            return sorted(self.total_deceased, key=lambda x: x[0])
+        return []
+
+    def get_total_restricted_sorted(self) -> list:
+        if self.total_restricted:
+            return sorted(self.total_restricted, key=lambda x: x[0])
+        return []
+
     def get_total_successful_count(self):
         return len(self.total_successful)
 

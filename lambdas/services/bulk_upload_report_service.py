@@ -155,8 +155,7 @@ class BulkUploadReportService:
         ]
         data_rows = []
         for report in ods_reports:
-            successful_patients = sorted(report.total_successful, key=lambda x: x[0])
-            for patient in successful_patients:
+            for patient in report.get_total_successful_sorted():
                 data_rows.append(
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )
@@ -185,8 +184,7 @@ class BulkUploadReportService:
         ]
         data_rows = []
         for report in ods_reports:
-            suspended_patients = sorted(report.total_suspended, key=lambda x: x[0])
-            for patient in suspended_patients:
+            for patient in report.get_total_suspended_sorted():
                 data_rows.append(
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )
@@ -214,8 +212,7 @@ class BulkUploadReportService:
         ]
         data_rows = []
         for report in ods_reports:
-            deceased_patients = sorted(report.total_deceased, key=lambda x: x[0])
-            for patient in deceased_patients:
+            for patient in report.get_total_deceased_sorted():
                 data_rows.append(
                     [
                         str(patient[0]),
@@ -251,8 +248,7 @@ class BulkUploadReportService:
         ]
         data_rows = []
         for report in ods_reports:
-            restricted_patients = sorted(report.total_restricted, key=lambda x: x[0])
-            for patient in restricted_patients:
+            for patient in report.get_total_restricted_sorted():
                 data_rows.append(
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )
