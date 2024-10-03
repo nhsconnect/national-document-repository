@@ -70,12 +70,12 @@ class DataCollectionService:
         dynamodb_scan_result = self.scan_dynamodb_tables()
         s3_list_objects_result = self.get_all_s3_files_info()
         record_store_data = []
-        organisation_data = []
+
         if dynamodb_scan_result:
             record_store_data = self.get_record_store_data(
                 dynamodb_scan_result, s3_list_objects_result
             )
-            organisation_data = self.get_organisation_data(dynamodb_scan_result)
+        organisation_data = self.get_organisation_data(dynamodb_scan_result)
 
         application_data = self.get_application_data()
 
@@ -164,6 +164,7 @@ class DataCollectionService:
     def get_organisation_data(
         self, dynamodb_scan_result: list[dict]
     ) -> list[OrganisationData]:
+
         number_of_patients = self.get_number_of_patients(dynamodb_scan_result)
         average_records_per_patient = self.get_average_number_of_files_per_patient(
             dynamodb_scan_result
@@ -324,6 +325,8 @@ class DataCollectionService:
         self,
         dynamodb_scan_result: list[dict],
     ) -> list[dict]:
+        if not dynamodb_scan_result:
+            return []
         dynamodb_df = pl.DataFrame(dynamodb_scan_result)
 
         count_records = pl.len().alias("number_of_records")
