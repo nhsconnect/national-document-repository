@@ -25,26 +25,6 @@ class ReportBase:
             return [patient[0] for patient in self.total_successful]
         return []
 
-    def get_total_successful_sorted(self) -> list:
-        if self.total_successful:
-            return sorted(self.total_successful, key=lambda x: x[0])
-        return []
-
-    def get_total_suspended_sorted(self) -> list:
-        if self.total_suspended:
-            return sorted(self.total_suspended, key=lambda x: x[0])
-        return []
-
-    def get_total_deceased_sorted(self) -> list:
-        if self.total_deceased:
-            return sorted(self.total_deceased, key=lambda x: x[0])
-        return []
-
-    def get_total_restricted_sorted(self) -> list:
-        if self.total_restricted:
-            return sorted(self.total_restricted, key=lambda x: x[0])
-        return []
-
     def get_total_successful_count(self) -> int:
         return len(self.total_successful)
 
@@ -60,6 +40,10 @@ class ReportBase:
     def get_total_restricted_count(self) -> int:
         return len(self.total_restricted)
 
+    @staticmethod
+    def get_sorted(to_sort: set) -> list:
+        return sorted(to_sort, key=lambda x: x[0]) if to_sort else []
+
 
 class OdsReport(ReportBase):
     def __init__(
@@ -73,7 +57,6 @@ class OdsReport(ReportBase):
         self.uploader_ods_code = uploader_ods_code
         self.failures_per_patient = {}
         self.unique_failures = {}
-        self.unsuccessful_reasons = []
 
         self.populate_report()
 
@@ -87,7 +70,6 @@ class OdsReport(ReportBase):
                 self.process_failed_report_item(item)
 
         self.set_unique_failures()
-        self.set_unsuccessful_reasons()
 
     def process_successful_report_item(self, item: BulkUploadReport):
         self.total_successful.add((item.nhs_number, item.date))
@@ -141,8 +123,8 @@ class OdsReport(ReportBase):
             reason = patient_data.get(MetadataReport.FailureReason)
             self.unique_failures[reason] = self.unique_failures.get(reason, 0) + 1
 
-    def set_unsuccessful_reasons(self):
-        self.unsuccessful_reasons = [
+    def get_unsuccessful_reasons_data_rows(self):
+        return [
             [MetadataReport.FailureReason, failure_reason, count]
             for failure_reason, count in self.unique_failures.items()
         ]

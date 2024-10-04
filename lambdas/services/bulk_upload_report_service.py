@@ -41,6 +41,7 @@ class BulkUploadReportService:
             self.generate_daily_report(report_data, start_time, end_time)
             logger.info("Successfully processed daily report")
             self.generate_success_report(ods_reports)
+            logger.info("Successfully processed success report")
             self.generate_suspended_report(ods_reports)
             logger.info("Successfully processed suspended report")
             self.generate_deceased_report(ods_reports)
@@ -88,7 +89,7 @@ class BulkUploadReportService:
             total_successful=ods_report.get_total_successful_count(),
             total_registered_elsewhere=ods_report.get_total_registered_elsewhere_count(),
             total_suspended=ods_report.get_total_suspended_count(),
-            extra_rows=ods_report.unsuccessful_reasons,
+            extra_rows=ods_report.get_unsuccessful_reasons_data_rows(),
         )
 
         logger.info(f"Uploading ODS report file for {uploader_ods_code} to S3")
@@ -152,7 +153,7 @@ class BulkUploadReportService:
         ]
         data_rows = []
         for report in ods_reports:
-            for patient in report.get_total_successful_sorted():
+            for patient in report.get_sorted(report.total_successful):
                 data_rows.append(
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )
@@ -180,7 +181,7 @@ class BulkUploadReportService:
         ]
         data_rows = []
         for report in ods_reports:
-            for patient in report.get_total_suspended_sorted():
+            for patient in report.get_sorted(report.total_suspended):
                 data_rows.append(
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )
@@ -209,7 +210,7 @@ class BulkUploadReportService:
         ]
         data_rows = []
         for report in ods_reports:
-            for patient in report.get_total_deceased_sorted():
+            for patient in report.get_sorted(report.total_deceased):
                 data_rows.append(
                     [
                         str(patient[0]),
@@ -242,7 +243,7 @@ class BulkUploadReportService:
         ]
         data_rows = []
         for report in ods_reports:
-            for patient in report.get_total_restricted_sorted():
+            for patient in report.get_sorted(report.total_restricted):
                 data_rows.append(
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )

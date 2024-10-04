@@ -250,9 +250,26 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
     caplog,
 ):
     expected_messages = [
+        "Bulk upload reports for 2012-01-13 07:00:00 to 2012-01-14 07:00:00.csv",
+        "Generating ODS report file for Y12345",
+        "Uploading ODS report file for Y12345 to S3",
+        "Generating ODS report file for Z12345",
+        "Uploading ODS report file for Z12345 to S3",
         "Successfully processed daily ODS reports",
+        "Uploading daily summary report file to S3",
         "Successfully processed daily summary report",
+        "Uploading daily report file to S3",
         "Successfully processed daily report",
+        "Uploading daily success report file to S3",
+        "Successfully processed success report",
+        "Uploading daily suspended report file to S3",
+        "Successfully processed suspended report",
+        "Uploading daily deceased report file to S3",
+        "Successfully processed deceased report",
+        "Uploading daily restricted report file to S3",
+        "Successfully processed restricted report",
+        "Uploading daily rejected report file to S3",
+        "Successfully processed rejected report",
     ]
 
     bulk_upload_report_service.report_handler()
