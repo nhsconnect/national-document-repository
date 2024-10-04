@@ -14,7 +14,7 @@ import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import LloydGeorgeViewRecordStage, { Props } from './LloydGeorgeViewRecordStage';
 import { createMemoryHistory } from 'history';
@@ -121,7 +121,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 
-    it("returns to previous view when 'Go back' link clicked during full screen", async () => {
+    it("returns to previous view when 'Exit full screen' link clicked during full screen", async () => {
         renderComponent();
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
@@ -136,6 +136,48 @@ describe('LloydGeorgeViewRecordStage', () => {
 
         act(() => {
             userEvent.click(screen.getByText('Exit full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
+    });
+
+    it('exits full screen when browser back button is pressed', async () => {
+        renderComponent();
+
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+        });
+
+        act(() => {
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
+    });
+
+    it('updates history correctly when exiting full screen using the UI back button', async () => {
+        const backSpy = jest.spyOn(window.history, 'back');
+        renderComponent();
+
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+        });
+
+        act(() => {
+            userEvent.click(screen.getByText('Exit full screen'));
+            expect(backSpy).toHaveBeenCalled();
         });
 
         await waitFor(() => {

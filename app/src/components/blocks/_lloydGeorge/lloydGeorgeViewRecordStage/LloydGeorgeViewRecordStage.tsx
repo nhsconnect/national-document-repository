@@ -63,8 +63,6 @@ function LloydGeorgeViewRecordStage({
     useEffect(() => {
         if (fullScreen) {
             window.history.pushState({ fullScreen: true }, '', window.location.href);
-        } else {
-            window.history.replaceState(null, '', window.location.href);
         }
         const handleBackButton = (event: Event) => {
             if (fullScreen) {
