@@ -4,7 +4,7 @@ from enums.metadata_report import MetadataReport
 from enums.upload_status import UploadStatus
 from freezegun import freeze_time
 from models.bulk_upload_report import BulkUploadReport
-from models.bulk_upload_report_output import OdsReport, SummaryReport
+from models.bulk_upload_report_output import OdsReport, ReportBase, SummaryReport
 from tests.unit.helpers.data.bulk_upload.dynamo_responses import (
     MOCK_REPORT_ITEMS_UPLOADER_1,
     MOCK_REPORT_ITEMS_UPLOADER_2,
@@ -16,6 +16,33 @@ from tests.unit.helpers.data.bulk_upload.dynamo_responses import (
 @freeze_time("2024-01-01 12:00:00")
 def get_timestamp():
     return datetime.now().strftime("%Y%m%d")
+
+
+def test_report_base_get_total_successful_nhs_numbers_returns_nhs_numbers():
+    base = ReportBase(generated_at=get_timestamp())
+    base.total_successful = {
+        ("9000000000", "2012-01-13"),
+        ("9000000003", "2012-01-13"),
+        ("9000000001", "2012-01-13"),
+        ("9000000002", "2012-01-13"),
+        ("9000000004", "2012-01-13"),
+    }
+
+    expected = ["9000000000", "9000000003", "9000000001", "9000000002", "9000000004"]
+
+    actual = base.get_total_successful_nhs_numbers()
+
+    assert sorted(expected) == sorted(actual)
+
+
+def test_report_base_get_total_successful_nhs_numbers_returns_empty():
+    base = ReportBase(generated_at=get_timestamp())
+
+    expected = []
+
+    actual = base.get_total_successful_nhs_numbers()
+
+    assert expected == actual
 
 
 def test_report_base_get_sorted_sorts_successfully():
@@ -230,8 +257,6 @@ def test_ods_report_populate_report_empty_list_returns_correct_statistics():
     assert actual.get_total_suspended_count() == 0
     assert actual.get_total_restricted_count() == 0
     assert actual.get_total_registered_elsewhere_count() == 0
-    assert sorted(actual.get_total_successful_nhs_numbers()) == []
-    assert actual.get_sorted(actual.total_successful) == []
 
 
 def test_summary_report_populate_report_populates_successfully():
