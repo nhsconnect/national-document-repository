@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.utilities import to_date_folder_name
 
 logger = LoggingService(__name__)
 
@@ -19,6 +20,8 @@ class BulkUploadReportService:
         self.db_service = DynamoDBService()
         self.s3_service = S3Service()
         self.reports_bucket = os.getenv("STATISTICAL_REPORTS_BUCKET")
+        self.generated_on = ""
+        self.s3_key_prefix = ""
 
     def report_handler(self):
         start_time, end_time = self.get_times_for_scan()
@@ -31,31 +34,26 @@ class BulkUploadReportService:
                 f"Bulk upload reports for {str(start_time)} to {str(end_time)}.csv"
             )
 
-            generated_at = start_time.strftime("%Y%m%d")
-
-            ods_reports: list[OdsReport] = self.generate_ods_reports(
-                report_data, generated_at
-            )
+            ods_reports: list[OdsReport] = self.generate_ods_reports(report_data)
             logger.info("Successfully processed daily ODS reports")
-            self.generate_summary_report(ods_reports, generated_at)
+            self.generate_summary_report(ods_reports)
             logger.info("Successfully processed daily summary report")
             self.generate_daily_report(report_data, start_time, end_time)
             logger.info("Successfully processed daily report")
-            self.generate_success_report(ods_reports, generated_at)
-            logger.info("Successfully processed success report")
-            self.generate_suspended_report(ods_reports, generated_at)
+            self.generate_success_report(ods_reports)
+            self.generate_suspended_report(ods_reports)
             logger.info("Successfully processed suspended report")
-            self.generate_deceased_report(ods_reports, generated_at)
+            self.generate_deceased_report(ods_reports)
             logger.info("Successfully processed deceased report")
-            self.generate_restricted_report(ods_reports, generated_at)
+            self.generate_restricted_report(ods_reports)
             logger.info("Successfully processed restricted report")
-            self.generate_rejected_report(ods_reports, generated_at)
+            self.generate_rejected_report(ods_reports)
             logger.info("Successfully processed rejected report")
         else:
             logger.info("No data found, no new report file to upload")
 
     def generate_ods_reports(
-        self, report_data: list[BulkUploadReport], generated_at: str
+        self, report_data: list[BulkUploadReport]
     ) -> list[OdsReport]:
         ods_reports: list[OdsReport] = []
 
@@ -68,28 +66,25 @@ class BulkUploadReportService:
 
         for uploader_ods_code, ods_report_items in grouped_ods_data.items():
             ods_report = self.generate_individual_ods_report(
-                uploader_ods_code, ods_report_items, generated_at
+                uploader_ods_code, ods_report_items
             )
             ods_reports.append(ods_report)
 
         return ods_reports
 
     def generate_individual_ods_report(
-        self,
-        uploader_ods_code: str,
-        ods_report_items: list[BulkUploadReport],
-        generated_at: str,
+        self, uploader_ods_code: str, ods_report_items: list[BulkUploadReport]
     ) -> OdsReport:
         ods_report = OdsReport(
-            generated_at=generated_at,
+            generated_at=self.generated_on,
             report_items=ods_report_items,
             uploader_ods_code=uploader_ods_code,
         )
 
-        file_key = f"daily_statistical_report_bulk_upload_summary_{generated_at}_uploaded_by_{uploader_ods_code}.csv"
+        file_name = f"daily_statistical_report_bulk_upload_ods_summary_{self.generated_on}_uploaded_by_{uploader_ods_code}.csv"
 
         self.write_summary_data_to_csv(
-            file_name=file_key,
+            file_name=file_name,
             total_successful=ods_report.get_total_successful_count(),
             total_registered_elsewhere=ods_report.get_total_registered_elsewhere_count(),
             total_suspended=ods_report.get_total_suspended_count(),
@@ -99,19 +94,20 @@ class BulkUploadReportService:
         logger.info(f"Uploading ODS report file for {uploader_ods_code} to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=file_key,
-            file_name=f"/tmp/{file_key}",
+            file_key=f"{self.s3_key_prefix}/{file_name}",
+            file_name=f"/tmp/{file_name}",
         )
 
         return ods_report
 
-    def generate_summary_report(self, ods_reports: list[OdsReport], generated_at: str):
+    def generate_summary_report(self, ods_reports: list[OdsReport]):
         summary_report = SummaryReport(
-            generated_at=generated_at, ods_reports=ods_reports
+            generated_at=self.generated_on, ods_reports=ods_reports
         )
 
-        file_name = f"daily_statistical_report_bulk_upload_summary_{generated_at}.csv"
-        file_key = f"daily-reports/{file_name}"
+        file_name = (
+            f"daily_statistical_report_bulk_upload_summary_{self.generated_on}.csv"
+        )
 
         self.write_summary_data_to_csv(
             file_name=file_name,
@@ -126,27 +122,28 @@ class BulkUploadReportService:
         logger.info("Uploading daily summary report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=file_key,
+            file_key=f"{self.s3_key_prefix}/{file_name}",
             file_name=f"/tmp/{file_name}",
         )
 
     def generate_daily_report(
         self, report_data: list[BulkUploadReport], start_time: str, end_time: str
     ):
-        file_name = f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
+        file_name = f"daily_statistical_report_entire_bulk_upload_{str(start_time)}_to_{str(end_time)}.csv"
 
         self.write_items_to_csv(report_data, f"/tmp/{file_name}")
 
         logger.info("Uploading daily report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=f"daily-reports/{file_name}",
+            file_key=f"{self.s3_key_prefix}/{file_name}",
             file_name=f"/tmp/{file_name}",
         )
 
-    def generate_success_report(self, ods_reports: list[OdsReport], generated_at: str):
-        file_name = f"daily_statistical_report_bulk_upload_success_{generated_at}.csv"
-        file_key = f"daily-reports/{file_name}"
+    def generate_success_report(self, ods_reports: list[OdsReport]):
+        file_name = (
+            f"daily_statistical_report_bulk_upload_success_{self.generated_on}.csv"
+        )
 
         headers = [
             MetadataReport.NhsNumber,
@@ -167,15 +164,14 @@ class BulkUploadReportService:
         logger.info("Uploading daily success report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=file_key,
+            file_key=f"{self.s3_key_prefix}/{file_name}",
             file_name=f"/tmp/{file_name}",
         )
 
-    def generate_suspended_report(
-        self, ods_reports: list[OdsReport], generated_at: str
-    ):
-        file_name = f"daily_statistical_report_bulk_upload_suspended_{generated_at}.csv"
-        file_key = f"daily-reports/{file_name}"
+    def generate_suspended_report(self, ods_reports: list[OdsReport]):
+        file_name = (
+            f"daily_statistical_report_bulk_upload_suspended_{self.generated_on}.csv"
+        )
 
         headers = [
             MetadataReport.NhsNumber,
@@ -196,13 +192,14 @@ class BulkUploadReportService:
         logger.info("Uploading daily suspended report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=file_key,
+            file_key=f"{self.s3_key_prefix}/{file_name}",
             file_name=f"/tmp/{file_name}",
         )
 
-    def generate_deceased_report(self, ods_reports: list[OdsReport], generated_at: str):
-        file_name = f"daily_statistical_report_bulk_upload_deceased_{generated_at}.csv"
-        file_key = f"daily-reports/{file_name}"
+    def generate_deceased_report(self, ods_reports: list[OdsReport]):
+        file_name = (
+            f"daily_statistical_report_bulk_upload_deceased_{self.generated_on}.csv"
+        )
 
         headers = [
             MetadataReport.NhsNumber,
@@ -229,17 +226,14 @@ class BulkUploadReportService:
         logger.info("Uploading daily deceased report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=file_key,
+            file_key=f"{self.s3_key_prefix}/{file_name}",
             file_name=f"/tmp/{file_name}",
         )
 
-    def generate_restricted_report(
-        self, ods_reports: list[OdsReport], generated_at: str
-    ):
+    def generate_restricted_report(self, ods_reports: list[OdsReport]):
         file_name = (
-            f"daily_statistical_report_bulk_upload_restricted_{generated_at}.csv"
+            f"daily_statistical_report_bulk_upload_restricted_{self.generated_on}.csv"
         )
-        file_key = f"daily-reports/{file_name}"
 
         headers = [
             MetadataReport.NhsNumber,
@@ -260,13 +254,14 @@ class BulkUploadReportService:
         logger.info("Uploading daily restricted report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=file_key,
+            file_key=f"{self.s3_key_prefix}/{file_name}",
             file_name=f"/tmp/{file_name}",
         )
 
-    def generate_rejected_report(self, ods_reports: list[OdsReport], generated_at: str):
-        file_name = f"daily_statistical_report_bulk_upload_rejected_{generated_at}.csv"
-        file_key = f"daily-reports/{file_name}"
+    def generate_rejected_report(self, ods_reports: list[OdsReport]):
+        file_name = (
+            f"daily_statistical_report_bulk_upload_rejected_{self.generated_on}.csv"
+        )
 
         headers = [
             MetadataReport.NhsNumber,
@@ -294,7 +289,7 @@ class BulkUploadReportService:
         logger.info("Uploading daily rejected report file to S3")
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=file_key,
+            file_key=f"{self.s3_key_prefix}/{file_name}",
             file_name=f"/tmp/{file_name}",
         )
 
@@ -307,7 +302,9 @@ class BulkUploadReportService:
             dict_writer_object.writeheader()
             for item in items:
                 dict_writer_object.writerow(
-                    item.dict(exclude={str(MetadataReport.ID).lower()}, by_alias=True)
+                    item.model_dump(
+                        exclude={str(MetadataReport.ID).lower()}, by_alias=True
+                    )
                 )
 
     @staticmethod
@@ -388,8 +385,7 @@ class BulkUploadReportService:
 
         return validated_items
 
-    @staticmethod
-    def get_times_for_scan() -> tuple[datetime, datetime]:
+    def get_times_for_scan(self) -> tuple[datetime, datetime]:
         current_time = datetime.datetime.now()
         end_report_time = datetime.time(7, 00, 00, 0)
         today_date = datetime.datetime.today()
@@ -397,4 +393,9 @@ class BulkUploadReportService:
         if current_time < end_timestamp:
             end_timestamp -= datetime.timedelta(days=1)
         start_timestamp = end_timestamp - datetime.timedelta(days=1)
+
+        self.generated_on = start_timestamp.strftime("%Y%m%d")
+        date_folder = to_date_folder_name(self.generated_on)
+        self.s3_key_prefix = f"daily-reports/{date_folder}"
+
         return start_timestamp, end_timestamp

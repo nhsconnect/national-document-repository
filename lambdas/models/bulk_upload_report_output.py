@@ -69,9 +69,6 @@ class OdsReport(ReportBase):
         report_items: list[BulkUploadReport] = [],
     ):
         super().__init__(generated_at)
-        if report_items is None:
-            report_items = []
-
         self.report_items = report_items
         self.uploader_ods_code = uploader_ods_code
         self.failures_per_patient = {}
@@ -152,12 +149,8 @@ class OdsReport(ReportBase):
 
 
 class SummaryReport(ReportBase):
-    def __init__(self, generated_at: str, ods_reports: list[OdsReport] = None):
+    def __init__(self, generated_at: str, ods_reports: list[OdsReport] = []):
         super().__init__(generated_at)
-
-        if ods_reports is None:
-            ods_reports = []
-
         self.ods_reports = ods_reports
         self.success_summary = []
         self.reason_summary = []

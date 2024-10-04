@@ -24,6 +24,7 @@ from tests.unit.helpers.data.dynamo_scan_response import (
     MOCK_EMPTY_RESPONSE,
     UNEXPECTED_RESPONSE,
 )
+from utils.utilities import to_date_folder_name
 
 MOCK_END_REPORT_TIME = datetime(2012, 1, 14, 7, 0, 0, 0)
 MOCK_START_REPORT_TIME = datetime(2012, 1, 13, 7, 0, 0, 0)
@@ -65,6 +66,9 @@ def mock_get_db_with_data(mocker, bulk_upload_report_service):
 
 @pytest.fixture
 def mock_get_times_for_scan(bulk_upload_report_service, mocker):
+    mock_date_folder_name = to_date_folder_name(MOCK_TIMESTAMP)
+    bulk_upload_report_service.generated_on = MOCK_TIMESTAMP
+    bulk_upload_report_service.s3_key_prefix = f"daily-reports/{mock_date_folder_name}"
     yield mocker.patch.object(
         bulk_upload_report_service,
         "get_times_for_scan",
@@ -146,6 +150,30 @@ def test_get_dynamo_data_2_calls(bulk_upload_report_service, mock_filter):
         ),
     ]
     bulk_upload_report_service.db_service.scan_table.assert_has_calls(calls)
+
+
+def test_get_dynamo_data_handles_invalid_dynamo_data(
+    bulk_upload_report_service, mock_filter, caplog
+):
+    invalid_data = {
+        "Timestamp": 1688395680,
+        "Date": "2012-01-13",
+        "FailureReason": "Lloyd George file already exists",
+        "UploadStatus": "failed",
+    }
+    mock_response = {"Items": [invalid_data, MOCK_REPORT_RESPONSE_ALL["Items"][1]]}
+    expected_message = "Failed to parse bulk update report dynamo item"
+
+    bulk_upload_report_service.db_service.scan_table.side_effect = [
+        mock_response,
+    ]
+
+    actual = bulk_upload_report_service.get_dynamodb_report_items(
+        int(MOCK_START_REPORT_TIME.timestamp()), int(MOCK_END_REPORT_TIME.timestamp())
+    )
+
+    assert actual == [MOCK_REPORT_ITEMS_ALL[1]]
+    assert expected_message in caplog.records[-1].msg
 
 
 def test_get_dynamo_data_with_no_start_key(bulk_upload_report_service, mock_filter):
@@ -238,23 +266,48 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
     calls = [
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}_uploaded_by_Y12345.csv",
-            file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}_uploaded_by_Y12345.csv",
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Y12345.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Y12345.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}_uploaded_by_Z12345.csv",
-            file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}_uploaded_by_Z12345.csv",
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Z12345.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Z12345.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv",
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/Bulk upload report for {str(MOCK_START_REPORT_TIME)} to {str(MOCK_END_REPORT_TIME)}.csv",
-            file_name=f"/tmp/Bulk upload report for {str(MOCK_START_REPORT_TIME)} to {str(MOCK_END_REPORT_TIME)}.csv",
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_entire_bulk_upload_{str(MOCK_START_REPORT_TIME)}_to_{str(MOCK_END_REPORT_TIME)}.csv",
+            file_name=f"/tmp/daily_statistical_report_entire_bulk_upload_{str(MOCK_START_REPORT_TIME)}_to_{str(MOCK_END_REPORT_TIME)}.csv",
+        ),
+        call(
+            s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv",
+        ),
+        call(
+            s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_suspended_{MOCK_TIMESTAMP}.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_suspended_{MOCK_TIMESTAMP}.csv",
+        ),
+        call(
+            s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_deceased_{MOCK_TIMESTAMP}.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_deceased_{MOCK_TIMESTAMP}.csv",
+        ),
+        call(
+            s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_restricted_{MOCK_TIMESTAMP}.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_restricted_{MOCK_TIMESTAMP}.csv",
+        ),
+        call(
+            s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv",
+            file_name=f"/tmp/daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv",
         ),
     ]
 
@@ -268,7 +321,7 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
 
 
 def test_generate_individual_ods_report_creates_ods_report(
-    bulk_upload_report_service, mock_write_summary_data_to_csv
+    bulk_upload_report_service, mock_write_summary_data_to_csv, mock_get_times_for_scan
 ):
     expected = OdsReport(
         MOCK_TIMESTAMP,
@@ -277,13 +330,13 @@ def test_generate_individual_ods_report_creates_ods_report(
     )
 
     actual = bulk_upload_report_service.generate_individual_ods_report(
-        TEST_UPLOADER_ODS_1, MOCK_REPORT_ITEMS_UPLOADER_1, MOCK_TIMESTAMP
+        TEST_UPLOADER_ODS_1, MOCK_REPORT_ITEMS_UPLOADER_1
     )
 
     assert actual.__dict__ == expected.__dict__
 
     mock_write_summary_data_to_csv.assert_called_with(
-        file_name=f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv",
+        file_name=f"daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv",
         total_successful=5,
         total_registered_elsewhere=1,
         total_suspended=1,
@@ -295,13 +348,13 @@ def test_generate_individual_ods_report_creates_ods_report(
     bulk_upload_report_service.s3_service.upload_file.assert_called()
 
 
-def test_generate_individual_ods_report_writes_csv_report(bulk_upload_report_service):
-    mock_file_name = f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv"
+def test_generate_individual_ods_report_writes_csv_report(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    mock_file_name = f"daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv"
 
     bulk_upload_report_service.generate_individual_ods_report(
-        TEST_UPLOADER_ODS_1,
-        MOCK_REPORT_ITEMS_UPLOADER_1,
-        MOCK_TIMESTAMP,
+        TEST_UPLOADER_ODS_1, MOCK_REPORT_ITEMS_UPLOADER_1
     )
     expected = readfile("expected_ods_report_for_uploader_1.csv")
     with open(f"/tmp/{mock_file_name}") as test_file:
@@ -311,24 +364,25 @@ def test_generate_individual_ods_report_writes_csv_report(bulk_upload_report_ser
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"{mock_file_name}",
+        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
 
-def test_generate_ods_reports_writes_multiple_ods_reports(bulk_upload_report_service):
+def test_generate_ods_reports_writes_multiple_ods_reports(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
     mock_file_name_uploader_1 = (
-        f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}"
+        f"daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}"
         f"_uploaded_by_{TEST_UPLOADER_ODS_1}.csv"
     )
     mock_file_name_uploader_2 = (
-        f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}"
+        f"daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}"
         f"_uploaded_by_{TEST_UPLOADER_ODS_2}.csv"
     )
 
     bulk_upload_report_service.generate_ods_reports(
         MOCK_REPORT_ITEMS_ALL,
-        MOCK_TIMESTAMP,
     )
     expected = readfile("expected_ods_report_for_uploader_1.csv")
     with open(f"/tmp/{mock_file_name_uploader_1}") as test_file:
@@ -343,16 +397,16 @@ def test_generate_ods_reports_writes_multiple_ods_reports(bulk_upload_report_ser
     os.remove(f"/tmp/{mock_file_name_uploader_2}")
 
 
-def test_generate_summary_report_with_two_ods_reports(bulk_upload_report_service):
-    mock_file_name = f"daily_statistical_report_bulk_upload_summary_{str(MOCK_START_REPORT_TIME)}.csv"
+def test_generate_summary_report_with_two_ods_reports(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv"
+    )
 
-    ods_reports = bulk_upload_report_service.generate_ods_reports(
-        MOCK_REPORT_ITEMS_ALL, str(MOCK_START_REPORT_TIME)
-    )
+    ods_reports = bulk_upload_report_service.generate_ods_reports(MOCK_REPORT_ITEMS_ALL)
     assert len(ods_reports) == 2
-    bulk_upload_report_service.generate_summary_report(
-        ods_reports, str(MOCK_START_REPORT_TIME)
-    )
+    bulk_upload_report_service.generate_summary_report(ods_reports)
     expected = readfile("expected_bulk_upload_summary_report.csv")
     with open(f"/tmp/{mock_file_name}") as test_file:
         actual = test_file.read()
@@ -360,17 +414,18 @@ def test_generate_summary_report_with_two_ods_reports(bulk_upload_report_service
     os.remove(f"/tmp/{mock_file_name}")
 
 
-def test_generate_success_report_writes_csv(bulk_upload_report_service):
-    mock_file_name = f"daily_statistical_report_bulk_upload_success_{str(MOCK_START_REPORT_TIME)}.csv"
+def test_generate_success_report_writes_csv(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv"
+    )
 
     test_ods_reports = bulk_upload_report_service.generate_ods_reports(
         MOCK_REPORT_ITEMS_ALL,
-        MOCK_TIMESTAMP,
     )
 
-    bulk_upload_report_service.generate_success_report(
-        test_ods_reports, str(MOCK_START_REPORT_TIME)
-    )
+    bulk_upload_report_service.generate_success_report(test_ods_reports)
 
     expected = readfile("expected_success_report.csv")
     with open(f"/tmp/{mock_file_name}") as test_file:
@@ -380,22 +435,23 @@ def test_generate_success_report_writes_csv(bulk_upload_report_service):
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/{mock_file_name}",
+        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
 
-def test_generate_suspended_report_writes_csv(bulk_upload_report_service):
-    mock_file_name = f"daily_statistical_report_bulk_upload_suspended_{str(MOCK_START_REPORT_TIME)}.csv"
+def test_generate_suspended_report_writes_csv(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_suspended_{MOCK_TIMESTAMP}.csv"
+    )
 
     test_ods_reports = bulk_upload_report_service.generate_ods_reports(
         MOCK_REPORT_ITEMS_ALL,
-        MOCK_TIMESTAMP,
     )
 
-    bulk_upload_report_service.generate_suspended_report(
-        test_ods_reports, str(MOCK_START_REPORT_TIME)
-    )
+    bulk_upload_report_service.generate_suspended_report(test_ods_reports)
 
     expected = readfile("expected_suspended_report.csv")
     with open(f"/tmp/{mock_file_name}") as test_file:
@@ -405,22 +461,23 @@ def test_generate_suspended_report_writes_csv(bulk_upload_report_service):
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/{mock_file_name}",
+        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
 
-def test_generate_deceased_report_writes_csv(bulk_upload_report_service):
-    mock_file_name = f"daily_statistical_report_bulk_upload_deceased_{str(MOCK_START_REPORT_TIME)}.csv"
+def test_generate_deceased_report_writes_csv(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_deceased_{MOCK_TIMESTAMP}.csv"
+    )
 
     test_ods_reports = bulk_upload_report_service.generate_ods_reports(
         MOCK_REPORT_ITEMS_ALL,
-        MOCK_TIMESTAMP,
     )
 
-    bulk_upload_report_service.generate_deceased_report(
-        test_ods_reports, str(MOCK_START_REPORT_TIME)
-    )
+    bulk_upload_report_service.generate_deceased_report(test_ods_reports)
 
     expected = readfile("expected_deceased_report.csv")
     with open(f"/tmp/{mock_file_name}") as test_file:
@@ -430,22 +487,23 @@ def test_generate_deceased_report_writes_csv(bulk_upload_report_service):
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/{mock_file_name}",
+        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
 
-def test_generate_restricted_report_writes_csv(bulk_upload_report_service):
-    mock_file_name = f"daily_statistical_report_bulk_upload_restricted_{str(MOCK_START_REPORT_TIME)}.csv"
+def test_generate_restricted_report_writes_csv(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_restricted_{MOCK_TIMESTAMP}.csv"
+    )
 
     test_ods_reports = bulk_upload_report_service.generate_ods_reports(
         MOCK_REPORT_ITEMS_ALL,
-        MOCK_TIMESTAMP,
     )
 
-    bulk_upload_report_service.generate_restricted_report(
-        test_ods_reports, str(MOCK_START_REPORT_TIME)
-    )
+    bulk_upload_report_service.generate_restricted_report(test_ods_reports)
 
     expected = readfile("expected_restricted_report.csv")
     with open(f"/tmp/{mock_file_name}") as test_file:
@@ -455,22 +513,23 @@ def test_generate_restricted_report_writes_csv(bulk_upload_report_service):
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/{mock_file_name}",
+        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
 
-def test_generate_rejected_report_writes_csv(bulk_upload_report_service):
-    mock_file_name = f"daily_statistical_report_bulk_upload_rejected_{str(MOCK_START_REPORT_TIME)}.csv"
+def test_generate_rejected_report_writes_csv(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv"
+    )
 
     test_ods_reports = bulk_upload_report_service.generate_ods_reports(
         MOCK_REPORT_ITEMS_ALL,
-        MOCK_TIMESTAMP,
     )
 
-    bulk_upload_report_service.generate_rejected_report(
-        test_ods_reports, str(MOCK_START_REPORT_TIME)
-    )
+    bulk_upload_report_service.generate_rejected_report(test_ods_reports)
 
     expected = readfile("expected_rejected_report.csv")
     with open(f"/tmp/{mock_file_name}") as test_file:
@@ -480,6 +539,6 @@ def test_generate_rejected_report_writes_csv(bulk_upload_report_service):
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/{mock_file_name}",
+        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
