@@ -1,13 +1,12 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Dict
 
 from enums.trace_status import TraceStatus
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel, to_pascal
+from pydantic.alias_generators import to_pascal
 
 
-class DocumentManifestZipTrace(BaseModel):
+class StitchTrace(BaseModel):
     model_config = ConfigDict(
         alias_generator=to_pascal,
         use_enum_values=True,
@@ -21,17 +20,5 @@ class DocumentManifestZipTrace(BaseModel):
         .isoformat()
         .replace("+00:00", "Z")
     )
-    files_to_download: Dict[str, str]
     job_status: TraceStatus = TraceStatus.PENDING
-    zip_file_location: str = ""
-
-    @staticmethod
-    def get_field_names_alias_list() -> list[str | None]:
-        return [field.alias for field in DocumentManifestZipTrace.model_fields.values()]
-
-
-class DocumentManifestJob(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, use_enum_values=True)
-
-    job_status: TraceStatus
-    url: str
+    stitched_file_location: str = ""
