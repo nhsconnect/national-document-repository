@@ -62,6 +62,6 @@ UniqueActiveUserIds = CloudwatchLogsQueryParams(
         Authorisation.selected_organisation.role_code AS role_code,
         Authorisation.repository_role AS user_role
         | filter ispresent(ods_code) AND ispresent(user_id)
-        | dedup(ods_code, user_id, user_role)
+        | dedup(ods_code, user_id, user_role, role_code)
     """,
 )
