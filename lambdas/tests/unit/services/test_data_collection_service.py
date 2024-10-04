@@ -33,18 +33,21 @@ from tests.unit.helpers.data.statistic.mock_dynamodb_and_s3_records import (
     build_mock_results,
 )
 from tests.unit.helpers.data.statistic.mock_logs_query_results import (
-    HASHED_USER_ID_1,
-    HASHED_USER_ID_2,
+    HASHED_USER_ID_1_WITH_ADMIN_ROLE,
+    HASHED_USER_ID_1_WITH_PCSE_ROLE,
+    HASHED_USER_ID_2_WITH_CLINICAL_ROLE,
     MOCK_LG_DELETED,
     MOCK_LG_DOWNLOADED,
     MOCK_LG_STORED,
     MOCK_LG_VIEWED,
+    MOCK_PATIENT_SEARCHED,
     MOCK_UNIQUE_ACTIVE_USER_IDS,
 )
 from utils.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
     LloydGeorgeRecordsDeleted,
     LloydGeorgeRecordsDownloaded,
+    LloydGeorgeRecordsSearched,
     LloydGeorgeRecordsStored,
     LloydGeorgeRecordsViewed,
     UniqueActiveUserIds,
@@ -99,6 +102,8 @@ def mock_query_logs(mocker):
             return MOCK_LG_STORED
         elif query_params == UniqueActiveUserIds:
             return MOCK_UNIQUE_ACTIVE_USER_IDS
+        elif query_params == LloydGeorgeRecordsSearched:
+            return MOCK_PATIENT_SEARCHED
 
     patched_instance = mocker.patch(
         "services.data_collection_service.CloudwatchService",
@@ -168,10 +173,11 @@ def test_collect_all_data_and_write_to_dynamodb(mock_service, mocker):
 
 
 def test_collect_all_data(mock_service, mock_uuid):
-    actual = mock_service.collect_all_data()
     expected = unordered(
         MOCK_RECORD_STORE_DATA + MOCK_ORGANISATION_DATA + MOCK_APPLICATION_DATA
     )
+
+    actual = mock_service.collect_all_data()
 
     assert actual == expected
 
@@ -250,10 +256,10 @@ def test_get_active_user_list(set_env, mock_query_logs):
     service = DataCollectionService()
     expected = {
         "H81109": [
-            HASHED_USER_ID_1,
-            HASHED_USER_ID_2,
+            HASHED_USER_ID_1_WITH_ADMIN_ROLE,
+            HASHED_USER_ID_2_WITH_CLINICAL_ROLE,
         ],
-        "Y12345": [HASHED_USER_ID_1],
+        "Y12345": [HASHED_USER_ID_1_WITH_PCSE_ROLE],
     }
     actual = service.get_active_user_list()
 

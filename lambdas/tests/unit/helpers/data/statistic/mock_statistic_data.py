@@ -124,6 +124,7 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_viewed": 35,
             "weekly_count_downloaded": 4,
             "weekly_count_deleted": 1,
+            "weekly_count_searched": 0,
             "average_records_per_patient": 4.5,
             "number_of_patients": 4,
         },
@@ -133,6 +134,7 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_viewed": 15 + 30,
             "weekly_count_downloaded": 1 + 5,
             "weekly_count_deleted": 1 + 1,
+            "weekly_count_searched": 0,
             "average_records_per_patient": (3.51 + 2.78) / 2,
             "number_of_patients": 10,
         },
@@ -202,14 +204,6 @@ MOCK_APPLICATION_DATA_3 = ApplicationData(
         "cf1af742e351ce63d8ed275d4bec8d8f",
     ],
 )
-
-EXPECTED_SUMMARY_APPLICATION_DATA = pl.DataFrame(
-    [
-        {"ods_code": "Z56789", "active_users_count": 1},
-        {"ods_code": "Y12345", "active_users_count": 3},
-    ],
-)
-
 SERIALISED_APPLICATION_DATA = [
     {
         "Date": "20240510",
@@ -238,6 +232,30 @@ SERIALISED_APPLICATION_DATA = [
         ],
     },
 ]
+
+EXPECTED_SUMMARY_APPLICATION_DATA = pl.DataFrame(
+    [
+        {
+            "ods_code": "Z56789",
+            "active_users_count": 1,
+            "unique_active_user_ids_hashed": str(
+                [str(SERIALISED_APPLICATION_DATA[0]["ActiveUserIdsHashed"][0])]
+            ),
+        },
+        {
+            "ods_code": "Y12345",
+            "active_users_count": 3,
+            "unique_active_user_ids_hashed": str(
+                [
+                    str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][0]),
+                    str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][1]),
+                    str(SERIALISED_APPLICATION_DATA[2]["ActiveUserIdsHashed"][1]),
+                ]
+            ),
+        },
+    ],
+)
+
 
 ALL_MOCKED_STATISTIC_DATA = (
     [MOCK_RECORD_STORE_DATA_1, MOCK_RECORD_STORE_DATA_2, MOCK_RECORD_STORE_DATA_3],
@@ -274,8 +292,12 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Number of patients": 4,
             "Total number of records": 18,
             "Total size of records in megabytes": 1.75,
+            "Unique active user ids hashed": str(
+                [str(SERIALISED_APPLICATION_DATA[0]["ActiveUserIdsHashed"][0])]
+            ),
             "Weekly count deleted": 1,
             "Weekly count downloaded": 4,
+            "Weekly count searched": 0,
             "Weekly count stored": 0,
             "Weekly count viewed": 35,
         },
@@ -289,8 +311,16 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Number of patients": 10,
             "Total number of records": 20,
             "Total size of records in megabytes": 2.34,
+            "Unique active user ids hashed": str(
+                [
+                    str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][0]),
+                    str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][1]),
+                    str(SERIALISED_APPLICATION_DATA[2]["ActiveUserIdsHashed"][1]),
+                ]
+            ),
             "Weekly count deleted": 1 + 1,
             "Weekly count downloaded": 1 + 5,
+            "Weekly count searched": 0,
             "Weekly count stored": 0 + 2,
             "Weekly count viewed": 15 + 30,
         },

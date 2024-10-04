@@ -96,7 +96,9 @@ def test_make_weekly_summary(set_env, mocker):
     actual = service.make_weekly_summary()
     expected = EXPECTED_WEEKLY_SUMMARY
 
-    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
+    assert_frame_equal(
+        actual, expected, check_row_order=False, check_dtype=False, check_exact=False
+    )
 
 
 def test_get_statistic_data(mock_dynamodb_service, mock_service):
@@ -255,7 +257,13 @@ def test_summarise_application_data(mock_service):
     expected = EXPECTED_SUMMARY_APPLICATION_DATA
     actual = mock_service.summarise_application_data(mock_data)
 
-    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+    assert_frame_equal(
+        actual,
+        expected,
+        check_dtype=False,
+        check_row_order=False,
+        check_column_order=False,
+    )
 
 
 def test_summarise_application_data_larger_mock_data(mock_service):
@@ -273,19 +281,34 @@ def test_summarise_application_data_larger_mock_data(mock_service):
 
     expected = pl.DataFrame(
         [
-            {"ods_code": "H81109", "active_users_count": active_users_count_h81109},
-            {"ods_code": "Y12345", "active_users_count": active_users_count_y12345},
+            {
+                "ods_code": "H81109",
+                "active_users_count": len(active_users_count_h81109),
+                "unique_active_user_ids_hashed": str(active_users_count_h81109),
+            },
+            {
+                "ods_code": "Y12345",
+                "active_users_count": len(active_users_count_y12345),
+                "unique_active_user_ids_hashed": str(active_users_count_y12345),
+            },
         ]
     )
     actual = mock_service.summarise_application_data(mock_organisation_data)
 
-    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+    assert_frame_equal(
+        actual,
+        expected,
+        check_dtype=False,
+        check_row_order=False,
+        check_column_order=False,
+    )
 
 
-def count_unique_user_ids(mock_data: list[ApplicationData]) -> int:
+def count_unique_user_ids(mock_data: list[ApplicationData]) -> list:
     active_users_of_each_day = [set(data.active_user_ids_hashed) for data in mock_data]
     unique_active_users_for_whole_week = set.union(*active_users_of_each_day)
-    return len(unique_active_users_for_whole_week)
+
+    return sorted(list(unique_active_users_for_whole_week))
 
 
 def test_summarise_application_data_can_handle_empty_input(mock_service):
