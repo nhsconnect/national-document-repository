@@ -36,11 +36,6 @@ function DocumentSearchResultsPage() {
     const config = useConfig();
     const mounted = useRef(false);
 
-    const resetDocState = () => {
-        setSubmissionState(SUBMISSION_STATE.INITIAL);
-        setDownloadState(SUBMISSION_STATE.INITIAL);
-    };
-
     useEffect(() => {
         const onPageLoad = async () => {
             setSubmissionState(SUBMISSION_STATE.PENDING);
@@ -106,7 +101,7 @@ function DocumentSearchResultsPage() {
                                 recordType="ARF"
                                 numberOfFiles={searchResults.length}
                                 docType={DOCUMENT_TYPE.ALL}
-                                resetDocState={resetDocState}
+                                resetDocState={() => null}
                             />
                         }
                     />

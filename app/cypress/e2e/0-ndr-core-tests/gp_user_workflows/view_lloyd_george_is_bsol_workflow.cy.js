@@ -270,7 +270,17 @@ describe('GP Workflow: View Lloyd George record', () => {
                     `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
                 ).should('be.visible');
 
+                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                    statusCode: 404,
+                }).as('lg-reload');
                 cy.getByTestId('lg-return-btn').click();
+                cy.wait('@lg-reload');
+
+                // Assert
+                cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
+                cy.getByTestId('no-records-title').should('be.visible');
+                cy.getByTestId('upload-patient-record-text').should('be.visible');
+                cy.getByTestId('upload-patient-record-button').should('be.visible');
             },
         );
 
