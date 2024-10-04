@@ -2,8 +2,9 @@ import uuid
 from datetime import datetime, timezone
 
 from enums.trace_status import TraceStatus
+from models.document_reference import DocumentReference
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_pascal
+from pydantic.alias_generators import to_camel, to_pascal
 
 
 class StitchTrace(BaseModel):
@@ -22,3 +23,17 @@ class StitchTrace(BaseModel):
     )
     job_status: TraceStatus = TraceStatus.PENDING
     stitched_file_location: str = ""
+    documents_to_stitch: list[DocumentReference] = []
+    number_of_files: int = 0
+    file_last_updated: str = ""
+    total_file_size_in_byte: int = 0
+
+
+class DocumentManifestJob(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, use_enum_values=True)
+
+    job_status: TraceStatus
+    presign_url: str
+    number_of_files: int = 0
+    last_updated: str = ""
+    total_file_size_in_byte: int = 0

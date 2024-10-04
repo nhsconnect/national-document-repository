@@ -9,7 +9,7 @@ from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
-from services.lloyd_george_stitch_service import LloydGeorgeStitchService
+from services.lloyd_george_generate_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import (
     MOCK_CLOUDFRONT_URL,
     MOCK_LG_BUCKET,

@@ -3,7 +3,7 @@ from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from models.stitch_trace import StitchTrace
 from pydantic import ValidationError
-from services.lloyd_george_stitch_service import LloydGeorgeStitchService
+from services.lloyd_george_generate_stitch_service import LloydGeorgeStitchService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -37,17 +37,17 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
     for record in dynamo_records:
-        new_zip_trace = record.get("dynamodb", {}).get("NewImage")
+        new_stitch_trace = record.get("dynamodb", {}).get("NewImage")
         event_name = record.get("eventName")
         if (
-            not new_zip_trace
+            not new_stitch_trace
             or event_name != "INSERT"
-            or not isinstance(new_zip_trace, dict)
+            or not isinstance(new_stitch_trace, dict)
         ):
             logger.error("Incorrect event format")
             return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
-        processed_stitch_trace = prepare_stitch_trace_data(new_zip_trace)
+        processed_stitch_trace = prepare_stitch_trace_data(new_stitch_trace)
         stitch_record_handler(processed_stitch_trace)
 
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
 
 def stitch_record_handler(stitch_trace_item):
     try:
-        StitchTrace.model_validate(stitch_trace_item)
+        stitch_trace = StitchTrace.model_validate(stitch_trace_item)
 
     except ValidationError as e:
         logger.error(
@@ -66,8 +66,8 @@ def stitch_record_handler(stitch_trace_item):
             status_code=500, error=LambdaError.StitchDBValidation
         )
 
-    stitch_service = LloydGeorgeStitchService()
-    stitch_service.stitch_lloyd_george_record()
+    stitch_service = LloydGeorgeStitchService(stitch_trace)
+    stitch_service.handle_stitch_request()
 
 
 def prepare_stitch_trace_data(new_stitch_trace: dict) -> dict:
