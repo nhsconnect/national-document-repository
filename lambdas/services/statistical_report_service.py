@@ -18,6 +18,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import StatisticDataNotFoundException
+from utils.utilities import to_date_folder_name
 
 logger = LoggingService(__name__)
 
@@ -218,13 +219,20 @@ class StatisticalReportService:
     def store_report_to_s3(self, weekly_summary: pl.DataFrame) -> None:
         logger.info("Saving the weekly report as .csv")
         file_name = f"statistical_report_{self.report_period}.csv"
+        end_date = self.dates_to_collect[-1]
+        date_folder = to_date_folder_name(end_date)
+
         temp_folder = tempfile.mkdtemp()
         local_file_path = os.path.join(temp_folder, file_name)
         try:
             weekly_summary.write_csv(local_file_path)
 
             logger.info("Uploading the csv report to S3 bucket...")
-            self.s3_service.upload_file(local_file_path, self.reports_bucket, file_name)
+            self.s3_service.upload_file(
+                s3_bucket_name=self.reports_bucket,
+                file_key=f"statistic-reports/{date_folder}/{file_name}",
+                file_name=local_file_path,
+            )
 
             logger.info("The weekly report is stored in s3 bucket.")
             logger.info(f"File name: {file_name}")
