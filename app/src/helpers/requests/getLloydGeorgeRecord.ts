@@ -1,6 +1,11 @@
 import axios from 'axios';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
+import waitForSeconds from '../utils/waitForSeconds';
+import { JOB_STATUS } from '../../types/generic/downloadManifestJobStatus';
+import { DownloadManifestError } from '../../types/generic/errors';
+import { isRunningInCypress } from '../utils/isLocal';
+export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 10;
 
 type Args = {
     nhsNumber: string;
@@ -9,19 +14,56 @@ type Args = {
 };
 
 export type LloydGeorgeStitchResult = {
+    jobStatus: string;
     number_of_files: number;
     total_file_size_in_byte: number;
     last_updated: string;
     presign_url: string;
 };
 
-async function getLloydGeorgeRecord({
-    nhsNumber,
-    baseUrl,
-    baseHeaders,
-}: Args): Promise<LloydGeorgeStitchResult> {
+type GetRequestArgs = {
+    jobId: string;
+    baseUrl: string;
+    baseHeaders: AuthHeaders;
+};
+
+const ThreePendingErrorMessage = 'Failed to initiate download';
+const UnexpectedResponseMessage =
+    'Got unexpected response from server when trying to download record';
+
+async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult> {
+    const { nhsNumber, baseUrl, baseHeaders } = args;
+
+    const jobId = await requestJobId(args);
+    let pendingCount = 0;
+
+    while (pendingCount < 3) {
+        await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+        const pollingResponse = await pollForPresignedUrl({
+            baseUrl,
+            baseHeaders,
+            jobId,
+        });
+
+        switch (pollingResponse?.jobStatus) {
+            case JOB_STATUS.COMPLETED:
+                return pollingResponse;
+            case JOB_STATUS.PROCESSING:
+                continue;
+            case JOB_STATUS.PENDING:
+                pendingCount += 1;
+                continue;
+            default:
+                throw new DownloadManifestError(UnexpectedResponseMessage);
+        }
+    }
+    throw new DownloadManifestError(ThreePendingErrorMessage);
+}
+
+export const requestJobId = async ({ nhsNumber, baseUrl, baseHeaders }: Args): Promise<string> => {
     const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
-    const { data } = await axios.get(gatewayUrl, {
+
+    const response = await axios.post(gatewayUrl, '', {
         headers: {
             ...baseHeaders,
         },
@@ -29,15 +71,28 @@ async function getLloydGeorgeRecord({
             patientId: nhsNumber,
         },
     });
+
+    return response.data.jobId;
+};
+export const pollForPresignedUrl = async ({
+    jobId,
+    baseUrl,
+    baseHeaders,
+}: GetRequestArgs): Promise<LloydGeorgeStitchResult> => {
+    const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
+
+    const { data } = await axios.get(gatewayUrl, {
+        headers: {
+            ...baseHeaders,
+        },
+        params: {
+            jobId,
+        },
+    });
     if (!data.presign_url.startsWith('https://')) {
         return Promise.reject({ response: { status: 500 } });
     }
-    return {
-        ...data,
-        presign_url: `${data.presign_url}&origin=${
-            typeof window !== 'undefined' ? window.location.href : ''
-        }`,
-    };
-}
 
+    return data;
+};
 export default getLloydGeorgeRecord;
