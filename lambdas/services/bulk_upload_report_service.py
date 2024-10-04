@@ -396,6 +396,6 @@ class BulkUploadReportService:
 
         self.generated_on = start_timestamp.strftime("%Y%m%d")
         date_folder_name = generate_date_folder_name(self.generated_on)
-        self.s3_key_prefix = f"daily-reports/{date_folder_name}"
+        self.s3_key_prefix = f"bulk-upload-reports/{date_folder_name}"
 
         return start_timestamp, end_timestamp

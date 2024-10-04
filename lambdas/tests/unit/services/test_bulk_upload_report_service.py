@@ -68,7 +68,9 @@ def mock_get_db_with_data(mocker, bulk_upload_report_service):
 def mock_get_times_for_scan(bulk_upload_report_service, mocker):
     mock_date_folder_name = generate_date_folder_name(MOCK_TIMESTAMP)
     bulk_upload_report_service.generated_on = MOCK_TIMESTAMP
-    bulk_upload_report_service.s3_key_prefix = f"daily-reports/{mock_date_folder_name}"
+    bulk_upload_report_service.s3_key_prefix = (
+        f"bulk-upload-reports/{mock_date_folder_name}"
+    )
     yield mocker.patch.object(
         bulk_upload_report_service,
         "get_times_for_scan",
@@ -266,47 +268,47 @@ def test_report_handler_with_items_uploads_summary_report_to_bucket(
     calls = [
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Y12345.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Y12345.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Y12345.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Z12345.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Z12345.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_Z12345.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_entire_bulk_upload_{str(MOCK_START_REPORT_TIME)}_to_{str(MOCK_END_REPORT_TIME)}.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_entire_bulk_upload_{str(MOCK_START_REPORT_TIME)}_to_{str(MOCK_END_REPORT_TIME)}.csv",
             file_name=f"/tmp/daily_statistical_report_entire_bulk_upload_{str(MOCK_START_REPORT_TIME)}_to_{str(MOCK_END_REPORT_TIME)}.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_suspended_{MOCK_TIMESTAMP}.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_bulk_upload_suspended_{MOCK_TIMESTAMP}.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_suspended_{MOCK_TIMESTAMP}.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_deceased_{MOCK_TIMESTAMP}.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_bulk_upload_deceased_{MOCK_TIMESTAMP}.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_deceased_{MOCK_TIMESTAMP}.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_restricted_{MOCK_TIMESTAMP}.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_bulk_upload_restricted_{MOCK_TIMESTAMP}.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_restricted_{MOCK_TIMESTAMP}.csv",
         ),
         call(
             s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-            file_key=f"daily-reports/2012-01-13/daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv",
+            file_key=f"bulk-upload-reports/2012-01-13/daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv",
             file_name=f"/tmp/daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv",
         ),
     ]
@@ -364,7 +366,7 @@ def test_generate_individual_ods_report_writes_csv_report(
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
+        file_key=f"bulk-upload-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
@@ -435,7 +437,7 @@ def test_generate_success_report_writes_csv(
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
+        file_key=f"bulk-upload-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
@@ -461,7 +463,7 @@ def test_generate_suspended_report_writes_csv(
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
+        file_key=f"bulk-upload-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
@@ -487,7 +489,7 @@ def test_generate_deceased_report_writes_csv(
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
+        file_key=f"bulk-upload-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
@@ -513,7 +515,7 @@ def test_generate_restricted_report_writes_csv(
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
+        file_key=f"bulk-upload-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
 
@@ -539,6 +541,6 @@ def test_generate_rejected_report_writes_csv(
 
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
         s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
-        file_key=f"daily-reports/2012-01-13/{mock_file_name}",
+        file_key=f"bulk-upload-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
