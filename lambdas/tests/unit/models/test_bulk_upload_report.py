@@ -1,6 +1,6 @@
 from enums.upload_status import UploadStatus
 from freezegun import freeze_time
-from models.bulk_upload_status import BulkUploadReport
+from models.bulk_upload_report import BulkUploadReport
 from tests.unit.conftest import TEST_UUID
 
 MOCK_DATA_COMPLETE_UPLOAD = {
@@ -30,6 +30,8 @@ MOCK_DATA_FAILED_UPLOAD = {
 
 def test_create_successful_upload():
     expected = MOCK_DATA_COMPLETE_UPLOAD
+    expected.update({"FailureReason": ""})
+
     actual = BulkUploadReport(
         ID=TEST_UUID,
         nhs_number="9000000009",
@@ -64,6 +66,8 @@ def test_create_failed_upload():
 @freeze_time("2023-10-30 10:25:00")
 def test_successful_upload_ids_and_timestamp_are_auto_populated_if_not_given(mock_uuid):
     expected = MOCK_DATA_COMPLETE_UPLOAD
+    expected.update({"FailureReason": ""})
+
     actual = BulkUploadReport(
         nhs_number="9000000009",
         file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",

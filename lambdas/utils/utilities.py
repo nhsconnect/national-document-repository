@@ -2,6 +2,7 @@ import itertools
 import os
 import re
 import uuid
+from datetime import datetime
 from urllib.parse import urlparse
 
 from inflection import camelize
@@ -59,3 +60,8 @@ def get_file_key_from_s3_url(s3_url: str) -> str:
 
 def flatten(nested_list: list[list]) -> list:
     return list(itertools.chain(*nested_list))
+
+
+def generate_date_folder_name(date: str) -> str:
+    date_obj = datetime.strptime(date, "%Y%m%d")
+    return date_obj.strftime("%Y-%m-%d")

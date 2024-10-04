@@ -365,13 +365,15 @@ def test_join_dataframes_by_ods_code_can_handle_empty_dataframe(mock_service):
 @freeze_time("20240512T07:00:00Z")
 def test_store_report_to_s3(set_env, mock_s3_service, mock_temp_folder):
     mock_weekly_summary = EXPECTED_WEEKLY_SUMMARY
+    expected_date_folder = "2024-05-11"
     expected_filename = "statistical_report_20240505-20240511.csv"
-    expected_local_file_path = f"{mock_temp_folder}/{expected_filename}"
 
     service = StatisticalReportService()
 
     service.store_report_to_s3(mock_weekly_summary)
 
     mock_s3_service.upload_file.assert_called_with(
-        expected_local_file_path, MOCK_STATISTICS_REPORT_BUCKET_NAME, expected_filename
+        s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+        file_key=f"statistic-reports/{expected_date_folder}/{expected_filename}",
+        file_name=f"{mock_temp_folder}/{expected_filename}",
     )
