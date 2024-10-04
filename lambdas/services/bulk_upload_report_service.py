@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.utilities import to_date_folder_name
+from utils.utilities import generate_date_folder_name
 
 logger = LoggingService(__name__)
 
@@ -395,7 +395,7 @@ class BulkUploadReportService:
         start_timestamp = end_timestamp - datetime.timedelta(days=1)
 
         self.generated_on = start_timestamp.strftime("%Y%m%d")
-        date_folder = to_date_folder_name(self.generated_on)
-        self.s3_key_prefix = f"daily-reports/{date_folder}"
+        date_folder_name = generate_date_folder_name(self.generated_on)
+        self.s3_key_prefix = f"daily-reports/{date_folder_name}"
 
         return start_timestamp, end_timestamp

@@ -62,6 +62,6 @@ def flatten(nested_list: list[list]) -> list:
     return list(itertools.chain(*nested_list))
 
 
-def to_date_folder_name(date: str) -> str:
+def generate_date_folder_name(date: str) -> str:
     date_obj = datetime.strptime(date, "%Y%m%d")
     return date_obj.strftime("%Y-%m-%d")

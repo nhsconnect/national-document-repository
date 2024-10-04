@@ -24,7 +24,7 @@ from tests.unit.helpers.data.dynamo_scan_response import (
     MOCK_EMPTY_RESPONSE,
     UNEXPECTED_RESPONSE,
 )
-from utils.utilities import to_date_folder_name
+from utils.utilities import generate_date_folder_name
 
 MOCK_END_REPORT_TIME = datetime(2012, 1, 14, 7, 0, 0, 0)
 MOCK_START_REPORT_TIME = datetime(2012, 1, 13, 7, 0, 0, 0)
@@ -66,7 +66,7 @@ def mock_get_db_with_data(mocker, bulk_upload_report_service):
 
 @pytest.fixture
 def mock_get_times_for_scan(bulk_upload_report_service, mocker):
-    mock_date_folder_name = to_date_folder_name(MOCK_TIMESTAMP)
+    mock_date_folder_name = generate_date_folder_name(MOCK_TIMESTAMP)
     bulk_upload_report_service.generated_on = MOCK_TIMESTAMP
     bulk_upload_report_service.s3_key_prefix = f"daily-reports/{mock_date_folder_name}"
     yield mocker.patch.object(
