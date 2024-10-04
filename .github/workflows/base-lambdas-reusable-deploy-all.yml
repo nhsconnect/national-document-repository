@@ -173,10 +173,25 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: lloyd_george_record_stitch_handler
-      lambda_aws_name: LloydGeorgeStitchLambda
+      lambda_aws_name: LloydGeorgeStitch
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_generate_lloyd_george_record_stitch_lambda:
+    name: Deploy GenerateStitchRecord
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: generate_stitch_record_handler
+      lambda_aws_name: GenerateStitchRecord
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
 
   deploy_logout_handler_lambda:
     name: Deploy LogoutHandler
