@@ -39,7 +39,7 @@ let history: MemoryHistory = createMemoryHistory({
 const mockedUseRole = useRole as jest.Mock;
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;
-
+const mockResetDocState = jest.fn();
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 
@@ -165,6 +165,26 @@ describe('DeleteSubmitStage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
                     routeChildren.LLOYD_GEORGE_DELETE_COMPLETE,
                 );
+            });
+        });
+
+        it('calls resetDocState when the Yes is selected and Continue clicked', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+
+            mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
+
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
+
+            expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(mockResetDocState).toHaveBeenCalled();
             });
         });
 
@@ -343,6 +363,7 @@ const renderComponent = (docType: DOCUMENT_TYPE, history: MemoryHistory) => {
         numberOfFiles: mockLgSearchResult.number_of_files,
         docType,
         recordType: docType.toString(),
+        resetDocState: mockResetDocState,
     };
 
     return render(

@@ -29,9 +29,10 @@ export type Props = {
     numberOfFiles: number;
     recordType: string;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
+    resetDocState: () => void;
 };
 
-function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage }: Props) {
+function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetDocState }: Props) {
     useTitle({ pageTitle: 'Remove record' });
     const patientDetails = usePatient();
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.PENDING);
@@ -191,6 +192,7 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage }: Prop
                             docType={DOCUMENT_TYPE.LLOYD_GEORGE}
                             numberOfFiles={numberOfFiles}
                             recordType="Lloyd George"
+                            resetDocState={resetDocState}
                         />
                     }
                 ></Route>
@@ -201,6 +203,7 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage }: Prop
                             docType={DOCUMENT_TYPE.LLOYD_GEORGE}
                             numberOfFiles={numberOfFiles}
                             recordType="ARF"
+                            resetDocState={resetDocState}
                         />
                     }
                 ></Route>
