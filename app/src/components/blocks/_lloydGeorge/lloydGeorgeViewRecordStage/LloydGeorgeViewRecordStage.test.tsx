@@ -121,7 +121,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 
-    it("returns to previous view when 'Exit full screen' link clicked during full screen", async () => {
+    it("returns to previous view when 'Exit full screen' button link clicked during full screen", async () => {
         renderComponent();
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
@@ -163,7 +163,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         });
     });
 
-    it('updates history correctly when exiting full screen using the UI back button', async () => {
+    it('updates history correctly when exiting full screen using the "Exit full screen" button link', async () => {
         const backSpy = jest.spyOn(window.history, 'back');
         renderComponent();
 
