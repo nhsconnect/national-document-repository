@@ -50,16 +50,16 @@ function LloydGeorgeRecordPage() {
 
     const refreshRecord = async () => {
         const onSuccess = (
-            files_count: number,
-            updated_date: string,
-            file_size: number,
-            presign_url: string,
+            filesCount: number,
+            updatedDate: string,
+            fileSize: number,
+            presignedUrl: string,
         ) => {
-            setNumberOfFiles(files_count);
-            setLastUpdated(getFormattedDatetime(new Date(updated_date)));
+            setNumberOfFiles(filesCount);
+            setLastUpdated(getFormattedDatetime(new Date(updatedDate)));
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-            setTotalFileSizeInByte(file_size);
-            setCloudFrontUrl(presign_url);
+            setTotalFileSizeInByte(fileSize);
+            setCloudFrontUrl(presignedUrl);
         };
 
         const onError = (e: AxiosError) => {
@@ -94,14 +94,14 @@ function LloydGeorgeRecordPage() {
 
         const nhsNumber: string = patientDetails?.nhsNumber ?? '';
         try {
-            const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
+            const { numberOfFiles, totalFileSizeInByte, lastUpdated, presignedUrl } =
                 await getLloydGeorgeRecord({
                     nhsNumber,
                     baseUrl,
                     baseHeaders,
                 });
 
-            onSuccess(number_of_files, last_updated, total_file_size_in_byte, presign_url);
+            onSuccess(numberOfFiles, lastUpdated, totalFileSizeInByte, presignedUrl);
         } catch (e) {
             onError(e as AxiosError);
         }

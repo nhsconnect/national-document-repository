@@ -34,7 +34,7 @@ class DocumentStitchJob(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, use_enum_values=True)
 
     job_status: TraceStatus
-    presign_url: str
+    presigned_url: str
     number_of_files: int = 0
     last_updated: str = ""
     total_file_size_in_byte: int = 0
