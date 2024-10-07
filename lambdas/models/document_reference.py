@@ -4,7 +4,8 @@ from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_pascal
 from utils.exceptions import InvalidDocumentReferenceException
 
 
@@ -19,47 +20,28 @@ class UploadDocumentReferences(BaseModel):
 
 
 class DocumentReference(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=to_pascal,
+        use_enum_values=True,
+        populate_by_name=True,
+    )
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
-    content_type: str = Field(
-        ..., alias=str(DocumentReferenceMetadataFields.CONTENT_TYPE.value)
-    )
-    created: str = Field(
-        ...,
-        alias=str(DocumentReferenceMetadataFields.CREATED.value),
-        serialization_alias="created",
-    )
-    deleted: str = Field(..., alias=str(DocumentReferenceMetadataFields.DELETED.value))
-    file_location: str = Field(
-        ..., alias=str(DocumentReferenceMetadataFields.FILE_LOCATION.value)
-    )
-    file_name: str = Field(
-        ...,
-        alias=str(DocumentReferenceMetadataFields.FILE_NAME.value),
-        serialization_alias="fileName",
-    )
-    nhs_number: str = Field(
-        ..., alias=str(DocumentReferenceMetadataFields.NHS_NUMBER.value)
-    )
+    content_type: str
+    created: str
+    deleted: str
+    file_location: str
+    file_name: str
+    nhs_number: str
     ttl: Optional[int] = Field(
         alias=str(DocumentReferenceMetadataFields.TTL.value), default=None
     )
-    virus_scanner_result: str = Field(
-        ...,
-        alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value),
-        serialization_alias="virusScannerResult",
-    )
+    virus_scanner_result: str
     # Allow current_gp_ods to be nullable so that we can cope with existing records.
     # After we updated all existing records with this field, consider to set this as non-Optional
-    current_gp_ods: Optional[str] = Field(
-        alias=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value), default=None
-    )
-
-    uploaded: bool = Field(alias=str(DocumentReferenceMetadataFields.UPLOADED.value))
-    uploading: bool = Field(alias=str(DocumentReferenceMetadataFields.UPLOADING.value))
-    last_updated: int = Field(
-        alias=str(DocumentReferenceMetadataFields.LAST_UPDATED.value),
-        serialization_alias="lastUpdated",
-    )
+    current_gp_ods: Optional[str] = None
+    uploaded: bool
+    uploading: bool
+    last_updated: int
 
     def get_file_name_path(self):
         return pathlib.Path(self.file_name)
