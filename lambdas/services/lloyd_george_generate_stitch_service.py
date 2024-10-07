@@ -133,7 +133,7 @@ class LloydGeorgeStitchService:
                 file_key=filename_on_bucket,
                 extra_args=extra_args,
             )
-
+            self.stitch_trace_object.stitched_file_location = filename_on_bucket
         except ValueError as e:
             logger.error(
                 f"{LambdaError.StitchCloudFront.to_str()}: {str(e)}",
@@ -151,10 +151,11 @@ class LloydGeorgeStitchService:
 
     def update_dynamo_with_fields(self):
         logger.info("Writing stitch trace to db")
+        self.stitch_trace_object.job_status = TraceStatus.COMPLETED
         self.document_service.dynamo_service.update_item(
             self.stitch_trace_table,
             self.stitch_trace_object.id,
-            self.stitch_trace_object.model_dump(by_alias=True),
+            self.stitch_trace_object.model_dump(by_alias=True, exclude={"id"}),
         )
 
     def update_failed_status(self):

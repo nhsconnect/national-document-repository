@@ -36,12 +36,12 @@ def create_stitch_job(event, context):
 
 @validate_job_id
 def get_stitch_job(event, context):
-    logger.info("Retrieving document manifest")
+    logger.info("Retrieving document stitch")
 
     job_id = event["queryStringParameters"]["jobId"]
 
-    document_manifest_service = LloydGeorgeStitchJobService()
-    response = document_manifest_service.query_document_manifest_job(job_id)
+    document_stitch_service = LloydGeorgeStitchJobService()
+    response = document_stitch_service.query_document_stitch_job(job_id)
 
     return ApiGatewayResponse(
         200, json.dumps(response.model_dump(by_alias=True)), "GET"

@@ -59,12 +59,12 @@ class LloydGeorgeStitchJobService:
     ) -> str:
         logger.info("Writing Document Manifest zip trace to db")
 
-        zip_trace = StitchTrace(documents_to_stitch=ordered_lg_records)
+        stitch_trace = StitchTrace(documents_to_stitch=ordered_lg_records)
         self.dynamo_service.create_item(
-            self.stitch_trace_table, zip_trace.model_dump(by_alias=True)
+            self.stitch_trace_table, stitch_trace.model_dump(by_alias=True)
         )
 
-        return str(zip_trace.job_id)
+        return str(stitch_trace.job_id)
 
     def get_lloyd_george_record_for_patient(
         self, nhs_number: str
@@ -159,7 +159,7 @@ class LloydGeorgeStitchJobService:
                     jobStatus=TraceStatus.COMPLETED,
                     url=presigned_url,
                     number_of_files=stitch_trace.number_of_files,
-                    last_updated=stitch_trace.last_updated,
+                    last_updated=stitch_trace.file_last_updated,
                     total_file_size_in_byte=stitch_trace.total_file_size_in_byte,
                 )
 
