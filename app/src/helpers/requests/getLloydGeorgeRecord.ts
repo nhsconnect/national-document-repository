@@ -93,6 +93,11 @@ export const pollForPresignedUrl = async ({
         return Promise.reject({ response: { status: 500 } });
     }
 
-    return data;
+    return {
+        ...data,
+        presign_url: `${data.presign_url}&origin=${
+            typeof window !== 'undefined' ? window.location.href : ''
+        }`,
+    };
 };
 export default getLloydGeorgeRecord;
