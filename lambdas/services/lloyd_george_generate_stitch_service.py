@@ -33,8 +33,8 @@ class LloydGeorgeStitchService:
         self.document_service = DocumentService()
         self.temp_folder = tempfile.mkdtemp()
         self.stitch_trace_object = stitch_trace
-        self.stitch_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
-        self.stitch_file_name = f"patient-record-{stitch_trace.job_id}.zip"
+        self.stitch_trace_table = os.environ["STITCH_STORE_DYNAMODB_NAME"]
+        self.stitch_file_name = f"patient-record-{stitch_trace.job_id}.pdf"
         self.stitch_file_path = os.path.join(self.temp_folder, self.stitch_file_name)
 
     def handle_stitch_request(self):
@@ -150,7 +150,7 @@ class LloydGeorgeStitchService:
         return sum(os.path.getsize(filepath) for filepath in filepaths)
 
     def update_dynamo_with_fields(self):
-        logger.info("Writing zip trace to db")
+        logger.info("Writing stitch trace to db")
         self.document_service.dynamo_service.update_item(
             self.stitch_trace_table,
             self.stitch_trace_object.id,
