@@ -7,45 +7,57 @@ type Props = {
     children: ReactNode;
 };
 
-const INACTIVITY_TIMEOUT = 1 * 60 * 1000; // 1 minute
+const TIMEOUT_MINUTES = 1;
 
 function AuthGuard({ children }: Props) {
-    const [session, setSession] = useSessionContext();
+    const [session] = useSessionContext();
     const navigate = useNavigate();
     const location = useLocation();
-    const lastActivityRef = useRef(Date.now()); // Use useRef to hold the last activity timestamp
+    const lastActivityRef = useRef(Date.now());
+    const intervalIdRef = useRef<number | null>(null);
 
+    // Check user is logged in on every child page load
+    useEffect(() => {
+        if (!session.isLoggedIn) {
+            navigate(routes.UNAUTHORISED);
+        }
+    }, [session, navigate]);
+
+    // Attach event listeners for user active
     useEffect(() => {
         const resetActivity = () => {
-            console.log('ACTIVITY DETECTED');
-            lastActivityRef.current = Date.now(); // Update the ref directly
+            lastActivityRef.current = Date.now();
         };
 
         const events = ['mousemove', 'keydown', 'click'];
         events.forEach((event) => window.addEventListener(event, resetActivity));
 
-        const intervalId = setInterval(() => {
-            if (Date.now() - lastActivityRef.current > INACTIVITY_TIMEOUT) {
+        return () => {
+            events.forEach((event) => window.removeEventListener(event, resetActivity));
+        };
+    }, []);
+
+    // Attach event listener for user inactive
+    useEffect(() => {
+        const inactiveTimeout = TIMEOUT_MINUTES * 60 * 1000;
+        const checkInactivity = () => {
+            if (Date.now() - lastActivityRef.current > inactiveTimeout) {
                 const searchParams = new URLSearchParams(location.search);
                 searchParams.set('timeout', 'true');
-                console.log('INACTIVITY DETECTED');
-
                 navigate({
                     pathname: routes.LOGOUT,
                     search: searchParams.toString(),
                 });
             }
-        }, 1000);
-
-        if (!session.isLoggedIn) {
-            navigate(routes.UNAUTHORISED);
-        }
-
-        return () => {
-            events.forEach((event) => window.removeEventListener(event, resetActivity));
-            clearInterval(intervalId);
         };
-    }, [session, navigate, setSession, location.search]);
+
+        intervalIdRef.current = window.setInterval(checkInactivity, 1000);
+        return () => {
+            if (intervalIdRef.current) {
+                clearInterval(intervalIdRef.current);
+            }
+        };
+    }, [navigate, location.search]);
 
     return <>{children}</>;
 }
