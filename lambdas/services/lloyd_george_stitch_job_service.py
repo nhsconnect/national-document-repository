@@ -5,8 +5,7 @@ from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from enums.trace_status import TraceStatus
 from models.document_reference import DocumentReference
-from models.stitch_trace import StitchTrace
-from models.zip_trace import DocumentManifestJob
+from models.stitch_trace import DocumentStitchJob, StitchTrace
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
@@ -57,7 +56,7 @@ class LloydGeorgeStitchJobService:
         self,
         ordered_lg_records: list[DocumentReference],
     ) -> str:
-        logger.info("Writing Document Manifest zip trace to db")
+        logger.info("Writing Document Stitch trace to db")
 
         stitch_trace = StitchTrace(documents_to_stitch=ordered_lg_records)
         self.dynamo_service.create_item(
@@ -143,9 +142,9 @@ class LloydGeorgeStitchJobService:
             case TraceStatus.FAILED:
                 raise LGStitchServiceException(500, LambdaError.StitchNoService)
             case TraceStatus.PENDING:
-                return DocumentManifestJob(jobStatus=TraceStatus.PENDING, url="")
+                return DocumentStitchJob(jobStatus=TraceStatus.PENDING, url="")
             case TraceStatus.PROCESSING:
-                return DocumentManifestJob(jobStatus=TraceStatus.PROCESSING, url="")
+                return DocumentStitchJob(jobStatus=TraceStatus.PROCESSING, url="")
             case TraceStatus.COMPLETED:
                 presigned_url = self.create_document_stitch_presigned_url(
                     stitch_trace.stitched_file_location
@@ -155,7 +154,7 @@ class LloydGeorgeStitchJobService:
                     {"Result": "Successful Stitching"},
                 )
 
-                return DocumentManifestJob(
+                return DocumentStitchJob(
                     jobStatus=TraceStatus.COMPLETED,
                     url=presigned_url,
                     number_of_files=stitch_trace.number_of_files,

@@ -27,9 +27,10 @@ class StitchTrace(BaseModel):
     number_of_files: int = 0
     file_last_updated: str = ""
     total_file_size_in_byte: int = 0
+    ttl: int = Field(alias="TTL", default=None)
 
 
-class DocumentManifestJob(BaseModel):
+class DocumentStitchJob(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, use_enum_values=True)
 
     job_status: TraceStatus
