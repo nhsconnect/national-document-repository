@@ -10,7 +10,6 @@ import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBo
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import getPatientDetails from '../../helpers/requests/getPatientDetails';
 import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
-import BackButton from '../../components/generic/backButton/BackButton';
 import { AxiosError } from 'axios';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
@@ -94,7 +93,6 @@ function PatientSearchPage() {
     };
     return (
         <>
-            <BackButton />
             {submissionState === SEARCH_STATES.FAILED && (
                 <>
                     {isError ? (
