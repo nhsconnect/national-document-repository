@@ -89,13 +89,13 @@ export const pollForPresignedUrl = async ({
             jobId,
         },
     });
-    if (!data.presign_url.startsWith('https://')) {
+    if (!data.presignedUrl.startsWith('https://')) {
         return Promise.reject({ response: { status: 500 } });
     }
 
     return {
         ...data,
-        presign_url: `${data.presign_url}&origin=${
+        presignedUrl: `${data.presignedUrl}&origin=${
             typeof window !== 'undefined' ? window.location.href : ''
         }`,
     };
