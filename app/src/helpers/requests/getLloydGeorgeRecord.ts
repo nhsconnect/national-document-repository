@@ -21,29 +21,17 @@ export type LloydGeorgeStitchResult = {
     presignedUrl: string;
 };
 
-type GetRequestArgs = {
-    jobId: string;
-    baseUrl: string;
-    baseHeaders: AuthHeaders;
-};
-
 const ThreePendingErrorMessage = 'Failed to initiate download';
 const UnexpectedResponseMessage =
     'Got unexpected response from server when trying to download record';
 
 async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult> {
-    const { nhsNumber, baseUrl, baseHeaders } = args;
-
-    const jobId = await requestJobId(args);
+    await requestStitchJob(args);
     let pendingCount = 0;
 
     while (pendingCount < 3) {
         await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
-        const pollingResponse = await pollForPresignedUrl({
-            baseUrl,
-            baseHeaders,
-            jobId,
-        });
+        const pollingResponse = await pollForPresignedUrl(args);
 
         switch (pollingResponse?.jobStatus) {
             case JOB_STATUS.COMPLETED:
@@ -60,7 +48,11 @@ async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult
     throw new DownloadManifestError(ThreePendingErrorMessage);
 }
 
-export const requestJobId = async ({ nhsNumber, baseUrl, baseHeaders }: Args): Promise<string> => {
+export const requestStitchJob = async ({
+    nhsNumber,
+    baseUrl,
+    baseHeaders,
+}: Args): Promise<string> => {
     const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
 
     const response = await axios.post(gatewayUrl, '', {
@@ -72,13 +64,13 @@ export const requestJobId = async ({ nhsNumber, baseUrl, baseHeaders }: Args): P
         },
     });
 
-    return response.data.jobId;
+    return response.data.jobStatus;
 };
 export const pollForPresignedUrl = async ({
-    jobId,
+    nhsNumber,
     baseUrl,
     baseHeaders,
-}: GetRequestArgs): Promise<LloydGeorgeStitchResult> => {
+}: Args): Promise<LloydGeorgeStitchResult> => {
     const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
 
     const { data } = await axios.get(gatewayUrl, {
@@ -86,7 +78,7 @@ export const pollForPresignedUrl = async ({
             ...baseHeaders,
         },
         params: {
-            jobId,
+            patientId: nhsNumber,
         },
     });
     if (!data.presignedUrl.startsWith('https://')) {
