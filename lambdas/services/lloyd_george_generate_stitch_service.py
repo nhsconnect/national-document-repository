@@ -46,13 +46,13 @@ class LloydGeorgeStitchService:
         self.stitch_file_path = os.path.join(self.temp_folder, self.stitch_file_name)
 
     def handle_stitch_request(self):
-        self.update_trace_status(TraceStatus.PROCESSING)
         documents_for_stitching = self.get_lloyd_george_record_for_patient()
+        self.update_trace_status(TraceStatus.PROCESSING)
         sorted_documents_for_stitching = self.sort_documents_by_filenames(
             documents_for_stitching
         )
         self.stitch_lloyd_george_record(sorted_documents_for_stitching)
-        self.update_dynamo_with_fields()
+        self.update_stitch_job_complete()
 
     def stitch_lloyd_george_record(self, documents: list[DocumentReference]):
         try:
@@ -157,7 +157,7 @@ class LloydGeorgeStitchService:
     def get_total_file_size_in_bytes(filepaths: list[str]) -> int:
         return sum(os.path.getsize(filepath) for filepath in filepaths)
 
-    def update_dynamo_with_fields(self):
+    def update_stitch_job_complete(self):
         logger.info("Writing stitch trace to db")
         self.stitch_trace_object.job_status = TraceStatus.COMPLETED
         self.document_service.dynamo_service.update_item(
@@ -168,7 +168,11 @@ class LloydGeorgeStitchService:
 
     def update_trace_status(self, trace_status: TraceStatus):
         self.stitch_trace_object.job_status = trace_status
-        self.update_dynamo_with_fields()
+        self.document_service.dynamo_service.update_item(
+            self.stitch_trace_table,
+            self.stitch_trace_object.id,
+            self.stitch_trace_object.model_dump(by_alias=True, include={"job_status"}),
+        )
 
     def get_lloyd_george_record_for_patient(
         self,

@@ -30,7 +30,10 @@ class LloydGeorgeStitchJobService:
     def create_stitch_job(self, nhs_number: str) -> TraceStatus:
         try:
             stitch_trace_result = self.query_stitch_trace_with_nhs_number(nhs_number)
-            if stitch_trace_result:
+            if (
+                stitch_trace_result
+                and not stitch_trace_result.job_status == TraceStatus.NO_DOCUMENTS
+            ):
                 return stitch_trace_result.job_status
             else:
                 return self.write_stitch_trace(nhs_number)
@@ -75,8 +78,9 @@ class LloydGeorgeStitchJobService:
             case TraceStatus.PENDING:
                 return DocumentStitchJob(jobStatus=TraceStatus.PENDING, presignedUrl="")
             case TraceStatus.NO_DOCUMENTS:
-                return DocumentStitchJob(
-                    jobStatus=TraceStatus.NO_DOCUMENTS, presignedUrl=""
+                raise LGStitchServiceException(
+                    404,
+                    LambdaError.StitchNotFound,
                 )
             case TraceStatus.PROCESSING:
                 return DocumentStitchJob(
