@@ -6,6 +6,7 @@ from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.document_service import DocumentService
+from services.lloyd_george_stitch_job_service import LloydGeorgeStitchJobService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted
 from utils.exceptions import DynamoServiceException
@@ -17,6 +18,7 @@ logger = LoggingService(__name__)
 class DocumentDeletionService:
     def __init__(self):
         self.document_service = DocumentService()
+        self.stitch_service = LloydGeorgeStitchJobService()
 
     def handle_delete(
         self, nhs_number: str, doc_types: list[SupportedDocumentTypes]
@@ -24,6 +26,7 @@ class DocumentDeletionService:
         files_deleted = []
         for doc_type in doc_types:
             files_deleted += self.delete_specific_doc_type(nhs_number, doc_type)
+        self.delete_documents_references_in_stitch_table(nhs_number)
         return files_deleted
 
     def get_documents_references_in_storage(
@@ -35,6 +38,18 @@ class DocumentDeletionService:
             nhs_number, doc_type, NotDeleted
         )
         return results
+
+    def delete_documents_references_in_stitch_table(self, nhs_number: str):
+        documents_in_stitch_table = (
+            self.stitch_service.query_stitch_trace_with_nhs_number(nhs_number)
+        )
+        for record in documents_in_stitch_table:
+            record.deleted = True
+            self.document_service.dynamo_service.update_item(
+                self.stitch_service.stitch_trace_table,
+                record.id,
+                record.model_dump(by_alias=True, include={"deleted"}),
+            )
 
     def delete_specific_doc_type(
         self,
