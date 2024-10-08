@@ -70,7 +70,7 @@ class LloydGeorgeStitchService:
         try:
             stitched_lg_record = stitch_pdf(all_lg_parts, self.temp_folder)
             filename_for_stitched_file = os.path.basename(stitched_lg_record)
-            self.stitch_trace_object.number_of_files = len(all_lg_parts)
+            self.stitch_trace_object.number_of_files = len(documents)
             self.stitch_trace_object.file_last_updated = (
                 self.get_most_recent_created_date(documents)
             )

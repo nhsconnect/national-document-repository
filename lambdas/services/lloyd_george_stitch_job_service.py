@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta
 
 from botocore.exceptions import ClientError
+from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.trace_status import TraceStatus
 from models.stitch_trace import DocumentStitchJob, StitchTrace
@@ -10,6 +11,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import LGStitchServiceException
 
 logger = LoggingService(__name__)
@@ -32,7 +34,7 @@ class LloydGeorgeStitchJobService:
             stitch_trace_result = self.query_stitch_trace_with_nhs_number(nhs_number)
             if (
                 stitch_trace_result
-                and not stitch_trace_result.job_status == TraceStatus.NO_DOCUMENTS
+                and stitch_trace_result.job_status != TraceStatus.NO_DOCUMENTS
             ):
                 return stitch_trace_result.job_status
             else:
@@ -118,11 +120,18 @@ class LloydGeorgeStitchJobService:
             raise LGStitchServiceException(404, LambdaError.ManifestMissingJob)
 
     def query_stitch_trace_with_nhs_number(self, nhs_number: str) -> StitchTrace:
+        filter_builder = DynamoQueryFilterBuilder()
+        delete_filter_expression = filter_builder.add_condition(
+            attribute="Deleted",
+            attr_operator=AttributeOperator.EQUAL,
+            filter_value=False,
+        ).build()
         response = self.dynamo_service.query_with_requested_fields(
             table_name=self.stitch_trace_table,
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
             search_condition=nhs_number,
+            query_filter=delete_filter_expression,
         )
         return self.validate_stitch_trace(response)
 

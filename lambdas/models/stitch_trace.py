@@ -26,6 +26,7 @@ class StitchTrace(BaseModel):
     file_last_updated: str = ""
     total_file_size_in_byte: int = 0
     expire_at: int
+    deleted: bool = False
 
 
 class DocumentStitchJob(BaseModel):
