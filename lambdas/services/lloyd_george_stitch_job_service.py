@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -26,13 +27,13 @@ class LloydGeorgeStitchJobService:
         self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
         self.lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
 
-    def create_stitch_job(self, nhs_number: str) -> str:
+    def create_stitch_job(self, nhs_number: str) -> TraceStatus:
         try:
             stitch_trace_result = self.query_stitch_trace_with_nhs_number(nhs_number)
             if stitch_trace_result:
-                job_id = stitch_trace_result.job_id
+                return stitch_trace_result.job_status
             else:
-                job_id = self.write_stitch_trace(nhs_number)
+                return self.write_stitch_trace(nhs_number)
         except ClientError as e:
             logger.error(
                 f"{LambdaError.StitchNoService.to_str()}: {str(e)}",
@@ -43,22 +44,28 @@ class LloydGeorgeStitchJobService:
                 LambdaError.StitchNoService,
             )
 
-        return job_id
-
     def write_stitch_trace(
         self,
         nhs_number: str,
-    ) -> str:
+    ) -> TraceStatus:
         logger.info("Writing Document Stitch trace to db")
 
-        stitch_trace = StitchTrace(nhs_number=nhs_number)
+        expiration_time = self.get_expiration_time()
+
+        stitch_trace = StitchTrace(nhs_number=nhs_number, expire_at=expiration_time)
         self.dynamo_service.create_item(
             self.stitch_trace_table, stitch_trace.model_dump(by_alias=True)
         )
-        return str(stitch_trace.job_id)
+        return stitch_trace.job_status
 
-    def query_document_stitch_job(self, job_id: str):
-        stitch_trace = self.query_stitch_trace_with_job_id(job_id=job_id)
+    def get_expiration_time(self):
+        current_time = datetime.now()
+        tomorrow = current_time + timedelta(days=1)
+        tomorrow_1am = tomorrow.replace(hour=1, minute=0, second=0, microsecond=0)
+        return int(tomorrow_1am.timestamp())
+
+    def query_document_stitch_job(self, nhs_number: str):
+        stitch_trace = self.query_stitch_trace_with_nhs_number(nhs_number=nhs_number)
         return self.process_stitch_trace_response(stitch_trace)
 
     def process_stitch_trace_response(self, stitch_trace: StitchTrace):
@@ -105,15 +112,6 @@ class LloydGeorgeStitchJobService:
                 {"Result": "Failed to create document manifest job"},
             )
             raise LGStitchServiceException(404, LambdaError.ManifestMissingJob)
-
-    def query_stitch_trace_with_job_id(self, job_id: str) -> StitchTrace:
-        response = self.dynamo_service.query_with_requested_fields(
-            table_name=self.stitch_trace_table,
-            index_name="JobIdIndex",
-            search_key="JobId",
-            search_condition=job_id,
-        )
-        return self.validate_stitch_trace(response)
 
     def query_stitch_trace_with_nhs_number(self, nhs_number: str) -> StitchTrace:
         response = self.dynamo_service.query_with_requested_fields(

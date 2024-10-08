@@ -14,7 +14,6 @@ class StitchTrace(BaseModel):
     )
 
     id: str = Field(alias="ID", default_factory=lambda: str(uuid.uuid4()))
-    job_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc)
         .isoformat()
@@ -26,7 +25,7 @@ class StitchTrace(BaseModel):
     number_of_files: int = 0
     file_last_updated: str = ""
     total_file_size_in_byte: int = 0
-    ttl: int = Field(alias="TTL", default=None)
+    expire_at: int
 
 
 class DocumentStitchJob(BaseModel):
