@@ -6,3 +6,4 @@ class TraceStatus(StrEnum):
     COMPLETED = "Completed"
     PROCESSING = "Processing"
     FAILED = "Failed"
+    NO_DOCUMENTS = "No Documents"
