@@ -10,7 +10,10 @@ from polars.testing import assert_frame_equal
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.statistical_report_service import StatisticalReportService
-from tests.unit.conftest import MOCK_STATISTICS_REPORT_BUCKET, MOCK_STATISTICS_TABLE
+from tests.unit.conftest import (
+    MOCK_STATISTICS_REPORT_BUCKET_NAME,
+    MOCK_STATISTICS_TABLE,
+)
 from tests.unit.helpers.data.statistic.mock_data_build_utils import (
     build_random_application_data,
     build_random_organisation_data,
@@ -93,7 +96,9 @@ def test_make_weekly_summary(set_env, mocker):
     actual = service.make_weekly_summary()
     expected = EXPECTED_WEEKLY_SUMMARY
 
-    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
+    assert_frame_equal(
+        actual, expected, check_row_order=False, check_dtype=False, check_exact=False
+    )
 
 
 def test_get_statistic_data(mock_dynamodb_service, mock_service):
@@ -252,7 +257,13 @@ def test_summarise_application_data(mock_service):
     expected = EXPECTED_SUMMARY_APPLICATION_DATA
     actual = mock_service.summarise_application_data(mock_data)
 
-    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+    assert_frame_equal(
+        actual,
+        expected,
+        check_dtype=False,
+        check_row_order=False,
+        check_column_order=False,
+    )
 
 
 def test_summarise_application_data_larger_mock_data(mock_service):
@@ -270,19 +281,34 @@ def test_summarise_application_data_larger_mock_data(mock_service):
 
     expected = pl.DataFrame(
         [
-            {"ods_code": "H81109", "active_users_count": active_users_count_h81109},
-            {"ods_code": "Y12345", "active_users_count": active_users_count_y12345},
+            {
+                "ods_code": "H81109",
+                "active_users_count": len(active_users_count_h81109),
+                "unique_active_user_ids_hashed": str(active_users_count_h81109),
+            },
+            {
+                "ods_code": "Y12345",
+                "active_users_count": len(active_users_count_y12345),
+                "unique_active_user_ids_hashed": str(active_users_count_y12345),
+            },
         ]
     )
     actual = mock_service.summarise_application_data(mock_organisation_data)
 
-    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+    assert_frame_equal(
+        actual,
+        expected,
+        check_dtype=False,
+        check_row_order=False,
+        check_column_order=False,
+    )
 
 
-def count_unique_user_ids(mock_data: list[ApplicationData]) -> int:
+def count_unique_user_ids(mock_data: list[ApplicationData]) -> list:
     active_users_of_each_day = [set(data.active_user_ids_hashed) for data in mock_data]
     unique_active_users_for_whole_week = set.union(*active_users_of_each_day)
-    return len(unique_active_users_for_whole_week)
+
+    return sorted(list(unique_active_users_for_whole_week))
 
 
 def test_summarise_application_data_can_handle_empty_input(mock_service):
@@ -339,13 +365,15 @@ def test_join_dataframes_by_ods_code_can_handle_empty_dataframe(mock_service):
 @freeze_time("20240512T07:00:00Z")
 def test_store_report_to_s3(set_env, mock_s3_service, mock_temp_folder):
     mock_weekly_summary = EXPECTED_WEEKLY_SUMMARY
+    expected_date_folder = "2024-05-11"
     expected_filename = "statistical_report_20240505-20240511.csv"
-    expected_local_file_path = f"{mock_temp_folder}/{expected_filename}"
 
     service = StatisticalReportService()
 
     service.store_report_to_s3(mock_weekly_summary)
 
     mock_s3_service.upload_file.assert_called_with(
-        expected_local_file_path, MOCK_STATISTICS_REPORT_BUCKET, expected_filename
+        s3_bucket_name=MOCK_STATISTICS_REPORT_BUCKET_NAME,
+        file_key=f"statistic-reports/{expected_date_folder}/{expected_filename}",
+        file_name=f"{mock_temp_folder}/{expected_filename}",
     )

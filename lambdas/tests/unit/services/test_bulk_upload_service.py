@@ -937,9 +937,14 @@ def test_handle_sqs_message_happy_path_historical_name(
 
 
 def test_concatenate_acceptance_reason(repo_under_test):
+    accepted_reason = None
     test_reason = "test_reason_1"
-    repo_under_test.concatenate_acceptance_reason(test_reason)
-    assert repo_under_test.accepted_reason == test_reason
+    actual_reason = repo_under_test.concatenate_acceptance_reason(
+        accepted_reason, test_reason
+    )
+    assert actual_reason == test_reason
     another_test_reason = "test_reason_2"
-    repo_under_test.concatenate_acceptance_reason(another_test_reason)
-    assert repo_under_test.accepted_reason == test_reason + ", " + another_test_reason
+    another_actual_reason = repo_under_test.concatenate_acceptance_reason(
+        actual_reason, another_test_reason
+    )
+    assert another_actual_reason == test_reason + ", " + another_test_reason

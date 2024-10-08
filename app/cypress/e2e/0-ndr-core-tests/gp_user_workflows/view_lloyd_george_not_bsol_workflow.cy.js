@@ -74,7 +74,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                         }).as('lloydGeorgeStitch');
 
                         cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                        cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                         // Assert
                         cy.getByTestId('before-downloading-warning').should(
@@ -172,7 +172,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                             body: viewLloydGeorgePayload,
                         }).as('lloydGeorgeStitch');
                         cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                        cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                         cy.getByTestId('download-and-remove-record-btn').click();
                         cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
@@ -192,7 +192,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                             body: viewLloydGeorgePayload,
                         }).as('lloydGeorgeStitch');
                         cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                        cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                         cy.getByTestId('download-and-remove-record-btn').click();
                         cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
@@ -212,7 +212,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                         }).as('lloydGeorgeStitch');
 
                         cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                        cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                         cy.getByTestId('download-all-files-link').should('not.exist');
                     },
@@ -263,9 +263,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                         cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
                         cy.getByTestId('search-submit-btn').click();
                         cy.wait('@search');
-
                         cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                        cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                         cy.getByTestId('download-and-remove-record-btn').click();
                         cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');

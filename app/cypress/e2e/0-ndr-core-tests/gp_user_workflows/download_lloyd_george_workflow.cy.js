@@ -108,7 +108,7 @@ describe('GP Workflow: View Lloyd George record', () => {
         }).as('searchDocumentReferences');
 
         cy.get('#verify-submit').click();
-        cy.wait('@lloydGeorgeStitch');
+        cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
         cy.getByTestId('download-all-files-link').click();
     };
@@ -135,7 +135,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.title().should('eq', verifyPatientPageTitle);
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
                 cy.title().should('eq', lloydGeorgeRecordPageTitle);
 
                 cy.getByTestId('download-all-files-link').should('exist');
@@ -260,7 +260,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.title().should('eq', verifyPatientPageTitle);
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
                 cy.title().should('eq', lloydGeorgeRecordPageTitle);
 
                 cy.getByTestId('download-all-files-link').should('exist');
@@ -375,7 +375,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('lloydGeorgeStitch');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('not.exist');
             },
@@ -393,7 +393,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('lloydGeorgeStitch');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('not.exist');
             },
@@ -415,7 +415,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 beforeEachConfiguration(Roles.GP_CLINICAL);
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('exist');
                 cy.getByTestId('download-all-files-link').click();

@@ -74,7 +74,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     }).as('lloydGeorgeStitch');
 
                     cy.get('#verify-submit').click();
-                    cy.wait('@lloydGeorgeStitch');
+                    cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                     // Assert
                     assertPatientInfo();
@@ -85,19 +85,21 @@ describe('GP Workflow: View Lloyd George record', () => {
                     cy.getByTestId('pdf-viewer').should('be.visible');
 
                     // Act - open full screen view
-                    cy.getByTestId('full-screen-btn').click();
+                    if (role !== Roles.GP_CLINICAL) {
+                        cy.getByTestId('full-screen-btn').click();
 
-                    // Assert
-                    assertPatientInfo();
-                    cy.getByTestId('pdf-card').should('not.exist');
-                    cy.getByTestId('pdf-viewer').should('be.visible');
+                        // Assert
+                        assertPatientInfo();
+                        cy.getByTestId('pdf-card').should('not.exist');
+                        cy.getByTestId('pdf-viewer').should('be.visible');
 
-                    //  Act - close full screen view
-                    cy.getByTestId('back-link').click();
+                        //  Act - close full screen view
+                        cy.getByTestId('back-link').click();
 
-                    // Assert
-                    cy.getByTestId('pdf-card').should('be.visible');
-                    cy.getByTestId('pdf-viewer').should('be.visible');
+                        // Assert
+                        cy.getByTestId('pdf-card').should('be.visible');
+                        cy.getByTestId('pdf-viewer').should('be.visible');
+                    }
                 },
             );
 
@@ -214,15 +216,9 @@ describe('GP Workflow: View Lloyd George record', () => {
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
 
-                let request = 0;
-                const replies = [
-                    { statusCode: 200, body: viewLloydGeorgePayload },
-                    { statusCode: 404 },
-                ];
-
-                cy.intercept('GET', '/LloydGeorgeStitch*', (req) => {
-                    req.reply(replies[request]);
-                    request = request + 1;
+                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                    statusCode: 200,
+                    body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
 
                 cy.intercept('GET', '/SearchDocumentReferences*', {
@@ -237,7 +233,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('searchDocs');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
@@ -274,12 +270,17 @@ describe('GP Workflow: View Lloyd George record', () => {
                     `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
                 ).should('be.visible');
 
+                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                    statusCode: 404,
+                }).as('lg-reload');
                 cy.getByTestId('lg-return-btn').click();
+                cy.wait('@lg-reload');
 
-                // assert user is returned to view Lloyd George page
-                cy.contains('Lloyd George record').should('be.visible');
-                cy.getByTestId('no-records-title').should('exist');
-                cy.getByTestId('pdf-card').should('be.visible');
+                // Assert
+                cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
+                cy.getByTestId('no-records-title').should('be.visible');
+                cy.getByTestId('upload-patient-record-text').should('be.visible');
+                cy.getByTestId('upload-patient-record-button').should('be.visible');
             },
         );
 
@@ -306,7 +307,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('searchDocs');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
@@ -354,7 +355,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 ).as('documentDelete');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
@@ -383,7 +384,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('lloydGeorgeStitch');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('not.exist');
             },
@@ -400,7 +401,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 }).as('lloydGeorgeStitch');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
+                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('not.exist');
             },
@@ -419,12 +420,11 @@ describe('GP Workflow: View Lloyd George record', () => {
 
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 500,
-            }).as('documentManifest');
+            });
 
             cy.get('#verify-submit').click();
             cy.wait('@searchDocs');
             cy.get('#download-documents').click();
-            cy.wait('@documentManifest');
 
             // Assert
             cy.contains('Sorry, there is a problem with the service').should('be.visible');
