@@ -4,15 +4,22 @@ import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import useTitle from '../../helpers/hooks/useTitle';
+import { isLocal } from '../../helpers/utils/isLocal';
+import { useNavigate } from 'react-router';
+import { routes } from '../../types/generic/routes';
 
 const SessionExpiredErrorPage = () => {
     const baseAPIUrl = useBaseAPIUrl();
     const [isLoading, setIsLoading] = useState(false);
-
+    const navigate = useNavigate();
     const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         setIsLoading(true);
         e.preventDefault();
-        window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
+        if (isLocal) {
+            navigate(routes.AUTH_CALLBACK);
+        } else {
+            window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
+        }
     };
     const pageHeader = 'We signed you out due to inactivity';
     useTitle({ pageTitle: pageHeader });
