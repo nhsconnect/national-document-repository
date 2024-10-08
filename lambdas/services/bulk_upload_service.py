@@ -162,9 +162,9 @@ class BulkUploadService:
             logger.error(error)
             logger.info("Will stop processing Lloyd George record for this patient.")
 
-            failure_reason = str(error)
+            reason = str(error)
             self.dynamo_repository.write_report_upload_to_dynamo(
-                staging_metadata, UploadStatus.FAILED, failure_reason, patient_ods_code
+                staging_metadata, UploadStatus.FAILED, reason, patient_ods_code
             )
             return
 

@@ -14,14 +14,14 @@ MOCK_DATA_COMPLETE_UPLOAD = {
     "UploaderOdsCode": "Y12345",
 }
 
-MOCK_FAILURE_REASON = "File name not matching Lloyd George naming convention"
+MOCK_REASON = "File name not matching Lloyd George naming convention"
 MOCK_DATA_FAILED_UPLOAD = {
     "ID": TEST_UUID,
     "NhsNumber": "9000000025",
     "Timestamp": 1698661500,
     "Date": "2023-10-30",
     "UploadStatus": "failed",
-    "FailureReason": MOCK_FAILURE_REASON,
+    "Reason": MOCK_REASON,
     "FilePath": "/9000000025/invalid_filename.pdf",
     "PdsOdsCode": "",
     "UploaderOdsCode": "Y12345",
@@ -30,7 +30,7 @@ MOCK_DATA_FAILED_UPLOAD = {
 
 def test_create_successful_upload():
     expected = MOCK_DATA_COMPLETE_UPLOAD
-    expected.update({"FailureReason": ""})
+    expected.update({"Reason": ""})
 
     actual = BulkUploadReport(
         ID=TEST_UUID,
@@ -54,7 +54,7 @@ def test_create_failed_upload():
         timestamp=1698661500,
         date="2023-10-30",
         upload_status=UploadStatus.FAILED,
-        failure_reason=MOCK_FAILURE_REASON,
+        reason=MOCK_REASON,
         file_path="/9000000025/invalid_filename.pdf",
         pds_ods_code="",
         uploader_ods_code="Y12345",
@@ -66,7 +66,7 @@ def test_create_failed_upload():
 @freeze_time("2023-10-30 10:25:00")
 def test_successful_upload_ids_and_timestamp_are_auto_populated_if_not_given(mock_uuid):
     expected = MOCK_DATA_COMPLETE_UPLOAD
-    expected.update({"FailureReason": ""})
+    expected.update({"Reason": ""})
 
     actual = BulkUploadReport(
         nhs_number="9000000009",
@@ -85,7 +85,7 @@ def test_failed_upload_ids_and_timestamp_are_auto_populated_if_not_given(mock_uu
     actual = BulkUploadReport(
         nhs_number="9000000025",
         file_path="/9000000025/invalid_filename.pdf",
-        failure_reason=MOCK_FAILURE_REASON,
+        reason=MOCK_REASON,
         pds_ods_code="",
         uploader_ods_code="Y12345",
         upload_status=UploadStatus.FAILED,

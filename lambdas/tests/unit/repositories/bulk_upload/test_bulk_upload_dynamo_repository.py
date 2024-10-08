@@ -62,11 +62,11 @@ def test_report_upload_complete_add_record_to_dynamodb(
 def test_report_upload_failure_add_record_to_dynamodb(
     repo_under_test, set_env, mock_uuid
 ):
-    mock_failure_reason = "File name invalid"
+    mock_reason = "File name invalid"
     repo_under_test.write_report_upload_to_dynamo(
         TEST_STAGING_METADATA,
         upload_status=UploadStatus.FAILED,
-        failure_reason=mock_failure_reason,
+        reason=mock_reason,
     )
 
     for file in TEST_STAGING_METADATA.files:
@@ -77,7 +77,7 @@ def test_report_upload_failure_add_record_to_dynamodb(
             "NhsNumber": TEST_STAGING_METADATA.nhs_number,
             "Timestamp": 1696251600,
             "UploadStatus": "failed",
-            "FailureReason": mock_failure_reason,
+            "Reason": mock_reason,
             "UploaderOdsCode": "Y12345",
             "PdsOdsCode": "",
         }

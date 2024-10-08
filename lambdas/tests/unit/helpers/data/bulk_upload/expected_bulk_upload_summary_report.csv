@@ -6,7 +6,7 @@ Total,Successful - Deceased,2
 Total,Successful - Restricted,2
 Success by ODS,Y12345,5
 Success by ODS,Z12345,5
-FailureReason for Y12345,Could not find the given patient on PDS,2
-FailureReason for Y12345,Lloyd George file already exists,1
-FailureReason for Z12345,Could not find the given patient on PDS,2
-FailureReason for Z12345,Lloyd George file already exists,1
+Reason for Y12345,Could not find the given patient on PDS,2
+Reason for Y12345,Lloyd George file already exists,1
+Reason for Z12345,Could not find the given patient on PDS,2
+Reason for Z12345,Lloyd George file already exists,1
