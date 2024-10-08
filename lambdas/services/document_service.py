@@ -8,6 +8,9 @@ from models.document_reference import DocumentReference
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
+from utils.exceptions import FileUploadInProgress, NoAvailableDocument
+from utils.lloyd_george_validator import check_for_number_of_files_match_expected
 
 logger = LoggingService(__name__)
 
@@ -133,3 +136,28 @@ class DocumentService:
             and record.last_updated_within_three_minutes()
             for record in records
         )
+
+    def get_available_lloyd_george_record_for_patient(
+        self, nhs_number
+    ) -> list[DocumentReference]:
+        filter_expression = filter_uploaded_docs_and_recently_uploading_docs()
+        available_docs = self.fetch_available_document_references_by_type(
+            nhs_number,
+            SupportedDocumentTypes.LG,
+            query_filter=filter_expression,
+        )
+
+        file_in_progress_message = (
+            "The patients Lloyd George record is in the process of being uploaded"
+        )
+        if not available_docs:
+            raise NoAvailableDocument()
+        for document in available_docs:
+            if document.uploading and not document.uploaded:
+                raise FileUploadInProgress(file_in_progress_message)
+
+        check_for_number_of_files_match_expected(
+            available_docs[0].file_name, len(available_docs)
+        )
+
+        return available_docs
