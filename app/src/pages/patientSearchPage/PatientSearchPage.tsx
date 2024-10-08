@@ -15,11 +15,10 @@ import { AxiosError } from 'axios';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { isMock } from '../../helpers/utils/isLocal';
-import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import useTitle from '../../helpers/hooks/useTitle';
 import useConfig from '../../helpers/hooks/useConfig';
+import { useAxios } from '../../providers/axiosProvider/AxiosProvider';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
@@ -28,6 +27,7 @@ function PatientSearchPage() {
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
     const [inputError, setInputError] = useState<null | string>(null);
+    const axios = useAxios();
     const { mockLocal } = useConfig();
     const { register, handleSubmit } = useForm({
         reValidateMode: 'onSubmit',
@@ -41,8 +41,6 @@ function PatientSearchPage() {
     });
     const navigate = useNavigate();
     const isError = (statusCode && statusCode >= 500) || !inputError;
-    const baseUrl = useBaseAPIUrl();
-    const baseHeaders = useBaseAPIHeaders();
     const handleSuccess = (patientDetails: PatientDetails) => {
         setPatientDetails(patientDetails);
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
@@ -60,8 +58,7 @@ function PatientSearchPage() {
         try {
             const patientDetails = await getPatientDetails({
                 nhsNumber,
-                baseUrl,
-                baseHeaders,
+                axios,
             });
             handleSuccess(patientDetails);
         } catch (e) {

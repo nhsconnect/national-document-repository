@@ -2,6 +2,7 @@ export enum endpoints {
     LOGIN = '/Auth/Login',
     LOGOUT = '/Auth/Logout',
     AUTH = '/Auth/TokenRequest',
+    REFRESH_AUTH = '/Auth/TokenRefresh',
 
     PATIENT_SEARCH = '/SearchPatient',
 
