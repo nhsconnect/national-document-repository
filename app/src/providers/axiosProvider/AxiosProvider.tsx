@@ -9,7 +9,7 @@ type AxiosContextType = AxiosInstance | null;
 
 const AxiosContext = createContext<AxiosContextType>(null);
 
-export const AxiosProvider = ({ children }: { children: ReactNode }) => {
+const AxiosProvider = ({ children }: { children: ReactNode }) => {
     const [session, setSession] = useSessionContext();
     const baseUrl = useBaseAPIUrl();
     const baseApiHeaders = useBaseAPIHeaders();
@@ -68,10 +68,6 @@ export const AxiosProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export const useAxios = () => {
-    const context = useContext(AxiosContext);
-    if (!context) {
-        throw new Error('useAxios must be used within an AxiosProvider');
-    }
-    return context;
-};
+export default AxiosProvider;
+
+export const useAxios = () => useContext(AxiosContext) as AxiosInstance;
