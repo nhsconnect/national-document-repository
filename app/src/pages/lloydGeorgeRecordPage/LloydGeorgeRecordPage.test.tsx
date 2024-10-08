@@ -106,7 +106,7 @@ describe('LloydGeorgeRecordPage', () => {
         renderPage(history);
 
         await waitFor(() => {
-            expect(screen.getByText(`${lgResult.number_of_files} files`)).toBeInTheDocument();
+            expect(screen.getByText(`${lgResult.numberOfFiles} files`)).toBeInTheDocument();
         });
 
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
@@ -196,9 +196,9 @@ describe('LloydGeorgeRecordPage', () => {
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
 
-        expect(screen.getByText(`${lgResult.number_of_files} files`)).toBeInTheDocument();
+        expect(screen.getByText(`${lgResult.numberOfFiles} files`)).toBeInTheDocument();
         expect(
-            screen.getByText(`File size: ${formatFileSize(lgResult.total_file_size_in_byte)}`),
+            screen.getByText(`File size: ${formatFileSize(lgResult.totalFileSizeInByte)}`),
         ).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });
