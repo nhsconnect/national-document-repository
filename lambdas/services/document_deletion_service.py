@@ -43,6 +43,7 @@ class DocumentDeletionService:
         documents_in_stitch_table = (
             self.stitch_service.query_stitch_trace_with_nhs_number(nhs_number)
         )
+
         for record in documents_in_stitch_table:
             record.deleted = True
             self.document_service.dynamo_service.update_item(
