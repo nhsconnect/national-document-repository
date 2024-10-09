@@ -60,37 +60,28 @@ function LloydGeorgeViewRecordStage({
         required: true,
     });
 
-    /**
-        go into full screen
-        click back button (either with browser or ui)
-        click forward button
-        ui or browser back button (which should take you to non full screen)
-        back button (which should take you to verify page) it rather takes you back to full screen
-            fullscreen == false
-            defaults to the else block and sets it to true instead of going back
-            We need a way of differentiating if the forward or the back button was pressed
-                Ideally, without using the history indexing strategy that ChatGPT is pointing us at
-
-     */
     useEffect(() => {
+        let historyIndex = window.history.state?.index || 0;
+
         if (fullScreen) {
-            window.history.pushState({ fullScreen: true }, '', window.location.href);
-        } else {
-            window.history.replaceState(null, '', window.location.href);
+            historyIndex += 1;
+            window.history.pushState(
+                { ...window.history.state, fullScreen: true, index: historyIndex },
+                '',
+                window.location.href,
+            );
         }
 
-        const handleBrowserNavigationButton = (event: Event) => {
-            if (fullScreen) {
-                event.preventDefault();
-                setFullScreen(false);
+        const handleBrowserNavigationButton = (event: PopStateEvent) => {
+            const newIndex = event.state?.index || 0;
+
+            if (newIndex < historyIndex) {
+                handleBrowserBackButton();
+            } else if (newIndex > historyIndex) {
+                handleBrowserForwardButton();
             }
-            // if they hit the browser back button
-            // previous page
-            // if they hit the browser forward button
-            else {
-                event.preventDefault();
-                setFullScreen(true);
-            }
+
+            historyIndex = newIndex;
         };
 
         window.addEventListener('popstate', handleBrowserNavigationButton);
@@ -140,6 +131,20 @@ function LloydGeorgeViewRecordStage({
 
     const pageHeader = 'Available records';
     useTitle({ pageTitle: pageHeader });
+
+    const handleBrowserBackButton = () => {
+        if (fullScreen) {
+            setFullScreen(false);
+        } else {
+            window.history.back();
+        }
+    };
+
+    const handleBrowserForwardButton = () => {
+        if (!fullScreen) {
+            setFullScreen(true);
+        }
+    };
 
     return (
         <div className="lloydgeorge_record-stage">

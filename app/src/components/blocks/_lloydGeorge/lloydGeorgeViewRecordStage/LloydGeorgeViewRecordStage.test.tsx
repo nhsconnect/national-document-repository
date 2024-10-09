@@ -224,6 +224,9 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 
     it('expects back and forward functionality to replicate breadcrumb', async () => {
+        const backSpy = jest.spyOn(window.history, 'back');
+        const forwardSpy = jest.spyOn(window.history, 'forward');
+
         renderComponent();
 
         act(() => {
@@ -231,40 +234,47 @@ describe('LloydGeorgeViewRecordStage', () => {
         });
 
         await waitFor(() => {
-            expect(window.history.state).toEqual({ fullScreen: true });
+            expect(window.history.state).toEqual(expect.objectContaining({ fullScreen: true }));
         });
 
         act(() => {
             window.history.back();
+            window.dispatchEvent(new PopStateEvent('popstate'));
         });
 
         await waitFor(() => {
-            expect(window.history.state).toEqual(null);
+            expect(window.history.state).toBeNull();
         });
 
         act(() => {
             window.history.forward();
+            window.dispatchEvent(new PopStateEvent('popstate'));
         });
 
         await waitFor(() => {
-            expect(window.history.state).toEqual({ fullScreen: true });
+            expect(window.history.state).toEqual(expect.objectContaining({ fullScreen: true }));
         });
 
         act(() => {
             window.history.back();
+            window.dispatchEvent(new PopStateEvent('popstate'));
         });
 
         await waitFor(() => {
-            expect(window.history.state).toEqual(null);
+            expect(window.history.state).toBeNull();
         });
 
         act(() => {
             window.history.back();
+            window.dispatchEvent(new PopStateEvent('popstate'));
         });
 
         await waitFor(() => {
-            expect(window.history.state).toEqual(null);
+            expect(window.history.state).toBeNull();
         });
+
+        backSpy.mockRestore();
+        forwardSpy.mockRestore();
     });
 
     describe('User is GP admin and non BSOL', () => {
