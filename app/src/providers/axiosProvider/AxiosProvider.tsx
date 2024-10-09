@@ -14,7 +14,7 @@ const AxiosProvider = ({ children }: { children: ReactNode }) => {
     const axiosInstanceRef = useRef<AxiosInstance | null>(null);
 
     useEffect(() => {
-        if (session.auth && !axiosInstanceRef.current) {
+        if (session.auth) {
             const instance = axios.create({
                 baseURL: baseUrl,
                 headers: {
@@ -33,7 +33,6 @@ const AxiosProvider = ({ children }: { children: ReactNode }) => {
                 (error) => Promise.reject(error),
             );
 
-            // Response interceptor to handle token refresh on 403
             instance.interceptors.response.use(
                 (response) => response,
                 async (error) => {
@@ -68,4 +67,10 @@ const AxiosProvider = ({ children }: { children: ReactNode }) => {
 
 export default AxiosProvider;
 
-export const useAxios = () => useContext(AxiosContext) as AxiosInstance;
+export const useAxios = () => {
+    const context = useContext(AxiosContext);
+    if (!context) {
+        throw new Error('Axios instance is not available.');
+    }
+    return context as AxiosInstance;
+};
