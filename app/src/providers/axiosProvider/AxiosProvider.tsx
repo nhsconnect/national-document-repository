@@ -47,9 +47,7 @@ const AxiosProvider = ({ children }: { children: ReactNode }) => {
                                 ...session,
                                 auth,
                             });
-                            originalRequest.headers[
-                                'Authorization'
-                            ] = `Bearer ${auth.authorisation_token}`;
+                            originalRequest.headers['Authorization'] = auth.authorisation_token;
                             return instance(originalRequest);
                         }
                     }
