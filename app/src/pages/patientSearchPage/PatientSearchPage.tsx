@@ -62,6 +62,7 @@ function PatientSearchPage() {
             });
             handleSuccess(patientDetails);
         } catch (e) {
+            console.log(e);
             const error = e as AxiosError;
             /* istanbul ignore if */
             if (isMock(error)) {
