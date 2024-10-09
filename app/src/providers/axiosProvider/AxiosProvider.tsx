@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import React, { createContext, useContext, useEffect, ReactNode, useRef } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import getAuthRefresh from '../../helpers/requests/getAuthRefresh';
@@ -11,62 +11,57 @@ const AxiosContext = createContext<AxiosContextType>(null);
 const AxiosProvider = ({ children }: { children: ReactNode }) => {
     const [session, setSession] = useSessionContext();
     const baseUrl = useBaseAPIUrl();
-    const axiosInstanceRef = useRef<AxiosInstance | null>(null);
 
-    useEffect(() => {
+    const axiosInstance = useMemo(() => {
+        if (!session.auth) return null;
+
         const instance = axios.create({
             baseURL: baseUrl,
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: session.auth?.authorisation_token,
             },
         });
-        instance.interceptors.request.use(
-            (config) => {
-                const token = session.auth?.authorisation_token;
-                if (token) {
-                    config.headers['Authorization'] = token;
-                }
-                return config;
-            },
-            (error) => Promise.reject(error),
-        );
 
         instance.interceptors.response.use(
             (response) => response,
             async (error) => {
-                const refreshToken = session.auth?.refresh_token ?? '';
-                if (refreshToken) {
-                    const originalRequest = error.config;
-                    if (error.response?.status === 403 && !originalRequest._retry) {
-                        originalRequest._retry = true;
+                const originalRequest = error.config;
+                if (error.response?.status === 403 && !originalRequest._retry) {
+                    originalRequest._retry = true;
+                    try {
                         const auth = await getAuthRefresh({
                             axios: instance,
-                            refreshToken,
+                            refreshToken: session.auth?.refresh_token ?? '',
                         });
-                        setSession({
-                            ...session,
-                            auth,
-                        });
-                        originalRequest.headers['Authorization'] = auth.authorisation_token;
-                        return instance(originalRequest);
+
+                        if (auth?.authorisation_token) {
+                            setSession({
+                                ...session,
+                                auth,
+                            });
+                            originalRequest.headers['Authorization'] = auth.authorisation_token;
+                            return instance(originalRequest);
+                        }
+                    } catch (refreshError) {
+                        return Promise.reject(refreshError);
                     }
-                    return Promise.reject(error);
                 }
+                return Promise.reject(error);
             },
         );
-        axiosInstanceRef.current = instance;
-    }, [baseUrl, session, setSession]);
 
-    return (
-        <AxiosContext.Provider value={axiosInstanceRef.current}>{children}</AxiosContext.Provider>
-    );
+        return instance;
+    }, [session, baseUrl, setSession]);
+
+    return <AxiosContext.Provider value={axiosInstance}>{children}</AxiosContext.Provider>;
 };
-export default AxiosProvider;
 
 export const useAxios = () => {
     const context = useContext(AxiosContext);
     if (!context) {
-        throw new Error('Axios instance is not available.');
+        throw new Error('useAxios must be used within an AxiosProvider');
     }
-    return context as AxiosInstance;
+    return context;
 };
+export default AxiosProvider;
