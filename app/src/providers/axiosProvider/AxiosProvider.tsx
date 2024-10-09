@@ -17,13 +17,15 @@ const AxiosProvider = ({ children }: { children: ReactNode }) => {
         if (session.auth && !axiosInstanceRef.current) {
             const instance = axios.create({
                 baseURL: baseUrl,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
 
             instance.interceptors.request.use(
                 (config) => {
                     const token = session.auth?.authorisation_token;
                     if (token) {
-                        config.headers['Content-Type'] = 'application/json';
                         config.headers['Authorization'] = token;
                     }
                     return config;
