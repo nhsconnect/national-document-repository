@@ -27,11 +27,11 @@ class LloydGeorgeStitchJobService:
         )
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
-        self.stitch_trace_table = os.environ["STITCH_METADATA_DYNAMODB_NAME"]
-        self.lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+        self.stitch_trace_table = os.environ.get("STITCH_METADATA_DYNAMODB_NAME")
+        self.lloyd_george_table_name = os.environ.get("LLOYD_GEORGE_DYNAMODB_NAME")
 
         self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
-        self.lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
+        self.lloyd_george_bucket_name = os.environ.get("LLOYD_GEORGE_BUCKET_NAME")
 
     def create_stitch_job(self, nhs_number: str) -> TraceStatus:
         try:

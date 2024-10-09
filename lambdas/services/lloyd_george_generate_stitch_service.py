@@ -25,8 +25,8 @@ logger = LoggingService(__name__)
 
 class LloydGeorgeStitchService:
     def __init__(self, stitch_trace: StitchTrace):
-        self.lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-        self.lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
+        self.lloyd_george_table_name = os.environ.get("LLOYD_GEORGE_DYNAMODB_NAME")
+        self.lloyd_george_bucket_name = os.environ.get("LLOYD_GEORGE_BUCKET_NAME")
         self.lifecycle_policy_tag = os.environ.get(
             "STITCHED_FILE_LIFECYCLE_POLICY_TAG", "autodelete"
         )
@@ -36,7 +36,7 @@ class LloydGeorgeStitchService:
         self.document_service = DocumentService()
         self.temp_folder = tempfile.mkdtemp()
         self.stitch_trace_object = stitch_trace
-        self.stitch_trace_table = os.environ["STITCH_METADATA_DYNAMODB_NAME"]
+        self.stitch_trace_table = os.environ.get("STITCH_METADATA_DYNAMODB_NAME")
         self.stitch_file_name = f"patient-record-{str(uuid.uuid4())}"
         self.stitch_file_path = os.path.join(self.temp_folder, self.stitch_file_name)
 
@@ -67,9 +67,7 @@ class LloydGeorgeStitchService:
         try:
             stitched_lg_record = stitch_pdf(all_lg_parts, self.temp_folder)
             filename_for_stitched_file = os.path.basename(stitched_lg_record)
-            self.stitch_trace_object.number_of_files = len(
-                sorted_documents_for_stitching
-            )
+            self.stitch_trace_object.number_of_files = len(documents_for_stitching)
             self.stitch_trace_object.file_last_updated = (
                 self.get_most_recent_created_date(sorted_documents_for_stitching)
             )
