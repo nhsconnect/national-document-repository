@@ -13,8 +13,6 @@ const AxiosProvider = ({ children }: { children: ReactNode }) => {
     const baseUrl = useBaseAPIUrl();
 
     const axiosInstance = useMemo(() => {
-        if (!session.auth) return null;
-
         const instance = axios.create({
             baseURL: baseUrl,
             headers: {
