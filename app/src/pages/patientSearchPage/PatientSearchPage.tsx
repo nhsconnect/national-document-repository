@@ -27,8 +27,8 @@ function PatientSearchPage() {
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
     const [inputError, setInputError] = useState<null | string>(null);
-    const axios = useAxios();
     const { mockLocal } = useConfig();
+    const axios = useAxios();
     const { register, handleSubmit } = useForm({
         reValidateMode: 'onSubmit',
     });

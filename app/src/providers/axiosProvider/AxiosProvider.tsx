@@ -14,57 +14,53 @@ const AxiosProvider = ({ children }: { children: ReactNode }) => {
     const axiosInstanceRef = useRef<AxiosInstance | null>(null);
 
     useEffect(() => {
-        if (session.auth) {
-            const instance = axios.create({
-                baseURL: baseUrl,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+        const instance = axios.create({
+            baseURL: baseUrl,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        instance.interceptors.request.use(
+            (config) => {
+                const token = session.auth?.authorisation_token;
+                if (token) {
+                    config.headers['Authorization'] = token;
+                }
+                return config;
+            },
+            (error) => Promise.reject(error),
+        );
 
-            instance.interceptors.request.use(
-                (config) => {
-                    const token = session.auth?.authorisation_token;
-                    if (token) {
-                        config.headers['Authorization'] = token;
-                    }
-                    return config;
-                },
-                (error) => Promise.reject(error),
-            );
-
-            instance.interceptors.response.use(
-                (response) => response,
-                async (error) => {
+        instance.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                const refreshToken = session.auth?.refresh_token ?? '';
+                if (refreshToken) {
                     const originalRequest = error.config;
                     if (error.response?.status === 403 && !originalRequest._retry) {
                         originalRequest._retry = true;
                         const auth = await getAuthRefresh({
                             axios: instance,
-                            refreshToken: session.auth?.refresh_token ?? '',
+                            refreshToken,
                         });
-                        if (auth.authorisation_token) {
-                            setSession({
-                                ...session,
-                                auth,
-                            });
-                            originalRequest.headers['Authorization'] = auth.authorisation_token;
-                            return instance(originalRequest);
-                        }
+                        setSession({
+                            ...session,
+                            auth,
+                        });
+                        originalRequest.headers['Authorization'] = auth.authorisation_token;
+                        return instance(originalRequest);
                     }
                     return Promise.reject(error);
-                },
-            );
-
-            axiosInstanceRef.current = instance;
-        }
+                }
+            },
+        );
+        axiosInstanceRef.current = instance;
     }, [baseUrl, session, setSession]);
 
     return (
         <AxiosContext.Provider value={axiosInstanceRef.current}>{children}</AxiosContext.Provider>
     );
 };
-
 export default AxiosProvider;
 
 export const useAxios = () => {
