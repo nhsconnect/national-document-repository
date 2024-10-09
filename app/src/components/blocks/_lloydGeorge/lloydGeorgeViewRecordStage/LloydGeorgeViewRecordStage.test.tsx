@@ -183,6 +183,88 @@ describe('LloydGeorgeViewRecordStage', () => {
         await waitFor(() => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
+
+        backSpy.mockRestore();
+    });
+
+    it('allows forward functionality after exiting full screen mode', async () => {
+        const backSpy = jest.spyOn(window.history, 'back');
+        const forwardSpy = jest.spyOn(window.history, 'forward');
+
+        renderComponent();
+
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+        });
+
+        act(() => {
+            userEvent.click(screen.getByText('Exit full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
+        expect(backSpy).toHaveBeenCalled();
+
+        act(() => {
+            window.history.forward();
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+        });
+        // expect(forwardSpy).toHaveBeenCalled();
+
+        backSpy.mockRestore();
+        forwardSpy.mockRestore();
+    });
+
+    it('expects back and forward functionality to replicate breadcrumb', async () => {
+        renderComponent();
+
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toEqual({ fullScreen: true });
+        });
+
+        act(() => {
+            window.history.back();
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toEqual(null);
+        });
+
+        act(() => {
+            window.history.forward();
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toEqual({ fullScreen: true });
+        });
+
+        act(() => {
+            window.history.back();
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toEqual(null);
+        });
+
+        act(() => {
+            window.history.back();
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toEqual(null);
+        });
     });
 
     describe('User is GP admin and non BSOL', () => {

@@ -60,21 +60,43 @@ function LloydGeorgeViewRecordStage({
         required: true,
     });
 
+    /**
+        go into full screen
+        click back button (either with browser or ui)
+        click forward button
+        ui or browser back button (which should take you to non full screen)
+        back button (which should take you to verify page) it rather takes you back to full screen
+            fullscreen == false
+            defaults to the else block and sets it to true instead of going back
+            We need a way of differentiating if the forward or the back button was pressed
+                Ideally, without using the history indexing strategy that ChatGPT is pointing us at
+
+     */
     useEffect(() => {
         if (fullScreen) {
             window.history.pushState({ fullScreen: true }, '', window.location.href);
+        } else {
+            window.history.replaceState(null, '', window.location.href);
         }
-        const handleBackButton = (event: Event) => {
+
+        const handleBrowserNavigationButton = (event: Event) => {
             if (fullScreen) {
                 event.preventDefault();
                 setFullScreen(false);
             }
+            // if they hit the browser back button
+            // previous page
+            // if they hit the browser forward button
+            else {
+                event.preventDefault();
+                setFullScreen(true);
+            }
         };
 
-        window.addEventListener('popstate', handleBackButton);
+        window.addEventListener('popstate', handleBrowserNavigationButton);
 
         return () => {
-            window.removeEventListener('popstate', handleBackButton);
+            window.removeEventListener('popstate', handleBrowserNavigationButton);
         };
     }, [fullScreen]);
 
@@ -135,7 +157,6 @@ function LloydGeorgeViewRecordStage({
                     href="#"
                     onClick={(e) => {
                         e.preventDefault();
-                        setFullScreen(false);
                         window.history.back();
                     }}
                 >
