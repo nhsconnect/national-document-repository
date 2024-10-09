@@ -9,58 +9,45 @@ type AxiosContextType = AxiosInstance | null;
 
 const AxiosContext = createContext<AxiosContextType>(null);
 
-const AxiosProvider = ({ children }: { children: ReactNode }) => {
+type Props = { children: ReactNode };
+
+const AxiosProvider = ({ children }: Props) => {
     const [session, setSession] = useSessionContext();
     const baseUrl = useBaseAPIUrl();
     const baseApiHeaders = useBaseAPIHeaders();
-
     const axiosInstanceRef = useRef<AxiosInstance | null>(null);
 
     useEffect(() => {
-        if (session.auth && !axiosInstanceRef.current) {
-            const instance = axios.create({
-                baseURL: baseUrl,
-                headers: baseApiHeaders,
-            });
+        const instance = axios.create({
+            baseURL: baseUrl,
+            headers: baseApiHeaders,
+        });
 
-            instance.interceptors.request.use(
-                (config) => {
-                    const token = session.auth?.authorisation_token;
-                    if (token) {
-                        config.headers['Authorization'] = `Bearer ${token}`;
-                    }
-                    return config;
-                },
-                (error) => Promise.reject(error),
-            );
-
-            instance.interceptors.response.use(
-                (response) => response,
-                async (error) => {
-                    const originalRequest = error.config;
-                    if (error.response?.status === 403 && !originalRequest._retry) {
-                        originalRequest._retry = true;
-                        const auth = await getAuthRefresh({
-                            axios: instance,
-                            refreshToken: session.auth?.refresh_token ?? '',
+        instance.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                const originalRequest = error.config;
+                if (error.response?.status === 403 && !originalRequest._retry) {
+                    originalRequest._retry = true;
+                    const auth = await getAuthRefresh({
+                        axios: instance,
+                        refreshToken: session.auth?.refresh_token ?? '',
+                    });
+                    if (auth.authorisation_token) {
+                        setSession({
+                            ...session,
+                            auth,
                         });
-                        if (auth.authorisation_token) {
-                            setSession({
-                                ...session,
-                                auth,
-                            });
-                            originalRequest.headers[
-                                'Authorization'
-                            ] = `Bearer ${auth.authorisation_token}`;
-                            return instance(originalRequest);
-                        }
+                        originalRequest.headers['Authorization'] = auth.authorisation_token;
+                        return instance(originalRequest);
                     }
-                    return Promise.reject(error);
-                },
-            );
+                }
+                return Promise.reject(error);
+            },
+        );
 
-            axiosInstanceRef.current = instance;
-        }
+        // Update the reference
+        axiosInstanceRef.current = instance;
     }, [baseApiHeaders, baseUrl, session, setSession]);
 
     return (
@@ -68,6 +55,5 @@ const AxiosProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-export default AxiosProvider;
-
 export const useAxios = () => useContext(AxiosContext) as AxiosInstance;
+export default AxiosProvider;
