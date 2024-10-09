@@ -17,6 +17,7 @@ from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NoAvailableDocument
 from utils.filename_utils import extract_page_number
 from utils.lambda_exceptions import LGStitchServiceException
+from utils.lloyd_george_validator import check_for_number_of_files_match_expected
 from utils.utilities import create_reference_id, get_file_key_from_s3_url
 
 logger = LoggingService(__name__)
@@ -175,6 +176,13 @@ class LloydGeorgeStitchService:
     def get_lloyd_george_record_for_patient(
         self,
     ) -> list[DocumentReference]:
-        return self.document_service.get_available_lloyd_george_record_for_patient(
-            self.stitch_trace_object.nhs_number
+
+        available_docs = (
+            self.document_service.get_available_lloyd_george_record_for_patient(
+                self.stitch_trace_object.nhs_number
+            )
         )
+        check_for_number_of_files_match_expected(
+            available_docs[0].file_name, len(available_docs)
+        )
+        return available_docs

@@ -10,7 +10,6 @@ from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.exceptions import FileUploadInProgress, NoAvailableDocument
-from utils.lloyd_george_validator import check_for_number_of_files_match_expected
 
 logger = LoggingService(__name__)
 
@@ -155,9 +154,4 @@ class DocumentService:
         for document in available_docs:
             if document.uploading and not document.uploaded:
                 raise FileUploadInProgress(file_in_progress_message)
-
-        check_for_number_of_files_match_expected(
-            available_docs[0].file_name, len(available_docs)
-        )
-
         return available_docs
