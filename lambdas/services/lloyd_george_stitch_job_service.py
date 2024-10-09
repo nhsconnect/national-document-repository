@@ -27,7 +27,7 @@ class LloydGeorgeStitchJobService:
         )
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
-        self.stitch_trace_table = os.environ["STITCH_STORE_DYNAMODB_NAME"]
+        self.stitch_trace_table = os.environ["STITCH_METADATA_DYNAMODB_NAME"]
         self.lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
 
         self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")

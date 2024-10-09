@@ -35,7 +35,7 @@ class LloydGeorgeStitchService:
         self.document_service = DocumentService()
         self.temp_folder = tempfile.mkdtemp()
         self.stitch_trace_object = stitch_trace
-        self.stitch_trace_table = os.environ["STITCH_STORE_DYNAMODB_NAME"]
+        self.stitch_trace_table = os.environ["STITCH_METADATA_DYNAMODB_NAME"]
         self.stitch_file_name = f"patient-record-{str(uuid.uuid4())}"
         self.stitch_file_path = os.path.join(self.temp_folder, self.stitch_file_name)
 
