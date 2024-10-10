@@ -2,4 +2,4 @@ Type,Description,Count
 Total,Total Successful,1
 Total,Successful - Registered Elsewhere,0
 Total,Suspended,0
-FailureReason,File name not matching Lloyd George naming convention,1
+Reason,File name not matching Lloyd George naming convention,1
