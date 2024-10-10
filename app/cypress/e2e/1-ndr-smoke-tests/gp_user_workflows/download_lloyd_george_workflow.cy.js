@@ -29,13 +29,11 @@ describe('GP Workflow: View Lloyd George record', () => {
         });
 
         it(
-            '[Smoke] non-BSOL GP ADMIN user can download and delete the Lloyd George document of an active patient',
+            '[Smoke] NON-BSOL GP ADMIN user can download the Lloyd George document of an active patient',
             { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
                 cy.get('.nhsuk-header__navigation').should('exist');
-
-                cy.getByTestId('search-patient-btn').click();
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(activePatient);
@@ -48,15 +46,14 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.getByTestId('pdf-viewer').should('be.visible');
 
-                cy.getByTestId('download-and-remove-record-btn').click();
-                cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
-                cy.getByTestId('confirm-download-and-remove-checkbox').click();
+                cy.getByTestId('download-all-files-link').click();
+
+                cy.getByTestId('available-files-table-title').should('exist');
+                cy.getByTestId('download-file-btn').click();
 
                 cy.downloadIframeReplace();
 
                 cy.intercept('POST', '**/DocumentManifest*').as('postDocumentManifest');
-
-                cy.getByTestId('confirm-download-and-remove-btn').click();
 
                 // Assert contents of page when downloading
                 cy.getByTestId('lloydgeorge_downloadall-stage', { timeout: 10000 }).should('exist');

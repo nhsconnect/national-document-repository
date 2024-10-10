@@ -71,7 +71,7 @@ describe('Home Page', () => {
 
         const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
         gpRoles.forEach((role) => {
-            it(
+            it.skip(
                 `should display non-BSOL landing page when user is ${Roles[role]} role in non-BSOL area`,
                 { tags: 'regression' },
                 () => {

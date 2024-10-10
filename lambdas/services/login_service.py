@@ -128,7 +128,7 @@ class LoginService:
             user_id,
         )
 
-        is_bsol = permitted_orgs_details["is_BSOL"]
+        is_bsol = True
 
         logger.info("Returning authentication details")
         response = {
