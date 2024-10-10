@@ -7,7 +7,7 @@ type Props = {
     children: ReactNode;
 };
 
-const TIMEOUT_MINUTES = 1;
+const TIMEOUT_MINUTES = 0.5;
 
 function AuthGuard({ children }: Props) {
     const [session] = useSessionContext();
@@ -26,6 +26,7 @@ function AuthGuard({ children }: Props) {
     // Attach event listeners for user active
     useEffect(() => {
         const resetActivity = () => {
+            console.log('user activity');
             lastActivityRef.current = Date.now();
         };
 
@@ -44,6 +45,7 @@ function AuthGuard({ children }: Props) {
             if (Date.now() - lastActivityRef.current > inactiveTimeout) {
                 const searchParams = new URLSearchParams(location.search);
                 searchParams.set('timeout', 'true');
+                console.log('user inactive');
                 navigate({
                     pathname: routes.LOGOUT,
                     search: searchParams.toString(),
