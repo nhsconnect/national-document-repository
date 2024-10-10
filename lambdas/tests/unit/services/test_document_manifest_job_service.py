@@ -3,7 +3,7 @@ from unittest.mock import call
 import pytest
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
-from enums.zip_trace import ZipTraceStatus
+from enums.trace_status import TraceStatus
 from freezegun import freeze_time
 from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
 from services.document_manifest_job_service import DocumentManifestJobService
@@ -556,7 +556,7 @@ def test_query_document_manifest_job_status_pending(
 def test_query_document_manifest_job_status_processing(
     manifest_service, mock_query_zip_trace, mock_uuid
 ):
-    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.PROCESSING
+    TEST_ZIP_TRACE_DATA["JobStatus"] = TraceStatus.PROCESSING
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
     mock_query_zip_trace.return_value = test_zip_trace
 
@@ -574,7 +574,7 @@ def test_query_document_manifest_job_status_completed(
     mock_s3_service,
     mock_create_presigned_url,
 ):
-    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.COMPLETED
+    TEST_ZIP_TRACE_DATA["JobStatus"] = TraceStatus.COMPLETED
     TEST_ZIP_TRACE_DATA["ZipFileLocation"] = TEST_DOCUMENT_LOCATION
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
@@ -591,7 +591,7 @@ def test_query_document_manifest_job_status_completed(
 def test_query_document_manifest_job_status_failed(
     manifest_service, mock_query_zip_trace, mock_s3_service
 ):
-    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.FAILED
+    TEST_ZIP_TRACE_DATA["JobStatus"] = TraceStatus.FAILED
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
     mock_query_zip_trace.return_value = test_zip_trace

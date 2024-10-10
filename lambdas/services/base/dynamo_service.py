@@ -48,26 +48,26 @@ class DynamoDBService:
             table = self.get_table(table_name)
 
             if requested_fields is None or len(requested_fields) == 0:
-                logger.error("Unable to query DynamoDB with empty requested fields")
-                raise DynamoServiceException(
-                    "Unable to query DynamoDB with empty requested fields"
-                )
-
-            projection_expression = ",".join(requested_fields)
-
-            if not query_filter:
                 results = table.query(
                     IndexName=index_name,
                     KeyConditionExpression=Key(search_key).eq(search_condition),
-                    ProjectionExpression=projection_expression,
                 )
             else:
-                results = table.query(
-                    IndexName=index_name,
-                    KeyConditionExpression=Key(search_key).eq(search_condition),
-                    FilterExpression=query_filter,
-                    ProjectionExpression=projection_expression,
-                )
+                projection_expression = ",".join(requested_fields)
+
+                if not query_filter:
+                    results = table.query(
+                        IndexName=index_name,
+                        KeyConditionExpression=Key(search_key).eq(search_condition),
+                        ProjectionExpression=projection_expression,
+                    )
+                else:
+                    results = table.query(
+                        IndexName=index_name,
+                        KeyConditionExpression=Key(search_key).eq(search_condition),
+                        FilterExpression=query_filter,
+                        ProjectionExpression=projection_expression,
+                    )
 
             if results is None or "Items" not in results:
                 logger.error(f"Unusable results in DynamoDB: {results!r}")

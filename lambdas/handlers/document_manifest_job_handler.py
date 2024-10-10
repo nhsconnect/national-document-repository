@@ -8,7 +8,7 @@ from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_document_type import validate_document_type
-from utils.decorators.validate_manifest_job_id import validate_manifest_job_id
+from utils.decorators.validate_job_id import validate_job_id
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.document_type_utils import extract_document_type_to_enum
 from utils.lambda_response import ApiGatewayResponse
@@ -39,7 +39,7 @@ def create_manifest_job(event, context):
     ).create_api_gateway_response()
 
 
-@validate_manifest_job_id
+@validate_job_id
 def get_manifest_job(event, context):
     logger.info("Retrieving document manifest")
 
