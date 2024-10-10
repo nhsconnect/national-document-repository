@@ -14,7 +14,7 @@ import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import LloydGeorgeViewRecordStage, { Props } from './LloydGeorgeViewRecordStage';
 import { createMemoryHistory } from 'history';
@@ -121,7 +121,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 
-    it("returns to previous view when 'Go back' link clicked during full screen", async () => {
+    it("returns to previous view when 'Exit full screen' button link clicked during full screen", async () => {
         renderComponent();
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
@@ -141,6 +141,140 @@ describe('LloydGeorgeViewRecordStage', () => {
         await waitFor(() => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
+    });
+
+    it('exits full screen when browser back button is pressed', async () => {
+        renderComponent();
+
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+        });
+
+        act(() => {
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
+    });
+
+    it('updates history correctly when exiting full screen using the "Exit full screen" button link', async () => {
+        const backSpy = jest.spyOn(window.history, 'back');
+        renderComponent();
+
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+        });
+
+        act(() => {
+            userEvent.click(screen.getByText('Exit full screen'));
+            expect(backSpy).toHaveBeenCalled();
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
+
+        backSpy.mockRestore();
+    });
+
+    it('allows forward functionality after exiting full screen mode', async () => {
+        const backSpy = jest.spyOn(window.history, 'back');
+        const forwardSpy = jest.spyOn(window.history, 'forward');
+
+        renderComponent();
+
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+        });
+
+        act(() => {
+            userEvent.click(screen.getByText('Exit full screen'));
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
+        expect(backSpy).toHaveBeenCalled();
+
+        act(() => {
+            window.history.forward();
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+        });
+        // expect(forwardSpy).toHaveBeenCalled();
+
+        backSpy.mockRestore();
+        forwardSpy.mockRestore();
+    });
+
+    it('expects back and forward functionality to replicate breadcrumb', async () => {
+        const backSpy = jest.spyOn(window.history, 'back');
+        const forwardSpy = jest.spyOn(window.history, 'forward');
+
+        renderComponent();
+
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toEqual(expect.objectContaining({ fullScreen: true }));
+        });
+
+        act(() => {
+            window.history.back();
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toBeNull();
+        });
+
+        act(() => {
+            window.history.forward();
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toEqual(expect.objectContaining({ fullScreen: true }));
+        });
+
+        act(() => {
+            window.history.back();
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toBeNull();
+        });
+
+        act(() => {
+            window.history.back();
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        });
+
+        await waitFor(() => {
+            expect(window.history.state).toBeNull();
+        });
+
+        backSpy.mockRestore();
+        forwardSpy.mockRestore();
     });
 
     describe('User is GP admin and non BSOL', () => {
