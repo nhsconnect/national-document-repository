@@ -1,26 +1,21 @@
-import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
 import { PatientDetails } from '../../types/generic/patientDetails';
-import axios, { AxiosError } from 'axios';
+import { AxiosError, AxiosInstance } from 'axios';
 
 type Args = {
     nhsNumber: string;
-    baseUrl: string;
-    baseHeaders: AuthHeaders;
+    axios: AxiosInstance;
 };
 
 type GetPatientDetailsResponse = {
     data: PatientDetails;
 };
 
-const getPatientDetails = async ({ nhsNumber, baseUrl, baseHeaders }: Args) => {
-    const gatewayUrl = baseUrl + endpoints.PATIENT_SEARCH;
+const getPatientDetails = async ({ nhsNumber, axios }: Args) => {
+    const gatewayUrl = endpoints.PATIENT_SEARCH;
 
     try {
         const { data }: GetPatientDetailsResponse = await axios.get(gatewayUrl, {
-            headers: {
-                ...baseHeaders,
-            },
             params: {
                 patientId: nhsNumber,
             },

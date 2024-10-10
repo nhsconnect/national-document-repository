@@ -8,20 +8,19 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
-import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { useConfigContext } from '../../providers/configProvider/ConfigProvider';
 import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
 import { FeatureFlags, defaultFeatureFlags } from '../../types/generic/featureFlags';
+import { useAxios } from '../../providers/axiosProvider/AxiosProvider';
 
 type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
-    const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
     const [{ mockLocal }, setConfig] = useConfigContext();
     const navigate = useNavigate();
-
+    const axios = useAxios();
     useEffect(() => {
         const handleError = (error: AxiosError) => {
             setSession({
@@ -58,7 +57,7 @@ const AuthCallbackPage = (props: Props) => {
                 const authData = await getAuthToken(args);
                 const jwtToken = authData.authorisation_token ?? '';
                 const featureFlagsData = await getFeatureFlags({
-                    baseUrl,
+                    axios: args.axios,
                     baseHeaders: {
                         'Content-Type': 'application/json',
                         Authorization: jwtToken,
@@ -89,8 +88,8 @@ const AuthCallbackPage = (props: Props) => {
         const urlSearchParams = new URLSearchParams(window.location.search);
         const code = urlSearchParams.get('code') ?? '';
         const state = urlSearchParams.get('state') ?? '';
-        void handleCallback({ baseUrl, code, state });
-    }, [baseUrl, setSession, navigate, mockLocal, setConfig]);
+        void handleCallback({ code, state, axios });
+    }, [setSession, navigate, mockLocal, setConfig, axios]);
 
     return <Spinner status="Signing in..." />;
 };

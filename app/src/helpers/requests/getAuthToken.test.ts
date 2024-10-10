@@ -2,7 +2,6 @@ import axios, { AxiosError } from 'axios';
 import { buildUserAuth } from '../test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import getAuthToken from './getAuthToken';
-
 // Mock out all top level functions, such as get, put, delete and post:
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -10,14 +9,16 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 // ...
 
 describe('[GET] getAuthToken', () => {
+    const args = {
+        code: 'xx',
+        state: 'xx',
+        axios,
+    };
+
     test('getAuthToken handles a 2XX response', async () => {
         const mockAuth = buildUserAuth();
         mockedAxios.get.mockImplementation(() => Promise.resolve({ status: 200, data: mockAuth }));
-        const args = {
-            baseUrl: '/test',
-            code: 'xx',
-            state: 'xx',
-        };
+
         let response: UserAuth | AxiosError;
         try {
             response = await getAuthToken(args);
@@ -36,11 +37,6 @@ describe('[GET] getAuthToken', () => {
 
     test('getAuthToken catches a 4XX response', async () => {
         mockedAxios.get.mockImplementation(() => Promise.reject({ status: 403 }));
-        const args = {
-            code: 'xx',
-            state: 'xx',
-            baseUrl: '/test',
-        };
         let response: UserAuth | AxiosError;
         try {
             response = await getAuthToken(args);
@@ -59,11 +55,6 @@ describe('[GET] getAuthToken', () => {
 
     test('getAuthToken catches a 5XX response', async () => {
         mockedAxios.get.mockImplementation(() => Promise.reject({ status: 500 }));
-        const args = {
-            code: 'xx',
-            state: 'xx',
-            baseUrl: '/test',
-        };
         let response: UserAuth | AxiosError;
         try {
             response = await getAuthToken(args);

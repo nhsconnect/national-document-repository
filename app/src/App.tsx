@@ -4,14 +4,17 @@ import PatientDetailsProvider from './providers/patientProvider/PatientProvider'
 import SessionProvider from './providers/sessionProvider/SessionProvider';
 import AppRouter from './router/AppRouter';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
+import AxiosProvider from './providers/axiosProvider/AxiosProvider';
 
 function App() {
     return (
         <ConfigProvider>
             <SessionProvider>
-                <PatientDetailsProvider>
-                    <AppRouter />
-                </PatientDetailsProvider>
+                <AxiosProvider>
+                    <PatientDetailsProvider>
+                        <AppRouter />
+                    </PatientDetailsProvider>
+                </AxiosProvider>
             </SessionProvider>
         </ConfigProvider>
     );

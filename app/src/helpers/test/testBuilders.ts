@@ -20,6 +20,7 @@ const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
         role: REPOSITORY_ROLE.GP_ADMIN,
         isBSOL: false,
         authorisation_token: '111xxx222',
+        refresh_token: 'yyy111zzz',
         ...userAuthOverride,
     };
     return auth;
