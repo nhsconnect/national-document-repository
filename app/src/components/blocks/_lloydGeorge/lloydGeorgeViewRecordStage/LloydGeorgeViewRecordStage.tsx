@@ -76,8 +76,10 @@ function LloydGeorgeViewRecordStage({
             const newIndex = event.state?.index || 0;
 
             if (newIndex < historyIndex) {
+                event.preventDefault();
                 handleBrowserBackButton();
             } else if (newIndex > historyIndex) {
+                event.preventDefault();
                 handleBrowserForwardButton();
             }
 
