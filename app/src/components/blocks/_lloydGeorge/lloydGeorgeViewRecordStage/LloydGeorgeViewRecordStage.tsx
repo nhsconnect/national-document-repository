@@ -86,6 +86,20 @@ function LloydGeorgeViewRecordStage({
 
         window.addEventListener('popstate', handleBrowserNavigationButton);
 
+        const handleBrowserBackButton = () => {
+            if (fullScreen) {
+                setFullScreen(false);
+            } else {
+                window.history.back();
+            }
+        };
+
+        const handleBrowserForwardButton = () => {
+            if (!fullScreen) {
+                setFullScreen(true);
+            }
+        };
+
         return () => {
             window.removeEventListener('popstate', handleBrowserNavigationButton);
         };
@@ -131,20 +145,6 @@ function LloydGeorgeViewRecordStage({
 
     const pageHeader = 'Available records';
     useTitle({ pageTitle: pageHeader });
-
-    const handleBrowserBackButton = () => {
-        if (fullScreen) {
-            setFullScreen(false);
-        } else {
-            window.history.back();
-        }
-    };
-
-    const handleBrowserForwardButton = () => {
-        if (!fullScreen) {
-            setFullScreen(true);
-        }
-    };
 
     return (
         <div className="lloydgeorge_record-stage">
