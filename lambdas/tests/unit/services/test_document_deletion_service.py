@@ -61,9 +61,12 @@ def mock_document_query(mocker):
 
 
 def test_handle_delete_for_all_doc_type(
-    mock_delete_specific_doc_type, mock_deletion_service
+    mock_delete_specific_doc_type, mock_deletion_service, mocker
 ):
     expected = TEST_DOC_STORE_REFERENCES + TEST_LG_DOC_STORE_REFERENCES
+    mock_deletion_service.delete_documents_references_in_stitch_table = (
+        mocker.MagicMock()
+    )
 
     actual = mock_deletion_service.handle_delete(
         TEST_NHS_NUMBER, [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG]
@@ -81,9 +84,12 @@ def test_handle_delete_for_all_doc_type(
 
 
 def test_handle_delete_all_doc_type_when_only_lg_records_available(
-    mock_delete_specific_doc_type, mock_deletion_service
+    mock_delete_specific_doc_type, mock_deletion_service, mocker
 ):
     nhs_number = TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD
+    mock_deletion_service.delete_documents_references_in_stitch_table = (
+        mocker.MagicMock()
+    )
 
     expected = TEST_LG_DOC_STORE_REFERENCES
     actual = mock_deletion_service.handle_delete(
@@ -107,8 +113,12 @@ def test_handle_delete_all_doc_type_when_only_lg_records_available(
     ],
 )
 def test_handle_delete_for_one_doc_type(
-    doc_type, expected, mock_delete_specific_doc_type, mock_deletion_service
+    doc_type, expected, mock_delete_specific_doc_type, mock_deletion_service, mocker
 ):
+    mock_deletion_service.delete_documents_references_in_stitch_table = (
+        mocker.MagicMock()
+    )
+
     actual = mock_deletion_service.handle_delete(TEST_NHS_NUMBER, [doc_type])
 
     assert actual == expected
@@ -118,8 +128,12 @@ def test_handle_delete_for_one_doc_type(
 
 
 def test_handle_delete_when_no_record_for_patient_return_empty_list(
-    mock_delete_specific_doc_type, mock_deletion_service
+    mock_delete_specific_doc_type, mock_deletion_service, mocker
 ):
+    mock_deletion_service.delete_documents_references_in_stitch_table = (
+        mocker.MagicMock()
+    )
+
     expected = []
     actual = mock_deletion_service.handle_delete(
         TEST_NHS_NUMBER_WITH_NO_RECORD,
