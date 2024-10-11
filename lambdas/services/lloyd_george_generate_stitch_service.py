@@ -47,6 +47,9 @@ class LloydGeorgeStitchService:
     def stitch_lloyd_george_record(self):
         try:
             documents_for_stitching = self.get_lloyd_george_record_for_patient()
+            if not documents_for_stitching:
+                raise LGStitchServiceException(404, LambdaError.StitchNotFound)
+
             self.update_trace_status(TraceStatus.PROCESSING)
             sorted_documents_for_stitching = self.sort_documents_by_filenames(
                 documents_for_stitching

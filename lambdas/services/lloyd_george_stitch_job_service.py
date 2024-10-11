@@ -37,8 +37,9 @@ class LloydGeorgeStitchJobService:
         try:
             self.check_lloyd_george_record_for_patient(nhs_number)
             stitch_trace_results = self.query_stitch_trace_with_nhs_number(nhs_number)
-            latest_stitch_trace = self.get_latest_stitch_trace(stitch_trace_results)
-            if latest_stitch_trace:
+
+            if stitch_trace_results:
+                latest_stitch_trace = self.get_latest_stitch_trace(stitch_trace_results)
                 return latest_stitch_trace.job_status
             else:
                 return self.write_stitch_trace(nhs_number)

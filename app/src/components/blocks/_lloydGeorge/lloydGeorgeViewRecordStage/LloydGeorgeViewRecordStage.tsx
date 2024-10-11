@@ -207,24 +207,39 @@ function LloydGeorgeViewRecordStage({
 
             <h1>{pageHeader}</h1>
             <PatientSimpleSummary />
-            {!fullScreen && showMenu ? (
+            {!fullScreen ? (
                 <>
-                    <div className="lloydgeorge_record-stage_flex">
-                        <div className="lloydgeorge_record-stage_flex-row">
-                            <RecordMenuCard recordLinks={recordLinksToShow} setStage={setStage} />
+                    {showMenu ? (
+                        <div className="lloydgeorge_record-stage_flex">
+                            <div className="lloydgeorge_record-stage_flex-row">
+                                <RecordMenuCard
+                                    recordLinks={recordLinksToShow}
+                                    setStage={setStage}
+                                />
+                            </div>
+                            <div className="lloydgeorge_record-stage_flex-row">
+                                <RecordCard
+                                    downloadStage={downloadStage}
+                                    heading="Lloyd George record"
+                                    fullScreenHandler={setFullScreen}
+                                    detailsElement={<RecordDetails {...recordDetailsProps} />}
+                                    isFullScreen={fullScreen}
+                                    refreshRecord={refreshRecord}
+                                    cloudFrontUrl={cloudFrontUrl}
+                                />
+                            </div>
                         </div>
-                        <div className="lloydgeorge_record-stage_flex-row">
-                            <RecordCard
-                                downloadStage={downloadStage}
-                                heading="Lloyd George record"
-                                fullScreenHandler={setFullScreen}
-                                detailsElement={<RecordDetails {...recordDetailsProps} />}
-                                isFullScreen={fullScreen}
-                                refreshRecord={refreshRecord}
-                                cloudFrontUrl={cloudFrontUrl}
-                            />
-                        </div>
-                    </div>
+                    ) : (
+                        <RecordCard
+                            downloadStage={downloadStage}
+                            heading="Lloyd George record"
+                            fullScreenHandler={setFullScreen}
+                            detailsElement={<RecordDetails {...recordDetailsProps} />}
+                            isFullScreen={fullScreen}
+                            refreshRecord={refreshRecord}
+                            cloudFrontUrl={cloudFrontUrl}
+                        />
+                    )}
                 </>
             ) : (
                 <div className="lloydgeorge_record-stage_fs">
