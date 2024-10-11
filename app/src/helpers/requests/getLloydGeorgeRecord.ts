@@ -3,8 +3,9 @@ import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
 import waitForSeconds from '../utils/waitForSeconds';
 import { JOB_STATUS } from '../../types/generic/downloadManifestJobStatus';
-import { DownloadManifestError } from '../../types/generic/errors';
 import { isRunningInCypress } from '../utils/isLocal';
+import { StitchRecordError } from '../../types/generic/errors';
+
 export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 10;
 
 type Args = {
@@ -21,9 +22,9 @@ export type LloydGeorgeStitchResult = {
     presignedUrl: string;
 };
 
-const ThreePendingErrorMessage = 'Failed to initiate download';
+const ThreePendingErrorMessage = 'Failed to initiate record view';
 const UnexpectedResponseMessage =
-    'Got unexpected response from server when trying to download record';
+    'Got unexpected response from server when trying to retrieve record';
 
 async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult> {
     await requestStitchJob(args);
@@ -42,10 +43,10 @@ async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult
                 pendingCount += 1;
                 continue;
             default:
-                throw new DownloadManifestError(UnexpectedResponseMessage);
+                throw new StitchRecordError(UnexpectedResponseMessage);
         }
     }
-    throw new DownloadManifestError(ThreePendingErrorMessage);
+    throw new StitchRecordError(ThreePendingErrorMessage);
 }
 
 export const requestStitchJob = async ({

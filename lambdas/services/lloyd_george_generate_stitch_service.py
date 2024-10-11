@@ -30,7 +30,6 @@ class LloydGeorgeStitchService:
         self.lifecycle_policy_tag = os.environ.get(
             "STITCHED_FILE_LIFECYCLE_POLICY_TAG", "autodelete"
         )
-        self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
 
         self.s3_service = S3Service()
         self.document_service = DocumentService()
