@@ -408,7 +408,6 @@ def test_get_total_file_size(mocker, stitch_service):
 
 
 def test_upload_stitched_lg_record_and_retrieve_presign_url(mock_s3, stitch_service):
-
     stitch_service.upload_stitched_lg_record(
         stitched_lg_record=MOCK_STITCHED_FILE,
         filename_on_bucket=MOCK_STITCHED_FILE_ON_S3,
@@ -423,4 +422,36 @@ def test_upload_stitched_lg_record_and_retrieve_presign_url(mock_s3, stitch_serv
             "ContentDisposition": "inline",
             "ContentType": "application/pdf",
         },
+    )
+
+
+def test_handle_stitch_request(patched_stitch_service, mocker):
+    patched_stitch_service.stitch_lloyd_george_record = mocker.MagicMock()
+    patched_stitch_service.update_stitch_job_complete = mocker.MagicMock()
+
+    patched_stitch_service.handle_stitch_request()
+
+    patched_stitch_service.stitch_lloyd_george_record.assert_called_once()
+    patched_stitch_service.update_stitch_job_complete.assert_called_once()
+
+
+def test_update_stitch_job_complete(patched_stitch_service):
+    patched_stitch_service.update_stitch_job_complete()
+
+    patched_stitch_service.document_service.dynamo_service.update_item.assert_called_with(
+        "test_stitch_metadata",
+        MOCK_STITCH_TRACE_OBJECT.id,
+        MOCK_STITCH_TRACE_OBJECT.model_dump(by_alias=True, exclude={"id"}),
+    )
+
+
+def test_update_trace_status(stitch_service, mocker):
+    stitch_service.document_service = mocker.MagicMock()
+
+    stitch_service.update_trace_status(TraceStatus.FAILED)
+
+    stitch_service.document_service.dynamo_service.update_item.assert_called_with(
+        "test_stitch_metadata",
+        MOCK_STITCH_TRACE_OBJECT.id,
+        {"JobStatus": TraceStatus.FAILED},
     )

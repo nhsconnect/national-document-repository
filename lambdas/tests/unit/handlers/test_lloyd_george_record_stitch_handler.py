@@ -92,7 +92,7 @@ def joe_bloggs_event():
 
 
 def test_lambda_handler_respond_with_200_and_presign_url(
-    valid_id_event_without_auth_header, context, mock_stitch_service
+    valid_id_event_without_auth_header, context, mock_stitch_service, set_env
 ):
     mock_stitch_service.query_document_stitch_job.return_value = (
         MOCK_STITCH_SERVICE_RESPONSE
@@ -116,7 +116,7 @@ def test_lambda_handler_respond_with_200_and_presign_url(
 
 
 def test_lambda_handler_respond_400_when_no_nhs_number_supplied(
-    missing_id_event, context
+    missing_id_event, context, set_env
 ):
     actual = lambda_handler(missing_id_event, context)
 
@@ -156,7 +156,7 @@ def test_lambda_handler_respond_500_when_environment_variables_not_set(
 
 
 def test_lambda_handler_respond_400_when_nhs_number_not_valid(
-    invalid_id_event, context
+    invalid_id_event, context, set_env
 ):
     actual = lambda_handler(invalid_id_event, context)
 

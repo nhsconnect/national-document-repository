@@ -157,7 +157,7 @@ class DocumentManifestJobService:
         )
 
     def query_zip_trace(self, job_id: str) -> DocumentManifestZipTrace:
-        response = self.dynamo_service.query_with_requested_fields(
+        response = self.dynamo_service.query_table_by_index(
             table_name=self.zip_trace_table,
             index_name="JobIdIndex",
             search_key="JobId",

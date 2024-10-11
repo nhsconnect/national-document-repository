@@ -69,7 +69,7 @@ def test_query_with_requested_fields_returns_items_from_dynamo(
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
     expected = MOCK_SEARCH_RESPONSE
 
-    actual = mock_service.query_with_requested_fields(
+    actual = mock_service.query_table_by_index(
         MOCK_TABLE_NAME,
         "NhsNumberIndex",
         "NhsNumber",
@@ -100,7 +100,7 @@ def test_query_with_requested_fields_with_filter_returns_items_from_dynamo(
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
     expected = MOCK_SEARCH_RESPONSE
 
-    actual = mock_service.query_with_requested_fields(
+    actual = mock_service.query_table_by_index(
         MOCK_TABLE_NAME,
         "NhsNumberIndex",
         "NhsNumber",
@@ -129,7 +129,7 @@ def test_query_with_requested_fields_raises_exception_when_results_are_empty(
     mock_table.return_value.query.return_value = []
 
     with pytest.raises(DynamoServiceException):
-        mock_service.query_with_requested_fields(
+        mock_service.query_table_by_index(
             MOCK_TABLE_NAME,
             "NhsNumberIndex",
             "NhsNumber",
@@ -149,7 +149,7 @@ def test_query_with_requested_fields_raises_exception_when_fields_requested_is_n
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
     expected = MOCK_SEARCH_RESPONSE
 
-    actual = mock_service.query_with_requested_fields(
+    actual = mock_service.query_table_by_index(
         MOCK_TABLE_NAME, "test_index", "NhsNumber", TEST_NHS_NUMBER
     )
     mock_table.assert_called_with(MOCK_TABLE_NAME)
@@ -168,7 +168,7 @@ def test_query_with_requested_fields_client_error_raises_exception(
     mock_table.return_value.query.side_effect = MOCK_CLIENT_ERROR
 
     with pytest.raises(ClientError) as actual_response:
-        mock_service.query_with_requested_fields(
+        mock_service.query_table_by_index(
             MOCK_TABLE_NAME,
             "NhsNumberIndex",
             "NhsNumber",

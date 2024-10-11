@@ -89,7 +89,7 @@ def mock_s3_service(mocker, manifest_service):
 def mock_dynamo_service(mocker, manifest_service):
     mock_dynamo_service = manifest_service.dynamo_service
     mocker.patch.object(mock_dynamo_service, "create_item")
-    mocker.patch.object(mock_dynamo_service, "query_with_requested_fields")
+    mocker.patch.object(mock_dynamo_service, "query_table_by_index")
     yield mock_dynamo_service
 
 
@@ -645,14 +645,14 @@ def test_create_document_manifest_presigned_url_missing_manifest_raises_exceptio
 def test_query_zip_trace_returns_zip_trace_object(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_with_requested_fields.return_value = {
+    mock_dynamo_service.query_table_by_index.return_value = {
         "Items": [TEST_ZIP_TRACE_DATA]
     }
     expected = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
     actual = manifest_service.query_zip_trace(TEST_UUID)
 
-    mock_dynamo_service.query_with_requested_fields.assert_called_once_with(
+    mock_dynamo_service.query_table_by_index.assert_called_once_with(
         table_name=MOCK_ZIP_TRACE_TABLE,
         index_name="JobIdIndex",
         search_key="JobId",
@@ -665,7 +665,7 @@ def test_query_zip_trace_returns_zip_trace_object(
 def test_query_zip_trace_empty_response_raises_exception(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_with_requested_fields.return_value = {"Items": []}
+    mock_dynamo_service.query_table_by_index.return_value = {"Items": []}
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
         manifest_service.query_zip_trace(TEST_UUID)
@@ -678,7 +678,7 @@ def test_query_zip_trace_empty_response_raises_exception(
 def test_query_zip_trace_empty_response_object_raises_exception(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_with_requested_fields.return_value = {"Items": [{}]}
+    mock_dynamo_service.query_table_by_index.return_value = {"Items": [{}]}
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
         manifest_service.query_zip_trace(TEST_UUID)

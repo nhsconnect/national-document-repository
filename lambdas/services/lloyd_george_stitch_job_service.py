@@ -140,7 +140,7 @@ class LloydGeorgeStitchJobService:
             attr_operator=AttributeOperator.EQUAL,
             filter_value=False,
         ).build()
-        response = self.dynamo_service.query_with_requested_fields(
+        response = self.dynamo_service.query_table_by_index(
             table_name=self.stitch_trace_table,
             index_name="NhsNumberIndex",
             search_key="NhsNumber",

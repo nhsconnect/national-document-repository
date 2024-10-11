@@ -35,7 +35,7 @@ class DocumentService:
         self, nhs_number: str, table: str
     ) -> list[DocumentReference]:
         documents = []
-        response = self.dynamo_service.query_with_requested_fields(
+        response = self.dynamo_service.query_table_by_index(
             table_name=table,
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
@@ -53,7 +53,7 @@ class DocumentService:
     ) -> list[DocumentReference]:
         documents = []
 
-        response = self.dynamo_service.query_with_requested_fields(
+        response = self.dynamo_service.query_table_by_index(
             table_name=table,
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
