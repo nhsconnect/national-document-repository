@@ -435,10 +435,12 @@ def test_handle_stitch_request(patched_stitch_service, mocker):
     patched_stitch_service.update_stitch_job_complete.assert_called_once()
 
 
-def test_update_stitch_job_complete(patched_stitch_service):
-    patched_stitch_service.update_stitch_job_complete()
+def test_update_stitch_job_complete(stitch_service, mocker):
+    stitch_service.document_service = mocker.MagicMock()
 
-    patched_stitch_service.document_service.dynamo_service.update_item.assert_called_with(
+    stitch_service.update_stitch_job_complete()
+
+    stitch_service.document_service.dynamo_service.update_item.assert_called_with(
         "test_stitch_metadata",
         MOCK_STITCH_TRACE_OBJECT.id,
         MOCK_STITCH_TRACE_OBJECT.model_dump(by_alias=True, exclude={"id"}),
