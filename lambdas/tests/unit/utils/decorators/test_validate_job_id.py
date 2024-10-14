@@ -30,3 +30,15 @@ def test_respond_with_lambda_response_when_job_id_is_valid(valid_id_event, conte
 
     assert actual == expected
     actual_lambda_logic.assert_called_once()
+
+
+def test_respond_with_400_when_query_string_missing(
+    missing_query_string_event, context
+):
+    actual = lambda_handler(missing_query_string_event, context)
+
+    body = LambdaError.DocTypeKey.create_error_body()
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
+
+    assert actual == expected
+    actual_lambda_logic.assert_not_called()

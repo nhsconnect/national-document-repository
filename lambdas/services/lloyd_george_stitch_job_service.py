@@ -38,11 +38,16 @@ class LloydGeorgeStitchJobService:
             self.check_lloyd_george_record_for_patient(nhs_number)
             stitch_trace_results = self.query_stitch_trace_with_nhs_number(nhs_number)
 
-            if stitch_trace_results:
-                latest_stitch_trace = self.get_latest_stitch_trace(stitch_trace_results)
-                return latest_stitch_trace.job_status
-            else:
+            if not stitch_trace_results:
                 return self.write_stitch_trace(nhs_number)
+
+            latest_stitch_trace = self.get_latest_stitch_trace(stitch_trace_results)
+
+            if latest_stitch_trace.job_status == TraceStatus.FAILED:
+                return self.write_stitch_trace(nhs_number)
+
+            return latest_stitch_trace.job_status
+
         except ClientError as e:
             logger.error(
                 f"{LambdaError.StitchNoService.to_str()}: {str(e)}",
@@ -108,7 +113,7 @@ class LloydGeorgeStitchJobService:
                     totalFileSizeInByte=stitch_trace.total_file_size_in_byte,
                 )
 
-    def validate_latest_stitch_trace(self, response: dict) -> list[StitchTrace] | None:
+    def validate_stitch_trace(self, response: dict) -> list[StitchTrace] | None:
         try:
             stitch_trace_dynamo_response = response.get("Items", [])
             if not stitch_trace_dynamo_response:
@@ -118,12 +123,12 @@ class LloydGeorgeStitchJobService:
                 for stitch_trace in stitch_trace_dynamo_response
             ]
 
-        except (KeyError, IndexError, ValidationError) as e:
+        except ValidationError as e:
             logger.error(
-                f"{LambdaError.ManifestMissingJob.to_str()}: {str(e)}",
+                f"{LambdaError.StitchValidation.to_str()}: {str(e)}",
                 {"Result": "Failed to create document manifest job"},
             )
-            raise LGStitchServiceException(404, LambdaError.ManifestMissingJob)
+            raise LGStitchServiceException(400, LambdaError.StitchValidation)
 
     def get_latest_stitch_trace(self, stitch_trace_items: list[StitchTrace]):
         latest_stitch_trace = stitch_trace_items[0]
@@ -147,7 +152,7 @@ class LloydGeorgeStitchJobService:
             search_condition=nhs_number,
             query_filter=delete_filter_expression,
         )
-        return self.validate_latest_stitch_trace(response)
+        return self.validate_stitch_trace(response)
 
     def create_document_stitch_presigned_url(self, stitched_file_location):
         presign_url_response = self.s3_service.create_download_presigned_url(

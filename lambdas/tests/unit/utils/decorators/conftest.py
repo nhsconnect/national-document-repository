@@ -11,7 +11,15 @@ def valid_id_event():
 
 
 @pytest.fixture
-def invalid_id_event():
+def missing_query_string_event():
+    api_gateway_proxy_event = {
+        "httpMethod": "GET",
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def invalid_nhs_number_event():
     api_gateway_proxy_event = {
         "httpMethod": "GET",
         "queryStringParameters": {"patientId": "900000000900"},
