@@ -153,6 +153,18 @@ def mock_get_total_file_size_in_bytes(mocker):
     )
 
 
+def test_update_stitch_job_complete(stitch_service, mocker):
+    stitch_service.document_service = mocker.MagicMock()
+
+    stitch_service.update_stitch_job_complete()
+
+    stitch_service.document_service.dynamo_service.update_item.assert_called_with(
+        "test_stitch_metadata",
+        MOCK_STITCH_TRACE_OBJECT.id,
+        MOCK_STITCH_TRACE_OBJECT.model_dump(by_alias=True, exclude={"id"}),
+    )
+
+
 def test_stitch_lloyd_george_record_happy_path(
     mock_tempfile,
     mock_stitch_pdf,
@@ -433,18 +445,6 @@ def test_handle_stitch_request(patched_stitch_service, mocker):
 
     patched_stitch_service.stitch_lloyd_george_record.assert_called_once()
     patched_stitch_service.update_stitch_job_complete.assert_called_once()
-
-
-def test_update_stitch_job_complete(stitch_service, mocker):
-    stitch_service.document_service = mocker.MagicMock()
-
-    stitch_service.update_stitch_job_complete()
-
-    stitch_service.document_service.dynamo_service.update_item.assert_called_with(
-        "test_stitch_metadata",
-        MOCK_STITCH_TRACE_OBJECT.id,
-        MOCK_STITCH_TRACE_OBJECT.model_dump(by_alias=True, exclude={"id"}),
-    )
 
 
 def test_update_trace_status(stitch_service, mocker):
