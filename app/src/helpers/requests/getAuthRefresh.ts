@@ -3,15 +3,14 @@ import { endpoints } from '../../types/generic/endpoints';
 import { UserAuth } from '../../types/blocks/userAuth';
 
 export type AuthTokenArgs = {
-    code: string;
-    state: string;
+    refreshToken: string;
     axios: AxiosInstance;
 };
 
-const getAuthToken = async ({ code, state, axios }: AuthTokenArgs) => {
+const getAuthRefresh = async ({ refreshToken, axios }: AuthTokenArgs) => {
     try {
-        const { data } = await axios.get(endpoints.AUTH, {
-            params: { code, state },
+        const { data } = await axios.get(endpoints.REFRESH_AUTH, {
+            params: { refreshToken },
         });
         const userAuth: UserAuth = data;
         return userAuth;
@@ -20,4 +19,4 @@ const getAuthToken = async ({ code, state, axios }: AuthTokenArgs) => {
     }
 };
 
-export default getAuthToken;
+export default getAuthRefresh;
