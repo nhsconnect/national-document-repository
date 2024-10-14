@@ -22,6 +22,7 @@ from utils.exceptions import (
     TooManyOrgsException,
 )
 from utils.lambda_exceptions import LoginException
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
@@ -127,7 +128,7 @@ class LoginService:
             user_id,
         )
 
-        is_bsol = permitted_orgs_details["is_BSOL"]
+        is_bsol = True
 
         logger.info("Returning authentication details")
         response = {
@@ -240,6 +241,7 @@ class LoginService:
             "ndr_session_id": session_id,
             "nhs_user_id": user_id,
         }
+        request_context.authorization = ndr_token_content
 
         authorisation_token = jwt.encode(
             ndr_token_content, private_key, algorithm="RS256"

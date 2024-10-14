@@ -34,8 +34,8 @@ function DocumentSearchResultsPage() {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const config = useConfig();
-
     const mounted = useRef(false);
+
     useEffect(() => {
         const onPageLoad = async () => {
             setSubmissionState(SUBMISSION_STATE.PENDING);
@@ -101,6 +101,7 @@ function DocumentSearchResultsPage() {
                                 recordType="ARF"
                                 numberOfFiles={searchResults.length}
                                 docType={DOCUMENT_TYPE.ALL}
+                                resetDocState={() => null}
                             />
                         }
                     />

@@ -32,6 +32,7 @@ export type Props = {
     numberOfFiles: number;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     recordType: string;
+    resetDocState: () => void;
 };
 
 enum DELETE_DOCUMENTS_OPTION {
@@ -42,9 +43,10 @@ enum DELETE_DOCUMENTS_OPTION {
 type IndexViewProps = {
     docType: DOCUMENT_TYPE;
     recordType: string;
+    resetDocState: () => void;
 };
 
-const DeleteSubmitStageIndexView = ({ docType, recordType }: IndexViewProps) => {
+const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: IndexViewProps) => {
     const patientDetails = usePatient();
     const role = useRole();
     const { register, handleSubmit } = useForm();
@@ -62,6 +64,7 @@ const DeleteSubmitStageIndexView = ({ docType, recordType }: IndexViewProps) => 
 
     const handleYesOption = async () => {
         const onSuccess = () => {
+            resetDocState();
             setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
             if (userIsGP) {
                 navigate(routeChildren.LLOYD_GEORGE_DELETE_COMPLETE);
@@ -189,7 +192,13 @@ const DeleteSubmitStageIndexView = ({ docType, recordType }: IndexViewProps) => 
     );
 };
 
-function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordType }: Props) {
+function DeleteSubmitStage({
+    docType,
+    numberOfFiles,
+    setDownloadStage,
+    recordType,
+    resetDocState,
+}: Props) {
     useTitle({ pageTitle: 'Delete files' });
 
     return (
@@ -198,7 +207,11 @@ function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordTyp
                 <Route
                     index
                     element={
-                        <DeleteSubmitStageIndexView docType={docType} recordType={recordType} />
+                        <DeleteSubmitStageIndexView
+                            docType={docType}
+                            recordType={recordType}
+                            resetDocState={resetDocState}
+                        />
                     }
                 />
                 <Route
@@ -208,6 +221,7 @@ function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordTyp
                             docType={docType}
                             numberOfFiles={numberOfFiles}
                             recordType={recordType}
+                            resetDocState={resetDocState}
                         />
                     }
                 ></Route>

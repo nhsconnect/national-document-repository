@@ -40,6 +40,14 @@ function LloydGeorgeRecordPage() {
     const [lastUpdated, setLastUpdated] = useState('');
     const [cloudFrontUrl, setCloudFrontUrl] = useState('');
 
+    const resetDocState = () => {
+        setNumberOfFiles(0);
+        setLastUpdated('');
+        setTotalFileSizeInByte(0);
+        setCloudFrontUrl('');
+        setDownloadStage(DOWNLOAD_STAGE.INITIAL);
+    };
+
     const refreshRecord = async () => {
         const onSuccess = (
             files_count: number,
@@ -51,7 +59,6 @@ function LloydGeorgeRecordPage() {
             setLastUpdated(getFormattedDatetime(new Date(updated_date)));
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             setTotalFileSizeInByte(file_size);
-            setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             setCloudFrontUrl(presign_url);
         };
 
@@ -135,6 +142,7 @@ function LloydGeorgeRecordPage() {
                             setDownloadStage={setDownloadStage}
                             numberOfFiles={numberOfFiles}
                             recordType="Lloyd George"
+                            resetDocState={resetDocState}
                         />
                     }
                 />

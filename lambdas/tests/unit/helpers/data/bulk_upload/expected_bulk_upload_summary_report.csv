@@ -1,8 +1,12 @@
 Type,Description,Count
-Total,Total Successful,2
-Total,Successful - Registered Elsewhere,0
-Total,Suspended,0
-FailureReason for Y12345,File name not matching Lloyd George naming convention,1
-FailureReason for TEST,Could not find the given patient on PDS,1
-Success by ODS,Y12345,1
-Success by ODS,TEST,1
+Total,Total Successful,10
+Total,Successful - Registered Elsewhere,2
+Total,Successful - Suspended,2
+Total,Successful - Deceased,2
+Total,Successful - Restricted,2
+Success by ODS,Y12345,5
+Success by ODS,Z12345,5
+FailureReason for Y12345,Could not find the given patient on PDS,2
+FailureReason for Y12345,Lloyd George file already exists,1
+FailureReason for Z12345,Could not find the given patient on PDS,2
+FailureReason for Z12345,Lloyd George file already exists,1

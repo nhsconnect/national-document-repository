@@ -9,7 +9,7 @@ describe('GP Workflow: Patient search and verify', () => {
     const workspace = Cypress.env('WORKSPACE');
     const activePatient =
         workspace === 'ndr-dev' ? pdsPatients.activeUpload : stubPatients.activeUpload;
-    const homeUrl = '/home';
+    const homeUrl = '/patient/search';
     const patientVerifyUrl = '/patient/verify';
     const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
@@ -23,8 +23,6 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.smokeLogin(role);
 
                 cy.url({ timeout: 10000 }).should('eq', baseUrl + homeUrl);
-                cy.getByTestId('search-patient-btn').should('exist');
-                cy.getByTestId('search-patient-btn').click();
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(activePatient);
