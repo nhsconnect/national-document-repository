@@ -5,7 +5,7 @@ import pytest
 def valid_id_event():
     api_gateway_proxy_event = {
         "httpMethod": "GET",
-        "queryStringParameters": {"patientId": "9000000009"},
+        "queryStringParameters": {"patientId": "9000000009", "jobId": "123456890"},
     }
     return api_gateway_proxy_event
 
