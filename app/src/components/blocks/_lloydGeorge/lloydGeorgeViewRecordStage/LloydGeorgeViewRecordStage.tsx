@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import {
     BackLink,
     Button,
@@ -60,6 +60,53 @@ function LloydGeorgeViewRecordStage({
         required: true,
     });
 
+    useEffect(() => {
+        let historyIndex = window.history.state?.index || 0;
+
+        if (fullScreen) {
+            historyIndex += 1;
+            window.history.pushState(
+                { ...window.history.state, fullScreen: true, index: historyIndex },
+                '',
+                window.location.href,
+            );
+        }
+
+        const handleBrowserNavigationButton = (event: PopStateEvent) => {
+            const newIndex = event.state?.index || 0;
+
+            if (newIndex < historyIndex) {
+                event.preventDefault();
+                handleBrowserBackButton();
+            } else if (newIndex > historyIndex) {
+                event.preventDefault();
+                handleBrowserForwardButton();
+            }
+
+            historyIndex = newIndex;
+        };
+
+        window.addEventListener('popstate', handleBrowserNavigationButton);
+
+        const handleBrowserBackButton = () => {
+            if (fullScreen) {
+                setFullScreen(false);
+            } else {
+                window.history.back();
+            }
+        };
+
+        const handleBrowserForwardButton = () => {
+            if (!fullScreen) {
+                setFullScreen(true);
+            }
+        };
+
+        return () => {
+            window.removeEventListener('popstate', handleBrowserNavigationButton);
+        };
+    }, [fullScreen]);
+
     const handleDownloadAndRemoveRecordButton = () => {
         if (downloadRemoveButtonClicked) {
             setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
@@ -117,7 +164,7 @@ function LloydGeorgeViewRecordStage({
                     href="#"
                     onClick={(e) => {
                         e.preventDefault();
-                        setFullScreen(false);
+                        window.history.back();
                     }}
                 >
                     Exit full screen
