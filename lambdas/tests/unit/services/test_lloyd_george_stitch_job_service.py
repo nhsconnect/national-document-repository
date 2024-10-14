@@ -7,7 +7,7 @@ from enums.trace_status import TraceStatus
 from freezegun import freeze_time
 from models.stitch_trace import StitchTrace
 from services.lloyd_george_stitch_job_service import LloydGeorgeStitchJobService
-from unit.conftest import STITCH_METADATA_DYNAMODB_NAME_VALUE, TEST_NHS_NUMBER
+from tests.unit.conftest import STITCH_METADATA_DYNAMODB_NAME_VALUE, TEST_NHS_NUMBER
 from utils.exceptions import FileUploadInProgress, NoAvailableDocument
 from utils.lambda_exceptions import LGStitchServiceException
 from utils.lloyd_george_validator import LGInvalidFilesException
@@ -242,7 +242,6 @@ def test_query_document_stitch_job(stitch_service, mocker):
     ]
     mock_latest_stitch_trace = mocker.MagicMock()
 
-    # Mock the methods used in query_document_stitch_job
     stitch_service.query_stitch_trace_with_nhs_number = mocker.MagicMock(
         return_value=mock_response
     )

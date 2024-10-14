@@ -23,15 +23,6 @@ def test_respond_with_400_when_job_id_missing(missing_id_event, context):
     actual_lambda_logic.assert_not_called()
 
 
-def test_respond_with_lambda_response_when_job_id_is_valid(valid_id_event, context):
-    expected = "200 OK"
-
-    actual = lambda_handler(valid_id_event, context)
-
-    assert actual == expected
-    actual_lambda_logic.assert_called_once()
-
-
 def test_respond_with_400_when_query_string_missing(
     missing_query_string_event, context
 ):
@@ -42,3 +33,12 @@ def test_respond_with_400_when_query_string_missing(
 
     assert actual == expected
     actual_lambda_logic.assert_not_called()
+
+
+def test_respond_with_lambda_response_when_job_id_is_valid(valid_id_event, context):
+    expected = "200 OK"
+
+    actual = lambda_handler(valid_id_event, context)
+
+    assert actual == expected
+    actual_lambda_logic.assert_called_once()
