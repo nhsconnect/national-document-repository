@@ -217,7 +217,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         await waitFor(() => {
             expect(screen.getByText('Exit full screen')).toBeInTheDocument();
         });
-        // expect(forwardSpy).toHaveBeenCalled();
+        expect(forwardSpy).toHaveBeenCalled();
 
         backSpy.mockRestore();
         forwardSpy.mockRestore();
