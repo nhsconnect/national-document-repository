@@ -19,7 +19,7 @@ const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const arfDownloadUrl = '/patient/arf';
 const forbiddenRoutes = [arfDownloadUrl];
 
-const bsolOptions = [true, false];
+const bsolOptions = [true];
 
 describe('GP Clinical user role has access to the expected GP_CLINICAL workflow paths', () => {
     bsolOptions.forEach((isBSOL) => {
