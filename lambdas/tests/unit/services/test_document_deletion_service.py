@@ -1,3 +1,5 @@
+from unittest.mock import call
+
 import pytest
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
@@ -30,13 +32,11 @@ def mocked_document_query(
 
 
 @pytest.fixture
-def mock_deletion_service(set_env):
+def mock_deletion_service(set_env, mocker):
+    mocker.patch("services.document_deletion_service.DocumentService")
+    mocker.patch("services.document_deletion_service.LloydGeorgeStitchJobService")
+
     yield DocumentDeletionService()
-
-
-@pytest.fixture
-def mock_delete_doc(mocker):
-    yield mocker.patch("services.document_service.DocumentService.delete_documents")
 
 
 @pytest.fixture
@@ -151,13 +151,14 @@ def test_handle_delete_when_no_record_for_patient_return_empty_list(
     ],
 )
 def test_delete_specific_doc_type(
-    doc_type,
-    table_name,
-    doc_ref,
-    mock_document_query,
-    mock_delete_doc,
-    mock_deletion_service,
+    doc_type, table_name, doc_ref, mock_document_query, mock_deletion_service, mocker
 ):
+    mocker.patch.object(
+        mock_deletion_service,
+        "get_documents_references_in_storage",
+        return_value=doc_ref,
+    )
+    mock_deletion_service.document_service.delete_documents.return_value = []
     type_of_delete = str(S3LifecycleTags.SOFT_DELETE.value)
 
     expected = doc_ref
@@ -165,7 +166,7 @@ def test_delete_specific_doc_type(
 
     assert actual == expected
 
-    mock_delete_doc.assert_called_once_with(
+    mock_deletion_service.document_service.delete_documents.assert_called_once_with(
         table_name=table_name,
         document_references=doc_ref,
         type_of_delete=type_of_delete,
@@ -177,16 +178,40 @@ def test_delete_specific_doc_type(
     [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
 )
 def test_delete_specific_doc_type_when_no_record_for_given_patient(
-    doc_type,
-    mock_document_query,
-    mock_deletion_service,
-    mock_delete_doc,
+    doc_type, mock_document_query, mock_deletion_service, mocker
 ):
     expected = []
+    mocker.patch.object(
+        mock_deletion_service, "get_documents_references_in_storage", return_value=[]
+    )
+    mock_deletion_service.document_service.delete_documents.return_value = []
     actual = mock_deletion_service.delete_specific_doc_type(
         TEST_NHS_NUMBER_WITH_NO_RECORD, doc_type
     )
 
     assert actual == expected
 
-    mock_delete_doc.assert_not_called()
+    mock_deletion_service.document_service.delete_documents.assert_not_called()
+
+
+def test_delete_documents_references_in_stitch_table(mocker, mock_deletion_service):
+    mock_deletion_service.stitch_service.query_stitch_trace_with_nhs_number.return_value = (
+        TEST_LG_DOC_STORE_REFERENCES
+    )
+
+    mock_deletion_service.delete_documents_references_in_stitch_table(TEST_NHS_NUMBER)
+
+    mock_deletion_service.stitch_service.query_stitch_trace_with_nhs_number.assert_called_once_with(
+        TEST_NHS_NUMBER
+    )
+    expected_calls = [
+        call(
+            mock_deletion_service.stitch_service.stitch_trace_table,
+            record.id,
+            {"deleted": True},
+        )
+        for record in TEST_LG_DOC_STORE_REFERENCES
+    ]
+    mock_deletion_service.document_service.dynamo_service.update_item.assert_has_calls(
+        expected_calls
+    )
