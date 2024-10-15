@@ -9,8 +9,8 @@ from pydantic import BaseModel, TypeAdapter
 from services.base.dynamo_service import DynamoDBService
 
 TABLE = "ndr-dev_BulkUploadReport"
-ATTRIBUTE_TO_REMOVE = "Reason"
-ATTRIBUTE_TO_ADD = "FailureReason"
+ATTRIBUTE_TO_REMOVE = "FailureReason"
+ATTRIBUTE_TO_ADD = "Reason"
 COLUMNS_TO_FETCH = f"{ATTRIBUTE_TO_REMOVE},ID"
 
 
