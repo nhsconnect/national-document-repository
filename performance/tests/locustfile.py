@@ -65,7 +65,7 @@ class TestFramework(HttpUser):
     # def upload_files(self):
     #     try:
     #         auth_headers = login.authenticate_user(self)
-    #         patient_id = "9730787212"  # Patient ID should be determined as needed
+    #         patient_id = os.getenv("PATIENT_ID")
     #         logger.warn(f"Patient ID set to: {patient_id}")
     #         search_patient.search_patient(self, auth_headers, patient_id, False)
     #

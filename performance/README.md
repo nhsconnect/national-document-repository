@@ -40,3 +40,27 @@ To activate in Windows terminals, run:
 You will need to install the requirements for performance tests for Linux user this can be done using the command for `make performance-env`
 
 Upon completion to run the locust tests navigate to the ./performance/tests directory and run the command `locust`
+
+## Environment Variables
+
+The following environment variables are required
+
+CIS2_ENV_ID=
+
+This is the CIS2_ENV_ID to point to this is either ndr-dev or pre-prod depending on the environment
+
+NHS_NUMBER=
+
+This is the NHS Number all requests will use this Number to view records, this will be eventually be deprecated and a wider array of NHS Numbers will be used.
+
+CIS2_ACR_SIG=
+
+This is the Amazon ACR Signature, this will be the same for each environment however is a sensitive secret.
+
+CIS2_CLIENT_ID=
+
+This is the Client ID Of the NDR Application, this does not change but contains sensitive information
+
+## Users.csv File
+
+The Users csv file contains a list of users, passwords and roles to assume. It needs to be placed in the ./tests/data/users/ folder
