@@ -2,6 +2,6 @@
     "jobStatus": "Completed",
     "numberOfFiles": 12,
     "lastUpdated": "2023-10-09T15:41:38.319508Z",
-    "presignUrl": "https://google.com",
+    "presignedUrl": "https://google.com",
     "totalFileSizeInByte": 514495
 }

@@ -97,8 +97,6 @@ describe('GP Workflow: View Lloyd George record', () => {
     };
 
     const setUpStitchJobIntercepts = () => {
-        let getPollingCount = 0;
-
         const initialJobStatus = 'Pending';
 
         cy.intercept('POST', '/LloydGeorgeStitch*', (req) => {
@@ -108,31 +106,16 @@ describe('GP Workflow: View Lloyd George record', () => {
             });
         }).as('stitchJobPost');
 
-        cy.intercept(
-            {
-                method: 'GET',
-                url: '/LloydGeorgeStitch*',
-                query: {
-                    patientId: searchPatientPayload.nhsNumber,
-                },
-            },
-            (req) => {
-                {
-                    req.reply({
-                        statusCode: 200,
-                        body: viewLloydGeorgePayload, // uses public served file in place of a ZIP file
-                    });
-                    req.alias = 'stitchJobCompleted';
-                }
-            },
-        );
+        cy.intercept('GET', '/LloydGeorgeStitch*', (req) => {
+            req.reply({
+                statusCode: 200,
+                body: viewLloydGeorgePayload,
+            });
+        }).as('stitchJobCompleted');
     };
 
     const proceedToDownloadSelectionPage = () => {
-        cy.intercept('GET', '/LloydGeorgeStitch*', {
-            statusCode: 200,
-            body: viewLloydGeorgePayload,
-        }).as('lloydGeorgeStitch');
+        setUpStitchJobIntercepts();
 
         cy.intercept('GET', '/SearchDocumentReferences*', {
             statusCode: 200,
@@ -140,7 +123,7 @@ describe('GP Workflow: View Lloyd George record', () => {
         }).as('searchDocumentReferences');
 
         cy.get('#verify-submit').click();
-        cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
+        cy.wait('@stitchJobCompleted', { timeout: 20000 });
 
         cy.getByTestId('download-all-files-link').click();
     };
@@ -164,7 +147,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.title().should('eq', verifyPatientPageTitle);
 
                 cy.get('#verify-submit').click();
-                cy.wait('@stitchJobCompleted', { timeout: 40000 });
+                cy.wait('@stitchJobCompleted', { timeout: 20000 });
                 cy.title().should('eq', lloydGeorgeRecordPageTitle);
 
                 cy.getByTestId('download-all-files-link').should('exist');
@@ -274,10 +257,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
 
-                cy.intercept('GET', '/LloydGeorgeStitch*', {
-                    statusCode: 200,
-                    body: viewLloydGeorgePayload,
-                }).as('lloydGeorgeStitch');
+                setUpStitchJobIntercepts();
 
                 cy.intercept('GET', '/SearchDocumentReferences*', {
                     statusCode: 200,
@@ -289,7 +269,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.title().should('eq', verifyPatientPageTitle);
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
+                cy.wait('@stitchJobCompleted', { timeout: 20000 });
                 cy.title().should('eq', lloydGeorgeRecordPageTitle);
 
                 cy.getByTestId('download-all-files-link').should('exist');
@@ -399,12 +379,14 @@ describe('GP Workflow: View Lloyd George record', () => {
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
 
-                cy.intercept('GET', '/LloydGeorgeStitch*', {
-                    statusCode: 404,
-                }).as('lloydGeorgeStitch');
+                cy.intercept('POST', '/LloydGeorgeStitch*', (req) => {
+                    req.reply({
+                        statusCode: 404,
+                    });
+                }).as('stitchJobPostEmpty');
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
+                cy.wait('@stitchJobPostEmpty', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('not.exist');
             },
@@ -416,13 +398,10 @@ describe('GP Workflow: View Lloyd George record', () => {
             () => {
                 beforeEachConfiguration(Roles.GP_CLINICAL);
 
-                cy.intercept('GET', '/LloydGeorgeStitch*', {
-                    statusCode: 200,
-                    body: viewLloydGeorgePayload,
-                }).as('lloydGeorgeStitch');
+                setUpStitchJobIntercepts();
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
+                cy.wait('@stitchJobCompleted', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('not.exist');
             },
@@ -432,10 +411,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'It displays an error when the document manifest API call fails as a GP CLINICAL role',
             { tags: 'regression' },
             () => {
-                cy.intercept('GET', '/LloydGeorgeStitch*', {
-                    statusCode: 200,
-                    body: viewLloydGeorgePayload,
-                }).as('lloydGeorgeStitch');
+                setUpStitchJobIntercepts();
 
                 cy.intercept('GET', '/DocumentManifest*', {
                     statusCode: 500,
@@ -444,7 +420,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 beforeEachConfiguration(Roles.GP_CLINICAL);
 
                 cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch', { timeout: 20000 });
+                cy.wait('@stitchJobCompleted', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').should('exist');
                 cy.getByTestId('download-all-files-link').click();

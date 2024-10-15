@@ -29,7 +29,6 @@ const UnexpectedResponseMessage =
 async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult> {
     await requestStitchJob(args);
     let pendingCount = 0;
-
     while (pendingCount < 3) {
         await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
         const pollingResponse = await pollForPresignedUrl(args);
@@ -64,7 +63,6 @@ export const requestStitchJob = async ({
             patientId: nhsNumber,
         },
     });
-
     return response.data.jobStatus;
 };
 export const pollForPresignedUrl = async ({
@@ -73,7 +71,6 @@ export const pollForPresignedUrl = async ({
     baseHeaders,
 }: Args): Promise<LloydGeorgeStitchResult> => {
     const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
-
     const { data } = await axios.get(gatewayUrl, {
         headers: {
             ...baseHeaders,
