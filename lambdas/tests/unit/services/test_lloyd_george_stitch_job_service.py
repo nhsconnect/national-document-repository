@@ -358,14 +358,20 @@ def test_validate_latest_stitch_trace_validation_error(stitch_service):
 
 
 def test_get_latest_stitch_trace(stitch_service, mocker):
-    stitch_trace_1 = mocker.MagicMock()
-    stitch_trace_1.created = datetime(2023, 10, 1, 12, 0, 0)  # Older timestamp
+    stitch_trace_1 = StitchTrace(nhs_number="11111111", expire_at=123456)
+    stitch_trace_1.created = (
+        datetime(2023, 10, 1, 12, 0, 0).isoformat().replace("+00:00", "Z")
+    )
 
-    stitch_trace_2 = mocker.MagicMock()
-    stitch_trace_2.created = datetime(2023, 10, 2, 12, 0, 0)  # Newer timestamp
+    stitch_trace_2 = StitchTrace(nhs_number="222222222", expire_at=123456)
+    stitch_trace_2.created = (
+        datetime(2023, 10, 2, 12, 0, 0).isoformat().replace("+00:00", "Z")
+    )
 
-    stitch_trace_3 = mocker.MagicMock()
-    stitch_trace_3.created = datetime(2023, 10, 1, 15, 0, 0)  # Intermediate timestamp
+    stitch_trace_3 = StitchTrace(nhs_number="333333333", expire_at=123456)
+    stitch_trace_3.created = (
+        datetime(2023, 10, 1, 15, 0, 0).isoformat().replace("+00:00", "Z")
+    )
 
     stitch_trace_items = [stitch_trace_1, stitch_trace_3, stitch_trace_2]
 
@@ -375,8 +381,10 @@ def test_get_latest_stitch_trace(stitch_service, mocker):
 
 
 def test_get_latest_stitch_trace_single_item(stitch_service, mocker):
-    stitch_trace_1 = mocker.MagicMock()
-    stitch_trace_1.created = datetime(2023, 10, 1, 12, 0, 0)
+    stitch_trace_1 = StitchTrace(nhs_number="11111111", expire_at=123456)
+    stitch_trace_1.created = (
+        datetime(2023, 10, 1, 12, 0, 0).isoformat().replace("+00:00", "Z")
+    )
 
     latest_stitch_trace = stitch_service.get_latest_stitch_trace([stitch_trace_1])
 

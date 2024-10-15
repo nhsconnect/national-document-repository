@@ -132,9 +132,11 @@ class LloydGeorgeStitchJobService:
 
     def get_latest_stitch_trace(self, stitch_trace_items: list[StitchTrace]):
         latest_stitch_trace = stitch_trace_items[0]
-
         for stitch_trace in stitch_trace_items:
-            if stitch_trace.created > latest_stitch_trace.created:
+            if (
+                stitch_trace.convert_created_to_datetime()
+                > latest_stitch_trace.convert_created_to_datetime()
+            ):
                 latest_stitch_trace = stitch_trace
         return latest_stitch_trace
 

@@ -28,6 +28,9 @@ class StitchTrace(BaseModel):
     expire_at: int
     deleted: bool = False
 
+    def convert_created_to_datetime(self):
+        return datetime.fromisoformat(self.created.replace("Z", "+00:00"))
+
 
 class DocumentStitchJob(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, use_enum_values=True)
