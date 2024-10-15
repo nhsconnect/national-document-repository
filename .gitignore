@@ -112,3 +112,4 @@ performance/tests/performance-venv
 performance/tests/configuration/user_data.json
 performance/bulk_upload/lloyd_george_pdf_generator/output_datasets
 performance/bulk_upload/lloyd_george_pdf_generator/input_datasets/input_dataset.csv
+performance/tests/data/users/users.csv
