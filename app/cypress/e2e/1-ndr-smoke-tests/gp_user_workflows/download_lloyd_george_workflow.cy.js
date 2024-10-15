@@ -43,8 +43,9 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('contain', lloydGeorgeRecordUrl);
+                cy.contains('Loading...').should('be.visible');
 
-                cy.getByTestId('pdf-viewer', { timeout: 20000 }).should('be.visible');
+                cy.getByTestId('pdf-viewer').should('be.visible', { timeout: 20000 });
 
                 cy.getByTestId('download-all-files-link').click();
 
