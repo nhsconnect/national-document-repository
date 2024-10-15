@@ -50,7 +50,7 @@ class TestFramework(HttpUser):
             )
             auth_headers = login.authenticate_user(self, user_info)
             if auth_headers:
-                patient_id = os.getenv("PATIENT_ID")
+                patient_id = os.getenv("NHS_NUMBER")
                 lgs = search_patient.search_patient(self, auth_headers, patient_id)
                 logger.info(f"Attempting to load search patient result: {lgs}")
 
@@ -65,8 +65,7 @@ class TestFramework(HttpUser):
     # def upload_files(self):
     #     try:
     #         auth_headers = login.authenticate_user(self)
-    #         patient_id = os.getenv("PATIENT_ID")
-    #         logger.warn(f"Patient ID set to: {patient_id}")
+    #         patient_id = os.getenv("NHS_NUMBER")    #         logger.warn(f"Patient ID set to: {patient_id}")
     #         search_patient.search_patient(self, auth_headers, patient_id, False)
     #
     #         directory_path = f"./data/{patient_id}"  # Replace with your directory path

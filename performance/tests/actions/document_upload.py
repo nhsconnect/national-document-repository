@@ -1,4 +1,5 @@
 from locust import HttpUser
+import os
 
 
 def upload_document(client: HttpUser, pdfInstruction):
@@ -17,7 +18,7 @@ def upload_document(client: HttpUser, pdfInstruction):
         f"./data/{pdfInstruction['nhsNumber']}/"
         f"{pdfInstruction['currentPage']}of"
         f"{pdfInstruction['lastPage']}_Lloyd_George_Record_"
-        f"[Brad Edmond Avery]_[9730787212]_[13-09-2006]"
+        f"[Brad Edmond Avery]_[{os.getenv('NHS_NUMBER')}]_[13-09-2006]"
     )
 
     pdf_part = []
@@ -31,4 +32,3 @@ def upload_document(client: HttpUser, pdfInstruction):
         )
 
     return response
-
