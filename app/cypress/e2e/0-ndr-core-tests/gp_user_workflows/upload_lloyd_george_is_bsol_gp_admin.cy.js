@@ -87,7 +87,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             statusCode: 200,
             body: searchPatientPayload,
         }).as('search');
-        cy.intercept('GET', '/LloydGeorgeStitch*', {
+        cy.intercept('POST', '/LloydGeorgeStitch*', {
             statusCode: 404,
         }).as('stitch');
 
