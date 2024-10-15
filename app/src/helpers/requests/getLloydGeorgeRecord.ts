@@ -27,10 +27,12 @@ const UnexpectedResponseMessage =
     'Got unexpected response from server when trying to retrieve record';
 
 async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult> {
-    await requestStitchJob(args);
+    const postResponse = await requestStitchJob(args);
     let pendingCount = 0;
     while (pendingCount < 3) {
-        await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+        if (postResponse !== JOB_STATUS.COMPLETED) {
+            await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+        }
         const pollingResponse = await pollForPresignedUrl(args);
 
         switch (pollingResponse?.jobStatus) {
