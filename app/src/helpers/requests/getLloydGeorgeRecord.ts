@@ -63,6 +63,7 @@ export const requestStitchJob = async ({
             patientId: nhsNumber,
         },
     });
+
     return response.data.jobStatus;
 };
 export const pollForPresignedUrl = async ({
@@ -71,6 +72,7 @@ export const pollForPresignedUrl = async ({
     baseHeaders,
 }: Args): Promise<LloydGeorgeStitchResult> => {
     const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
+
     const { data } = await axios.get(gatewayUrl, {
         headers: {
             ...baseHeaders,

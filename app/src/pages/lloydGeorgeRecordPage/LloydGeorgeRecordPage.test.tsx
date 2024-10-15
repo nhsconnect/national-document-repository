@@ -99,7 +99,7 @@ describe('LloydGeorgeRecordPage', () => {
         });
     });
 
-    xit('calls refreshRecord and updates state when successful', async () => {
+    it('calls refreshRecord and updates state when successful', async () => {
         const lgResult = buildLgSearchResult();
         mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Complete' } });
         mockAxios.get.mockResolvedValue({ data: lgResult });
@@ -184,7 +184,7 @@ describe('LloydGeorgeRecordPage', () => {
         });
     });
 
-    xit('renders initial lg record view with file info when LG record is returned by search', async () => {
+    it('renders initial lg record view with file info when LG record is returned by search', async () => {
         const lgResult = buildLgSearchResult();
         mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Pending' } });
 
@@ -207,7 +207,7 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     describe('Accessibility', () => {
-        xit('pass accessibility checks at page entry point', async () => {
+        it('pass accessibility checks at page entry point', async () => {
             const lgResult = buildLgSearchResult();
             mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Pending' } });
 

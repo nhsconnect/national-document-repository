@@ -130,7 +130,7 @@ const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
 
 const buildLgSearchResult = () => {
     const result: LloydGeorgeStitchResult = {
-        jobStatus: 'Complete',
+        jobStatus: 'Completed',
         numberOfFiles: 7,
         totalFileSizeInByte: 7,
         lastUpdated: '2023-10-03T09:11:54.618694Z',
