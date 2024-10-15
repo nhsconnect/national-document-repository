@@ -4,13 +4,14 @@ import os.path
 import sys
 from typing import Dict
 
+from boto3.dynamodb.conditions import Attr
 from pydantic import BaseModel, TypeAdapter
 from services.base.dynamo_service import DynamoDBService
 
-TABLE = "ndrb_BulkUploadReport"
-COLUMNS_TO_FETCH = "FailureReason,ID"
-ATTRIBUTE_TO_REMOVE = "FailureReason"
-ATTRIBUTE_TO_ADD = "Reason"
+TABLE = "ndr-dev_BulkUploadReport"
+ATTRIBUTE_TO_REMOVE = "Reason"
+ATTRIBUTE_TO_ADD = "FailureReason"
+COLUMNS_TO_FETCH = f"{ATTRIBUTE_TO_REMOVE},ID"
 
 
 class ProgressForDoc(BaseModel):
@@ -74,7 +75,7 @@ class RenameColumn:
 
     def update_column_name(self):
         for doc_id, document in self.progress.items():
-            self.logger.info(f"Updated column name for {doc_id}")
+            self.logger.info(f"Adding column {ATTRIBUTE_TO_ADD} for {doc_id}")
 
             updated_fields = {ATTRIBUTE_TO_ADD: document.value_stored_in_old_column}
             self.dynamo_service.update_item(
@@ -82,7 +83,7 @@ class RenameColumn:
                 key=doc_id,
                 updated_fields=updated_fields,
             )
-            self.logger.info(f"REMOVING {ATTRIBUTE_TO_REMOVE} for {doc_id}")
+            self.logger.info(f"Removing column {ATTRIBUTE_TO_REMOVE} for {doc_id}")
             self.dynamo_service.remove_attribute_from_item(
                 table_name=self.table_name, key=doc_id, attribute=ATTRIBUTE_TO_REMOVE
             )
@@ -121,12 +122,17 @@ class RenameColumn:
             return f.write(json_str)
 
     def list_all_entries(self) -> list[dict]:
-        self.logger.info("Fetching all records from dynamodb table...")
+        self.logger.info(
+            f"Fetching all records from dynamodb table containing column {ATTRIBUTE_TO_REMOVE}..."
+        )
 
         table = DynamoDBService().get_table(self.table_name)
         results = []
 
-        response = table.scan(ProjectionExpression=COLUMNS_TO_FETCH)
+        response = table.scan(
+            ProjectionExpression=COLUMNS_TO_FETCH,
+            FilterExpression=Attr(ATTRIBUTE_TO_REMOVE).exists(),
+        )
 
         # handle pagination
         while "LastEvaluatedKey" in response:
@@ -134,6 +140,7 @@ class RenameColumn:
             response = table.scan(
                 ExclusiveStartKey=response["LastEvaluatedKey"],
                 ProjectionExpression=COLUMNS_TO_FETCH,
+                FilterExpression=Attr(ATTRIBUTE_TO_REMOVE).exists(),
             )
 
         results += response["Items"]
@@ -143,8 +150,6 @@ class RenameColumn:
         return results
 
     def build_progress_dict(self, dynamodb_records: list[dict]) -> dict:
-        self.logger.info("Grouping the records according to ID...")
-
         progress_dict = {}
         for entry in dynamodb_records:
             value_stored_in_old_column = entry.get(ATTRIBUTE_TO_REMOVE)
@@ -156,7 +161,9 @@ class RenameColumn:
                 value_stored_in_old_column=value_stored_in_old_column
             )
 
-        self.logger.info(f"Totally {len(progress_dict)} patients found in record.")
+        self.logger.info(
+            f"Found {len(progress_dict)} records with column {ATTRIBUTE_TO_REMOVE}."
+        )
         return progress_dict
 
 
