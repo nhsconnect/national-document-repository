@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+from urllib.parse import parse_qs, urlencode
 
 from enums.lambda_error import LambdaError
 from services.edge_presign_service import EdgePresignService
@@ -31,6 +32,7 @@ def lambda_handler(event, context):
         )
         raise CloudFrontEdgeException(500, LambdaError.EdgeMalformed)
 
+    s3_presign_credentials = parse_qs(presign_query_string)
     presign_string = f"{uri}?{presign_query_string}"
     encoded_presign_string: str = presign_string.encode("utf-8")
     presign_credentials_hash = hashlib.md5(encoded_presign_string).hexdigest()
@@ -40,17 +42,17 @@ def lambda_handler(event, context):
         uri_hash=presign_credentials_hash,
         domain_name=domain_name,
     )
+    filtered_query_params = {
+        key: value
+        for key, value in s3_presign_credentials.items()
+        if not key.lower().startswith("x-amz-")
+    }
+    filtered_query_string = urlencode(filtered_query_params, doseq=True)
 
     headers: dict = request.get("headers", {})
-    for header_key, header_values in headers.items():
-        if isinstance(header_values, list) and len(header_values) > 0:
-            header_value = header_values[0].get("value", "")
-            logger.info(f"Header - {header_key}: {header_value}")
-        else:
-            logger.info(f"Header - {header_key}: [No Value]")
+    if "authorization" in headers:
+        del headers["authorization"]
 
-    if "Authorization" in headers:
-        del headers["Authorization"]
     request["headers"] = headers
-
+    request["querystring"] = filtered_query_string
     return request
