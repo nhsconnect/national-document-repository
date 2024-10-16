@@ -22,6 +22,7 @@ def lambda_handler(event, context):
         request: dict = event["Records"][0]["cf"]["request"]
         logger.info("CloudFront received S3 request", {"Result": {json.dumps(request)}})
         uri: str = request.get("uri", "")
+        headers: dict = request.get("headers", {})
         presign_query_string: str = request.get("querystring", "")
         domain_name: str = request["origin"]["s3"]["domainName"]
 
@@ -42,6 +43,9 @@ def lambda_handler(event, context):
         uri_hash=presign_credentials_hash,
         domain_name=domain_name,
     )
+    logger.info(f"Original Query String: {presign_query_string}")
+    logger.info(f"Original Headers: {headers}")
+
     filtered_query_params = {
         key: value
         for key, value in s3_presign_credentials.items()
@@ -49,9 +53,11 @@ def lambda_handler(event, context):
     }
     filtered_query_string = urlencode(filtered_query_params, doseq=True)
 
-    headers: dict = request.get("headers", {})
     if "authorization" in headers:
         del headers["authorization"]
+
+    logger.info(f"Filtered Query String: {filtered_query_string}")
+    logger.info(f"Filtered Headers: {json.dumps(headers)}")
 
     request["headers"] = headers
     request["querystring"] = filtered_query_string
