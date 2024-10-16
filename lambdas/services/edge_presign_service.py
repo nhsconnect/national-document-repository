@@ -42,7 +42,7 @@ class EdgePresignService:
 
     @staticmethod
     def extract_environment_from_domain(domain_name: str) -> str:
-        match = re.match(r"([^-]+)-", domain_name)
+        match = re.match(r"^(.*?)(?=\.s3\.amazonaws\.com)", domain_name)
         if match:
             return match.group(1)
         return ""
