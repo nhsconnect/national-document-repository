@@ -19,9 +19,9 @@ class EdgePresignService:
         self.ssm_service = SSMService()
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
-    def attempt_url_update(self, uri_hash, origin_url) -> None:
+    def attempt_url_update(self, uri_hash, domain_name) -> None:
         try:
-            environment = self.extract_environment_from_url(origin_url)
+            environment = self.extract_environment_from_domain(domain_name)
             base_table_name: str = self.ssm_service.get_ssm_parameter(
                 self.table_name_ssm_param
             )
@@ -40,8 +40,8 @@ class EdgePresignService:
             logger.error(f"{str(e)}", {"Result": LambdaError.EdgeNoClient.to_str()})
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
-    def extract_environment_from_url(self, url: str) -> str:
-        match = re.search(r"https://([^.]+)\.[^.]+\.[^.]+\.[^.]+", url)
+    def extract_environment_from_domain(domain: str) -> str:
+        match = re.match(r"([^-]+)-", domain)
         if match:
             return match.group(1)
         return ""
