@@ -41,14 +41,14 @@ class EdgePresignService:
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
     @staticmethod
-    def extract_environment_from_domain(self, domain_name: str) -> str:
+    def extract_environment_from_domain(domain_name: str) -> str:
         match = re.match(r"([^-]+)-", domain_name)
         if match:
             return match.group(1)
         return ""
 
     @staticmethod
-    def extend_table_name(self, base_table_name, environment) -> str:
+    def extend_table_name(base_table_name, environment) -> str:
         if environment:
             return f"{environment}_{base_table_name}"
         return base_table_name
