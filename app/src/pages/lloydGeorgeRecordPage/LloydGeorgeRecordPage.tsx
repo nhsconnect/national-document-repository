@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 
 import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
@@ -34,11 +34,13 @@ function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-
     const [numberOfFiles, setNumberOfFiles] = useState(0);
     const [totalFileSizeInByte, setTotalFileSizeInByte] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [cloudFrontUrl, setCloudFrontUrl] = useState('');
+    const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
+
+    const showMenu = role === REPOSITORY_ROLE.GP_ADMIN && hasRecordInStorage;
 
     const resetDocState = () => {
         setNumberOfFiles(0);
@@ -122,6 +124,7 @@ function LloydGeorgeRecordPage() {
                             numberOfFiles={numberOfFiles}
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}
+                            showMenu={showMenu}
                         />
                     }
                 />

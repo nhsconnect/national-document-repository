@@ -1,16 +1,13 @@
 import { Card } from 'nhsuk-react-components';
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../pdfViewer/PdfViewer';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-import ProgressBar from '../progressBar/ProgressBar';
 
 export type Props = {
     heading: string;
     fullScreenHandler: (clicked: true) => void;
     detailsElement: ReactNode;
-    downloadStage: DOWNLOAD_STAGE;
     isFullScreen: boolean;
     refreshRecord: () => void;
     cloudFrontUrl: string;
@@ -41,12 +38,8 @@ function RecordCard({
     }, [refreshRecord]);
 
     const Record = () => {
-        if (isLoading) {
-            return (
-                <div className="pl-7">
-                    <ProgressBar status="Loading..." />
-                </div>
-            );
+        if (!cloudFrontUrl) {
+            return null;
         }
         return <PdfViewer fileUrl={cloudFrontUrl} />;
     };
