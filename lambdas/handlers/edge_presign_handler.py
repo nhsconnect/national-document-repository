@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     try:
         request: dict = event["Records"][0]["cf"]["request"]
-        logger.info("CloudFront received S3 request", {"Result": {json.dumps(request)}})
+        logger.info(f"CloudFront received S3 request f{json.dumps(request)}")
         uri: str = request.get("uri", "")
         presign_query_string: str = request.get("querystring", "")
 
@@ -52,5 +52,8 @@ def lambda_handler(event, context):
     headers: dict = request.get("headers", {})
     if "authorization" in headers:
         del headers["authorization"]
+    request["headers"] = headers
+    request["querystring"] = ""
 
+    logger.info(f"Returning S3 request f{json.dumps(request)}")
     return request
