@@ -55,4 +55,5 @@ def lambda_handler(event, context):
     request["headers"] = headers
     request["querystring"] = ""
 
+    logger.info(f"Returning S3 request f{json.dumps(request)}")
     return request
