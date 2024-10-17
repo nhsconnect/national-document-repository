@@ -30,11 +30,11 @@ def test_set_request_context_for_logging_request_id_and_auth_are_found(
 
 
 def test_set_request_context_for_logging_missing_auth(
-    mocker, invalid_id_event, context
+    mocker, invalid_nhs_number_event, context
 ):
     mock_token_validator = mocker.patch("jwt.decode")
 
-    lambda_handler(invalid_id_event, context)
+    lambda_handler(invalid_nhs_number_event, context)
 
     assert request_context.request_id == context.aws_request_id
     assert request_context.authorization is None

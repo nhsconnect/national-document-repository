@@ -7,13 +7,13 @@ from utils.lambda_response import ApiGatewayResponse
 logger = LoggingService(__name__)
 
 
-def validate_manifest_job_id(lambda_func: Callable):
+def validate_job_id(lambda_func: Callable):
     """A decorator for lambda handler.
     Verify that the incoming event contains a valid job ID in the request
     If not, returns a 400 Bad request response before the lambda triggers.
 
     Usage:
-    @validate_manifest_job_id
+    @validate_job_id
     def lambda_handler(event, context):
         ...
     """

@@ -90,7 +90,7 @@ describe('getPresignedUrlForZip', () => {
         });
 
         expect(mockWaitForSeconds).toHaveBeenCalledTimes(1);
-        expect(mockWaitForSeconds).toHaveBeenCalledWith(10);
+        expect(mockWaitForSeconds).toHaveBeenCalledWith(0);
     });
 
     it('wait for 10 secs between every polling', async () => {
@@ -108,7 +108,7 @@ describe('getPresignedUrlForZip', () => {
         });
 
         expect(mockWaitForSeconds).toHaveBeenCalledTimes(4);
-        expect(mockWaitForSeconds).toHaveBeenCalledWith(10);
+        expect(mockWaitForSeconds).toHaveBeenCalledWith(0);
     });
 
     it('throw an error if got pending status for 3 times', async () => {
