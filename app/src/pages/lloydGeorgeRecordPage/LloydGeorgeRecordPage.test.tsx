@@ -188,7 +188,7 @@ describe('LloydGeorgeRecordPage', () => {
         const lgResult = buildLgSearchResult();
         mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Pending' } });
 
-        mockAxios.get.mockReturnValue(Promise.resolve({ data: lgResult }));
+        mockAxios.get.mockResolvedValue({ data: lgResult });
 
         renderPage(history);
 
@@ -211,7 +211,7 @@ describe('LloydGeorgeRecordPage', () => {
             const lgResult = buildLgSearchResult();
             mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Pending' } });
 
-            mockAxios.get.mockReturnValue(Promise.resolve({ data: lgResult }));
+            mockAxios.get.mockResolvedValue({ data: lgResult });
 
             renderPage(history);
 

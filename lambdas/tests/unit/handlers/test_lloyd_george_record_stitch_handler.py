@@ -252,7 +252,7 @@ def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patien
 def test_create_stitch_job_respond_create_new_job(
     valid_id_post_event_with_auth_header, context, mock_stitch_service, set_env
 ):
-    mock_stitch_service.create_stitch_job.return_value = TraceStatus.PENDING
+    mock_stitch_service.get_or_create_stitch_job.return_value = TraceStatus.PENDING
     expected_response_object = {
         "jobStatus": "Pending",
     }
@@ -265,10 +265,10 @@ def test_create_stitch_job_respond_create_new_job(
     assert actual == expected
 
     mock_stitch_service.query_document_stitch_job.assert_not_called()
-    mock_stitch_service.create_stitch_job.assert_called_with(TEST_NHS_NUMBER)
+    mock_stitch_service.get_or_create_stitch_job.assert_called_with(TEST_NHS_NUMBER)
 
 
-def test_get_stitch_jovb_respond_with_200_and_presign_url(
+def test_get_stitch_job_respond_with_200_and_presign_url(
     valid_id_event_without_auth_header, context, set_env, mock_stitch_service
 ):
     mock_stitch_service.query_document_stitch_job.return_value = (

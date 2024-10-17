@@ -31,7 +31,7 @@ def patch_service(mocker, stitch_service):
     stitch_service.check_lloyd_george_record_for_patient = mocker.MagicMock()
     stitch_service.query_stitch_trace_with_nhs_number = mocker.MagicMock()
     stitch_service.get_latest_stitch_trace = mocker.MagicMock()
-    stitch_service.write_stitch_trace = mocker.MagicMock()
+    stitch_service.update_dynamo_with_new_stitch_trace = mocker.MagicMock()
     return stitch_service
 
 
@@ -145,9 +145,9 @@ def test_query_stitch_trace_with_nhs_number(stitch_service, mocker):
 def test_create_stitch_job_no_trace_results(patch_service):
     patch_service.check_lloyd_george_record_for_patient.return_value = None
     patch_service.query_stitch_trace_with_nhs_number.return_value = None
-    patch_service.write_stitch_trace.return_value = TraceStatus.PENDING
+    patch_service.update_dynamo_with_new_stitch_trace.return_value = TraceStatus.PENDING
 
-    result = patch_service.create_stitch_job(TEST_NHS_NUMBER)
+    result = patch_service.get_or_create_stitch_job(TEST_NHS_NUMBER)
 
     patch_service.check_lloyd_george_record_for_patient.assert_called_once_with(
         TEST_NHS_NUMBER
@@ -155,7 +155,9 @@ def test_create_stitch_job_no_trace_results(patch_service):
     patch_service.query_stitch_trace_with_nhs_number.assert_called_once_with(
         TEST_NHS_NUMBER
     )
-    patch_service.write_stitch_trace.assert_called_once_with(TEST_NHS_NUMBER)
+    patch_service.update_dynamo_with_new_stitch_trace.assert_called_once_with(
+        TEST_NHS_NUMBER
+    )
     assert result == TraceStatus.PENDING
 
 
@@ -165,9 +167,9 @@ def test_create_stitch_job_failed_status(patch_service):
         MOCK_STITCH_TRACE_OBJECT
     ]
     patch_service.get_latest_stitch_trace.return_value = MOCK_STITCH_TRACE_OBJECT
-    patch_service.write_stitch_trace.return_value = TraceStatus.PENDING
+    patch_service.update_dynamo_with_new_stitch_trace.return_value = TraceStatus.PENDING
 
-    result = patch_service.create_stitch_job(TEST_NHS_NUMBER)
+    result = patch_service.get_or_create_stitch_job(TEST_NHS_NUMBER)
 
     patch_service.check_lloyd_george_record_for_patient.assert_called_once_with(
         TEST_NHS_NUMBER
@@ -178,7 +180,9 @@ def test_create_stitch_job_failed_status(patch_service):
     patch_service.get_latest_stitch_trace.assert_called_once_with(
         [MOCK_STITCH_TRACE_OBJECT]
     )
-    patch_service.write_stitch_trace.assert_called_once_with(TEST_NHS_NUMBER)
+    patch_service.update_dynamo_with_new_stitch_trace.assert_called_once_with(
+        TEST_NHS_NUMBER
+    )
     assert result == TraceStatus.PENDING
 
 
@@ -190,7 +194,7 @@ def test_create_stitch_job_success_status(patch_service):
     ]
     patch_service.get_latest_stitch_trace.return_value = MOCK_STITCH_TRACE_OBJECT
 
-    result = patch_service.create_stitch_job(TEST_NHS_NUMBER)
+    result = patch_service.get_or_create_stitch_job(TEST_NHS_NUMBER)
 
     patch_service.check_lloyd_george_record_for_patient.assert_called_once_with(
         TEST_NHS_NUMBER
@@ -210,7 +214,7 @@ def test_create_stitch_job_client_error(patch_service):
     )
 
     with pytest.raises(LGStitchServiceException):
-        patch_service.create_stitch_job(TEST_NHS_NUMBER)
+        patch_service.get_or_create_stitch_job(TEST_NHS_NUMBER)
 
     patch_service.check_lloyd_george_record_for_patient.assert_called_once_with(
         TEST_NHS_NUMBER
@@ -220,7 +224,7 @@ def test_create_stitch_job_client_error(patch_service):
 def test_write_stitch_trace(stitch_service, mocker):
     stitch_service.get_expiration_time = mocker.MagicMock(return_value=1234567890)
 
-    job_status = stitch_service.write_stitch_trace(TEST_NHS_NUMBER)
+    job_status = stitch_service.update_dynamo_with_new_stitch_trace(TEST_NHS_NUMBER)
 
     assert job_status == TraceStatus.PENDING
     stitch_service.dynamo_service.create_item.assert_called_once()

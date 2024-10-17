@@ -45,38 +45,13 @@ class LloydGeorgeStitchService:
 
     def stitch_lloyd_george_record(self):
         try:
-            documents_for_stitching = self.get_lloyd_george_record_for_patient()
-            if not documents_for_stitching:
-                raise LGStitchServiceException(404, LambdaError.StitchNotFound)
-
-            self.update_trace_status(TraceStatus.PROCESSING)
-            sorted_documents_for_stitching = self.sort_documents_by_filenames(
-                documents_for_stitching
-            )
-            all_lg_parts = self.download_lloyd_george_files(
-                sorted_documents_for_stitching
-            )
-        except ClientError as e:
-            logger.error(
-                f"{LambdaError.StitchNoService.to_str()}: {str(e)}",
-                {"Result": "Lloyd George stitching failed"},
-            )
-            raise LGStitchServiceException(
-                500,
-                LambdaError.StitchNoService,
-            )
-
-        try:
+            all_lg_parts = self.get_documents_for_stitching()
             stitched_lg_record = stitch_pdf(all_lg_parts, self.temp_folder)
             filename_for_stitched_file = os.path.basename(stitched_lg_record)
-            self.stitch_trace_object.number_of_files = len(documents_for_stitching)
-            self.stitch_trace_object.file_last_updated = (
-                self.get_most_recent_created_date(sorted_documents_for_stitching)
-            )
+
             self.stitch_trace_object.total_file_size_in_byte = (
                 self.get_total_file_size_in_bytes(all_lg_parts)
             )
-
             self.upload_stitched_lg_record(
                 stitched_lg_record=stitched_lg_record,
                 filename_on_bucket=f"combined_files/{filename_for_stitched_file}",
@@ -94,6 +69,34 @@ class LloydGeorgeStitchService:
             raise LGStitchServiceException(500, LambdaError.StitchClient)
         finally:
             shutil.rmtree(self.temp_folder)
+
+    def get_documents_for_stitching(self):
+        try:
+            documents_for_stitching = self.get_lloyd_george_record_for_patient()
+            if not documents_for_stitching:
+                raise LGStitchServiceException(404, LambdaError.StitchNotFound)
+
+            self.update_trace_status(TraceStatus.PROCESSING)
+            sorted_documents_for_stitching = self.sort_documents_by_filenames(
+                documents_for_stitching
+            )
+            all_lg_parts = self.download_lloyd_george_files(
+                sorted_documents_for_stitching
+            )
+            self.stitch_trace_object.number_of_files = len(documents_for_stitching)
+            self.stitch_trace_object.file_last_updated = (
+                self.get_most_recent_created_date(sorted_documents_for_stitching)
+            )
+        except ClientError as e:
+            logger.error(
+                f"{LambdaError.StitchNoService.to_str()}: {str(e)}",
+                {"Result": "Lloyd George stitching failed"},
+            )
+            raise LGStitchServiceException(
+                500,
+                LambdaError.StitchNoService,
+            )
+        return all_lg_parts
 
     @staticmethod
     def sort_documents_by_filenames(

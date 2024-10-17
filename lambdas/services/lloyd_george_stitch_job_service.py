@@ -33,18 +33,18 @@ class LloydGeorgeStitchJobService:
         self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
         self.lloyd_george_bucket_name = os.environ.get("LLOYD_GEORGE_BUCKET_NAME")
 
-    def create_stitch_job(self, nhs_number: str) -> TraceStatus:
+    def get_or_create_stitch_job(self, nhs_number: str) -> TraceStatus:
         try:
             self.check_lloyd_george_record_for_patient(nhs_number)
             stitch_trace_results = self.query_stitch_trace_with_nhs_number(nhs_number)
 
             if not stitch_trace_results:
-                return self.write_stitch_trace(nhs_number)
+                return self.update_dynamo_with_new_stitch_trace(nhs_number)
 
             latest_stitch_trace = self.get_latest_stitch_trace(stitch_trace_results)
 
             if latest_stitch_trace.job_status == TraceStatus.FAILED:
-                return self.write_stitch_trace(nhs_number)
+                return self.update_dynamo_with_new_stitch_trace(nhs_number)
 
             return latest_stitch_trace.job_status
 
@@ -58,7 +58,7 @@ class LloydGeorgeStitchJobService:
                 LambdaError.StitchNoService,
             )
 
-    def write_stitch_trace(
+    def update_dynamo_with_new_stitch_trace(
         self,
         nhs_number: str,
     ) -> TraceStatus:

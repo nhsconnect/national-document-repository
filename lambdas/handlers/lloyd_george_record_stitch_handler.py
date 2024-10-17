@@ -26,7 +26,7 @@ def create_stitch_job(event, context):
     request_context.patient_nhs_no = nhs_number
 
     document_stitch_service = LloydGeorgeStitchJobService()
-    job_status = document_stitch_service.create_stitch_job(nhs_number)
+    job_status = document_stitch_service.get_or_create_stitch_job(nhs_number)
 
     return ApiGatewayResponse(
         200, json.dumps({"jobStatus": job_status}), "POST"

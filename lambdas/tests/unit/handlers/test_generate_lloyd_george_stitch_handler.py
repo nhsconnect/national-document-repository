@@ -184,7 +184,7 @@ def test_handler_return_500_response_when_stitch_record_error(context, set_env, 
     assert expected == actual
 
 
-def test_stitch_record_handler_raise_error_if_zip_trace_model_validation_fails(
+def test_stitch_record_handler_raise_error_if_stitch_trace_model_validation_fails(
     mock_lloyd_george_generate_stitch_service,
 ):
     with pytest.raises(LGStitchServiceException):
@@ -201,7 +201,7 @@ def test_stitch_record_handler_happy_path(
     mock_lloyd_george_generate_stitch_service.handle_stitch_request.assert_called_once()
 
 
-def test_zip_service_handle_stitch_request_called(
+def test_stitch_service_handle_stitch_request_called(
     mock_lloyd_george_generate_stitch_service,
 ):
     mock_lloyd_george_generate_stitch_service.handle_stitch_request.side_effect = (
@@ -218,4 +218,4 @@ def test_prepare_stitch_trace_data():
     actual = prepare_stitch_trace_data(VALID_NEW_IMAGE)
     expected = PROCESSES_VALID_IMAGE
 
-    assert actual == expected
+    assert expected == actual
