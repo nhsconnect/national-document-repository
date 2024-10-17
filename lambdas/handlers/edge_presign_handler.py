@@ -53,4 +53,5 @@ def lambda_handler(event, context):
     if "authorization" in headers:
         del headers["authorization"]
 
+    logger.info(f"REQUEST {json.dumps(request)}")
     return request
