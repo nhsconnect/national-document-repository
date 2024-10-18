@@ -156,6 +156,18 @@ describe('RecordMenuCard', () => {
 
             expect(mockShowDownloadAndRemoveConfirmation).toBeCalledTimes(1);
         });
+
+        it('Does not render the MenuCard if showMenu is false', () => {
+            const { container } = render(
+                <RecordMenuCard
+                    setStage={mockSetStage}
+                    recordLinks={mockLinks}
+                    className={className}
+                    showMenu={false}
+                />,
+            );
+            expect(container).toBeEmptyDOMElement();
+        });
     });
 
     describe('Navigation', () => {
