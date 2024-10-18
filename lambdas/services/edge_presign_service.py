@@ -22,6 +22,7 @@ class EdgePresignService:
     def attempt_url_update(self, uri_hash, domain_name) -> None:
         try:
             environment = self.extract_environment_from_domain(domain_name)
+            logger.info(f"Environment found: {environment}")
             base_table_name: str = self.ssm_service.get_ssm_parameter(
                 self.table_name_ssm_param
             )
