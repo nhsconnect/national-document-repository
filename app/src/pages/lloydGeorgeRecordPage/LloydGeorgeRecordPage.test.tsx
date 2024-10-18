@@ -201,7 +201,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         expect(screen.getByText(`${lgResult.numberOfFiles} files`)).toBeInTheDocument();
         expect(
-            screen.getByText(`File size: ${formatFileSize(lgResult.totalFileSizeInByte)}`),
+            screen.getByText(`File size: ${formatFileSize(lgResult.totalFileSizeInBytes)}`),
         ).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });

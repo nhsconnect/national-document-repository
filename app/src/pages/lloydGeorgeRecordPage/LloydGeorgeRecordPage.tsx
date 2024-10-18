@@ -36,14 +36,14 @@ function LloydGeorgeRecordPage() {
     const baseHeaders = useBaseAPIHeaders();
 
     const [numberOfFiles, setNumberOfFiles] = useState(0);
-    const [totalFileSizeInByte, setTotalFileSizeInByte] = useState(0);
+    const [totalFileSizeInBytes, settotalFileSizeInBytes] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [cloudFrontUrl, setCloudFrontUrl] = useState('');
 
     const resetDocState = () => {
         setNumberOfFiles(0);
         setLastUpdated('');
-        setTotalFileSizeInByte(0);
+        settotalFileSizeInBytes(0);
         setCloudFrontUrl('');
         setDownloadStage(DOWNLOAD_STAGE.INITIAL);
     };
@@ -58,7 +58,7 @@ function LloydGeorgeRecordPage() {
             setNumberOfFiles(filesCount);
             setLastUpdated(getFormattedDatetime(new Date(updatedDate)));
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-            setTotalFileSizeInByte(fileSize);
+            settotalFileSizeInBytes(fileSize);
             setCloudFrontUrl(presignedUrl);
         };
 
@@ -94,14 +94,14 @@ function LloydGeorgeRecordPage() {
 
         const nhsNumber: string = patientDetails?.nhsNumber ?? '';
         try {
-            const { numberOfFiles, totalFileSizeInByte, lastUpdated, presignedUrl } =
+            const { numberOfFiles, totalFileSizeInBytes, lastUpdated, presignedUrl } =
                 await getLloydGeorgeRecord({
                     nhsNumber,
                     baseUrl,
                     baseHeaders,
                 });
 
-            onSuccess(numberOfFiles, lastUpdated, totalFileSizeInByte, presignedUrl);
+            onSuccess(numberOfFiles, lastUpdated, totalFileSizeInBytes, presignedUrl);
         } catch (e) {
             onError(e as AxiosError);
         }
@@ -118,7 +118,7 @@ function LloydGeorgeRecordPage() {
                             setStage={setStage}
                             stage={stage}
                             lastUpdated={lastUpdated}
-                            totalFileSizeInByte={totalFileSizeInByte}
+                            totalFileSizeInBytes={totalFileSizeInBytes}
                             numberOfFiles={numberOfFiles}
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}

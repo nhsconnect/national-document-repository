@@ -35,7 +35,7 @@ MOCK_STITCH_SERVICE_RESPONSE = DocumentStitchJob(
     numberOfFiles=3,
     lastUpdated="2023-08-24T14:38:04.095Z",
     presignedUrl=MOCK_PRESIGNED_URL,
-    totalFileSizeInByte=MOCK_TOTAL_FILE_SIZE,
+    totalFileSizeInBytes=MOCK_TOTAL_FILE_SIZE,
 )
 
 
@@ -104,7 +104,7 @@ def test_lambda_handler_respond_with_200_and_presign_url(
         "presignedUrl": MOCK_PRESIGNED_URL,
         "numberOfFiles": 3,
         "lastUpdated": "2023-08-24T14:38:04.095Z",
-        "totalFileSizeInByte": MOCK_TOTAL_FILE_SIZE,
+        "totalFileSizeInBytes": MOCK_TOTAL_FILE_SIZE,
     }
     expected = ApiGatewayResponse(
         200, json.dumps(expected_response_object), "GET"
@@ -279,7 +279,7 @@ def test_get_stitch_job_respond_with_200_and_presign_url(
         "presignedUrl": MOCK_PRESIGNED_URL,
         "numberOfFiles": 3,
         "lastUpdated": "2023-08-24T14:38:04.095Z",
-        "totalFileSizeInByte": MOCK_TOTAL_FILE_SIZE,
+        "totalFileSizeInBytes": MOCK_TOTAL_FILE_SIZE,
     }
     expected = ApiGatewayResponse(
         200, json.dumps(expected_response_object), "GET"

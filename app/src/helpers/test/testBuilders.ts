@@ -132,7 +132,7 @@ const buildLgSearchResult = () => {
     const result: LloydGeorgeStitchResult = {
         jobStatus: 'Completed',
         numberOfFiles: 7,
-        totalFileSizeInByte: 7,
+        totalFileSizeInBytes: 7,
         lastUpdated: '2023-10-03T09:11:54.618694Z',
         presignedUrl: 'https://test-url',
     };

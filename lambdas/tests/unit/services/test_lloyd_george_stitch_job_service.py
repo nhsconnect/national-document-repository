@@ -302,7 +302,7 @@ def test_process_stitch_trace_response_completed(stitch_service, mocker):
     stitch_trace.stitched_file_location = "path/to/stitched/file"
     stitch_trace.number_of_files = 2
     stitch_trace.file_last_updated = "2023-10-01T12:00:00Z"
-    stitch_trace.total_file_size_in_byte = 2048
+    stitch_trace.total_file_size_in_bytes = 2048
 
     stitch_service.create_document_stitch_presigned_url = mocker.MagicMock(
         return_value="https://example.com/presigned-url"
@@ -314,7 +314,7 @@ def test_process_stitch_trace_response_completed(stitch_service, mocker):
     assert result.presigned_url == "https://example.com/presigned-url"
     assert result.number_of_files == 2
     assert result.last_updated == "2023-10-01T12:00:00Z"
-    assert result.total_file_size_in_byte == 2048
+    assert result.total_file_size_in_bytes == 2048
 
 
 def test_validate_latest_stitch_trace_success(stitch_service):

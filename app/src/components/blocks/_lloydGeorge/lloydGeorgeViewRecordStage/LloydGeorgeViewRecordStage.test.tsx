@@ -63,7 +63,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(screen.getByText(`Last updated: ${mockPdf.lastUpdated}`)).toBeInTheDocument();
         expect(screen.getByText(`${mockPdf.numberOfFiles} files`)).toBeInTheDocument();
         expect(
-            screen.getByText(`File size: ${formatFileSize(mockPdf.totalFileSizeInByte)}`),
+            screen.getByText(`File size: ${formatFileSize(mockPdf.totalFileSizeInBytes)}`),
         ).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
 
@@ -444,7 +444,7 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
         downloadStage: DOWNLOAD_STAGE.SUCCEEDED,
         lastUpdated: mockPdf.lastUpdated,
         numberOfFiles: mockPdf.numberOfFiles,
-        totalFileSizeInByte: mockPdf.totalFileSizeInByte,
+        totalFileSizeInBytes: mockPdf.totalFileSizeInBytes,
         refreshRecord: jest.fn(),
         cloudFrontUrl: 'http://test.com',
         ...propsOverride,

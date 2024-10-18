@@ -17,7 +17,7 @@ type Args = {
 export type LloydGeorgeStitchResult = {
     jobStatus: string;
     numberOfFiles: number;
-    totalFileSizeInByte: number;
+    totalFileSizeInBytes: number;
     lastUpdated: string;
     presignedUrl: string;
 };

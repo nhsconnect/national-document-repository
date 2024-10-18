@@ -110,7 +110,7 @@ class LloydGeorgeStitchJobService:
                     presignedUrl=presigned_url,
                     numberOfFiles=stitch_trace.number_of_files,
                     lastUpdated=stitch_trace.file_last_updated,
-                    totalFileSizeInByte=stitch_trace.total_file_size_in_byte,
+                    totalFileSizeInBytes=stitch_trace.total_file_size_in_bytes,
                 )
 
     def validate_stitch_trace(self, response: dict) -> list[StitchTrace] | None:

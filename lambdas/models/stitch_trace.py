@@ -24,7 +24,7 @@ class StitchTrace(BaseModel):
     nhs_number: str
     number_of_files: int = 0
     file_last_updated: str = ""
-    total_file_size_in_byte: int = 0
+    total_file_size_in_bytes: int = 0
     expire_at: int
     deleted: bool = False
 
@@ -39,4 +39,4 @@ class DocumentStitchJob(BaseModel):
     presigned_url: str
     number_of_files: int = 0
     last_updated: str = ""
-    total_file_size_in_byte: int = 0
+    total_file_size_in_bytes: int = 0
