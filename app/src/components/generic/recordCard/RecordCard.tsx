@@ -1,5 +1,5 @@
 import { Card } from 'nhsuk-react-components';
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useEffect, useRef } from 'react';
 import PdfViewer from '../pdfViewer/PdfViewer';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
