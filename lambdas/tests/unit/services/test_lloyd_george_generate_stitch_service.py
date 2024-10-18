@@ -145,10 +145,10 @@ def mock_stitch_pdf(mocker):
 
 
 @pytest.fixture
-def mock_get_total_file_size_in_bytess(mocker):
+def mock_get_total_file_size_in_bytes(mocker):
     yield mocker.patch.object(
         LloydGeorgeStitchService,
-        "get_total_file_size_in_bytess",
+        "get_total_file_size_in_bytes",
         return_value=MOCK_TOTAL_FILE_SIZE,
     )
 
@@ -168,7 +168,7 @@ def test_update_stitch_job_complete(stitch_service, mocker):
 def test_stitch_lloyd_george_record_happy_path(
     mock_tempfile,
     mock_stitch_pdf,
-    mock_get_total_file_size_in_bytess,
+    mock_get_total_file_size_in_bytes,
     patched_stitch_service,
     mocker,
 ):
@@ -180,7 +180,7 @@ def test_stitch_lloyd_george_record_happy_path(
     mock_stitch_pdf.assert_called_with(
         MOCK_DOWNLOADED_LLOYD_GEORGE_FILES, MOCK_TEMP_FOLDER
     )
-    mock_get_total_file_size_in_bytess.assert_called_once()
+    mock_get_total_file_size_in_bytes.assert_called_once()
     patched_stitch_service.upload_stitched_lg_record.assert_called_once()
     assert (
         patched_stitch_service.stitch_trace_object.total_file_size_in_bytes
@@ -217,7 +217,7 @@ def test_get_documents_for_stitching(patched_stitch_service, mocker):
 def test_get_documents_for_stitching_raise_404_error_if_no_record_for_patient(
     mock_tempfile,
     mock_stitch_pdf,
-    mock_get_total_file_size_in_bytess,
+    mock_get_total_file_size_in_bytes,
     patched_stitch_service,
 ):
 
@@ -237,7 +237,7 @@ def test_get_documents_for_stitching_raise_404_error_if_no_record_for_patient(
 def test_get_documents_for_stitching_raise_500_error_if_failed_to_get_dynamodb_record(
     mock_tempfile,
     mock_stitch_pdf,
-    mock_get_total_file_size_in_bytess,
+    mock_get_total_file_size_in_bytes,
     patched_stitch_service,
 ):
 
@@ -252,7 +252,7 @@ def test_get_documents_for_stitching_raise_500_error_if_failed_to_get_dynamodb_r
     patched_stitch_service.update_trace_status.assert_not_called()
     patched_stitch_service.sort_documents_by_filenames.assert_not_called()
     patched_stitch_service.download_lloyd_george_files.assert_not_called()
-    mock_get_total_file_size_in_bytess.assert_not_called()
+    mock_get_total_file_size_in_bytes.assert_not_called()
     patched_stitch_service.upload_stitched_lg_record.assert_not_called()
     patched_stitch_service.get_most_recent_created_date.assert_not_called()
     mock_stitch_pdf.assert_not_called()
@@ -261,7 +261,7 @@ def test_get_documents_for_stitching_raise_500_error_if_failed_to_get_dynamodb_r
 def test_get_documents_for_stitching_raise_500_error_if_failed_to_download_lg_files(
     mock_tempfile,
     mock_stitch_pdf,
-    mock_get_total_file_size_in_bytess,
+    mock_get_total_file_size_in_bytes,
     patched_stitch_service,
 ):
     patched_stitch_service.download_lloyd_george_files.side_effect = MOCK_CLIENT_ERROR
@@ -279,7 +279,7 @@ def test_get_documents_for_stitching_raise_500_error_if_failed_to_download_lg_fi
     patched_stitch_service.download_lloyd_george_files.assert_called_with(
         MOCK_LLOYD_GEORGE_DOCUMENT_REFS
     )
-    mock_get_total_file_size_in_bytess.assert_not_called()
+    mock_get_total_file_size_in_bytes.assert_not_called()
     patched_stitch_service.upload_stitched_lg_record.assert_not_called()
     patched_stitch_service.get_most_recent_created_date.assert_not_called()
     mock_stitch_pdf.assert_not_called()
@@ -288,7 +288,7 @@ def test_get_documents_for_stitching_raise_500_error_if_failed_to_download_lg_fi
 def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_stitch_pdf(
     mock_tempfile,
     mock_stitch_pdf,
-    mock_get_total_file_size_in_bytess,
+    mock_get_total_file_size_in_bytes,
     patched_stitch_service,
     mocker,
 ):
@@ -300,7 +300,7 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_stitch_pdf(
     with pytest.raises(LGStitchServiceException) as e:
         patched_stitch_service.stitch_lloyd_george_record()
 
-    mock_get_total_file_size_in_bytess.assert_not_called()
+    mock_get_total_file_size_in_bytes.assert_not_called()
     patched_stitch_service.upload_stitched_lg_record.assert_not_called()
 
     assert e.value.status_code == 500
@@ -310,7 +310,7 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_stitch_pdf(
 def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_upload_stitched_pdf(
     mock_tempfile,
     mock_stitch_pdf,
-    mock_get_total_file_size_in_bytess,
+    mock_get_total_file_size_in_bytes,
     patched_stitch_service,
     mocker,
 ):
@@ -323,7 +323,7 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_upload_stitched
     with pytest.raises(LGStitchServiceException) as e:
         patched_stitch_service.stitch_lloyd_george_record()
 
-    mock_get_total_file_size_in_bytess.assert_called_once()
+    mock_get_total_file_size_in_bytes.assert_called_once()
     patched_stitch_service.upload_stitched_lg_record.assert_called_once()
 
     assert e.value.status_code == 500
@@ -406,7 +406,7 @@ def test_get_total_file_size(mocker, stitch_service):
     mocker.patch("os.path.getsize", side_effect=[19000, 20000, 21000])
 
     expected = 60000
-    actual = stitch_service.get_total_file_size_in_bytess(
+    actual = stitch_service.get_total_file_size_in_bytes(
         ["file1.pdf", "file2.pdf", "file3.pdf"]
     )
 

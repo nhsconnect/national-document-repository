@@ -50,7 +50,7 @@ class LloydGeorgeStitchService:
             filename_for_stitched_file = os.path.basename(stitched_lg_record)
 
             self.stitch_trace_object.total_file_size_in_bytes = (
-                self.get_total_file_size_in_bytess(all_lg_parts)
+                self.get_total_file_size_in_bytes(all_lg_parts)
             )
             self.upload_stitched_lg_record(
                 stitched_lg_record=stitched_lg_record,
@@ -156,7 +156,7 @@ class LloydGeorgeStitchService:
         return max(doc.created for doc in documents)
 
     @staticmethod
-    def get_total_file_size_in_bytess(filepaths: list[str]) -> int:
+    def get_total_file_size_in_bytes(filepaths: list[str]) -> int:
         return sum(os.path.getsize(filepath) for filepath in filepaths)
 
     def update_stitch_job_complete(self):
