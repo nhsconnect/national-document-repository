@@ -2,17 +2,22 @@ import json
 import os
 import tempfile
 
-import pypdf.errors
 import pytest
 from botocore.exceptions import ClientError
-from handlers.lloyd_george_record_stitch_handler import lambda_handler
+from enums.lambda_error import LambdaError
+from enums.trace_status import TraceStatus
+from handlers.lloyd_george_record_stitch_handler import (
+    create_stitch_job,
+    lambda_handler,
+)
+from models.stitch_trace import DocumentStitchJob
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
-from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER
 from tests.unit.helpers.data.test_documents import (
     create_test_lloyd_george_doc_store_refs,
 )
+from utils.lambda_exceptions import LGStitchServiceException
 from utils.lambda_response import ApiGatewayResponse
 
 MOCK_CLIENT_ERROR = ClientError(
@@ -25,13 +30,12 @@ MOCK_TOTAL_FILE_SIZE = 1024 * 256
 MOCK_PRESIGNED_URL = (
     f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{TEST_NHS_NUMBER}/abcd-1234-5678"
 )
-MOCK_STITCH_SERVICE_RESPONSE = json.dumps(
-    {
-        "number_of_files": 3,
-        "last_updated": "2023-08-24T14:38:04.095Z",
-        "presign_url": MOCK_PRESIGNED_URL,
-        "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
-    }
+MOCK_STITCH_SERVICE_RESPONSE = DocumentStitchJob(
+    jobStatus=TraceStatus.COMPLETED,
+    numberOfFiles=3,
+    lastUpdated="2023-08-24T14:38:04.095Z",
+    presignedUrl=MOCK_PRESIGNED_URL,
+    totalFileSizeInBytes=MOCK_TOTAL_FILE_SIZE,
 )
 
 
@@ -45,11 +49,11 @@ def set_env_vars(monkeypatch):
 
 @pytest.fixture
 def mock_stitch_service(mocker):
-    yield mocker.patch.object(
-        LloydGeorgeStitchService,
-        "stitch_lloyd_george_record",
-        return_value=MOCK_STITCH_SERVICE_RESPONSE,
+    mocked_class = mocker.patch(
+        "handlers.lloyd_george_record_stitch_handler.LloydGeorgeStitchJobService"
     )
+    mocked_service = mocked_class.return_value
+    yield mocked_service
 
 
 @pytest.fixture
@@ -86,34 +90,60 @@ def mock_tempfile(mocker):
 @pytest.fixture
 def joe_bloggs_event():
     api_gateway_proxy_event = {
-        "httpMethod": "GET",
+        "httpMethod": "POST",
         "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
     }
     return api_gateway_proxy_event
 
 
 def test_lambda_handler_respond_with_200_and_presign_url(
-    valid_id_event_without_auth_header, context, mock_stitch_service
+    valid_id_event_without_auth_header, context, mocker, set_env
 ):
-    actual = lambda_handler(valid_id_event_without_auth_header, context)
-
     expected_response_object = {
-        "number_of_files": 3,
-        "last_updated": "2023-08-24T14:38:04.095Z",
-        "presign_url": MOCK_PRESIGNED_URL,
-        "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
+        "jobStatus": "Completed",
+        "presignedUrl": MOCK_PRESIGNED_URL,
+        "numberOfFiles": 3,
+        "lastUpdated": "2023-08-24T14:38:04.095Z",
+        "totalFileSizeInBytes": MOCK_TOTAL_FILE_SIZE,
     }
     expected = ApiGatewayResponse(
         200, json.dumps(expected_response_object), "GET"
     ).create_api_gateway_response()
 
+    mock_create_stitch_job = mocker.patch(
+        "handlers.lloyd_george_record_stitch_handler.get_stitch_job",
+        return_value=expected,
+    )
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
+
     assert actual == expected
 
-    mock_stitch_service.assert_called_with(TEST_NHS_NUMBER)
+    mock_create_stitch_job.assert_called_once()
+
+
+def test_lambda_handler_respond_create_new_job(
+    valid_id_post_event_with_auth_header, context, mock_stitch_service, mocker, set_env
+):
+    expected_response_object = {
+        "jobStatus": TraceStatus.PENDING,
+    }
+    expected = ApiGatewayResponse(
+        200, json.dumps(expected_response_object), "POST"
+    ).create_api_gateway_response()
+
+    mock_create_stitch_job = mocker.patch(
+        "handlers.lloyd_george_record_stitch_handler.create_stitch_job",
+        return_value=expected,
+    )
+
+    actual = lambda_handler(valid_id_post_event_with_auth_header, context)
+
+    assert actual == expected
+    mock_create_stitch_job.assert_called_once()
 
 
 def test_lambda_handler_respond_400_when_no_nhs_number_supplied(
-    missing_id_event, context
+    missing_id_event, context, set_env
 ):
     actual = lambda_handler(missing_id_event, context)
 
@@ -147,13 +177,13 @@ def test_lambda_handler_respond_500_when_environment_variables_not_set(
     expected = ApiGatewayResponse(
         500,
         expected_body,
-        "GET",
+        "POST",
     ).create_api_gateway_response()
     assert actual == expected
 
 
 def test_lambda_handler_respond_400_when_nhs_number_not_valid(
-    invalid_id_event, context
+    invalid_id_event, context, set_env
 ):
     actual = lambda_handler(invalid_id_event, context)
 
@@ -172,57 +202,37 @@ def test_lambda_handler_respond_400_when_nhs_number_not_valid(
 
 
 def test_lambda_handler_respond_500_when_failed_to_retrieve_lg_record(
-    joe_bloggs_event, context, fetch_available_document_references_by_type
+    joe_bloggs_event, mocker, context, set_env
 ):
-    fetch_available_document_references_by_type.side_effect = MOCK_CLIENT_ERROR
+    mocker.patch(
+        "handlers.lloyd_george_record_stitch_handler.create_stitch_job",
+        side_effect=LGStitchServiceException(500, LambdaError.StitchNoService),
+    )
+
     actual = lambda_handler(joe_bloggs_event, context)
 
-    expected_body = json.dumps(
-        {
-            "message": "Unable to retrieve documents for patient",
-            "err_code": "LGS_5003",
-            "interaction_id": "88888888-4444-4444-4444-121212121212",
-        }
-    )
     expected = ApiGatewayResponse(
         500,
-        expected_body,
-        "GET",
+        LambdaError.StitchNoService.create_error_body(),
+        "POST",
     ).create_api_gateway_response()
-    assert actual == expected
 
-
-def test_lambda_handler_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
-    joe_bloggs_event,
-    context,
-    fetch_available_document_references_by_type,
-    mock_s3,
-):
-    mock_s3.download_file.side_effect = MOCK_CLIENT_ERROR
-    actual = lambda_handler(joe_bloggs_event, context)
-
-    expected_body = json.dumps(
-        {
-            "message": "Unable to retrieve documents for patient",
-            "err_code": "LGS_5001",
-            "interaction_id": "88888888-4444-4444-4444-121212121212",
-        }
-    )
-    expected = ApiGatewayResponse(
-        500,
-        expected_body,
-        "GET",
-    ).create_api_gateway_response()
     assert actual == expected
 
 
 def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
-    valid_id_event_without_auth_header,
+    valid_id_post_event_with_auth_header,
     context,
     fetch_available_document_references_by_type,
+    mocker,
+    set_env,
 ):
-    fetch_available_document_references_by_type.return_value = []
-    actual = lambda_handler(valid_id_event_without_auth_header, context)
+    mocker.patch(
+        "handlers.lloyd_george_record_stitch_handler.create_stitch_job",
+        side_effect=LGStitchServiceException(404, LambdaError.StitchNotFound),
+    )
+
+    actual = lambda_handler(valid_id_post_event_with_auth_header, context)
 
     expected_body = json.dumps(
         {
@@ -234,55 +244,49 @@ def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patien
     expected = ApiGatewayResponse(
         404,
         expected_body,
-        "GET",
+        "POST",
     ).create_api_gateway_response()
     assert actual == expected
 
 
-def test_lambda_handler_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
-    valid_id_event_without_auth_header,
-    context,
-    fetch_available_document_references_by_type,
-    mock_s3,
-    mock_stitch_pdf,
+def test_create_stitch_job_respond_create_new_job(
+    valid_id_post_event_with_auth_header, context, mock_stitch_service, set_env
 ):
-    mock_stitch_pdf.side_effect = pypdf.errors.ParseError
+    mock_stitch_service.get_or_create_stitch_job.return_value = TraceStatus.PENDING
+    expected_response_object = {
+        "jobStatus": "Pending",
+    }
+    expected = ApiGatewayResponse(
+        200, json.dumps(expected_response_object), "POST"
+    ).create_api_gateway_response()
 
-    expected_body = json.dumps(
-        {
-            "message": "Unable to return stitched pdf file due to internal error",
-            "err_code": "LGS_5002",
-            "interaction_id": "88888888-4444-4444-4444-121212121212",
-        }
+    actual = create_stitch_job(valid_id_post_event_with_auth_header, context)
+
+    assert actual == expected
+
+    mock_stitch_service.query_document_stitch_job.assert_not_called()
+    mock_stitch_service.get_or_create_stitch_job.assert_called_with(TEST_NHS_NUMBER)
+
+
+def test_get_stitch_job_respond_with_200_and_presign_url(
+    valid_id_event_without_auth_header, context, set_env, mock_stitch_service
+):
+    mock_stitch_service.query_document_stitch_job.return_value = (
+        MOCK_STITCH_SERVICE_RESPONSE
     )
+    expected_response_object = {
+        "jobStatus": "Completed",
+        "presignedUrl": MOCK_PRESIGNED_URL,
+        "numberOfFiles": 3,
+        "lastUpdated": "2023-08-24T14:38:04.095Z",
+        "totalFileSizeInBytes": MOCK_TOTAL_FILE_SIZE,
+    }
+    expected = ApiGatewayResponse(
+        200, json.dumps(expected_response_object), "GET"
+    ).create_api_gateway_response()
+
     actual = lambda_handler(valid_id_event_without_auth_header, context)
-    expected = ApiGatewayResponse(
-        500,
-        expected_body,
-        "GET",
-    ).create_api_gateway_response()
+
     assert actual == expected
 
-
-def test_lambda_handler_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
-    joe_bloggs_event,
-    context,
-    fetch_available_document_references_by_type,
-    mock_s3,
-    mock_stitch_pdf,
-):
-    mock_s3.upload_file_with_extra_args.side_effect = MOCK_CLIENT_ERROR
-    actual = lambda_handler(joe_bloggs_event, context)
-    expected_body = json.dumps(
-        {
-            "message": "Unable to return stitched pdf file due to internal error",
-            "err_code": "LGS_5002",
-            "interaction_id": "88888888-4444-4444-4444-121212121212",
-        }
-    )
-    expected = ApiGatewayResponse(
-        500,
-        expected_body,
-        "GET",
-    ).create_api_gateway_response()
-    assert actual == expected
+    mock_stitch_service.query_document_stitch_job.assert_called_once()

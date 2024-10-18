@@ -216,6 +216,10 @@ class LambdaError(Enum):
         "err_code": "LGS_5005",
         "message": "CloudFront format url failure",
     }
+    StitchDBValidation = {
+        "err_code": "LGS_5006",
+        "message": "Failed to validate stitch trace model from dynamo event",
+    }
 
     """
        Errors for DocumentRefSearchException

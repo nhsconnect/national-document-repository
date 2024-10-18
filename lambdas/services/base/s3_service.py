@@ -50,7 +50,7 @@ class S3Service:
 
     def create_download_presigned_url(self, s3_bucket_name: str, file_key: str):
         if self.custom_client:
-            logger.info("Generating presigned URL for manifest")
+            logger.info("Generating presigned URL")
             return self.custom_client.generate_presigned_url(
                 "get_object",
                 Params={"Bucket": s3_bucket_name, "Key": file_key},

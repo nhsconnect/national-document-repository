@@ -4,10 +4,10 @@ import formatFileSize from '../../../../helpers/utils/formatFileSize';
 export type Props = {
     lastUpdated: string;
     numberOfFiles: number;
-    totalFileSizeInByte: number;
+    totalFileSizeInBytes: number;
 };
 
-function LloydGeorgeRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte }: Props) {
+function LloydGeorgeRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInBytes }: Props) {
     return (
         <div className="lloydgeorge_record-details">
             <div className="lloydgeorge_record-details_details">
@@ -17,7 +17,7 @@ function LloydGeorgeRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInB
                 <div className="lloydgeorge_record-details_details--num-files">
                     <span>{numberOfFiles} files</span>
                     {' | '}
-                    <span>File size: {formatFileSize(totalFileSizeInByte)}</span>
+                    <span>File size: {formatFileSize(totalFileSizeInBytes)}</span>
                     {' | '}
                     <span>File format: PDF</span>
                     {' |'}
