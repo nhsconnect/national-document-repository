@@ -57,7 +57,7 @@ describe('RecordCard Component', () => {
 
     describe('Rendering', () => {
         it('renders component', () => {
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
 
             expect(screen.getByText('Mock Header Record')).toBeInTheDocument();
             expect(screen.getByText('Mock Details Element')).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('RecordCard Component', () => {
 
         it('calls refreshRecord on mount', async () => {
             const mockRefreshRecord = jest.fn();
-            render(<TestApp {...props} refreshRecord={mockRefreshRecord} />);
+            render(<RecordCard {...props} refreshRecord={mockRefreshRecord} />);
             await waitFor(() => {
                 expect(mockRefreshRecord).toHaveBeenCalledTimes(1);
             });
@@ -74,7 +74,7 @@ describe('RecordCard Component', () => {
         it('renders the "View in full screen" button when recordUrl is set', async () => {
             mockGetLloydGeorgeRecord.mockResolvedValue(buildLgSearchResult());
 
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
 
             await waitFor(() => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe('RecordCard Component', () => {
         it('sets the page to full screen view when "View in full screen" is clicked', async () => {
             mockGetLloydGeorgeRecord.mockResolvedValue(buildLgSearchResult());
 
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
 
             await waitFor(() => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe('RecordCard Component', () => {
         it('renders PDFViewer component when recordUrl is set', async () => {
             mockGetLloydGeorgeRecord.mockResolvedValue(buildLgSearchResult());
 
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
 
             await waitFor(() => {
                 expect(screen.getByTestId('pdf-viewer')).toBeInTheDocument();
@@ -108,24 +108,24 @@ describe('RecordCard Component', () => {
         });
 
         it('renders nothing while no cloudFrontUrl', async () => {
-            render(<TestApp {...props} cloudFrontUrl="" />);
+            render(<RecordCard {...props} cloudFrontUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
         });
 
         it('removes ProgressBar once loading is complete', async () => {
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
             await waitFor(() => {
                 expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
             });
         });
 
         it('renders full-screen layout when isFullScreen state is true', async () => {
-            render(<TestApp {...props} isFullScreen={true} />);
+            render(<RecordCard {...props} isFullScreen={true} />);
             expect(screen.queryByTestId('pdf-card')).not.toBeInTheDocument(); // Shouldn't show the card layout
         });
 
         it('renders the "View in full screen" button if the user is GP_ADMIN', async () => {
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
 
             await waitFor(() => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe('RecordCard Component', () => {
         });
 
         it('does not render PdfViewer or full-screen button when cloudFrontUrl is empty', async () => {
-            render(<TestApp {...props} cloudFrontUrl="" />);
+            render(<RecordCard {...props} cloudFrontUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
             expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
         });
@@ -141,7 +141,7 @@ describe('RecordCard Component', () => {
         it('does not render the pdf details view when full-screen view is click', async () => {
             mockGetLloydGeorgeRecord.mockResolvedValue(buildLgSearchResult());
 
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
 
             await waitFor(() => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
@@ -151,7 +151,7 @@ describe('RecordCard Component', () => {
         it('does not render the "View in full screen" button if the user is GP_CLINICAL', async () => {
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
 
             await waitFor(() => {
                 expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
@@ -159,7 +159,7 @@ describe('RecordCard Component', () => {
         });
 
         it('does not render the "View in full screen" button or pdf view when recordUrl is not set', () => {
-            render(<TestApp {...props} cloudFrontUrl="" />);
+            render(<RecordCard {...props} cloudFrontUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
             expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
         });
@@ -169,7 +169,7 @@ describe('RecordCard Component', () => {
         it('Navigates to full screen view when "View in full screen" button is clicked', async () => {
             mockGetLloydGeorgeRecord.mockResolvedValue(buildLgSearchResult());
 
-            render(<TestApp {...props} />);
+            render(<RecordCard {...props} />);
 
             await waitFor(() => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
@@ -180,7 +180,4 @@ describe('RecordCard Component', () => {
             expect(mockFullScreenHandler).toHaveBeenCalledWith(true);
         });
     });
-    const TestApp = (testProps: Props) => {
-        return <RecordCard {...testProps} />;
-    };
 });
