@@ -49,6 +49,8 @@ const mockLinks: Array<LGRecordActionLink> = [
     },
 ];
 
+const className = 'lloydgeorge_record-stage_flex-row';
+
 jest.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockedUseNavigate,
@@ -66,7 +68,14 @@ describe('RecordMenuCard', () => {
 
     describe('Rendering', () => {
         it('renders menu', () => {
-            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            render(
+                <RecordMenuCard
+                    setStage={mockSetStage}
+                    recordLinks={mockLinks}
+                    className={className}
+                    showMenu={true}
+                />,
+            );
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
@@ -80,7 +89,12 @@ describe('RecordMenuCard', () => {
             );
 
             const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinksUpdateOnly} />,
+                <RecordMenuCard
+                    setStage={mockSetStage}
+                    recordLinks={mockLinksUpdateOnly}
+                    className={className}
+                    showMenu={true}
+                />,
             );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
@@ -94,7 +108,12 @@ describe('RecordMenuCard', () => {
                 (link) => link.type === RECORD_ACTION.DOWNLOAD,
             );
             rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinksDownloadOnly} />,
+                <RecordMenuCard
+                    setStage={mockSetStage}
+                    recordLinks={mockLinksDownloadOnly}
+                    className={className}
+                    showMenu={true}
+                />,
             );
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Download files' })).toBeInTheDocument();
@@ -108,13 +127,25 @@ describe('RecordMenuCard', () => {
 
         it('does not render anything if the given record links array is empty', () => {
             const { container } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={[]} />,
+                <RecordMenuCard
+                    setStage={mockSetStage}
+                    recordLinks={[]}
+                    className={className}
+                    showMenu={false}
+                />,
             );
             expect(container).toBeEmptyDOMElement();
         });
 
         it('render menu item as a <button> if link item does not have stage or href', () => {
-            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            render(
+                <RecordMenuCard
+                    setStage={mockSetStage}
+                    recordLinks={mockLinks}
+                    className={className}
+                    showMenu={true}
+                />,
+            );
             expect(
                 screen.getByRole('button', { name: 'Download and remove files' }),
             ).toBeInTheDocument();
@@ -129,7 +160,14 @@ describe('RecordMenuCard', () => {
 
     describe('Navigation', () => {
         it('navigates to href when clicked', () => {
-            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            render(
+                <RecordMenuCard
+                    setStage={mockSetStage}
+                    recordLinks={mockLinks}
+                    className={className}
+                    showMenu={true}
+                />,
+            );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
             act(() => {
@@ -139,7 +177,14 @@ describe('RecordMenuCard', () => {
         });
 
         it('change stage when clicked', () => {
-            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            render(
+                <RecordMenuCard
+                    setStage={mockSetStage}
+                    recordLinks={mockLinks}
+                    className={className}
+                    showMenu={true}
+                />,
+            );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
 

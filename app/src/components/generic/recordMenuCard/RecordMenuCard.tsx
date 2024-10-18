@@ -4,7 +4,7 @@ import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGe
 import { Link, useNavigate } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
-type Props = HTMLAttributes<HTMLDivElement> & {
+export type Props = HTMLAttributes<HTMLDivElement> & {
     recordLinks: Array<LGRecordActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     showMenu: boolean;

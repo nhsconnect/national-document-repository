@@ -10,7 +10,6 @@ import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useRole from '../../../helpers/hooks/useRole';
-import { useRef } from 'react';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
@@ -108,9 +107,9 @@ describe('RecordCard Component', () => {
             });
         });
 
-        it('renders ProgressBar while no cloudFrontUrl', async () => {
+        it('renders nothing while no cloudFrontUrl', async () => {
             render(<TestApp {...props} cloudFrontUrl="" />);
-            expect(screen.getByText('Loading...')).toBeInTheDocument();
+            expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
         });
 
         it('removes ProgressBar once loading is complete', async () => {
