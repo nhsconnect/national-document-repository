@@ -1,12 +1,14 @@
 import { Card } from 'nhsuk-react-components';
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, HTMLAttributes, SetStateAction } from 'react';
 import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import { Link, useNavigate } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
-type Props = {
+type Props = HTMLAttributes<HTMLDivElement> & {
     recordLinks: Array<LGRecordActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    showMenu: boolean;
+    className: string;
 };
 
 type SubSectionProps = {
@@ -15,7 +17,7 @@ type SubSectionProps = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function RecordMenuCard({ recordLinks, setStage }: Props) {
+function RecordMenuCard({ recordLinks, setStage, showMenu, className }: Props) {
     const updateActions = recordLinks.filter((link) => link.type === RECORD_ACTION.UPDATE);
     const downloadActions = recordLinks.filter((link) => link.type === RECORD_ACTION.DOWNLOAD);
 
@@ -23,25 +25,30 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
         return <></>;
     }
 
+    if (!showMenu) {
+        return null;
+    }
     return (
-        <Card className="lloydgeorge_record-stage_menu">
-            <Card.Content className="lloydgeorge_record-stage_menu-content">
-                {updateActions.length > 0 && (
-                    <SideMenuSubSection
-                        actionLinks={updateActions}
-                        heading="Update record"
-                        setStage={setStage}
-                    />
-                )}
-                {downloadActions.length > 0 && (
-                    <SideMenuSubSection
-                        actionLinks={downloadActions}
-                        heading="Download record"
-                        setStage={setStage}
-                    />
-                )}
-            </Card.Content>
-        </Card>
+        <div className={className}>
+            <Card className="lloydgeorge_record-stage_menu">
+                <Card.Content className="lloydgeorge_record-stage_menu-content">
+                    {updateActions.length > 0 && (
+                        <SideMenuSubSection
+                            actionLinks={updateActions}
+                            heading="Update record"
+                            setStage={setStage}
+                        />
+                    )}
+                    {downloadActions.length > 0 && (
+                        <SideMenuSubSection
+                            actionLinks={downloadActions}
+                            heading="Download record"
+                            setStage={setStage}
+                        />
+                    )}
+                </Card.Content>
+            </Card>
+        </div>
     );
 }
 

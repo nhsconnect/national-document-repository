@@ -23,17 +23,15 @@ function RecordCard({
 }: Props) {
     const role = useRole();
     const userIsGpClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
-    const [isLoading, setIsLoading] = useState(true);
     const mounted = useRef(false);
 
     useEffect(() => {
         const onPageLoad = async () => {
             await refreshRecord();
-            setIsLoading(false);
         };
         if (!mounted.current) {
+            onPageLoad();
             mounted.current = true;
-            void onPageLoad();
         }
     }, [refreshRecord]);
 

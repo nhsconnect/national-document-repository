@@ -51,7 +51,6 @@ function LloydGeorgeViewRecordStage({
     setStage,
     refreshRecord,
     cloudFrontUrl,
-
     showMenu,
 }: Props) {
     const navigate = useNavigate();
@@ -102,6 +101,8 @@ function LloydGeorgeViewRecordStage({
 
     const pageHeader = 'Available records';
     useTitle({ pageTitle: pageHeader });
+
+    const menuClass = showMenu ? '--menu' : '--upload';
 
     return (
         <div className="lloydgeorge_record-stage">
@@ -211,16 +212,19 @@ function LloydGeorgeViewRecordStage({
             <PatientSimpleSummary />
             {!fullScreen ? (
                 <>
-                    {showMenu ? (
+                    <>
+                        {console.log(showMenu, 'test1')}
                         <div className="lloydgeorge_record-stage_flex">
-                            <div className="lloydgeorge_record-stage_flex-row">
-                                <RecordMenuCard
-                                    recordLinks={recordLinksToShow}
-                                    setStage={setStage}
-                                />
-                            </div>
+                            <RecordMenuCard
+                                className="lloydgeorge_record-stage_flex-row"
+                                recordLinks={recordLinksToShow}
+                                setStage={setStage}
+                                showMenu={showMenu}
+                            />
 
-                            <div className="lloydgeorge_record-stage_flex-row">
+                            <div
+                                className={`lloydgeorge_record-stage_flex-row lloydgeorge_record-stage_flex-row${menuClass}`}
+                            >
                                 <RecordCard
                                     heading="Lloyd George record"
                                     fullScreenHandler={setFullScreen}
@@ -231,7 +235,12 @@ function LloydGeorgeViewRecordStage({
                                 />
                             </div>
                         </div>
-                    ) : (
+                    </>
+                </>
+            ) : (
+                <>
+                    {console.log(showMenu, 'test3')}
+                    <div className="lloydgeorge_record-stage_fs">
                         <RecordCard
                             heading="Lloyd George record"
                             fullScreenHandler={setFullScreen}
@@ -240,19 +249,8 @@ function LloydGeorgeViewRecordStage({
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}
                         />
-                    )}
+                    </div>
                 </>
-            ) : (
-                <div className="lloydgeorge_record-stage_fs">
-                    <RecordCard
-                        heading="Lloyd George record"
-                        fullScreenHandler={setFullScreen}
-                        detailsElement={<RecordDetails {...recordDetailsProps} />}
-                        isFullScreen={fullScreen}
-                        refreshRecord={refreshRecord}
-                        cloudFrontUrl={cloudFrontUrl}
-                    />
-                </div>
             )}
         </div>
     );
