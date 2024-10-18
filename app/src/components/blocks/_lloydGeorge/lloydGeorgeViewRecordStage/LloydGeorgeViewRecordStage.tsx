@@ -29,6 +29,7 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import { routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
+import ProgressBar from '../../../generic/progressBar/ProgressBar';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -39,6 +40,7 @@ export type Props = {
     stage: LG_RECORD_STAGE;
     refreshRecord: () => void;
     cloudFrontUrl: string;
+    showMenu: boolean;
 };
 
 function LloydGeorgeViewRecordStage({
@@ -49,6 +51,7 @@ function LloydGeorgeViewRecordStage({
     setStage,
     refreshRecord,
     cloudFrontUrl,
+    showMenu,
 }: Props) {
     const navigate = useNavigate();
     const [fullScreen, setFullScreen] = useState(false);
@@ -80,8 +83,6 @@ function LloydGeorgeViewRecordStage({
               hasRecordInStorage,
               onClickFunctionForDownloadAndRemove: handleDownloadAndRemoveRecordButton,
           });
-    const showMenu = recordLinksToShow.length > 0;
-
     // @ts-ignore
     const handleConfirmDownloadAndRemoveButton = () => {
         navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
@@ -100,6 +101,8 @@ function LloydGeorgeViewRecordStage({
 
     const pageHeader = 'Available records';
     useTitle({ pageTitle: pageHeader });
+
+    const menuClass = showMenu ? '--menu' : '--upload';
 
     return (
         <div className="lloydgeorge_record-stage">
@@ -209,17 +212,19 @@ function LloydGeorgeViewRecordStage({
             <PatientSimpleSummary />
             {!fullScreen ? (
                 <>
-                    {showMenu ? (
+                    <>
                         <div className="lloydgeorge_record-stage_flex">
-                            <div className="lloydgeorge_record-stage_flex-row">
-                                <RecordMenuCard
-                                    recordLinks={recordLinksToShow}
-                                    setStage={setStage}
-                                />
-                            </div>
-                            <div className="lloydgeorge_record-stage_flex-row">
+                            <RecordMenuCard
+                                className="lloydgeorge_record-stage_flex-row"
+                                recordLinks={recordLinksToShow}
+                                setStage={setStage}
+                                showMenu={showMenu}
+                            />
+
+                            <div
+                                className={`lloydgeorge_record-stage_flex-row lloydgeorge_record-stage_flex-row${menuClass}`}
+                            >
                                 <RecordCard
-                                    downloadStage={downloadStage}
                                     heading="Lloyd George record"
                                     fullScreenHandler={setFullScreen}
                                     detailsElement={<RecordDetails {...recordDetailsProps} />}
@@ -229,9 +234,12 @@ function LloydGeorgeViewRecordStage({
                                 />
                             </div>
                         </div>
-                    ) : (
+                    </>
+                </>
+            ) : (
+                <>
+                    <div className="lloydgeorge_record-stage_fs">
                         <RecordCard
-                            downloadStage={downloadStage}
                             heading="Lloyd George record"
                             fullScreenHandler={setFullScreen}
                             detailsElement={<RecordDetails {...recordDetailsProps} />}
@@ -239,20 +247,8 @@ function LloydGeorgeViewRecordStage({
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}
                         />
-                    )}
+                    </div>
                 </>
-            ) : (
-                <div className="lloydgeorge_record-stage_fs">
-                    <RecordCard
-                        downloadStage={downloadStage}
-                        heading="Lloyd George record"
-                        fullScreenHandler={setFullScreen}
-                        detailsElement={<RecordDetails {...recordDetailsProps} />}
-                        isFullScreen={fullScreen}
-                        refreshRecord={refreshRecord}
-                        cloudFrontUrl={cloudFrontUrl}
-                    />
-                </div>
             )}
         </div>
     );
@@ -273,7 +269,7 @@ const RecordDetails = ({
         case DOWNLOAD_STAGE.INITIAL:
         case DOWNLOAD_STAGE.PENDING:
         case DOWNLOAD_STAGE.REFRESH:
-            return null;
+            return <ProgressBar status="Loading..." />;
         case DOWNLOAD_STAGE.SUCCEEDED: {
             const detailsProps = {
                 lastUpdated,

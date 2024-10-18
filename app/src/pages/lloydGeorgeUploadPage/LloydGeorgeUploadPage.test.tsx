@@ -14,11 +14,7 @@ import uploadDocuments, {
     uploadDocumentToS3,
     virusScan,
 } from '../../helpers/requests/uploadDocuments';
-import {
-    DOCUMENT_TYPE,
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import { MomentInput } from 'moment/moment';
 import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
