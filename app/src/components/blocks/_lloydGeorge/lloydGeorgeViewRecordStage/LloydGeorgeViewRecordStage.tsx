@@ -213,7 +213,6 @@ function LloydGeorgeViewRecordStage({
             {!fullScreen ? (
                 <>
                     <>
-                        {console.log(showMenu, 'test1')}
                         <div className="lloydgeorge_record-stage_flex">
                             <RecordMenuCard
                                 className="lloydgeorge_record-stage_flex-row"
@@ -239,7 +238,6 @@ function LloydGeorgeViewRecordStage({
                 </>
             ) : (
                 <>
-                    {console.log(showMenu, 'test3')}
                     <div className="lloydgeorge_record-stage_fs">
                         <RecordCard
                             heading="Lloyd George record"
