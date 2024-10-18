@@ -29,7 +29,7 @@ class EdgePresignService:
             formatted_table_name: str = self.extend_table_name(
                 base_table_name, environment
             )
-
+            logger.info(f"Table: {formatted_table_name}")
             self.dynamo_service.update_item(
                 table_name=formatted_table_name,
                 key=uri_hash,
