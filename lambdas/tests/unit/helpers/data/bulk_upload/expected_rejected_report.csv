@@ -1,4 +1,4 @@
-NhsNumber,UploaderOdsCode,Date,FailureReason
+NhsNumber,UploaderOdsCode,Date,Reason
 9000000005,Y12345,2012-01-13,Could not find the given patient on PDS
 9000000006,Y12345,2012-01-13,Could not find the given patient on PDS
 9000000007,Y12345,2012-01-13,Lloyd George file already exists

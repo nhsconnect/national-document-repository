@@ -26,9 +26,7 @@ class BulkUploadReport(BaseModel):
     file_path: str = Field(alias=MetadataReport.FilePath)
     pds_ods_code: str = Field(alias=MetadataReport.PdsOdsCode)
     uploader_ods_code: str = Field(alias=MetadataReport.UploaderOdsCode)
-    failure_reason: Optional[str] = Field(
-        default="", alias=MetadataReport.FailureReason
-    )
+    reason: Optional[str] = Field(default="", alias=MetadataReport.Reason)
 
 
 def date_string_yyyymmdd(time_now: datetime) -> str:
