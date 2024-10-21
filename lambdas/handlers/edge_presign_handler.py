@@ -46,9 +46,7 @@ def lambda_handler(event, context):
         del headers["authorization"]
     request["headers"] = headers
     request["querystring"] = ""
-    request["origin"]["s3"][
-        "domainName"
-    ] = "ndra-lloyd-george-store.s3.eu-west-2.amazonaws.com"
+    request["origin"]["s3"]["domainName"]
     logger.info(f"Edge Response: {json.dumps(request)}")
 
     return request
