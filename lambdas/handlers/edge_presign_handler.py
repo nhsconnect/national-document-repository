@@ -45,6 +45,9 @@ def lambda_handler(event, context):
     if "authorization" in headers:
         del headers["authorization"]
     request["headers"] = headers
+    request["headers"]["host"] = [
+        {"key": "Host", "value": request["origin"]["s3"]["domainName"]}
+    ]
     logger.info(f"Edge Response: {json.dumps(request)}")
 
     return request
