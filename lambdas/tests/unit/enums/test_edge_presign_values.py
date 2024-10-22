@@ -1,16 +1,15 @@
-# test_enums.py
+# test_edge_presign_values.py
 
 from enums.lambda_error import LambdaError
 
 ENV = "test"
-
 TABLE_NAME = "CloudFrontEdgeReference"
-
 NHS_DOMAIN = "example.gov.uk"
 
 EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE = LambdaError.EdgeNoClient.value["message"]
-
 EXPECTED_EDGE_NO_CLIENT_ERROR_CODE = LambdaError.EdgeNoClient.value["err_code"]
+EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE = LambdaError.EdgeMalformed.value["message"]
+EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE = LambdaError.EdgeMalformed.value["err_code"]
 
 EXPECTED_DYNAMO_DB_CONDITION_EXPRESSION = (
     "attribute_not_exists(IsRequested) OR IsRequested = :false"
@@ -32,8 +31,16 @@ VALID_EVENT_MODEL = {
                         ],
                         "host": [{"key": "Host", "value": NHS_DOMAIN}],
                     },
-                    "querystring": f"origin=https://test.{NHS_DOMAIN}&other=param",
+                    "querystring": "x-amz=11111",
                     "uri": "/some/path",
+                    "origin": {
+                        "s3": {
+                            "authMethod": "none",
+                            "customHeaders": {},
+                            "domainName": "test.s3.eu-west-2.amazonaws.com",
+                            "path": "",
+                        }
+                    },
                 }
             }
         }
