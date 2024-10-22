@@ -128,6 +128,7 @@ describe('LloydGeorgeRecordPage', () => {
         await waitFor(async () => {
             expect(screen.getByText('No documents are available.')).toBeInTheDocument();
         });
+        expect(screen.queryByTestId('record-menu-card')).not.toBeInTheDocument();
     });
 
     it('renders initial lg record view with docs are uploading text if response status is 423', async () => {

@@ -26,10 +26,10 @@ function RecordMenuCard({ recordLinks, setStage, showMenu, className }: Props) {
     }
 
     if (!showMenu) {
-        return null;
+        return <></>;
     }
     return (
-        <div className={className}>
+        <div className={className} data-testid="record-menu-card">
             <Card className="lloydgeorge_record-stage_menu">
                 <Card.Content className="lloydgeorge_record-stage_menu-content">
                     {updateActions.length > 0 && (
@@ -96,5 +96,9 @@ const LinkItem = ({ link, setStage }: LinkItemProps) => {
             </button>
         );
     }
+};
+
+RecordMenuCard.defaultProps = {
+    className: 'lloydgeorge_record-stage_flex-row',
 };
 export default RecordMenuCard;

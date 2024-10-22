@@ -36,10 +36,7 @@ function RecordCard({
     }, [refreshRecord]);
 
     const Record = () => {
-        if (!cloudFrontUrl) {
-            return null;
-        }
-        return <PdfViewer fileUrl={cloudFrontUrl} />;
+        return cloudFrontUrl ? <PdfViewer fileUrl={cloudFrontUrl} /> : null;
     };
 
     const RecordLayout = ({ children }: { children: ReactNode }) => {
