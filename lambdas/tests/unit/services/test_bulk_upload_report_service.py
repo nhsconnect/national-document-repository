@@ -160,7 +160,7 @@ def test_get_dynamo_data_handles_invalid_dynamo_data(
     invalid_data = {
         "Timestamp": 1688395680,
         "Date": "2012-01-13",
-        "FailureReason": "Lloyd George file already exists",
+        "Reason": "Lloyd George file already exists",
         "UploadStatus": "failed",
     }
     mock_response = {"Items": [invalid_data, MOCK_REPORT_RESPONSE_ALL["Items"][1]]}
@@ -360,8 +360,8 @@ def test_generate_individual_ods_report_creates_ods_report(
         total_registered_elsewhere=1,
         total_suspended=1,
         extra_rows=[
-            ["FailureReason", "Could not find the given patient on PDS", 2],
-            ["FailureReason", "Lloyd George file already exists", 1],
+            ["Reason", "Could not find the given patient on PDS", 2],
+            ["Reason", "Lloyd George file already exists", 1],
         ],
     )
     bulk_upload_report_service.s3_service.upload_file.assert_called()
