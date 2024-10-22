@@ -1,8 +1,8 @@
-# test_edge_presign_values.py
-
 from enums.lambda_error import LambdaError
 
 ENV = "test"
+EXPECTED_ENVIRONMENT = ENV
+
 TABLE_NAME = "CloudFrontEdgeReference"
 NHS_DOMAIN = "example.gov.uk"
 
@@ -19,6 +19,12 @@ EXPECTED_DYNAMO_DB_EXPRESSION_ATTRIBUTE_VALUES = {":false": False}
 EXPECTED_SSM_PARAMETER_KEY = "EDGE_REFERENCE_TABLE"
 
 EXPECTED_SUCCESS_RESPONSE = None
+
+VALID_DOMAIN = "test-lloyd-test-test.s3.eu-west-2.amazonaws.com"
+EXPECTED_DOMAIN = VALID_DOMAIN
+
+INVALID_DOMAIN = "invalid-domain.com"
+FORMATTED_TABLE_NAME = f"{EXPECTED_ENVIRONMENT}_{TABLE_NAME}"
 
 VALID_EVENT_MODEL = {
     "Records": [
@@ -37,7 +43,7 @@ VALID_EVENT_MODEL = {
                         "s3": {
                             "authMethod": "none",
                             "customHeaders": {},
-                            "domainName": "test.s3.eu-west-2.amazonaws.com",
+                            "domainName": VALID_DOMAIN,
                             "path": "",
                         }
                     },

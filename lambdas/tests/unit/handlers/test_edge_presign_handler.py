@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 from services.edge_presign_service import EdgePresignService
 from tests.unit.enums.test_edge_presign_values import (
     ENV,
+    EXPECTED_DOMAIN,
     EXPECTED_DYNAMO_DB_CONDITION_EXPRESSION,
     EXPECTED_DYNAMO_DB_EXPRESSION_ATTRIBUTE_VALUES,
     EXPECTED_EDGE_NO_CLIENT_ERROR_CODE,
@@ -51,13 +52,13 @@ def test_lambda_handler_success(valid_event, mock_edge_presign_service):
 
     assert "authorization" not in response["headers"]
 
-    assert response["headers"]["host"][0]["value"] == "test.s3.eu-west-2.amazonaws.com"
+    assert response["headers"]["host"][0]["value"] == EXPECTED_DOMAIN
 
 
 def test_attempt_url_update_success(mock_edge_presign_service):
     edge_service = EdgePresignService()
     uri_hash = "test_uri_hash"
-    domain_name = f"{ENV}-lloyd-test-test.s3.eu-west-2.amazonaws.com"
+    domain_name = EXPECTED_DOMAIN
 
     edge_service.attempt_url_update(uri_hash, domain_name)
 
