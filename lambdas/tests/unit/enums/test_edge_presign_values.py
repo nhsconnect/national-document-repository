@@ -8,8 +8,22 @@ NHS_DOMAIN = "example.gov.uk"
 
 EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE = LambdaError.EdgeNoClient.value["message"]
 EXPECTED_EDGE_NO_CLIENT_ERROR_CODE = LambdaError.EdgeNoClient.value["err_code"]
-EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE = LambdaError.EdgeMalformed.value["message"]
-EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE = LambdaError.EdgeMalformed.value["err_code"]
+EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE = LambdaError.EdgeNoOrigin.value["message"]
+EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE = LambdaError.EdgeNoOrigin.value["err_code"]
+EXPECTED_EDGE_MALFORMED_HEADER_ERROR_MESSAGE = LambdaError.EdgeMalformedHeader.value[
+    "message"
+]
+EXPECTED_EDGE_MALFORMED_HEADER_ERROR_CODE = LambdaError.EdgeMalformedHeader.value[
+    "err_code"
+]
+EXPECTED_EDGE_MALFORMED_QUERY_ERROR_MESSAGE = LambdaError.EdgeMalformedQuery.value[
+    "message"
+]
+EXPECTED_EDGE_MALFORMED_QUERY_ERROR_CODE = LambdaError.EdgeMalformedQuery.value[
+    "err_code"
+]
+EXPECTED_EDGE_MALFORMED_ERROR_MESSAGE = LambdaError.EdgeMalformed.value["message"]
+EXPECTED_EDGE_MALFORMED_ERROR_CODE = LambdaError.EdgeMalformed.value["err_code"]
 
 EXPECTED_DYNAMO_DB_CONDITION_EXPRESSION = (
     "attribute_not_exists(IsRequested) OR IsRequested = :false"
@@ -37,7 +51,9 @@ VALID_EVENT_MODEL = {
                         ],
                         "host": [{"key": "Host", "value": NHS_DOMAIN}],
                     },
-                    "querystring": "x-amz=11111",
+                    "querystring": "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+                    "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
+                    "&X-Amz-Signature=sig&X-Amz-Security-Token=token",
                     "uri": "/some/path",
                     "origin": {
                         "s3": {
@@ -47,25 +63,6 @@ VALID_EVENT_MODEL = {
                             "path": "",
                         }
                     },
-                }
-            }
-        }
-    ]
-}
-
-MISSING_ORIGIN_EVENT_MODEL = {
-    "Records": [
-        {
-            "cf": {
-                "request": {
-                    "headers": {
-                        "authorization": [
-                            {"key": "Authorization", "value": "Bearer token"}
-                        ],
-                        "host": [{"key": "Host", "value": NHS_DOMAIN}],
-                    },
-                    "querystring": "other=param",
-                    "uri": "/some/path",
                 }
             }
         }
