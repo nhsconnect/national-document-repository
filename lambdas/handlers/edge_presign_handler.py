@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+from urllib.parse import parse_qs
 
 from enums.lambda_error import LambdaError
 from services.edge_presign_service import EdgePresignService
@@ -46,10 +47,7 @@ def lambda_handler(event, context):
             raise CloudFrontEdgeException(500, LambdaError.EdgeNoOrigin)
 
         try:
-            query_params = {
-                k: v
-                for k, v in (x.split("=") for x in querystring.split("&") if "=" in x)
-            }
+            query_params = {k: v[0] for k, v in parse_qs(querystring).items()}
         except ValueError:
             logger.error(f"Malformed query string: {querystring}")
             raise CloudFrontEdgeException(500, LambdaError.EdgeMalformedQuery)
