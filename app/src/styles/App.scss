@@ -258,10 +258,14 @@ $hunit: '%';
 
             &-row {
                 margin: 0 15px;
-            }
 
-            &-row:last-child {
-                flex-basis: calc(70% - 17px);
+                &--menu {
+                    flex-basis: calc(70% - 17px);
+                }
+
+                &--upload {
+                    flex-basis: 100%;
+                }
             }
         }
 

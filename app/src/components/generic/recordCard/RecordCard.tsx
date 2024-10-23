@@ -1,16 +1,13 @@
 import { Card } from 'nhsuk-react-components';
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+import React, { ReactNode, useEffect, useRef } from 'react';
 import PdfViewer from '../pdfViewer/PdfViewer';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-import ProgressBar from '../progressBar/ProgressBar';
 
 export type Props = {
     heading: string;
     fullScreenHandler: (clicked: true) => void;
     detailsElement: ReactNode;
-    downloadStage: DOWNLOAD_STAGE;
     isFullScreen: boolean;
     refreshRecord: () => void;
     cloudFrontUrl: string;
@@ -26,29 +23,20 @@ function RecordCard({
 }: Props) {
     const role = useRole();
     const userIsGpClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
-    const [isLoading, setIsLoading] = useState(true);
     const mounted = useRef(false);
 
     useEffect(() => {
         const onPageLoad = async () => {
             await refreshRecord();
-            setIsLoading(false);
         };
         if (!mounted.current) {
+            onPageLoad();
             mounted.current = true;
-            void onPageLoad();
         }
     }, [refreshRecord]);
 
     const Record = () => {
-        if (isLoading) {
-            return (
-                <div className="pl-7">
-                    <ProgressBar status="Loading..." />
-                </div>
-            );
-        }
-        return <PdfViewer fileUrl={cloudFrontUrl} />;
+        return cloudFrontUrl ? <PdfViewer fileUrl={cloudFrontUrl} /> : null;
     };
 
     const RecordLayout = ({ children }: { children: ReactNode }) => {
