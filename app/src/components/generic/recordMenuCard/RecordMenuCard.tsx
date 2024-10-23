@@ -8,7 +8,7 @@ export type Props = HTMLAttributes<HTMLDivElement> & {
     recordLinks: Array<LGRecordActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     showMenu: boolean;
-    className: string;
+    className?: string;
 };
 
 type SubSectionProps = {
@@ -17,7 +17,12 @@ type SubSectionProps = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function RecordMenuCard({ recordLinks, setStage, showMenu, className }: Props) {
+function RecordMenuCard({
+    recordLinks,
+    setStage,
+    showMenu,
+    className = 'lloydgeorge_record-stage_flex-row',
+}: Props) {
     const updateActions = recordLinks.filter((link) => link.type === RECORD_ACTION.UPDATE);
     const downloadActions = recordLinks.filter((link) => link.type === RECORD_ACTION.DOWNLOAD);
 
@@ -98,7 +103,4 @@ const LinkItem = ({ link, setStage }: LinkItemProps) => {
     }
 };
 
-RecordMenuCard.defaultProps = {
-    className: 'lloydgeorge_record-stage_flex-row',
-};
 export default RecordMenuCard;
