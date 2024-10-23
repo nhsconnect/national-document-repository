@@ -5,6 +5,7 @@ EXPECTED_ENVIRONMENT = ENV
 
 TABLE_NAME = "CloudFrontEdgeReference"
 NHS_DOMAIN = "example.gov.uk"
+S3_DOMAIN = "example.gov.uk"
 
 EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE = LambdaError.EdgeNoClient.value["message"]
 EXPECTED_EDGE_NO_CLIENT_ERROR_CODE = LambdaError.EdgeNoClient.value["err_code"]
@@ -49,7 +50,7 @@ VALID_EVENT_MODEL = {
                         "authorization": [
                             {"key": "Authorization", "value": "Bearer token"}
                         ],
-                        "host": [{"key": "Host", "value": NHS_DOMAIN}],
+                        "host": [{"key": "Host", "value": S3_DOMAIN}],
                     },
                     "querystring": "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
                     "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"

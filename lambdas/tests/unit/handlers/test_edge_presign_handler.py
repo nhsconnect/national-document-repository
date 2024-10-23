@@ -45,7 +45,7 @@ def mock_edge_presign_service(mocker):
 
 def test_lambda_handler_success(valid_event, mock_edge_presign_service):
     context = mock_context()
-    # Add required headers for the test
+
     valid_event["Records"][0]["cf"]["request"]["headers"][
         "cloudfront-viewer-country"
     ] = [{"key": "CloudFront-Viewer-Country", "value": "US"}]
@@ -67,7 +67,7 @@ def test_lambda_handler_success(valid_event, mock_edge_presign_service):
 def test_lambda_handler_missing_query_params(valid_event, mock_edge_presign_service):
     context = mock_context()
     event = copy.deepcopy(valid_event)
-    event["Records"][0]["cf"]["request"]["querystring"] = ""  # Missing all query params
+    event["Records"][0]["cf"]["request"]["querystring"] = ""
     response = lambda_handler(event, context)
 
     actual_status = response["status"]
@@ -81,7 +81,7 @@ def test_lambda_handler_missing_query_params(valid_event, mock_edge_presign_serv
 def test_lambda_handler_missing_headers(valid_event, mock_edge_presign_service):
     context = mock_context()
     event = copy.deepcopy(valid_event)
-    event["Records"][0]["cf"]["request"]["headers"] = {}  # Clear all headers
+    event["Records"][0]["cf"]["request"]["headers"] = {}
     event["Records"][0]["cf"]["request"]["querystring"] = (
         "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
         "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
@@ -100,7 +100,7 @@ def test_lambda_handler_missing_headers(valid_event, mock_edge_presign_service):
 def test_lambda_handler_missing_origin(valid_event, mock_edge_presign_service):
     context = mock_context()
     event = copy.deepcopy(valid_event)
-    event["Records"][0]["cf"]["request"]["origin"] = {}  # Missing origin data
+    event["Records"][0]["cf"]["request"]["origin"] = {}
     event["Records"][0]["cf"]["request"]["querystring"] = (
         "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
         "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
@@ -119,9 +119,7 @@ def test_lambda_handler_missing_origin(valid_event, mock_edge_presign_service):
 def test_lambda_handler_generic_edge_malformed(valid_event, mock_edge_presign_service):
     context = mock_context()
     event = copy.deepcopy(valid_event)
-    event["Records"][0]["cf"]["request"].pop(
-        "uri", None
-    )  # Remove URI to simulate KeyError
+    event["Records"][0]["cf"]["request"].pop("uri", None)
 
     response = lambda_handler(event, context)
     actual_status = response["status"]
