@@ -206,7 +206,7 @@ class BulkUploadReportService:
             MetadataReport.NhsNumber,
             MetadataReport.UploaderOdsCode,
             MetadataReport.Date,
-            MetadataReport.FailureReason,
+            MetadataReport.Reason,
         ]
         data_rows = []
         for report in ods_reports:
@@ -268,7 +268,7 @@ class BulkUploadReportService:
             MetadataReport.NhsNumber,
             MetadataReport.UploaderOdsCode,
             MetadataReport.Date,
-            MetadataReport.FailureReason,
+            MetadataReport.Reason,
         ]
 
         data_rows = []
@@ -279,7 +279,7 @@ class BulkUploadReportService:
                         nhs_number,
                         report_item[MetadataReport.UploaderOdsCode],
                         report_item[MetadataReport.Date],
-                        report_item[MetadataReport.FailureReason],
+                        report_item[MetadataReport.Reason],
                     ]
                 )
 
