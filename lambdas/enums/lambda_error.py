@@ -392,10 +392,18 @@ class LambdaError(Enum):
     """
     EdgeMalformed = {
         "err_code": "CE_5001",
-        "message": "Malformed event structure or missing data",
+        "message": "Malformed cloudfront request",
+    }
+    EdgeMalformedHeader = {
+        "err_code": "CE_5002",
+        "message": "Malformed header structure or missing data",
+    }
+    EdgeMalformedQuery = {
+        "err_code": "CE_5003",
+        "message": "Malformed query structure or missing data",
     }
     EdgeNoOrigin = {
-        "err_code": "CE_5002",
+        "err_code": "CE_5004",
         "message": "The request is missing an origin",
     }
     EdgeNoClient = {"err_code": "CE_4001", "message": "Document not found"}

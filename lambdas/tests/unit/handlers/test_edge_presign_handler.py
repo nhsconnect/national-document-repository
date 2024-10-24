@@ -1,21 +1,22 @@
+import copy
+import json
 from unittest.mock import Mock
 
 import pytest
-from botocore.exceptions import ClientError
-from services.edge_presign_service import EdgePresignService
+from handlers.edge_presign_handler import lambda_handler
 from tests.unit.enums.test_edge_presign_values import (
-    ENV,
-    EXPECTED_DYNAMO_DB_CONDITION_EXPRESSION,
-    EXPECTED_DYNAMO_DB_EXPRESSION_ATTRIBUTE_VALUES,
-    EXPECTED_EDGE_NO_CLIENT_ERROR_CODE,
-    EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE,
-    EXPECTED_SSM_PARAMETER_KEY,
-    MISSING_ORIGIN_EVENT_MODEL,
-    NHS_DOMAIN,
+    EXPECTED_DOMAIN,
+    EXPECTED_EDGE_MALFORMED_ERROR_CODE,
+    EXPECTED_EDGE_MALFORMED_ERROR_MESSAGE,
+    EXPECTED_EDGE_MALFORMED_HEADER_ERROR_CODE,
+    EXPECTED_EDGE_MALFORMED_HEADER_ERROR_MESSAGE,
+    EXPECTED_EDGE_MALFORMED_QUERY_ERROR_CODE,
+    EXPECTED_EDGE_MALFORMED_QUERY_ERROR_MESSAGE,
+    EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE,
+    EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE,
     TABLE_NAME,
     VALID_EVENT_MODEL,
 )
-from utils.lambda_exceptions import CloudFrontEdgeException
 
 
 def mock_context():
@@ -26,12 +27,7 @@ def mock_context():
 
 @pytest.fixture
 def valid_event():
-    return VALID_EVENT_MODEL
-
-
-@pytest.fixture
-def missing_origin_event():
-    return MISSING_ORIGIN_EVENT_MODEL
+    return copy.deepcopy(VALID_EVENT_MODEL)
 
 
 @pytest.fixture
@@ -47,50 +43,88 @@ def mock_edge_presign_service(mocker):
     return mock_ssm_service_instance, mock_dynamo_service_instance
 
 
-def test_attempt_url_update_success(mock_edge_presign_service):
-    edge_service = EdgePresignService()
-    uri_hash = "test_uri_hash"
-    origin_url = f"https://{ENV}.{NHS_DOMAIN}"
+def test_lambda_handler_success(valid_event, mock_edge_presign_service):
+    context = mock_context()
 
-    edge_service.attempt_url_update(uri_hash, origin_url)
+    valid_event["Records"][0]["cf"]["request"]["headers"][
+        "cloudfront-viewer-country"
+    ] = [{"key": "CloudFront-Viewer-Country", "value": "US"}]
+    valid_event["Records"][0]["cf"]["request"]["headers"]["x-forwarded-for"] = [
+        {"key": "X-Forwarded-For", "value": "1.2.3.4"}
+    ]
 
-    mock_ssm_service_instance = mock_edge_presign_service[0]
-    mock_dynamo_service_instance = mock_edge_presign_service[1]
-
-    mock_ssm_service_instance.get_ssm_parameter.assert_called_once_with(
-        EXPECTED_SSM_PARAMETER_KEY
+    valid_event["Records"][0]["cf"]["request"]["querystring"] = (
+        "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+        "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
+        "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
     )
+    response = lambda_handler(valid_event, context)
 
-    mock_dynamo_service_instance.update_item.assert_called_once_with(
-        table_name=f"{ENV}_{TABLE_NAME}",
-        key=uri_hash,
-        updated_fields={"IsRequested": True},
-        condition_expression=EXPECTED_DYNAMO_DB_CONDITION_EXPRESSION,
-        expression_attribute_values=EXPECTED_DYNAMO_DB_EXPRESSION_ATTRIBUTE_VALUES,
+    assert "authorization" not in response["headers"]
+    assert response["headers"]["host"][0]["value"] == EXPECTED_DOMAIN
+
+
+def test_lambda_handler_missing_query_params(valid_event, mock_edge_presign_service):
+    context = mock_context()
+    event = copy.deepcopy(valid_event)
+    event["Records"][0]["cf"]["request"]["querystring"] = ""
+    response = lambda_handler(event, context)
+
+    actual_status = response["status"]
+    actual_response = json.loads(response["body"])
+
+    assert actual_status == 500
+    assert actual_response["message"] == EXPECTED_EDGE_MALFORMED_QUERY_ERROR_MESSAGE
+    assert actual_response["err_code"] == EXPECTED_EDGE_MALFORMED_QUERY_ERROR_CODE
+
+
+def test_lambda_handler_missing_headers(valid_event, mock_edge_presign_service):
+    context = mock_context()
+    event = copy.deepcopy(valid_event)
+    event["Records"][0]["cf"]["request"]["headers"] = {}
+    event["Records"][0]["cf"]["request"]["querystring"] = (
+        "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+        "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
+        "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
     )
+    response = lambda_handler(event, context)
+
+    actual_status = response["status"]
+    actual_response = json.loads(response["body"])
+
+    assert actual_status == 500
+    assert actual_response["message"] == EXPECTED_EDGE_MALFORMED_HEADER_ERROR_MESSAGE
+    assert actual_response["err_code"] == EXPECTED_EDGE_MALFORMED_HEADER_ERROR_CODE
 
 
-def test_attempt_url_update_client_error(mock_edge_presign_service):
-    edge_service = EdgePresignService()
-
-    edge_service.dynamo_service.update_item.side_effect = ClientError(
-        error_response={"Error": {"Code": "ConditionalCheckFailedException"}},
-        operation_name="UpdateItem",
+def test_lambda_handler_missing_origin(valid_event, mock_edge_presign_service):
+    context = mock_context()
+    event = copy.deepcopy(valid_event)
+    event["Records"][0]["cf"]["request"]["origin"] = {}
+    event["Records"][0]["cf"]["request"]["querystring"] = (
+        "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+        "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
+        "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
     )
+    response = lambda_handler(event, context)
 
-    with pytest.raises(CloudFrontEdgeException) as exc_info:
-        edge_service.attempt_url_update("test_uri_hash", f"https://{ENV}.{NHS_DOMAIN}")
+    actual_status = response["status"]
+    actual_response = json.loads(response["body"])
 
-    assert exc_info.value.status_code == 400
-    assert exc_info.value.message == EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE
-    assert exc_info.value.err_code == EXPECTED_EDGE_NO_CLIENT_ERROR_CODE
+    assert actual_status == 500
+    assert actual_response["message"] == EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE
+    assert actual_response["err_code"] == EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE
 
 
-def test_attempt_url_update_invalid_origin(mock_edge_presign_service):
-    edge_service = EdgePresignService()
+def test_lambda_handler_generic_edge_malformed(valid_event, mock_edge_presign_service):
+    context = mock_context()
+    event = copy.deepcopy(valid_event)
+    event["Records"][0]["cf"]["request"].pop("uri", None)
 
-    result = edge_service.extract_environment_from_url("invalid_url")
+    response = lambda_handler(event, context)
+    actual_status = response["status"]
+    actual_response = json.loads(response["body"])
 
-    expected_empty_result = ""
-
-    assert result == expected_empty_result
+    assert actual_status == 500
+    assert actual_response["message"] == EXPECTED_EDGE_MALFORMED_ERROR_MESSAGE
+    assert actual_response["err_code"] == EXPECTED_EDGE_MALFORMED_ERROR_CODE
