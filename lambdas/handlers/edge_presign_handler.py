@@ -16,14 +16,14 @@ logger.setLevel(logging.INFO)
 @handle_edge_exceptions
 @validate_s3_request
 def lambda_handler(event, context):
-    request = event["Records"][0]["cf"]["request"]
+    request: dict = event["Records"][0]["cf"]["request"]
     logger.info("Edge received S3 request")
 
     edge_presign_service = EdgePresignService()
-    request_values = edge_presign_service.extract_request_values(request)
+    request_values: dict = edge_presign_service.extract_request_values(request)
     edge_presign_service.presign_request(request_values)
 
-    request = edge_presign_service.prepare_s3_response(request, request_values)
+    request: dict = edge_presign_service.prepare_s3_response(request, request_values)
 
     logger.info("Edge returning S3 response")
     return request

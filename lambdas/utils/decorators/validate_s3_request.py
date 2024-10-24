@@ -24,12 +24,12 @@ def validate_s3_request(lambda_func):
     @wraps(lambda_func)
     def wrapper(event, context):
         request: dict = event["Records"][0]["cf"]["request"]
-
-        if (
+        bad_request: bool = (
             "uri" not in request
             or "querystring" not in request
             or "headers" not in request
-        ):
+        )
+        if bad_request:
             logger.error(
                 "Missing required request components: uri, querystring, or headers."
             )
@@ -45,17 +45,17 @@ def validate_s3_request(lambda_func):
             logger.error(f"Missing query string: {querystring}")
             raise CloudFrontEdgeException(500, LambdaError.EdgeNoQuery)
 
-        query_params = {
+        query_params: dict[str, str] = {
             query: value[0] for query, value in parse_qs(querystring).items()
         }
-        missing_query_params = [
+        missing_query_params: list[str] = [
             param for param in REQUIRED_QUERY_PARAMS if param not in query_params
         ]
         if missing_query_params:
             logger.error(f"Missing required query parameters: {missing_query_params}")
             raise CloudFrontEdgeException(500, LambdaError.EdgeMissingQuery)
 
-        headers = request["headers"]
+        headers: dict[str, str] = request["headers"]
         missing_headers = [
             header for header in REQUIRED_HEADERS if header.lower() not in headers
         ]
