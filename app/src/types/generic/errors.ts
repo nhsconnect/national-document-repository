@@ -16,3 +16,20 @@ class DownloadManifestError extends Error {
 }
 
 export { DownloadManifestError };
+
+class StitchRecordError extends Error {
+    response: { data: ErrorResponse };
+
+    constructor(message: string) {
+        super(message);
+        this.name = 'StitchRecordError';
+        this.response = {
+            data: {
+                message,
+                err_code: 'LGS_5000',
+            },
+        };
+    }
+}
+
+export { StitchRecordError };
