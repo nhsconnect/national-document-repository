@@ -66,7 +66,7 @@ def test_lambda_handler_success(valid_event, mock_edge_presign_service):
         {"key": "X-Forwarded-For", "value": "1.2.3.4"}
     ]
     valid_event["Records"][0]["cf"]["request"]["querystring"] = (
-        "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+        "?X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
         "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
         "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
     )
@@ -107,7 +107,10 @@ def test_lambda_handler_no_query_params(valid_event, mock_edge_presign_service):
 def test_lambda_handler_missing_query_params(valid_event, mock_edge_presign_service):
     context = mock_context()
     event = copy.deepcopy(valid_event)
-    event["Records"][0]["cf"]["request"]["querystring"] = ""
+    event["Records"][0]["cf"]["request"]["querystring"] = (
+        "?X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+        "&X-Amz-Expires=3600"
+    )
 
     response = lambda_handler(event, context)
 
@@ -124,7 +127,7 @@ def test_lambda_handler_missing_headers(valid_event, mock_edge_presign_service):
     event = copy.deepcopy(valid_event)
     event["Records"][0]["cf"]["request"]["headers"] = {}
     event["Records"][0]["cf"]["request"]["querystring"] = (
-        "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+        "?X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
         "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
         "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
     )
@@ -144,7 +147,7 @@ def test_lambda_handler_missing_origin(valid_event, mock_edge_presign_service):
     event = copy.deepcopy(valid_event)
     event["Records"][0]["cf"]["request"]["origin"] = {}
     event["Records"][0]["cf"]["request"]["querystring"] = (
-        "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+        "?X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
         "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
         "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
     )

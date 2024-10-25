@@ -45,17 +45,17 @@ def validate_s3_request(lambda_func):
             logger.error(f"Missing query string: {querystring}")
             raise CloudFrontEdgeException(500, LambdaError.EdgeNoQuery)
 
-        query_params: dict[str, str] = {
+        query_params: dict = {
             query: value[0] for query, value in parse_qs(querystring).items()
         }
-        missing_query_params: list[str] = [
+        missing_query_params: list = [
             param for param in REQUIRED_QUERY_PARAMS if param not in query_params
         ]
         if missing_query_params:
             logger.error(f"Missing required query parameters: {missing_query_params}")
             raise CloudFrontEdgeException(500, LambdaError.EdgeRequiredQuery)
 
-        headers: dict[str, str] = request["headers"]
+        headers: dict = request["headers"]
         missing_headers = [
             header for header in REQUIRED_HEADERS if header.lower() not in headers
         ]

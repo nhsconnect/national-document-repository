@@ -24,8 +24,8 @@ def handle_edge_exceptions(lambda_func: Callable):
             ).create_edge_response()
         except Exception as e:
             logger.error(f"Unhandled exception: {str(e)}")
-            err_code: str = LambdaError.EdgeMalformed.value("err_code")
-            message: str = LambdaError.EdgeMalformed.value("message")
+            err_code: str = LambdaError.EdgeMalformed.value["err_code"]
+            message: str = LambdaError.EdgeMalformed.value["message"]
             return EdgeResponse(
                 status_code=500,
                 body=ErrorResponse(err_code, message, interaction_id).create(),
