@@ -83,7 +83,7 @@ export const pollForPresignedUrl = async ({
             patientId: nhsNumber,
         },
     });
-    if (data.jobStatus !== JOB_STATUS.COMPLETED && !data.presignedUrl.startsWith('https://')) {
+    if (data.jobStatus === JOB_STATUS.COMPLETED && !data.presignedUrl.startsWith('https://')) {
         return Promise.reject({ response: { status: 500 } });
     }
 
