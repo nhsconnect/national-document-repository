@@ -7,22 +7,24 @@ TABLE_NAME = "CloudFrontEdgeReference"
 NHS_DOMAIN = "example.gov.uk"
 S3_DOMAIN = "example.gov.uk"
 
-EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE = LambdaError.EdgeNoClient.value["message"]
-EXPECTED_EDGE_NO_CLIENT_ERROR_CODE = LambdaError.EdgeNoClient.value["err_code"]
+
+EXPECTED_EDGE_NO_QUERY_MESSAGE = LambdaError.EdgeNoQuery.value["message"]
+EXPECTED_EDGE_NO_QUERY_ERROR_CODE = LambdaError.EdgeNoQuery.value["err_code"]
+EXPECTED_EDGE_MALFORMED_QUERY_MESSAGE = LambdaError.EdgeRequiredQuery.value["message"]
+EXPECTED_EDGE_MALFORMED_QUERY_ERROR_CODE = LambdaError.EdgeRequiredQuery.value[
+    "err_code"
+]
+EXPECTED_EDGE_MALFORMED_HEADER_MESSAGE = LambdaError.EdgeRequiredHeaders.value[
+    "message"
+]
+EXPECTED_EDGE_MALFORMED_HEADER_ERROR_CODE = LambdaError.EdgeRequiredHeaders.value[
+    "err_code"
+]
 EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE = LambdaError.EdgeNoOrigin.value["message"]
 EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE = LambdaError.EdgeNoOrigin.value["err_code"]
-EXPECTED_EDGE_MALFORMED_HEADER_ERROR_MESSAGE = LambdaError.EdgeMalformedHeader.value[
-    "message"
-]
-EXPECTED_EDGE_MALFORMED_HEADER_ERROR_CODE = LambdaError.EdgeMalformedHeader.value[
-    "err_code"
-]
-EXPECTED_EDGE_MALFORMED_QUERY_ERROR_MESSAGE = LambdaError.EdgeMalformedQuery.value[
-    "message"
-]
-EXPECTED_EDGE_MALFORMED_QUERY_ERROR_CODE = LambdaError.EdgeMalformedQuery.value[
-    "err_code"
-]
+
+EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE = LambdaError.EdgeNoClient.value["message"]
+EXPECTED_EDGE_NO_CLIENT_ERROR_CODE = LambdaError.EdgeNoClient.value["err_code"]
 EXPECTED_EDGE_MALFORMED_ERROR_MESSAGE = LambdaError.EdgeMalformed.value["message"]
 EXPECTED_EDGE_MALFORMED_ERROR_CODE = LambdaError.EdgeMalformed.value["err_code"]
 

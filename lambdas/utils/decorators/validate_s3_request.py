@@ -53,7 +53,7 @@ def validate_s3_request(lambda_func):
         ]
         if missing_query_params:
             logger.error(f"Missing required query parameters: {missing_query_params}")
-            raise CloudFrontEdgeException(500, LambdaError.EdgeMissingQuery)
+            raise CloudFrontEdgeException(500, LambdaError.EdgeRequiredQuery)
 
         headers: dict[str, str] = request["headers"]
         missing_headers = [
@@ -61,7 +61,7 @@ def validate_s3_request(lambda_func):
         ]
         if missing_headers:
             logger.error(f"Missing required headers: {missing_headers}")
-            raise CloudFrontEdgeException(500, LambdaError.EdgeMissingHeaders)
+            raise CloudFrontEdgeException(500, LambdaError.EdgeRequiredHeaders)
 
         return lambda_func(event, context)
 

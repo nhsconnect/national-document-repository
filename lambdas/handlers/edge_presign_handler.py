@@ -4,8 +4,7 @@ from services.edge_presign_service import EdgePresignService
 from utils.decorators.handle_edge_exceptions import handle_edge_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-
-from lambdas.utils.decorators.validate_s3_request import validate_s3_request
+from utils.decorators.validate_s3_request import validate_s3_request
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
