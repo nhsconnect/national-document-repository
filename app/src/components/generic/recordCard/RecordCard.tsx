@@ -36,7 +36,7 @@ function RecordCard({
             onPageLoad();
             mounted.current = true;
         }
-    }, [refreshRecord]);
+    }, [refreshRecord, resetDocStage]);
 
     const Record = () => {
         return cloudFrontUrl ? <PdfViewer fileUrl={cloudFrontUrl} /> : null;
