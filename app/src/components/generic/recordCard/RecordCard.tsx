@@ -29,6 +29,7 @@ function RecordCard({
 
     useEffect(() => {
         const onPageLoad = async () => {
+            resetDocStage();
             await refreshRecord();
         };
         if (!mounted.current) {

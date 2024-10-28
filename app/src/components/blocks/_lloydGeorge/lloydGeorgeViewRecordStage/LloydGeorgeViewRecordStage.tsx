@@ -123,7 +123,6 @@ function LloydGeorgeViewRecordStage({
                     onClick={(e) => {
                         e.preventDefault();
                         setFullScreen(false);
-                        resetDocState();
                     }}
                 >
                     Exit full screen
