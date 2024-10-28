@@ -5,7 +5,6 @@ from unittest.mock import Mock
 import pytest
 from handlers.edge_presign_handler import lambda_handler
 from tests.unit.enums.test_edge_presign_values import (
-    EXPECTED_DOMAIN,
     EXPECTED_EDGE_MALFORMED_HEADER_ERROR_CODE,
     EXPECTED_EDGE_MALFORMED_HEADER_MESSAGE,
     EXPECTED_EDGE_MALFORMED_QUERY_ERROR_CODE,
@@ -14,6 +13,9 @@ from tests.unit.enums.test_edge_presign_values import (
     EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE,
     EXPECTED_EDGE_NO_QUERY_ERROR_CODE,
     EXPECTED_EDGE_NO_QUERY_MESSAGE,
+    MOCKED_AUTH_QUERY,
+    MOCKED_DOMAIN,
+    TABLE_NAME,
     VALID_EVENT_MODEL,
 )
 
@@ -33,26 +35,24 @@ def valid_event():
 def mock_edge_presign_service(mocker):
     mock_ssm_service = mocker.patch("services.edge_presign_service.SSMService")
     mock_ssm_service_instance = mock_ssm_service.return_value
-    mock_ssm_service_instance.get_ssm_parameter.return_value = "Mocked_Table_Name"
+    mock_ssm_service_instance.get_ssm_parameter.return_value = TABLE_NAME
 
     mock_dynamo_service = mocker.patch("services.edge_presign_service.DynamoDBService")
     mock_dynamo_service_instance = mock_dynamo_service.return_value
     mock_dynamo_service_instance.update_item.return_value = None
 
-    mock_edge_service = mocker.patch("services.edge_presign_service.EdgePresignService")
+    mock_edge_service = mocker.patch("handlers.edge_presign_handler.EdgePresignService")
     mock_edge_service_instance = mock_edge_service.return_value
     mock_edge_service_instance.extract_request_values.return_value = {
         "uri": "/some/path",
-        "querystring": "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
-        "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
-        "&X-Amz-Signature=sig&X-Amz-Security-Token=token",
-        "headers": {"host": [{"key": "Host", "value": "example.gov.uk"}]},
-        "domain_name": "mocked-domain-name",
+        "querystring": MOCKED_AUTH_QUERY,
+        "headers": {"host": [{"key": "Host", "value": MOCKED_DOMAIN}]},
+        "domain_name": MOCKED_DOMAIN,
     }
     mock_edge_service_instance.presign_request.return_value = None
     mock_edge_service_instance.prepare_s3_response.return_value = {
         "headers": {
-            "host": [{"key": "Host", "value": "mocked-domain-name"}],
+            "host": [{"key": "Host", "value": MOCKED_DOMAIN}],
         }
     }
 
@@ -61,19 +61,6 @@ def mock_edge_presign_service(mocker):
 
 def test_lambda_handler_success(valid_event, mock_edge_presign_service):
     context = mock_context()
-
-    valid_event["Records"][0]["cf"]["request"]["headers"][
-        "cloudfront-viewer-country"
-    ] = [{"key": "CloudFront-Viewer-Country", "value": "US"}]
-    valid_event["Records"][0]["cf"]["request"]["headers"]["x-forwarded-for"] = [
-        {"key": "X-Forwarded-For", "value": "1.2.3.4"}
-    ]
-    valid_event["Records"][0]["cf"]["request"]["querystring"] = (
-        "?X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
-        "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
-        "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
-    )
-
     response = lambda_handler(valid_event, context)
 
     mock_edge_presign_service.extract_request_values.assert_called_once()
@@ -85,8 +72,7 @@ def test_lambda_handler_success(valid_event, mock_edge_presign_service):
         mock_edge_presign_service.extract_request_values.return_value,
     )
 
-    assert response["headers"]["host"][0]["value"] == EXPECTED_DOMAIN
-    assert "authorization" not in response["headers"]
+    assert response["headers"]["host"][0]["value"] == MOCKED_DOMAIN
 
 
 def test_lambda_handler_no_query_params(valid_event, mock_edge_presign_service):
@@ -108,7 +94,7 @@ def test_lambda_handler_missing_query_params(valid_event, mock_edge_presign_serv
     context = mock_context()
     event = copy.deepcopy(valid_event)
     event["Records"][0]["cf"]["request"]["querystring"] = (
-        "?X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+        "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
         "&X-Amz-Expires=3600"
     )
 
@@ -126,11 +112,6 @@ def test_lambda_handler_missing_headers(valid_event, mock_edge_presign_service):
     context = mock_context()
     event = copy.deepcopy(valid_event)
     event["Records"][0]["cf"]["request"]["headers"] = {}
-    event["Records"][0]["cf"]["request"]["querystring"] = (
-        "?X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
-        "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
-        "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
-    )
 
     response = lambda_handler(event, context)
 

@@ -44,7 +44,6 @@ def validate_s3_request(lambda_func):
         if not querystring:
             logger.error(f"Missing query string: {querystring}")
             raise CloudFrontEdgeException(500, LambdaError.EdgeNoQuery)
-
         query_params: dict = {
             query: value[0] for query, value in parse_qs(querystring).items()
         }

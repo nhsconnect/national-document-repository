@@ -89,3 +89,9 @@ class EdgePresignService:
         if match:
             return match.group(0)
         return ""
+
+    @staticmethod
+    def extend_table_name(base_table_name, environment) -> str:
+        if environment:
+            return f"{environment}_{base_table_name}"
+        return base_table_name
