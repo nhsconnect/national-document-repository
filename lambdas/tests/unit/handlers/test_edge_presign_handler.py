@@ -127,11 +127,6 @@ def test_lambda_handler_missing_origin(valid_event, mock_edge_presign_service):
     context = mock_context()
     event = copy.deepcopy(valid_event)
     event["Records"][0]["cf"]["request"]["origin"] = {}
-    event["Records"][0]["cf"]["request"]["querystring"] = (
-        "?X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
-        "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
-        "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
-    )
 
     response = lambda_handler(event, context)
 
