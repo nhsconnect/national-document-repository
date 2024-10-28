@@ -158,16 +158,19 @@ class BulkUploadReportService:
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )
 
-        self.write_additional_report_items_to_csv(
-            file_name=file_name, headers=headers, rows_to_write=data_rows
-        )
+        if data_rows:
+            self.write_additional_report_items_to_csv(
+                file_name=file_name, headers=headers, rows_to_write=data_rows
+            )
 
-        logger.info("Uploading daily success report file to S3")
-        self.s3_service.upload_file(
-            s3_bucket_name=self.reports_bucket,
-            file_key=f"{self.s3_key_prefix}/{file_name}",
-            file_name=f"/tmp/{file_name}",
-        )
+            logger.info("Uploading daily success report file to S3")
+            self.s3_service.upload_file(
+                s3_bucket_name=self.reports_bucket,
+                file_key=f"{self.s3_key_prefix}/{file_name}",
+                file_name=f"/tmp/{file_name}",
+            )
+        else:
+            logger.info("No data to report for daily success report file")
 
     def generate_suspended_report(self, ods_reports: list[OdsReport]):
         file_name = (
@@ -186,16 +189,19 @@ class BulkUploadReportService:
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )
 
-        self.write_additional_report_items_to_csv(
-            file_name=file_name, headers=headers, rows_to_write=data_rows
-        )
+        if data_rows:
+            self.write_additional_report_items_to_csv(
+                file_name=file_name, headers=headers, rows_to_write=data_rows
+            )
 
-        logger.info("Uploading daily suspended report file to S3")
-        self.s3_service.upload_file(
-            s3_bucket_name=self.reports_bucket,
-            file_key=f"{self.s3_key_prefix}/{file_name}",
-            file_name=f"/tmp/{file_name}",
-        )
+            logger.info("Uploading daily suspended report file to S3")
+            self.s3_service.upload_file(
+                s3_bucket_name=self.reports_bucket,
+                file_key=f"{self.s3_key_prefix}/{file_name}",
+                file_name=f"/tmp/{file_name}",
+            )
+        else:
+            logger.info("No data to report for daily suspended report file")
 
     def generate_deceased_report(self, ods_reports: list[OdsReport]):
         file_name = (
@@ -220,16 +226,19 @@ class BulkUploadReportService:
                     ]
                 )
 
-        self.write_additional_report_items_to_csv(
-            file_name=file_name, headers=headers, rows_to_write=data_rows
-        )
+        if data_rows:
+            self.write_additional_report_items_to_csv(
+                file_name=file_name, headers=headers, rows_to_write=data_rows
+            )
 
-        logger.info("Uploading daily deceased report file to S3")
-        self.s3_service.upload_file(
-            s3_bucket_name=self.reports_bucket,
-            file_key=f"{self.s3_key_prefix}/{file_name}",
-            file_name=f"/tmp/{file_name}",
-        )
+            logger.info("Uploading daily deceased report file to S3")
+            self.s3_service.upload_file(
+                s3_bucket_name=self.reports_bucket,
+                file_key=f"{self.s3_key_prefix}/{file_name}",
+                file_name=f"/tmp/{file_name}",
+            )
+        else:
+            logger.info("No data to report for daily deceased report file")
 
     def generate_restricted_report(self, ods_reports: list[OdsReport]):
         file_name = (
@@ -248,16 +257,19 @@ class BulkUploadReportService:
                     [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
                 )
 
-        self.write_additional_report_items_to_csv(
-            file_name=file_name, headers=headers, rows_to_write=data_rows
-        )
+        if data_rows:
+            self.write_additional_report_items_to_csv(
+                file_name=file_name, headers=headers, rows_to_write=data_rows
+            )
 
-        logger.info("Uploading daily restricted report file to S3")
-        self.s3_service.upload_file(
-            s3_bucket_name=self.reports_bucket,
-            file_key=f"{self.s3_key_prefix}/{file_name}",
-            file_name=f"/tmp/{file_name}",
-        )
+            logger.info("Uploading daily restricted report file to S3")
+            self.s3_service.upload_file(
+                s3_bucket_name=self.reports_bucket,
+                file_key=f"{self.s3_key_prefix}/{file_name}",
+                file_name=f"/tmp/{file_name}",
+            )
+        else:
+            logger.info("No data to report for daily deceased report file")
 
     def generate_rejected_report(self, ods_reports: list[OdsReport]):
         file_name = (
@@ -283,16 +295,19 @@ class BulkUploadReportService:
                     ]
                 )
 
-        self.write_additional_report_items_to_csv(
-            file_name=file_name, headers=headers, rows_to_write=data_rows
-        )
+        if data_rows:
+            self.write_additional_report_items_to_csv(
+                file_name=file_name, headers=headers, rows_to_write=data_rows
+            )
 
-        logger.info("Uploading daily rejected report file to S3")
-        self.s3_service.upload_file(
-            s3_bucket_name=self.reports_bucket,
-            file_key=f"{self.s3_key_prefix}/{file_name}",
-            file_name=f"/tmp/{file_name}",
-        )
+            logger.info("Uploading daily rejected report file to S3")
+            self.s3_service.upload_file(
+                s3_bucket_name=self.reports_bucket,
+                file_key=f"{self.s3_key_prefix}/{file_name}",
+                file_name=f"/tmp/{file_name}",
+            )
+        else:
+            logger.info("No data to report for daily rejected report file")
 
     @staticmethod
     def write_items_to_csv(items: list[BulkUploadReport], csv_file_path: str):

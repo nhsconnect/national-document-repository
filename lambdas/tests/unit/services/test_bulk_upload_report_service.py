@@ -459,6 +459,24 @@ def test_generate_success_report_writes_csv(
     )
 
 
+def test_generate_success_report_does_not_write_when_no_data(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    # just used to assert this isn't created
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv"
+    )
+
+    blank_ods_reports = bulk_upload_report_service.generate_ods_reports([])
+
+    bulk_upload_report_service.generate_success_report(blank_ods_reports)
+
+    with pytest.raises(FileNotFoundError):
+        open(f"/tmp/{mock_file_name}")
+
+    bulk_upload_report_service.s3_service.upload_file.assert_not_called()
+
+
 def test_generate_suspended_report_writes_csv(
     bulk_upload_report_service, mock_get_times_for_scan
 ):
@@ -483,6 +501,24 @@ def test_generate_suspended_report_writes_csv(
         file_key=f"bulk-upload-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
+
+
+def test_generate_suspended_report_does_not_write_when_no_data(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    # just used to assert this isn't created
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_suspended_{MOCK_TIMESTAMP}.csv"
+    )
+
+    blank_ods_reports = bulk_upload_report_service.generate_ods_reports([])
+
+    bulk_upload_report_service.generate_suspended_report(blank_ods_reports)
+
+    with pytest.raises(FileNotFoundError):
+        open(f"/tmp/{mock_file_name}")
+
+    bulk_upload_report_service.s3_service.upload_file.assert_not_called()
 
 
 def test_generate_deceased_report_writes_csv(
@@ -511,6 +547,24 @@ def test_generate_deceased_report_writes_csv(
     )
 
 
+def test_generate_deceased_report_does_not_write_when_no_data(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    # just used to assert this isn't created
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_deceased_{MOCK_TIMESTAMP}.csv"
+    )
+
+    blank_ods_reports = bulk_upload_report_service.generate_ods_reports([])
+
+    bulk_upload_report_service.generate_deceased_report(blank_ods_reports)
+
+    with pytest.raises(FileNotFoundError):
+        open(f"/tmp/{mock_file_name}")
+
+    bulk_upload_report_service.s3_service.upload_file.assert_not_called()
+
+
 def test_generate_restricted_report_writes_csv(
     bulk_upload_report_service, mock_get_times_for_scan
 ):
@@ -537,6 +591,24 @@ def test_generate_restricted_report_writes_csv(
     )
 
 
+def test_generate_restricted_report_does_not_write_when_no_data(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    # just used to assert this isn't created
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_restricted_{MOCK_TIMESTAMP}.csv"
+    )
+
+    blank_ods_reports = bulk_upload_report_service.generate_ods_reports([])
+
+    bulk_upload_report_service.generate_restricted_report(blank_ods_reports)
+
+    with pytest.raises(FileNotFoundError):
+        open(f"/tmp/{mock_file_name}")
+
+    bulk_upload_report_service.s3_service.upload_file.assert_not_called()
+
+
 def test_generate_rejected_report_writes_csv(
     bulk_upload_report_service, mock_get_times_for_scan
 ):
@@ -561,3 +633,21 @@ def test_generate_rejected_report_writes_csv(
         file_key=f"bulk-upload-reports/2012-01-13/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
+
+
+def test_generate_rejected_report_does_not_write_when_no_data(
+    bulk_upload_report_service, mock_get_times_for_scan
+):
+    # just used to assert this isn't created
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv"
+    )
+
+    blank_ods_reports = bulk_upload_report_service.generate_ods_reports([])
+
+    bulk_upload_report_service.generate_rejected_report(blank_ods_reports)
+
+    with pytest.raises(FileNotFoundError):
+        open(f"/tmp/{mock_file_name}")
+
+    bulk_upload_report_service.s3_service.upload_file.assert_not_called()
