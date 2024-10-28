@@ -41,6 +41,7 @@ export type Props = {
     refreshRecord: () => void;
     cloudFrontUrl: string;
     showMenu: boolean;
+    resetDocState: () => void;
 };
 
 function LloydGeorgeViewRecordStage({
@@ -52,6 +53,7 @@ function LloydGeorgeViewRecordStage({
     refreshRecord,
     cloudFrontUrl,
     showMenu,
+    resetDocState,
 }: Props) {
     const navigate = useNavigate();
     const [fullScreen, setFullScreen] = useState(false);
@@ -121,6 +123,7 @@ function LloydGeorgeViewRecordStage({
                     onClick={(e) => {
                         e.preventDefault();
                         setFullScreen(false);
+                        resetDocState();
                     }}
                 >
                     Exit full screen
@@ -228,6 +231,7 @@ function LloydGeorgeViewRecordStage({
                             isFullScreen={fullScreen}
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}
+                            resetDocStage={resetDocState}
                         />
                     </div>
                 </div>
@@ -240,6 +244,7 @@ function LloydGeorgeViewRecordStage({
                         isFullScreen={fullScreen}
                         refreshRecord={refreshRecord}
                         cloudFrontUrl={cloudFrontUrl}
+                        resetDocStage={resetDocState}
                     />
                 </div>
             )}

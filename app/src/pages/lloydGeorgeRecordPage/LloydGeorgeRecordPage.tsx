@@ -125,6 +125,7 @@ function LloydGeorgeRecordPage() {
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}
                             showMenu={showMenu}
+                            resetDocState={resetDocState}
                         />
                     }
                 />

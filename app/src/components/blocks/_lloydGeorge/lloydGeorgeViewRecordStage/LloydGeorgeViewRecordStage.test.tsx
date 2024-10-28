@@ -450,6 +450,7 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
         refreshRecord: jest.fn(),
         cloudFrontUrl: 'http://test.com',
         showMenu: true,
+        resetDocState: jest.fn(),
         ...propsOverride,
     };
     render(<TestApp {...props} />);

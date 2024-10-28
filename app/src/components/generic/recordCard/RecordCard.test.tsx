@@ -43,6 +43,7 @@ describe('RecordCard Component', () => {
         isFullScreen: false,
         refreshRecord: jest.fn(),
         cloudFrontUrl: 'https://test.com',
+        resetDocStage: jest.fn(),
     };
 
     beforeEach(() => {

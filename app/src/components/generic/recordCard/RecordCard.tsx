@@ -11,6 +11,7 @@ export type Props = {
     isFullScreen: boolean;
     refreshRecord: () => void;
     cloudFrontUrl: string;
+    resetDocStage: () => void;
 };
 
 function RecordCard({
@@ -20,6 +21,7 @@ function RecordCard({
     isFullScreen,
     cloudFrontUrl,
     refreshRecord,
+    resetDocStage,
 }: Props) {
     const role = useRole();
     const userIsGpClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
@@ -63,6 +65,7 @@ function RecordCard({
                                 data-testid="full-screen-btn"
                                 onClick={() => {
                                     fullScreenHandler(true);
+                                    resetDocStage();
                                 }}
                             >
                                 View in full screen
