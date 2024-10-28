@@ -68,12 +68,12 @@
 
 
 # def test_extract_environment_from_valid_domain():
-#     result = EdgePresignService.extract_environment_from_domain(VALID_DOMAIN)
+#     result = EdgePresignService.filter_domain_for_env(VALID_DOMAIN)
 #     assert result == EXPECTED_ENVIRONMENT
 
 
 # def test_extract_environment_from_invalid_domain():
-#     result = EdgePresignService.extract_environment_from_domain(INVALID_DOMAIN)
+#     result = EdgePresignService.filter_domain_for_env(INVALID_DOMAIN)
 #     assert result == ""
 
 

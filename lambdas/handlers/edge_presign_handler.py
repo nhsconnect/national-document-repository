@@ -19,10 +19,10 @@ def lambda_handler(event, context):
     logger.info("Edge received S3 request")
 
     edge_presign_service = EdgePresignService()
-    request_values: dict = edge_presign_service.extract_request_values(request)
-    edge_presign_service.presign_request(request_values)
+    request_values: dict = edge_presign_service.filter_request_values(request)
+    edge_presign_service.use_presign(request_values)
 
-    request: dict = edge_presign_service.prepare_s3_response(request, request_values)
+    request: dict = edge_presign_service.create_s3_response(request, request_values)
 
-    logger.info("Edge returning S3 response")
+    logger.info("Edge forwarding S3 request")
     return request

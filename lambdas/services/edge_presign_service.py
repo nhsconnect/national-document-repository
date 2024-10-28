@@ -19,9 +19,23 @@ class EdgePresignService:
         self.ssm_service = SSMService()
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
+    def use_presign(self, request_values):
+        uri = request_values["uri"]
+        querystring = request_values["querystring"]
+        domain_name = request_values["domain_name"]
+
+        presign_string = f"{uri}?{querystring}"
+        encoded_presign_string = presign_string.encode("utf-8")
+        presign_credentials_hash = hashlib.md5(encoded_presign_string).hexdigest()
+
+        self.attempt_url_update(
+            uri_hash=presign_credentials_hash,
+            domain_name=domain_name,
+        )
+
     def attempt_url_update(self, uri_hash, domain_name) -> None:
         try:
-            environment = self.extract_environment_from_domain(domain_name)
+            environment = self.filter_domain_for_env(domain_name)
             logger.info(f"Environment found: {environment}")
             base_table_name: str = self.ssm_service.get_ssm_parameter(
                 self.table_name_ssm_param
@@ -41,22 +55,8 @@ class EdgePresignService:
             logger.error(f"{str(e)}", {"Result": LambdaError.EdgeNoClient.to_str()})
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
-    def presign_request(self, request_values):
-        uri = request_values["uri"]
-        querystring = request_values["querystring"]
-        domain_name = request_values["domain_name"]
-
-        presign_string = f"{uri}?{querystring}"
-        encoded_presign_string = presign_string.encode("utf-8")
-        presign_credentials_hash = hashlib.md5(encoded_presign_string).hexdigest()
-
-        self.attempt_url_update(
-            uri_hash=presign_credentials_hash,
-            domain_name=domain_name,
-        )
-
     @staticmethod
-    def prepare_s3_response(request, request_values):
+    def create_s3_response(request, request_values):
         domain_name = request_values["domain_name"]
         if "authorization" in request["headers"]:
             del request["headers"]["authorization"]
@@ -65,7 +65,7 @@ class EdgePresignService:
         return request
 
     @staticmethod
-    def extract_request_values(request) -> dict:
+    def filter_request_values(request) -> dict:
         try:
             uri = request["uri"]
             querystring = request["querystring"]
@@ -84,7 +84,7 @@ class EdgePresignService:
         }
 
     @staticmethod
-    def extract_environment_from_domain(domain_name: str) -> str:
+    def filter_domain_for_env(domain_name: str) -> str:
         match = re.match(r"^[^-]+(?:-[^-]+)?(?=-lloyd)", domain_name)
         if match:
             return match.group(0)

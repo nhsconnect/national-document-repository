@@ -43,14 +43,14 @@ def mock_edge_presign_service(mocker):
 
     mock_edge_service = mocker.patch("handlers.edge_presign_handler.EdgePresignService")
     mock_edge_service_instance = mock_edge_service.return_value
-    mock_edge_service_instance.extract_request_values.return_value = {
+    mock_edge_service_instance.filter_request_values.return_value = {
         "uri": "/some/path",
         "querystring": MOCKED_AUTH_QUERY,
         "headers": {"host": [{"key": "Host", "value": MOCKED_DOMAIN}]},
         "domain_name": MOCKED_DOMAIN,
     }
-    mock_edge_service_instance.presign_request.return_value = None
-    mock_edge_service_instance.prepare_s3_response.return_value = {
+    mock_edge_service_instance.use_presign.return_value = None
+    mock_edge_service_instance.create_s3_response.return_value = {
         "headers": {
             "host": [{"key": "Host", "value": MOCKED_DOMAIN}],
         }
@@ -63,13 +63,13 @@ def test_lambda_handler_success(valid_event, mock_edge_presign_service):
     context = mock_context()
     response = lambda_handler(valid_event, context)
 
-    mock_edge_presign_service.extract_request_values.assert_called_once()
-    mock_edge_presign_service.presign_request.assert_called_once_with(
-        mock_edge_presign_service.extract_request_values.return_value
+    mock_edge_presign_service.filter_request_values.assert_called_once()
+    mock_edge_presign_service.use_presign.assert_called_once_with(
+        mock_edge_presign_service.filter_request_values.return_value
     )
-    mock_edge_presign_service.prepare_s3_response.assert_called_once_with(
+    mock_edge_presign_service.create_s3_response.assert_called_once_with(
         valid_event["Records"][0]["cf"]["request"],
-        mock_edge_presign_service.extract_request_values.return_value,
+        mock_edge_presign_service.filter_request_values.return_value,
     )
 
     assert response["headers"]["host"][0]["value"] == MOCKED_DOMAIN
