@@ -1,4 +1,5 @@
 import hashlib
+import re
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -81,3 +82,10 @@ class EdgePresignService:
             "headers": headers,
             "domain_name": domain_name,
         }
+
+    @staticmethod
+    def extract_environment_from_domain(domain_name: str) -> str:
+        match = re.match(r"^[^-]+(?:-[^-]+)?(?=-lloyd)", domain_name)
+        if match:
+            return match.group(0)
+        return ""

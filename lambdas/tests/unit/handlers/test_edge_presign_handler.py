@@ -31,34 +31,37 @@ def valid_event():
 
 @pytest.fixture
 def mock_edge_presign_service(mocker):
-    # Mock the EdgePresignService class
-    mock_edge_presign_service = mocker.patch(
-        "services.edge_presign_service.EdgePresignService"
-    )
-    mock_service_instance = mock_edge_presign_service.return_value
+    mock_ssm_service = mocker.patch("services.edge_presign_service.SSMService")
+    mock_ssm_service_instance = mock_ssm_service.return_value
+    mock_ssm_service_instance.get_ssm_parameter.return_value = "Mocked_Table_Name"
 
-    # Mock the methods in the EdgePresignService class
-    mock_service_instance.extract_request_values.return_value = {
+    mock_dynamo_service = mocker.patch("services.edge_presign_service.DynamoDBService")
+    mock_dynamo_service_instance = mock_dynamo_service.return_value
+    mock_dynamo_service_instance.update_item.return_value = None
+
+    mock_edge_service = mocker.patch("services.edge_presign_service.EdgePresignService")
+    mock_edge_service_instance = mock_edge_service.return_value
+    mock_edge_service_instance.extract_request_values.return_value = {
         "uri": "/some/path",
         "querystring": "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
         "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
         "&X-Amz-Signature=sig&X-Amz-Security-Token=token",
         "headers": {"host": [{"key": "Host", "value": "example.gov.uk"}]},
-        "domain_name": EXPECTED_DOMAIN,
+        "domain_name": "mocked-domain-name",
     }
-    mock_service_instance.presign_request.return_value = None
-    mock_service_instance.prepare_s3_response.return_value = {
+    mock_edge_service_instance.presign_request.return_value = None
+    mock_edge_service_instance.prepare_s3_response.return_value = {
         "headers": {
-            "host": [{"key": "Host", "value": EXPECTED_DOMAIN}],
+            "host": [{"key": "Host", "value": "mocked-domain-name"}],
         }
     }
-    return mock_service_instance
+
+    return mock_edge_service_instance
 
 
 def test_lambda_handler_success(valid_event, mock_edge_presign_service):
     context = mock_context()
 
-    # Update event to include required headers and querystring
     valid_event["Records"][0]["cf"]["request"]["headers"][
         "cloudfront-viewer-country"
     ] = [{"key": "CloudFront-Viewer-Country", "value": "US"}]
@@ -71,10 +74,8 @@ def test_lambda_handler_success(valid_event, mock_edge_presign_service):
         "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
     )
 
-    # Call the Lambda handler
     response = lambda_handler(valid_event, context)
 
-    # Verify that the mock methods were called as expected
     mock_edge_presign_service.extract_request_values.assert_called_once()
     mock_edge_presign_service.presign_request.assert_called_once_with(
         mock_edge_presign_service.extract_request_values.return_value
@@ -84,7 +85,6 @@ def test_lambda_handler_success(valid_event, mock_edge_presign_service):
         mock_edge_presign_service.extract_request_values.return_value,
     )
 
-    # Validate the response content
     assert response["headers"]["host"][0]["value"] == EXPECTED_DOMAIN
     assert "authorization" not in response["headers"]
 
