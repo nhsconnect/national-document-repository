@@ -29,8 +29,8 @@ def test_respond_with_400_when_patient_id_missing(missing_id_event, context):
     actual_lambda_logic.assert_not_called()
 
 
-def test_respond_with_400_when_patient_id_invalid(invalid_id_event, context):
-    nhs_number = invalid_id_event["queryStringParameters"]["patientId"]
+def test_respond_with_400_when_patient_id_invalid(invalid_nhs_number_event, context):
+    nhs_number = invalid_nhs_number_event["queryStringParameters"]["patientId"]
     body = json.dumps(
         {
             "message": f"Invalid patient number {nhs_number}",
@@ -40,7 +40,7 @@ def test_respond_with_400_when_patient_id_invalid(invalid_id_event, context):
     )
     expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
-    actual = lambda_handler(invalid_id_event, context)
+    actual = lambda_handler(invalid_nhs_number_event, context)
 
     assert actual == expected
     actual_lambda_logic.assert_not_called()
