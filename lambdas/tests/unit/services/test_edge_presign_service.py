@@ -116,10 +116,17 @@ def test_filter_domain_for_env(edge_presign_service):
         edge_presign_service.filter_domain_for_env("ndra-lloyd-test-test.com") == "ndra"
     )
     assert (
+        edge_presign_service.filter_domain_for_env("ndr-test-lloyd-test-test.com")
+        == "ndr-test"
+    )
+    assert (
         edge_presign_service.filter_domain_for_env("pre-prod-lloyd-test-test.com")
         == "pre-prod"
     )
     # Production
+    assert (
+        edge_presign_service.filter_domain_for_env("prod-lloyd-test-test.com") == "prod"
+    )
     assert edge_presign_service.filter_domain_for_env("lloyd-test-test.com") == ""
     assert edge_presign_service.filter_domain_for_env("invalid.com") == ""
 
@@ -133,4 +140,8 @@ def test_extend_table_name(edge_presign_service):
     # Production
     assert (
         edge_presign_service.extend_table_name(MOCK_TABLE_NAME, "") == MOCK_TABLE_NAME
+    )
+    assert (
+        edge_presign_service.extend_table_name(MOCK_TABLE_NAME, "prod")
+        == f"prod_{MOCK_TABLE_NAME}"
     )

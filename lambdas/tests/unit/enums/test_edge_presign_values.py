@@ -1,7 +1,5 @@
 from enums.lambda_error import LambdaError
-
-MOCKED_ENV = "test"
-MOCKED_DOMAIN = f"{MOCKED_ENV}-lloyd-test-test.com"
+from tests.unit.conftest import MOCKED_LG_BUCKET_URL
 
 MOCKED_AUTH_QUERY = (
     "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
@@ -15,7 +13,7 @@ MOCKED_PARTIAL_QUERY = (
 MOCKED_HEADERS = {
     "cloudfront-viewer-country": [{"key": "CloudFront-Viewer-Country", "value": "US"}],
     "x-forwarded-for": [{"key": "X-Forwarded-For", "value": "1.2.3.4"}],
-    "host": [{"key": "Host", "value": MOCKED_DOMAIN}],
+    "host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}],
 }
 
 EXPECTED_EDGE_NO_QUERY_MESSAGE = LambdaError.EdgeNoQuery.value["message"]
@@ -51,7 +49,7 @@ MOCK_S3_EDGE_EVENT = {
                         "s3": {
                             "authMethod": "none",
                             "customHeaders": {},
-                            "domainName": MOCKED_DOMAIN,
+                            "domainName": MOCKED_LG_BUCKET_URL,
                             "path": "",
                         }
                     },
