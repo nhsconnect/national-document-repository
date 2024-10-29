@@ -77,7 +77,7 @@ class OdsReport(ReportBase):
         if item.pds_ods_code == PatientOdsInactiveStatus.SUSPENDED:
             self.total_suspended.add((item.nhs_number, item.date))
         elif item.pds_ods_code == PatientOdsInactiveStatus.DECEASED:
-            self.total_deceased.add((item.nhs_number, item.date, item.failure_reason))
+            self.total_deceased.add((item.nhs_number, item.date, item.reason))
         elif item.pds_ods_code == PatientOdsInactiveStatus.RESTRICTED:
             self.total_restricted.add((item.nhs_number, item.date))
         elif (
@@ -95,7 +95,7 @@ class OdsReport(ReportBase):
             < item.timestamp
         )
 
-        if (item.failure_reason and is_new_failure) or is_timestamp_newer:
+        if (item.reason and is_new_failure) or is_timestamp_newer:
             self.failures_per_patient.update(
                 {
                     item.nhs_number: item.model_dump(
@@ -103,7 +103,7 @@ class OdsReport(ReportBase):
                             underscore(str(MetadataReport.Date)),
                             underscore(str(MetadataReport.Timestamp)),
                             underscore(str(MetadataReport.UploaderOdsCode)),
-                            underscore(str(MetadataReport.FailureReason)),
+                            underscore(str(MetadataReport.Reason)),
                         },
                         by_alias=True,
                     )
@@ -120,13 +120,13 @@ class OdsReport(ReportBase):
             self.failures_per_patient.pop(patient)
 
         for patient_data in self.failures_per_patient.values():
-            reason = patient_data.get(MetadataReport.FailureReason)
+            reason = patient_data.get(MetadataReport.Reason)
             self.unique_failures[reason] = self.unique_failures.get(reason, 0) + 1
 
     def get_unsuccessful_reasons_data_rows(self):
         return [
-            [MetadataReport.FailureReason, failure_reason, count]
-            for failure_reason, count in self.unique_failures.items()
+            [MetadataReport.Reason, reason, count]
+            for reason, count in self.unique_failures.items()
         ]
 
 
@@ -153,7 +153,7 @@ class SummaryReport(ReportBase):
             for reason, count in report.unique_failures.items():
                 self.reason_summary.append(
                     [
-                        f"{MetadataReport.FailureReason} for {report.uploader_ods_code}",
+                        f"{MetadataReport.Reason} for {report.uploader_ods_code}",
                         reason,
                         count,
                     ]
