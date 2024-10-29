@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 from handlers.edge_presign_handler import lambda_handler
-from tests.unit.conftest import MOCK_PRESIGN_TABLE_NAME, MOCKED_LG_BUCKET_URL
+from tests.unit.conftest import MOCK_TABLE_NAME, MOCKED_LG_BUCKET_URL
 from tests.unit.enums.test_edge_presign_values import (
     EXPECTED_EDGE_MALFORMED_HEADER_ERROR_CODE,
     EXPECTED_EDGE_MALFORMED_HEADER_MESSAGE,
@@ -35,7 +35,7 @@ def valid_event():
 def mock_edge_presign_service(mocker):
     mock_ssm_service = mocker.patch("services.edge_presign_service.SSMService")
     mock_ssm_service_instance = mock_ssm_service.return_value
-    mock_ssm_service_instance.get_ssm_parameter.return_value = MOCK_PRESIGN_TABLE_NAME
+    mock_ssm_service_instance.get_ssm_parameter.return_value = MOCK_TABLE_NAME
 
     mock_dynamo_service = mocker.patch("services.edge_presign_service.DynamoDBService")
     mock_dynamo_service_instance = mock_dynamo_service.return_value

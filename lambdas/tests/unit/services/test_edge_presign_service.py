@@ -5,7 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 from services.edge_presign_service import EdgePresignService
 from tests.unit.conftest import (
-    MOCK_PRESIGN_TABLE_NAME,
+    MOCK_TABLE_NAME,
     MOCKED_LG_BUCKET_ENV,
     MOCKED_LG_BUCKET_URL,
 )
@@ -23,9 +23,7 @@ from utils.lambda_exceptions import CloudFrontEdgeException
 @patch("services.edge_presign_service.SSMService")
 @patch("services.edge_presign_service.DynamoDBService")
 def edge_presign_service(mock_dynamo_service, mock_ssm_service):
-    mock_ssm_service.return_value.get_ssm_parameter.return_value = (
-        MOCK_PRESIGN_TABLE_NAME
-    )
+    mock_ssm_service.return_value.get_ssm_parameter.return_value = MOCK_TABLE_NAME
     mock_dynamo_service.return_value.update_item.return_value = None
     return EdgePresignService()
 
@@ -129,13 +127,10 @@ def test_filter_domain_for_env(edge_presign_service):
 def test_extend_table_name(edge_presign_service):
     # Environments
     assert (
-        edge_presign_service.extend_table_name(
-            MOCK_PRESIGN_TABLE_NAME, MOCKED_LG_BUCKET_ENV
-        )
-        == f"{MOCKED_LG_BUCKET_ENV}_{MOCK_PRESIGN_TABLE_NAME}"
+        edge_presign_service.extend_table_name(MOCK_TABLE_NAME, MOCKED_LG_BUCKET_ENV)
+        == f"{MOCKED_LG_BUCKET_ENV}_{MOCK_TABLE_NAME}"
     )
     # Production
     assert (
-        edge_presign_service.extend_table_name(MOCK_PRESIGN_TABLE_NAME, "")
-        == MOCK_PRESIGN_TABLE_NAME
+        edge_presign_service.extend_table_name(MOCK_TABLE_NAME, "") == MOCK_TABLE_NAME
     )

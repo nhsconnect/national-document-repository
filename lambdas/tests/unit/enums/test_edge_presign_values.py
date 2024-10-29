@@ -39,7 +39,7 @@ EXPECTED_EDGE_MALFORMED_ERROR_MESSAGE = LambdaError.EdgeMalformed.value["message
 EXPECTED_EDGE_MALFORMED_ERROR_CODE = LambdaError.EdgeMalformed.value["err_code"]
 
 
-VALID_EVENT_MODEL = {
+MOCK_S3_EDGE_EVENT = {
     "Records": [
         {
             "cf": {

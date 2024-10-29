@@ -14,9 +14,9 @@ from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 REGION_NAME = "eu-west-2"
 
-MOCK_CLOUDFRONT_URL = "test-cloudfront-url.com"
 MOCK_TABLE_NAME = "test-table"
 MOCK_BUCKET = "test-s3-bucket"
+MOCK_CLOUDFRONT_URL = "test-cloudfront-url.com"
 MOCKED_LG_BUCKET_ENV = "test"
 MOCKED_LG_BUCKET_URL = f"{MOCKED_LG_BUCKET_ENV}-lloyd-test-test.com"
 MOCK_ARF_TABLE_NAME_ENV_NAME = "DOCUMENT_STORE_DYNAMODB_NAME"
@@ -54,7 +54,6 @@ MOCK_APPCONFIG_CONFIGURATION_ENV_NAME = "APPCONFIG_CONFIGURATION"
 MOCK_STATISTICS_TABLE_NAME = "STATISTICS_TABLE"
 MOCK_STATISTICAL_REPORTS_BUCKET_ENV_NAME = "STATISTICAL_REPORTS_BUCKET"
 
-MOCK_PRESIGN_TABLE_NAME = "test_presign_table"
 MOCK_ARF_TABLE_NAME = "test_arf_dynamoDB_table"
 MOCK_LG_TABLE_NAME = "test_lg_dynamoDB_table"
 MOCK_BULK_REPORT_TABLE_NAME = "test_report_dynamoDB_table"
