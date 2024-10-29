@@ -89,6 +89,7 @@ class BulkUploadReportService:
             total_successful=ods_report.get_total_successful_count(),
             total_registered_elsewhere=ods_report.get_total_registered_elsewhere_count(),
             total_suspended=ods_report.get_total_suspended_count(),
+            total_deceased=ods_report.get_total_deceased_count(),
             extra_rows=ods_report.get_unsuccessful_reasons_data_rows(),
         )
 
