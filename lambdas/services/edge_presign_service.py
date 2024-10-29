@@ -19,21 +19,21 @@ class EdgePresignService:
         self.ssm_service = SSMService()
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
-    def use_presign(self, request_values):
-        uri = request_values["uri"]
-        querystring = request_values["querystring"]
-        domain_name = request_values["domain_name"]
+    def use_presign(self, request_values: dict):
+        uri: str = request_values["uri"]
+        querystring: str = request_values["querystring"]
+        domain_name: str = request_values["domain_name"]
 
-        presign_string = f"{uri}?{querystring}"
-        encoded_presign_string = presign_string.encode("utf-8")
-        presign_credentials_hash = hashlib.md5(encoded_presign_string).hexdigest()
+        presign_string: str = f"{uri}?{querystring}"
+        encoded_presign_string: str = presign_string.encode("utf-8")
+        presign_credentials_hash: str = hashlib.md5(encoded_presign_string).hexdigest()
 
         self.attempt_presign_ingestion(
             uri_hash=presign_credentials_hash,
             domain_name=domain_name,
         )
 
-    def attempt_presign_ingestion(self, uri_hash, domain_name) -> None:
+    def attempt_presign_ingestion(self, uri_hash: str, domain_name: str) -> None:
         try:
             environment = self.filter_domain_for_env(domain_name)
             logger.info(f"Environment found: {environment}")
@@ -56,7 +56,7 @@ class EdgePresignService:
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
     @staticmethod
-    def update_s3_headers(request, request_values):
+    def update_s3_headers(request: dict, request_values: dict):
         domain_name = request_values["domain_name"]
         if "authorization" in request["headers"]:
             del request["headers"]["authorization"]
@@ -65,13 +65,13 @@ class EdgePresignService:
         return request
 
     @staticmethod
-    def filter_request_values(request) -> dict:
+    def filter_request_values(request: dict) -> dict:
         try:
-            uri = request["uri"]
-            querystring = request["querystring"]
-            headers = request["headers"]
-            origin = request.get("origin", {})
-            domain_name = origin["s3"]["domainName"]
+            uri: str = request["uri"]
+            querystring: str = request["querystring"]
+            headers: dict = request["headers"]
+            origin: str = request.get("origin", {})
+            domain_name: str = origin["s3"]["domainName"]
         except KeyError as e:
             logger.error(f"Missing request component: {str(e)}")
             raise CloudFrontEdgeException(500, LambdaError.EdgeNoOrigin)
@@ -91,7 +91,7 @@ class EdgePresignService:
         return ""
 
     @staticmethod
-    def extend_table_name(base_table_name, environment) -> str:
+    def extend_table_name(base_table_name: str, environment: str) -> str:
         if environment:
             return f"{environment}_{base_table_name}"
         return base_table_name
