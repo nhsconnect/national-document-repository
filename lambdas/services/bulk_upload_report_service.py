@@ -159,16 +159,8 @@ class BulkUploadReportService:
                 )
 
         if data_rows:
-            self.write_additional_report_items_to_csv(
-                file_name=file_name, headers=headers, rows_to_write=data_rows
-            )
-
             logger.info("Uploading daily success report file to S3")
-            self.s3_service.upload_file(
-                s3_bucket_name=self.reports_bucket,
-                file_key=f"{self.s3_key_prefix}/{file_name}",
-                file_name=f"/tmp/{file_name}",
-            )
+            self.write_and_upload_additional_reports(file_name, headers, data_rows)
         else:
             logger.info("No data to report for daily success report file")
 
@@ -190,16 +182,8 @@ class BulkUploadReportService:
                 )
 
         if data_rows:
-            self.write_additional_report_items_to_csv(
-                file_name=file_name, headers=headers, rows_to_write=data_rows
-            )
-
             logger.info("Uploading daily suspended report file to S3")
-            self.s3_service.upload_file(
-                s3_bucket_name=self.reports_bucket,
-                file_key=f"{self.s3_key_prefix}/{file_name}",
-                file_name=f"/tmp/{file_name}",
-            )
+            self.write_and_upload_additional_reports(file_name, headers, data_rows)
         else:
             logger.info("No data to report for daily suspended report file")
 
@@ -227,16 +211,8 @@ class BulkUploadReportService:
                 )
 
         if data_rows:
-            self.write_additional_report_items_to_csv(
-                file_name=file_name, headers=headers, rows_to_write=data_rows
-            )
-
             logger.info("Uploading daily deceased report file to S3")
-            self.s3_service.upload_file(
-                s3_bucket_name=self.reports_bucket,
-                file_key=f"{self.s3_key_prefix}/{file_name}",
-                file_name=f"/tmp/{file_name}",
-            )
+            self.write_and_upload_additional_reports(file_name, headers, data_rows)
         else:
             logger.info("No data to report for daily deceased report file")
 
@@ -258,16 +234,8 @@ class BulkUploadReportService:
                 )
 
         if data_rows:
-            self.write_additional_report_items_to_csv(
-                file_name=file_name, headers=headers, rows_to_write=data_rows
-            )
-
             logger.info("Uploading daily restricted report file to S3")
-            self.s3_service.upload_file(
-                s3_bucket_name=self.reports_bucket,
-                file_key=f"{self.s3_key_prefix}/{file_name}",
-                file_name=f"/tmp/{file_name}",
-            )
+            self.write_and_upload_additional_reports(file_name, headers, data_rows)
         else:
             logger.info("No data to report for daily deceased report file")
 
@@ -296,16 +264,8 @@ class BulkUploadReportService:
                 )
 
         if data_rows:
-            self.write_additional_report_items_to_csv(
-                file_name=file_name, headers=headers, rows_to_write=data_rows
-            )
-
             logger.info("Uploading daily rejected report file to S3")
-            self.s3_service.upload_file(
-                s3_bucket_name=self.reports_bucket,
-                file_key=f"{self.s3_key_prefix}/{file_name}",
-                file_name=f"/tmp/{file_name}",
-            )
+            self.write_and_upload_additional_reports(file_name, headers, data_rows)
         else:
             logger.info("No data to report for daily rejected report file")
 
@@ -415,3 +375,14 @@ class BulkUploadReportService:
         self.s3_key_prefix = f"bulk-upload-reports/{date_folder_name}"
 
         return start_timestamp, end_timestamp
+
+    def write_and_upload_additional_reports(self, file_name, headers, data_rows):
+        self.write_additional_report_items_to_csv(
+            file_name=file_name, headers=headers, rows_to_write=data_rows
+        )
+
+        self.s3_service.upload_file(
+            s3_bucket_name=self.reports_bucket,
+            file_key=f"{self.s3_key_prefix}/{file_name}",
+            file_name=f"/tmp/{file_name}",
+        )
