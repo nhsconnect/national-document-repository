@@ -237,7 +237,7 @@ class BulkUploadReportService:
             logger.info("Uploading daily restricted report file to S3")
             self.write_and_upload_additional_reports(file_name, headers, data_rows)
         else:
-            logger.info("No data to report for daily deceased report file")
+            logger.info("No data to report for daily restricted report file")
 
     def generate_rejected_report(self, ods_reports: list[OdsReport]):
         file_name = (
@@ -376,7 +376,12 @@ class BulkUploadReportService:
 
         return start_timestamp, end_timestamp
 
-    def write_and_upload_additional_reports(self, file_name, headers, data_rows):
+    def write_and_upload_additional_reports(
+        self,
+        file_name: str,
+        headers: list[str],
+        data_rows: list[list[str]],
+    ):
         self.write_additional_report_items_to_csv(
             file_name=file_name, headers=headers, rows_to_write=data_rows
         )
