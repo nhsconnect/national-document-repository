@@ -35,7 +35,7 @@ class DynamoDBService:
             logger.error(str(e), {"Result": "Unable to connect to DB"})
             raise e
 
-    def query_with_requested_fields(
+    def query_table_by_index(
         self,
         table_name,
         index_name,
@@ -47,27 +47,19 @@ class DynamoDBService:
         try:
             table = self.get_table(table_name)
 
-            if requested_fields is None or len(requested_fields) == 0:
-                logger.error("Unable to query DynamoDB with empty requested fields")
-                raise DynamoServiceException(
-                    "Unable to query DynamoDB with empty requested fields"
-                )
+            query_params = {
+                "IndexName": index_name,
+                "KeyConditionExpression": Key(search_key).eq(search_condition),
+            }
 
-            projection_expression = ",".join(requested_fields)
+            if requested_fields:
+                projection_expression = ",".join(requested_fields)
+                query_params["ProjectionExpression"] = projection_expression
 
-            if not query_filter:
-                results = table.query(
-                    IndexName=index_name,
-                    KeyConditionExpression=Key(search_key).eq(search_condition),
-                    ProjectionExpression=projection_expression,
-                )
-            else:
-                results = table.query(
-                    IndexName=index_name,
-                    KeyConditionExpression=Key(search_key).eq(search_condition),
-                    FilterExpression=query_filter,
-                    ProjectionExpression=projection_expression,
-                )
+            if query_filter:
+                query_params["FilterExpression"] = query_filter
+
+            results = table.query(**query_params)
 
             if results is None or "Items" not in results:
                 logger.error(f"Unusable results in DynamoDB: {results!r}")

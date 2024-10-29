@@ -35,7 +35,7 @@ function LloydGeorgeRecordPage() {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const [numberOfFiles, setNumberOfFiles] = useState(0);
-    const [totalFileSizeInByte, setTotalFileSizeInByte] = useState(0);
+    const [totalFileSizeInBytes, settotalFileSizeInBytes] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [cloudFrontUrl, setCloudFrontUrl] = useState('');
     const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
@@ -45,23 +45,23 @@ function LloydGeorgeRecordPage() {
     const resetDocState = () => {
         setNumberOfFiles(0);
         setLastUpdated('');
-        setTotalFileSizeInByte(0);
+        settotalFileSizeInBytes(0);
         setCloudFrontUrl('');
         setDownloadStage(DOWNLOAD_STAGE.INITIAL);
     };
 
     const refreshRecord = async () => {
         const onSuccess = (
-            files_count: number,
-            updated_date: string,
-            file_size: number,
-            presign_url: string,
+            filesCount: number,
+            updatedDate: string,
+            fileSize: number,
+            presignedUrl: string,
         ) => {
-            setNumberOfFiles(files_count);
-            setLastUpdated(getFormattedDatetime(new Date(updated_date)));
+            setNumberOfFiles(filesCount);
+            setLastUpdated(getFormattedDatetime(new Date(updatedDate)));
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-            setTotalFileSizeInByte(file_size);
-            setCloudFrontUrl(presign_url);
+            settotalFileSizeInBytes(fileSize);
+            setCloudFrontUrl(presignedUrl);
         };
 
         const onError = (e: AxiosError) => {
@@ -96,14 +96,14 @@ function LloydGeorgeRecordPage() {
 
         const nhsNumber: string = patientDetails?.nhsNumber ?? '';
         try {
-            const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
+            const { numberOfFiles, totalFileSizeInBytes, lastUpdated, presignedUrl } =
                 await getLloydGeorgeRecord({
                     nhsNumber,
                     baseUrl,
                     baseHeaders,
                 });
 
-            onSuccess(number_of_files, last_updated, total_file_size_in_byte, presign_url);
+            onSuccess(numberOfFiles, lastUpdated, totalFileSizeInBytes, presignedUrl);
         } catch (e) {
             onError(e as AxiosError);
         }
@@ -120,7 +120,7 @@ function LloydGeorgeRecordPage() {
                             setStage={setStage}
                             stage={stage}
                             lastUpdated={lastUpdated}
-                            totalFileSizeInByte={totalFileSizeInByte}
+                            totalFileSizeInBytes={totalFileSizeInBytes}
                             numberOfFiles={numberOfFiles}
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}

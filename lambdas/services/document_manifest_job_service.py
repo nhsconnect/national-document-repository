@@ -2,7 +2,7 @@ import os
 
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
-from enums.zip_trace import ZipTraceStatus
+from enums.trace_status import TraceStatus
 from models.document_reference import DocumentReference
 from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
 from pydantic import ValidationError
@@ -120,15 +120,15 @@ class DocumentManifestJobService:
         zip_trace = self.query_zip_trace(job_id=job_id)
 
         match zip_trace.job_status:
-            case ZipTraceStatus.FAILED:
+            case TraceStatus.FAILED:
                 raise DocumentManifestJobServiceException(
                     500, LambdaError.ManifestFailure
                 )
-            case ZipTraceStatus.PENDING:
-                return DocumentManifestJob(jobStatus=ZipTraceStatus.PENDING, url="")
-            case ZipTraceStatus.PROCESSING:
-                return DocumentManifestJob(jobStatus=ZipTraceStatus.PROCESSING, url="")
-            case ZipTraceStatus.COMPLETED:
+            case TraceStatus.PENDING:
+                return DocumentManifestJob(jobStatus=TraceStatus.PENDING, url="")
+            case TraceStatus.PROCESSING:
+                return DocumentManifestJob(jobStatus=TraceStatus.PROCESSING, url="")
+            case TraceStatus.COMPLETED:
                 presigned_url = self.create_document_manifest_presigned_url(
                     zip_trace.zip_file_location
                 )
@@ -138,7 +138,7 @@ class DocumentManifestJobService:
                 )
 
                 return DocumentManifestJob(
-                    jobStatus=ZipTraceStatus.COMPLETED, url=presigned_url
+                    jobStatus=TraceStatus.COMPLETED, url=presigned_url
                 )
 
     def create_document_manifest_presigned_url(self, zip_file_location: str):
@@ -157,7 +157,7 @@ class DocumentManifestJobService:
         )
 
     def query_zip_trace(self, job_id: str) -> DocumentManifestZipTrace:
-        response = self.dynamo_service.query_with_requested_fields(
+        response = self.dynamo_service.query_table_by_index(
             table_name=self.zip_trace_table,
             index_name="JobIdIndex",
             search_key="JobId",

@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class ZipTraceStatus(StrEnum):
+class TraceStatus(StrEnum):
     PENDING = "Pending"
     COMPLETED = "Completed"
     PROCESSING = "Processing"

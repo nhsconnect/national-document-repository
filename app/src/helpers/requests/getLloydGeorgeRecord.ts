@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
+import waitForSeconds from '../utils/waitForSeconds';
+import { JOB_STATUS } from '../../types/generic/downloadManifestJobStatus';
+import { isRunningInCypress } from '../utils/isLocal';
+import { StitchRecordError } from '../../types/generic/errors';
+
+export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 10;
 
 type Args = {
     nhsNumber: string;
@@ -9,18 +15,66 @@ type Args = {
 };
 
 export type LloydGeorgeStitchResult = {
-    number_of_files: number;
-    total_file_size_in_byte: number;
-    last_updated: string;
-    presign_url: string;
+    jobStatus: string;
+    numberOfFiles: number;
+    totalFileSizeInBytes: number;
+    lastUpdated: string;
+    presignedUrl: string;
 };
 
-async function getLloydGeorgeRecord({
+const ThreePendingErrorMessage = 'Failed to initiate record view';
+const UnexpectedResponseMessage =
+    'Got unexpected response from server when trying to retrieve record';
+
+async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult> {
+    const postResponse = await requestStitchJob(args);
+    let pendingCount = 0;
+    while (pendingCount < 3) {
+        if (postResponse !== JOB_STATUS.COMPLETED) {
+            await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+        }
+        const pollingResponse = await pollForPresignedUrl(args);
+
+        switch (pollingResponse?.jobStatus) {
+            case JOB_STATUS.COMPLETED:
+                return pollingResponse;
+            case JOB_STATUS.PROCESSING:
+                continue;
+            case JOB_STATUS.PENDING:
+                pendingCount += 1;
+                continue;
+            default:
+                throw new StitchRecordError(UnexpectedResponseMessage);
+        }
+    }
+    throw new StitchRecordError(ThreePendingErrorMessage);
+}
+
+export const requestStitchJob = async ({
     nhsNumber,
     baseUrl,
     baseHeaders,
-}: Args): Promise<LloydGeorgeStitchResult> {
+}: Args): Promise<string> => {
     const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
+
+    const response = await axios.post(gatewayUrl, '', {
+        headers: {
+            ...baseHeaders,
+        },
+        params: {
+            patientId: nhsNumber,
+        },
+    });
+
+    return response.data.jobStatus;
+};
+export const pollForPresignedUrl = async ({
+    nhsNumber,
+    baseUrl,
+    baseHeaders,
+}: Args): Promise<LloydGeorgeStitchResult> => {
+    const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
+
     const { data } = await axios.get(gatewayUrl, {
         headers: {
             ...baseHeaders,
@@ -29,15 +83,15 @@ async function getLloydGeorgeRecord({
             patientId: nhsNumber,
         },
     });
-    if (!data.presign_url.startsWith('https://')) {
+    if (data.jobStatus === JOB_STATUS.COMPLETED && !data.presignedUrl.startsWith('https://')) {
         return Promise.reject({ response: { status: 500 } });
     }
+
     return {
         ...data,
-        presign_url: `${data.presign_url}&origin=${
+        presignedUrl: `${data.presignedUrl}&origin=${
             typeof window !== 'undefined' ? window.location.href : ''
         }`,
     };
-}
-
+};
 export default getLloydGeorgeRecord;

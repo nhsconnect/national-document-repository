@@ -5,7 +5,7 @@ import zipfile
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
-from enums.zip_trace import ZipTraceStatus
+from enums.trace_status import TraceStatus
 from models.zip_trace import DocumentManifestZipTrace
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
@@ -87,7 +87,7 @@ class DocumentManifestZipService:
                 status_code=500, error=LambdaError.ZipServiceClientError
             )
 
-        self.zip_trace_object.job_status = ZipTraceStatus.COMPLETED
+        self.zip_trace_object.job_status = TraceStatus.COMPLETED
 
     def zip_files(self):
         logger.info("Creating zip from files")
@@ -107,11 +107,11 @@ class DocumentManifestZipService:
         )
 
     def update_processing_status(self):
-        self.zip_trace_object.job_status = ZipTraceStatus.PROCESSING
+        self.zip_trace_object.job_status = TraceStatus.PROCESSING
         self.update_dynamo_with_fields({"job_status"})
 
     def update_failed_status(self):
-        self.zip_trace_object.job_status = ZipTraceStatus.FAILED
+        self.zip_trace_object.job_status = TraceStatus.FAILED
         self.update_dynamo_with_fields({"job_status"})
 
     def cleanup_temp_files(self):

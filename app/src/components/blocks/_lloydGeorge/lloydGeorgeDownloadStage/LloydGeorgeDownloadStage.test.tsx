@@ -77,7 +77,7 @@ describe('LloydGeorgeDownloadStage', () => {
             }),
         ).toBeInTheDocument();
 
-        const expectedTestId = 'download-file-header-' + mockPdf.number_of_files + '-files';
+        const expectedTestId = 'download-file-header-' + mockPdf.numberOfFiles + '-files';
         expect(screen.getByTestId(expectedTestId)).toBeInTheDocument();
     });
 
@@ -88,7 +88,7 @@ describe('LloydGeorgeDownloadStage', () => {
 
     it('renders download complete on zip success', async () => {
         window.HTMLAnchorElement.prototype.click = jest.fn();
-        mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presign_url);
+        mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presignedUrl);
 
         jest.useFakeTimers();
 
@@ -106,8 +106,8 @@ describe('LloydGeorgeDownloadStage', () => {
         });
         expect(screen.queryByText('0% downloaded...')).not.toBeInTheDocument();
 
-        expect(screen.getByTestId(mockPdf.presign_url)).toBeInTheDocument();
-        const urlLink = screen.getByTestId(mockPdf.presign_url);
+        expect(screen.getByTestId(mockPdf.presignedUrl)).toBeInTheDocument();
+        const urlLink = screen.getByTestId(mockPdf.presignedUrl);
 
         urlLink.addEventListener('click', (e) => {
             e.preventDefault();
@@ -132,7 +132,7 @@ describe('LloydGeorgeDownloadStage', () => {
 
     it('navigates to Error page when zip lg record view complete but fail on delete', async () => {
         window.HTMLAnchorElement.prototype.click = jest.fn();
-        mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presign_url);
+        mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presignedUrl);
         const errorResponse = {
             response: {
                 status: 500,
@@ -220,7 +220,7 @@ describe('LloydGeorgeDownloadStage', () => {
 
 const renderComponent = (history: MemoryHistory, propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
-        numberOfFiles: mockPdf.number_of_files,
+        numberOfFiles: mockPdf.numberOfFiles,
         deleteAfterDownload: false,
         ...propsOverride,
     };

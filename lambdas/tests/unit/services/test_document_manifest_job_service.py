@@ -3,7 +3,7 @@ from unittest.mock import call
 import pytest
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
-from enums.zip_trace import ZipTraceStatus
+from enums.trace_status import TraceStatus
 from freezegun import freeze_time
 from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
 from services.document_manifest_job_service import DocumentManifestJobService
@@ -89,7 +89,7 @@ def mock_s3_service(mocker, manifest_service):
 def mock_dynamo_service(mocker, manifest_service):
     mock_dynamo_service = manifest_service.dynamo_service
     mocker.patch.object(mock_dynamo_service, "create_item")
-    mocker.patch.object(mock_dynamo_service, "query_with_requested_fields")
+    mocker.patch.object(mock_dynamo_service, "query_table_by_index")
     yield mock_dynamo_service
 
 
@@ -556,7 +556,7 @@ def test_query_document_manifest_job_status_pending(
 def test_query_document_manifest_job_status_processing(
     manifest_service, mock_query_zip_trace, mock_uuid
 ):
-    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.PROCESSING
+    TEST_ZIP_TRACE_DATA["JobStatus"] = TraceStatus.PROCESSING
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
     mock_query_zip_trace.return_value = test_zip_trace
 
@@ -574,7 +574,7 @@ def test_query_document_manifest_job_status_completed(
     mock_s3_service,
     mock_create_presigned_url,
 ):
-    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.COMPLETED
+    TEST_ZIP_TRACE_DATA["JobStatus"] = TraceStatus.COMPLETED
     TEST_ZIP_TRACE_DATA["ZipFileLocation"] = TEST_DOCUMENT_LOCATION
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
@@ -591,7 +591,7 @@ def test_query_document_manifest_job_status_completed(
 def test_query_document_manifest_job_status_failed(
     manifest_service, mock_query_zip_trace, mock_s3_service
 ):
-    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.FAILED
+    TEST_ZIP_TRACE_DATA["JobStatus"] = TraceStatus.FAILED
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
     mock_query_zip_trace.return_value = test_zip_trace
@@ -645,14 +645,14 @@ def test_create_document_manifest_presigned_url_missing_manifest_raises_exceptio
 def test_query_zip_trace_returns_zip_trace_object(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_with_requested_fields.return_value = {
+    mock_dynamo_service.query_table_by_index.return_value = {
         "Items": [TEST_ZIP_TRACE_DATA]
     }
     expected = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
     actual = manifest_service.query_zip_trace(TEST_UUID)
 
-    mock_dynamo_service.query_with_requested_fields.assert_called_once_with(
+    mock_dynamo_service.query_table_by_index.assert_called_once_with(
         table_name=MOCK_ZIP_TRACE_TABLE,
         index_name="JobIdIndex",
         search_key="JobId",
@@ -665,7 +665,7 @@ def test_query_zip_trace_returns_zip_trace_object(
 def test_query_zip_trace_empty_response_raises_exception(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_with_requested_fields.return_value = {"Items": []}
+    mock_dynamo_service.query_table_by_index.return_value = {"Items": []}
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
         manifest_service.query_zip_trace(TEST_UUID)
@@ -678,7 +678,7 @@ def test_query_zip_trace_empty_response_raises_exception(
 def test_query_zip_trace_empty_response_object_raises_exception(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_with_requested_fields.return_value = {"Items": [{}]}
+    mock_dynamo_service.query_table_by_index.return_value = {"Items": [{}]}
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
         manifest_service.query_zip_trace(TEST_UUID)
