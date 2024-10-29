@@ -1,9 +1,8 @@
 from enums.lambda_error import LambdaError
 
 MOCKED_ENV = "test"
+MOCKED_DOMAIN = f"{MOCKED_ENV}-lloyd-test-test.com"
 
-MOCKED_DOMAIN = f"{MOCKED_ENV}-lloyd-test-test.s3.eu-west-2.amazonaws.com"
-TABLE_NAME = "Mock_Table"
 MOCKED_AUTH_QUERY = (
     "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
     "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"

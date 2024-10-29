@@ -4,15 +4,17 @@ from unittest.mock import patch
 import pytest
 from botocore.exceptions import ClientError
 from services.edge_presign_service import EdgePresignService
+from tests.unit.conftest import (
+    MOCK_PRESIGN_TABLE_NAME,
+    MOCKED_LG_BUCKET_ENV,
+    MOCKED_LG_BUCKET_URL,
+)
 from tests.unit.enums.test_edge_presign_values import (
     EXPECTED_EDGE_NO_CLIENT_ERROR_CODE,
     EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE,
     EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE,
     EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE,
     MOCKED_AUTH_QUERY,
-    MOCKED_DOMAIN,
-    MOCKED_ENV,
-    TABLE_NAME,
 )
 from utils.lambda_exceptions import CloudFrontEdgeException
 
@@ -21,7 +23,9 @@ from utils.lambda_exceptions import CloudFrontEdgeException
 @patch("services.edge_presign_service.SSMService")
 @patch("services.edge_presign_service.DynamoDBService")
 def edge_presign_service(mock_dynamo_service, mock_ssm_service):
-    mock_ssm_service.return_value.get_ssm_parameter.return_value = "Mocked_Table_Name"
+    mock_ssm_service.return_value.get_ssm_parameter.return_value = (
+        MOCK_PRESIGN_TABLE_NAME
+    )
     mock_dynamo_service.return_value.update_item.return_value = None
     return EdgePresignService()
 
@@ -31,7 +35,7 @@ def request_values():
     return {
         "uri": "/some/path",
         "querystring": MOCKED_AUTH_QUERY,
-        "domain_name": MOCKED_DOMAIN,
+        "domain_name": MOCKED_LG_BUCKET_URL,
     }
 
 
@@ -45,12 +49,12 @@ def test_use_presign(edge_presign_service, request_values):
             f"{request_values['uri']}?{request_values['querystring']}".encode("utf-8")
         ).hexdigest()
         mock_attempt_presign_ingestion.assert_called_once_with(
-            uri_hash=expected_hash, domain_name=MOCKED_DOMAIN
+            uri_hash=expected_hash, domain_name=MOCKED_LG_BUCKET_URL
         )
 
 
 def test_attempt_presign_ingestion_success(edge_presign_service):
-    edge_presign_service.attempt_presign_ingestion("hashed_uri", MOCKED_DOMAIN)
+    edge_presign_service.attempt_presign_ingestion("hashed_uri", MOCKED_LG_BUCKET_URL)
 
 
 def test_attempt_presign_ingestion_client_error(edge_presign_service):
@@ -60,7 +64,9 @@ def test_attempt_presign_ingestion_client_error(edge_presign_service):
     edge_presign_service.dynamo_service.update_item.side_effect = client_error
 
     with pytest.raises(CloudFrontEdgeException) as exc_info:
-        edge_presign_service.attempt_presign_ingestion("hashed_uri", MOCKED_DOMAIN)
+        edge_presign_service.attempt_presign_ingestion(
+            "hashed_uri", MOCKED_LG_BUCKET_URL
+        )
 
     assert exc_info.value.status_code == 400
     assert exc_info.value.err_code == EXPECTED_EDGE_NO_CLIENT_ERROR_CODE
@@ -70,33 +76,33 @@ def test_attempt_presign_ingestion_client_error(edge_presign_service):
 def test_create_s3_response(edge_presign_service, request_values):
     request = {
         "headers": {
-            "host": [{"key": "Host", "value": MOCKED_DOMAIN}],
+            "host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}],
         }
     }
 
     response = edge_presign_service.create_s3_response(request, request_values)
     assert "authorization" not in response["headers"]
-    assert response["headers"]["host"][0]["value"] == MOCKED_DOMAIN
+    assert response["headers"]["host"][0]["value"] == MOCKED_LG_BUCKET_URL
 
 
 def test_filter_request_values_success(edge_presign_service):
     request = {
         "uri": "/test/uri",
         "querystring": MOCKED_AUTH_QUERY,
-        "headers": {"host": [{"key": "Host", "value": MOCKED_DOMAIN}]},
-        "origin": {"s3": {"domainName": MOCKED_DOMAIN}},
+        "headers": {"host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}]},
+        "origin": {"s3": {"domainName": MOCKED_LG_BUCKET_URL}},
     }
     result = edge_presign_service.filter_request_values(request)
     assert result["uri"] == "/test/uri"
     assert result["querystring"] == MOCKED_AUTH_QUERY
-    assert result["domain_name"] == MOCKED_DOMAIN
+    assert result["domain_name"] == MOCKED_LG_BUCKET_URL
 
 
 def test_filter_request_values_missing_component(edge_presign_service):
     request = {
         "uri": "/test/uri",
         "querystring": MOCKED_AUTH_QUERY,
-        "headers": {"host": [{"key": "Host", "value": MOCKED_DOMAIN}]},
+        "headers": {"host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}]},
     }
     with pytest.raises(CloudFrontEdgeException) as exc_info:
         edge_presign_service.filter_request_values(request)
@@ -120,7 +126,12 @@ def test_filter_domain_for_env(edge_presign_service):
 
 def test_extend_table_name(edge_presign_service):
     assert (
-        edge_presign_service.extend_table_name(TABLE_NAME, MOCKED_ENV)
-        == f"{MOCKED_ENV}_{TABLE_NAME}"
+        edge_presign_service.extend_table_name(
+            MOCK_PRESIGN_TABLE_NAME, MOCKED_LG_BUCKET_ENV
+        )
+        == f"{MOCKED_LG_BUCKET_ENV}_{MOCK_PRESIGN_TABLE_NAME}"
     )
-    assert edge_presign_service.extend_table_name(TABLE_NAME, "") == TABLE_NAME
+    assert (
+        edge_presign_service.extend_table_name(MOCK_PRESIGN_TABLE_NAME, "")
+        == MOCK_PRESIGN_TABLE_NAME
+    )
