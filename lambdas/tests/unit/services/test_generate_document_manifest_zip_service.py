@@ -3,7 +3,7 @@ from unittest.mock import call
 import pytest
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
-from enums.zip_trace import ZipTraceStatus
+from enums.trace_status import TraceStatus
 from models.zip_trace import DocumentManifestZipTrace
 from services.generate_document_manifest_zip_service import DocumentManifestZipService
 from utils.exceptions import InvalidDocumentReferenceException
@@ -26,7 +26,7 @@ TEST_DYNAMO_RESPONSE = {
         TEST_DOCUMENT_LOCATION: TEST_FILE_NAME,
         f"{TEST_DOCUMENT_LOCATION}2": f"{TEST_FILE_KEY}2",
     },
-    "JobStatus": ZipTraceStatus.PENDING.value,
+    "JobStatus": TraceStatus.PENDING.value,
     "Created": TEST_TIME,
 }
 
@@ -76,7 +76,7 @@ def test_download_file_from_s3(mock_service, mock_s3_service):
         TEST_FILE_KEY,
         f"{mock_service.temp_downloads_dir}/{TEST_FILE_NAME}",
     )
-    assert mock_service.zip_trace_object.job_status != ZipTraceStatus.FAILED
+    assert mock_service.zip_trace_object.job_status != TraceStatus.FAILED
 
 
 def test_download_file_from_s3_raises_exception(mock_service, mock_s3_service):
@@ -95,7 +95,7 @@ def test_download_file_from_s3_raises_exception(mock_service, mock_s3_service):
     assert e.value == GenerateManifestZipException(
         500, LambdaError.ZipServiceClientError
     )
-    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
+    assert mock_service.zip_trace_object.job_status == TraceStatus.FAILED
 
 
 def test_get_file_bucket_and_key_returns_correct_items(mock_service):
@@ -116,7 +116,7 @@ def test_get_file_bucket_and_key_throws_exception_when_not_passed_incorrect_form
         mock_service.get_file_bucket_and_key(bad_location)
 
     assert e.value.args[0] == "Failed to parse bucket from file location string"
-    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
+    assert mock_service.zip_trace_object.job_status == TraceStatus.FAILED
 
 
 def test_upload_zip_file(mock_service, mock_s3_service):
@@ -131,7 +131,7 @@ def test_upload_zip_file(mock_service, mock_s3_service):
         mock_service.zip_trace_object.zip_file_location
         == f"s3://{MOCK_ZIP_OUTPUT_BUCKET}/{mock_service.zip_file_name}"
     )
-    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.COMPLETED
+    assert mock_service.zip_trace_object.job_status == TraceStatus.COMPLETED
 
 
 def test_upload_zip_file_throws_exception_on_error(mock_service, mock_s3_service):
@@ -150,7 +150,7 @@ def test_upload_zip_file_throws_exception_on_error(mock_service, mock_s3_service
     assert e.value == GenerateManifestZipException(
         500, LambdaError.ZipServiceClientError
     )
-    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
+    assert mock_service.zip_trace_object.job_status == TraceStatus.FAILED
 
 
 def test_update_dynamo(mock_service, mock_dynamo_service):
@@ -165,9 +165,9 @@ def test_update_dynamo(mock_service, mock_dynamo_service):
 
 def test_update_processing_status(mock_service):
     mock_service.update_processing_status()
-    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.PROCESSING
+    assert mock_service.zip_trace_object.job_status == TraceStatus.PROCESSING
 
 
 def test_update_failed_status(mock_service):
     mock_service.update_failed_status()
-    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
+    assert mock_service.zip_trace_object.job_status == TraceStatus.FAILED

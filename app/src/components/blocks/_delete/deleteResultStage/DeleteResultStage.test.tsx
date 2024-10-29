@@ -40,7 +40,7 @@ describe('DeleteResultStage', () => {
             "renders the page with Lloyd George patient details when user role is '%s'",
             async (role) => {
                 const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
-                const numberOfFiles = mockLgSearchResult.number_of_files;
+                const numberOfFiles = mockLgSearchResult.numberOfFiles;
 
                 mockedUseRole.mockReturnValue(role);
                 render(
@@ -96,7 +96,7 @@ describe('DeleteResultStage', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "renders the return to Lloyd George Record button, when user role is '%s'",
             async (role) => {
-                const numberOfFiles = mockLgSearchResult.number_of_files;
+                const numberOfFiles = mockLgSearchResult.numberOfFiles;
                 mockedUseRole.mockReturnValue(role);
 
                 render(
@@ -121,7 +121,7 @@ describe('DeleteResultStage', () => {
         );
 
         it('does not render the return to Lloyd George Record button, when user role is PCSE', async () => {
-            const numberOfFiles = mockLgSearchResult.number_of_files;
+            const numberOfFiles = mockLgSearchResult.numberOfFiles;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
             render(
@@ -211,7 +211,7 @@ describe('DeleteResultStage', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "navigates to the Lloyd George view page when return button is clicked, when user role is '%s'",
             async (role) => {
-                const numberOfFiles = mockLgSearchResult.number_of_files;
+                const numberOfFiles = mockLgSearchResult.numberOfFiles;
                 mockedUseRole.mockReturnValue(role);
 
                 render(

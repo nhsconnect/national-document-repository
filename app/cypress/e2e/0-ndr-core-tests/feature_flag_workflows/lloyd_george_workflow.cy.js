@@ -23,7 +23,7 @@ describe('Feature flags - Lloyd George Workflow', () => {
                     uploadLambdaEnabled: true,
                 };
                 beforeEachConfiguration(Roles.GP_ADMIN, featureFlags);
-                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                cy.intercept('POST', '/LloydGeorgeStitch*', {
                     statusCode: 404,
                 });
                 cy.title().should(
@@ -51,7 +51,7 @@ describe('Feature flags - Lloyd George Workflow', () => {
                     uploadLambdaEnabled: false,
                 };
                 beforeEachConfiguration(Roles.GP_ADMIN, featureFlags);
-                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                cy.intercept('POST', '/LloydGeorgeStitch*', {
                     statusCode: 404,
                 });
                 cy.get('#verify-submit').click();
@@ -70,7 +70,7 @@ describe('Feature flags - Lloyd George Workflow', () => {
                     uploadLambdaEnabled: false,
                 };
                 beforeEachConfiguration(Roles.GP_ADMIN, featureFlags);
-                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                cy.intercept('POST', '/LloydGeorgeStitch*', {
                     statusCode: 404,
                 });
                 cy.get('#verify-submit').click();
@@ -89,7 +89,7 @@ describe('Feature flags - Lloyd George Workflow', () => {
                     uploadLambdaEnabled: true,
                 };
                 beforeEachConfiguration(Roles.GP_ADMIN, featureFlags);
-                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                cy.intercept('POST', '/LloydGeorgeStitch*', {
                     statusCode: 404,
                 });
                 cy.get('#verify-submit').click();
