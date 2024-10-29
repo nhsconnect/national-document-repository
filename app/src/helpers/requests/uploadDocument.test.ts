@@ -98,7 +98,7 @@ describe('virusScanResult', () => {
             .mockRejectedValueOnce(gatewayTimeoutResponse)
             .mockResolvedValueOnce(cleanResponse);
 
-        const delay_between_retry_in_seconds = 5;
+        const delay_between_retry_in_seconds = 0;
 
         const result = await virusScan(virusScanArgs);
 

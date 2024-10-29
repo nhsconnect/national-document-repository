@@ -116,6 +116,10 @@ class FileUploadInProgress(Exception):
     pass
 
 
+class NoAvailableDocument(Exception):
+    pass
+
+
 class LogsQueryException(Exception):
     pass
 

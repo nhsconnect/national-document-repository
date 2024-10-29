@@ -18,10 +18,10 @@ describe('LloydGeorgeRecordDetails', () => {
         it('renders the record details component', () => {
             renderComponent();
 
-            expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
-            expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();
+            expect(screen.getByText(`Last updated: ${mockPdf.lastUpdated}`)).toBeInTheDocument();
+            expect(screen.getByText(`${mockPdf.numberOfFiles} files`)).toBeInTheDocument();
             expect(
-                screen.getByText(`File size: ${formatFileSize(mockPdf.total_file_size_in_byte)}`),
+                screen.getByText(`File size: ${formatFileSize(mockPdf.totalFileSizeInBytes)}`),
             ).toBeInTheDocument();
             expect(screen.getByText('File format: PDF')).toBeInTheDocument();
         });
@@ -30,9 +30,9 @@ describe('LloydGeorgeRecordDetails', () => {
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Props = {
-        lastUpdated: mockPdf.last_updated,
-        numberOfFiles: mockPdf.number_of_files,
-        totalFileSizeInByte: mockPdf.total_file_size_in_byte,
+        lastUpdated: mockPdf.lastUpdated,
+        numberOfFiles: mockPdf.numberOfFiles,
+        totalFileSizeInBytes: mockPdf.totalFileSizeInBytes,
         ...propsOverride,
     };
     return render(<LgRecordDetails {...props} />);

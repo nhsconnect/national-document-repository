@@ -23,6 +23,16 @@ def valid_id_event_with_auth_header():
 
 
 @pytest.fixture
+def valid_id_post_event_with_auth_header():
+    api_gateway_proxy_event = {
+        "httpMethod": "POST",
+        "queryStringParameters": {"patientId": "9000000009"},
+        "headers": {"Authorization": "mock_token"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
 def valid_id_and_both_doctype_event():
     api_gateway_proxy_event = {
         "httpMethod": "GET",

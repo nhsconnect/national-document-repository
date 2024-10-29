@@ -105,6 +105,8 @@ MOCK_APPCONFIG_CONFIGURATION_ID = "C1234"
 MOCK_PRESIGNED_URL_ROLE_ARN_KEY = "PRESIGNED_ASSUME_ROLE"
 MOCK_PRESIGNED_URL_ROLE_ARN_VALUE = "arn:aws:iam::test123"
 
+STITCH_METADATA_DYNAMODB_NAME_VALUE = "test_stitch_metadata"
+
 
 @pytest.fixture
 def set_env(monkeypatch):
@@ -159,6 +161,9 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_STATISTICS_TABLE_NAME, MOCK_STATISTICS_TABLE)
     monkeypatch.setenv(
         MOCK_STATISTICAL_REPORTS_BUCKET_ENV_NAME, MOCK_STATISTICS_REPORT_BUCKET_NAME
+    )
+    monkeypatch.setenv(
+        "STITCH_METADATA_DYNAMODB_NAME", STITCH_METADATA_DYNAMODB_NAME_VALUE
     )
 
 
