@@ -113,6 +113,7 @@ def test_filter_request_values_missing_component(edge_presign_service):
 
 
 def test_filter_domain_for_env(edge_presign_service):
+    # Environments
     assert (
         edge_presign_service.filter_domain_for_env("ndra-lloyd-test-test.com") == "ndra"
     )
@@ -120,17 +121,20 @@ def test_filter_domain_for_env(edge_presign_service):
         edge_presign_service.filter_domain_for_env("pre-prod-lloyd-test-test.com")
         == "pre-prod"
     )
+    # Production
     assert edge_presign_service.filter_domain_for_env("lloyd-test-test.com") == ""
     assert edge_presign_service.filter_domain_for_env("invalid.com") == ""
 
 
 def test_extend_table_name(edge_presign_service):
+    # Environments
     assert (
         edge_presign_service.extend_table_name(
             MOCK_PRESIGN_TABLE_NAME, MOCKED_LG_BUCKET_ENV
         )
         == f"{MOCKED_LG_BUCKET_ENV}_{MOCK_PRESIGN_TABLE_NAME}"
     )
+    # Production
     assert (
         edge_presign_service.extend_table_name(MOCK_PRESIGN_TABLE_NAME, "")
         == MOCK_PRESIGN_TABLE_NAME

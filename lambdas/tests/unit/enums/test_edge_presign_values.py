@@ -8,6 +8,10 @@ MOCKED_AUTH_QUERY = (
     "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
     "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
 )
+MOCKED_PARTIAL_QUERY = (
+    "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date" "&X-Amz-Expires=3600"
+)
+
 MOCKED_HEADERS = {
     "cloudfront-viewer-country": [{"key": "CloudFront-Viewer-Country", "value": "US"}],
     "x-forwarded-for": [{"key": "X-Forwarded-For", "value": "1.2.3.4"}],

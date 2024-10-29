@@ -15,6 +15,7 @@ from tests.unit.enums.test_edge_presign_values import (
     EXPECTED_EDGE_NO_QUERY_ERROR_CODE,
     EXPECTED_EDGE_NO_QUERY_MESSAGE,
     MOCKED_AUTH_QUERY,
+    MOCKED_PARTIAL_QUERY,
     VALID_EVENT_MODEL,
 )
 
@@ -92,10 +93,7 @@ def test_lambda_handler_no_query_params(valid_event, mock_edge_presign_service):
 def test_lambda_handler_missing_query_params(valid_event, mock_edge_presign_service):
     context = mock_context()
     event = copy.deepcopy(valid_event)
-    event["Records"][0]["cf"]["request"]["querystring"] = (
-        "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
-        "&X-Amz-Expires=3600"
-    )
+    event["Records"][0]["cf"]["request"]["querystring"] = MOCKED_PARTIAL_QUERY
 
     response = lambda_handler(event, context)
 
