@@ -56,7 +56,7 @@ class EdgePresignService:
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
     @staticmethod
-    def create_s3_response(request, request_values):
+    def update_s3_headers(request, request_values):
         domain_name = request_values["domain_name"]
         if "authorization" in request["headers"]:
             del request["headers"]["authorization"]

@@ -23,8 +23,8 @@ from utils.lambda_exceptions import CloudFrontEdgeException
 @patch("services.edge_presign_service.SSMService")
 @patch("services.edge_presign_service.DynamoDBService")
 def edge_presign_service(mock_dynamo_service, mock_ssm_service):
-    mock_ssm_service.return_value.get_ssm_parameter.return_value = MOCK_TABLE_NAME
-    mock_dynamo_service.return_value.update_item.return_value = None
+    mock_ssm_service.get_ssm_parameter.return_value = MOCK_TABLE_NAME
+    mock_dynamo_service.update_item.return_value = None
     return EdgePresignService()
 
 
@@ -71,14 +71,14 @@ def test_attempt_presign_ingestion_client_error(edge_presign_service):
     assert exc_info.value.message == EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE
 
 
-def test_create_s3_response(edge_presign_service, request_values):
+def test_update_s3_headers(edge_presign_service, request_values):
     request = {
         "headers": {
             "host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}],
         }
     }
 
-    response = edge_presign_service.create_s3_response(request, request_values)
+    response = edge_presign_service.update_s3_headers(request, request_values)
     assert "authorization" not in response["headers"]
     assert response["headers"]["host"][0]["value"] == MOCKED_LG_BUCKET_URL
 

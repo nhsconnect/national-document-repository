@@ -22,7 +22,9 @@ def lambda_handler(event, context):
     request_values: dict = edge_presign_service.filter_request_values(request)
     edge_presign_service.use_presign(request_values)
 
-    request: dict = edge_presign_service.create_s3_response(request, request_values)
+    forwarded_request: dict = edge_presign_service.update_s3_headers(
+        request, request_values
+    )
 
     logger.info("Edge forwarding S3 request")
-    return request
+    return forwarded_request
