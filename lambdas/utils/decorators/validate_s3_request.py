@@ -25,7 +25,7 @@ def validate_s3_request(lambda_func):
     @wraps(lambda_func)
     def wrapper(event, context):
         request: dict = event["Records"][0]["cf"]["request"]
-        logger.info(json.dump(request))
+        logger.info(json.dumps(request))
         bad_request: bool = (
             "uri" not in request
             or "querystring" not in request
