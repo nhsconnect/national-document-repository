@@ -66,6 +66,7 @@ function RecordCard({
                                 data-testid="full-screen-btn"
                                 onClick={() => {
                                     fullScreenHandler(true);
+                                    resetDocStage();
                                 }}
                             >
                                 View in full screen
