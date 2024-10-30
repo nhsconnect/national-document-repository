@@ -19,6 +19,7 @@ class ReportBase:
         self.total_suspended = set()
         self.total_deceased = set()
         self.total_restricted = set()
+        self.total_ingested = 0
 
     def get_total_successful_nhs_numbers(self) -> list:
         if self.total_successful:
@@ -70,6 +71,7 @@ class OdsReport(ReportBase):
                 self.process_failed_report_item(item)
 
         self.set_unique_failures()
+        self.set_total_ingested()
 
     def process_successful_report_item(self, item: BulkUploadReport):
         self.total_successful.add((item.nhs_number, item.date))
@@ -129,6 +131,12 @@ class OdsReport(ReportBase):
             for reason, count in self.unique_failures.items()
         ]
 
+    def set_total_ingested(self):
+        unique_failures = 0
+        for reason, count in self.unique_failures.items():
+            unique_failures += count
+        self.total_ingested = len(self.total_successful) + unique_failures
+
 
 class SummaryReport(ReportBase):
     def __init__(self, generated_at: str, ods_reports: list[OdsReport] = []):
@@ -143,6 +151,7 @@ class SummaryReport(ReportBase):
         ods_code_success_total = {}
 
         for report in self.ods_reports:
+            self.total_ingested += report.total_ingested
             self.total_successful.update(report.total_successful)
             self.total_registered_elsewhere.update(report.total_registered_elsewhere)
             self.total_suspended.update(report.total_suspended)

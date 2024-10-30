@@ -86,6 +86,7 @@ class BulkUploadReportService:
 
         self.write_summary_data_to_csv(
             file_name=file_name,
+            total_ingested=ods_report.total_ingested,
             total_successful=ods_report.get_total_successful_count(),
             total_registered_elsewhere=ods_report.get_total_registered_elsewhere_count(),
             total_suspended=ods_report.get_total_suspended_count(),
@@ -112,6 +113,7 @@ class BulkUploadReportService:
 
         self.write_summary_data_to_csv(
             file_name=file_name,
+            total_ingested=summary_report.total_ingested,
             total_successful=summary_report.get_total_successful_count(),
             total_registered_elsewhere=summary_report.get_total_registered_elsewhere_count(),
             total_suspended=summary_report.get_total_suspended_count(),
@@ -286,6 +288,7 @@ class BulkUploadReportService:
     @staticmethod
     def write_summary_data_to_csv(
         file_name: str,
+        total_ingested: int,
         total_successful: int,
         total_registered_elsewhere: int,
         total_suspended: int,
@@ -297,6 +300,7 @@ class BulkUploadReportService:
             writer = csv.writer(output_file)
 
             writer.writerow(["Type", "Description", "Count"])
+            writer.writerow(["Total", "Total Ingested", total_ingested])
             writer.writerow(["Total", "Total Successful", total_successful])
             writer.writerow(
                 [

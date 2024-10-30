@@ -78,6 +78,7 @@ def test_report_base_get_sorted_returns_empty():
 def test_ods_report_populate_report_populates_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": 8,
         "total_successful": {
             ("9000000000", "2012-01-13"),
             ("9000000001", "2012-01-13"),
@@ -211,6 +212,7 @@ def test_ods_report_get_unsuccessful_reasons_data_rows_returns_correct_rows():
 def test_ods_report_populate_report_empty_list_populates_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": 0,
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),
@@ -275,6 +277,7 @@ def test_summary_report_populate_report_populates_successfully():
 
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": 16,
         "total_successful": {
             ("9000000000", "2012-01-13"),
             ("9000000001", "2012-01-13"),
@@ -336,6 +339,7 @@ def test_summary_report_populate_report_empty_reports_objects_populate_successfu
 
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": 0,
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),
@@ -359,6 +363,7 @@ def test_summary_report_populate_report_empty_reports_objects_populate_successfu
 def test_summary_report_populate_report_no_report_objects_populate_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": 0,
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),
