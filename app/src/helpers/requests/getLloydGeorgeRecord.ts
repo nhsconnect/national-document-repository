@@ -86,12 +86,8 @@ export const pollForPresignedUrl = async ({
     if (data.jobStatus === JOB_STATUS.COMPLETED && !data.presignedUrl.startsWith('https://')) {
         return Promise.reject({ response: { status: 500 } });
     }
-
-    return {
-        ...data,
-        presignedUrl: `${data.presignedUrl}&origin=${
-            typeof window !== 'undefined' ? window.location.href : ''
-        }`,
-    };
+    const result: LloydGeorgeStitchResult = data;
+    return result;
 };
+
 export default getLloydGeorgeRecord;

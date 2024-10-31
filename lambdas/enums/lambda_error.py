@@ -396,12 +396,29 @@ class LambdaError(Enum):
     """
     EdgeMalformed = {
         "err_code": "CE_5001",
-        "message": "Malformed event structure or missing data",
+        "message": "Malformed cloudfront request",
     }
+
     EdgeNoOrigin = {
         "err_code": "CE_5002",
         "message": "The request is missing an origin",
     }
+
+    EdgeNoQuery = {
+        "err_code": "CE_5003",
+        "message": "The request is missing a querystring",
+    }
+
+    EdgeRequiredQuery = {
+        "err_code": "CE_5004",
+        "message": "Missing required querystring values",
+    }
+
+    EdgeRequiredHeaders = {
+        "err_code": "CE_5005",
+        "message": "Malformed header structure or missing data",
+    }
+
     EdgeNoClient = {"err_code": "CE_4001", "message": "Document not found"}
 
     """
