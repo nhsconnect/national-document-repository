@@ -357,6 +357,7 @@ def test_generate_individual_ods_report_creates_ods_report(
 
     mock_write_summary_data_to_csv.assert_called_with(
         file_name=f"daily_statistical_report_bulk_upload_ods_summary_{MOCK_TIMESTAMP}_uploaded_by_{TEST_CURRENT_GP_ODS}.csv",
+        total_ingested=8,
         total_successful=5,
         total_registered_elsewhere=1,
         total_suspended=1,
