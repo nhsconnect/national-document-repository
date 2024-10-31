@@ -1,3 +1,4 @@
+import hashlib
 import re
 
 from botocore.exceptions import ClientError
@@ -12,23 +13,37 @@ logger = LoggingService(__name__)
 
 
 class EdgePresignService:
-
     def __init__(self):
         self.dynamo_service = DynamoDBService()
         self.s3_service = S3Service()
         self.ssm_service = SSMService()
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
-    def attempt_url_update(self, uri_hash, origin_url) -> None:
+    def use_presign(self, request_values: dict):
+        uri: str = request_values["uri"]
+        querystring: str = request_values["querystring"]
+        domain_name: str = request_values["domain_name"]
+
+        presign_string: str = f"{uri}?{querystring}"
+        encoded_presign_string: str = presign_string.encode("utf-8")
+        presign_credentials_hash: str = hashlib.md5(encoded_presign_string).hexdigest()
+
+        self.attempt_presign_ingestion(
+            uri_hash=presign_credentials_hash,
+            domain_name=domain_name,
+        )
+
+    def attempt_presign_ingestion(self, uri_hash: str, domain_name: str) -> None:
         try:
-            environment = self.extract_environment_from_url(origin_url)
+            environment = self.filter_domain_for_env(domain_name)
+            logger.info(f"Environment found: {environment}")
             base_table_name: str = self.ssm_service.get_ssm_parameter(
                 self.table_name_ssm_param
             )
             formatted_table_name: str = self.extend_table_name(
                 base_table_name, environment
             )
-
+            logger.info(f"Table: {formatted_table_name}")
             self.dynamo_service.update_item(
                 table_name=formatted_table_name,
                 key=uri_hash,
@@ -40,13 +55,43 @@ class EdgePresignService:
             logger.error(f"{str(e)}", {"Result": LambdaError.EdgeNoClient.to_str()})
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
-    def extract_environment_from_url(self, url: str) -> str:
-        match = re.search(r"https://([^.]+)\.[^.]+\.[^.]+\.[^.]+", url)
+    @staticmethod
+    def update_s3_headers(request: dict, request_values: dict):
+        domain_name = request_values["domain_name"]
+        if "authorization" in request["headers"]:
+            del request["headers"]["authorization"]
+        request["headers"]["host"] = [{"key": "Host", "value": domain_name}]
+
+        return request
+
+    @staticmethod
+    def filter_request_values(request: dict) -> dict:
+        try:
+            uri: str = request["uri"]
+            querystring: str = request["querystring"]
+            headers: dict = request["headers"]
+            origin: str = request.get("origin", {})
+            domain_name: str = origin["s3"]["domainName"]
+        except KeyError as e:
+            logger.error(f"Missing request component: {str(e)}")
+            raise CloudFrontEdgeException(500, LambdaError.EdgeNoOrigin)
+
+        return {
+            "uri": uri,
+            "querystring": querystring,
+            "headers": headers,
+            "domain_name": domain_name,
+        }
+
+    @staticmethod
+    def filter_domain_for_env(domain_name: str) -> str:
+        match = re.match(r"^[^-]+(?:-[^-]+)?(?=-lloyd)", domain_name)
         if match:
-            return match.group(1)
+            return match.group(0)
         return ""
 
-    def extend_table_name(self, base_table_name, environment) -> str:
+    @staticmethod
+    def extend_table_name(base_table_name: str, environment: str) -> str:
         if environment:
             return f"{environment}_{base_table_name}"
         return base_table_name

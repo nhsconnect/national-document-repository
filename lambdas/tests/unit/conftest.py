@@ -14,10 +14,11 @@ from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 REGION_NAME = "eu-west-2"
 
-MOCK_CLOUDFRONT_URL = "test-cloudfront-url.com"
 MOCK_TABLE_NAME = "test-table"
 MOCK_BUCKET = "test-s3-bucket"
-
+MOCK_CLOUDFRONT_URL = "test-cloudfront-url.com"
+MOCKED_LG_BUCKET_ENV = "test"
+MOCKED_LG_BUCKET_URL = f"{MOCKED_LG_BUCKET_ENV}-lloyd-test-test.com"
 MOCK_ARF_TABLE_NAME_ENV_NAME = "DOCUMENT_STORE_DYNAMODB_NAME"
 MOCK_ARF_BUCKET_ENV_NAME = "DOCUMENT_STORE_BUCKET_NAME"
 
