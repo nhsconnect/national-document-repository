@@ -3,5 +3,6 @@ Total,Total Ingested,8
 Total,Total Successful,5
 Total,Successful - Registered Elsewhere,1
 Total,Successful - Suspended,1
+Total,Successful - Deceased,1
 Reason,Could not find the given patient on PDS,2
 Reason,Lloyd George file already exists,1
