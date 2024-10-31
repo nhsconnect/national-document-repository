@@ -78,6 +78,16 @@ def test_report_base_get_sorted_returns_empty():
 def test_ods_report_populate_report_populates_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": {
+            "9000000000",
+            "9000000001",
+            "9000000002",
+            "9000000003",
+            "9000000004",
+            "9000000005",
+            "9000000006",
+            "9000000007",
+        },
         "total_successful": {
             ("9000000000", "2012-01-13"),
             ("9000000001", "2012-01-13"),
@@ -211,6 +221,7 @@ def test_ods_report_get_unsuccessful_reasons_data_rows_returns_correct_rows():
 def test_ods_report_populate_report_empty_list_populates_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": set(),
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),
@@ -275,6 +286,24 @@ def test_summary_report_populate_report_populates_successfully():
 
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": {
+            "9000000006",
+            "9000000009",
+            "9000000005",
+            "9000000010",
+            "9000000013",
+            "9000000016",
+            "9000000004",
+            "9000000007",
+            "9000000012",
+            "9000000011",
+            "9000000002",
+            "9000000003",
+            "9000000001",
+            "9000000000",
+            "9000000014",
+            "9000000015",
+        },
         "total_successful": {
             ("9000000000", "2012-01-13"),
             ("9000000001", "2012-01-13"),
@@ -336,6 +365,7 @@ def test_summary_report_populate_report_empty_reports_objects_populate_successfu
 
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": set(),
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),
@@ -359,6 +389,7 @@ def test_summary_report_populate_report_empty_reports_objects_populate_successfu
 def test_summary_report_populate_report_no_report_objects_populate_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": set(),
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),
