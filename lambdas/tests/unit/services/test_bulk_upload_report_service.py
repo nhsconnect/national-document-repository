@@ -360,6 +360,7 @@ def test_generate_individual_ods_report_creates_ods_report(
         total_successful=5,
         total_registered_elsewhere=1,
         total_suspended=1,
+        total_deceased=1,
         extra_rows=[
             ["Reason", "Could not find the given patient on PDS", 2],
             ["Reason", "Lloyd George file already exists", 1],
