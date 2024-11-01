@@ -8,7 +8,7 @@ from tests.unit.helpers.data.pds.access_token_response import RESPONSE_TOKEN
 from tests.unit.helpers.mock_services import FakeSSMService
 from utils.exceptions import OAuthErrorException
 
-fake_ssm_service = FakeSSMService()
+fake_ssm_service = FakeSSMService
 nhs_oauth_service = NhsOauthService(fake_ssm_service)
 
 
@@ -70,7 +70,6 @@ def test_create_jwt_for_new_access_token(mocker):
 
 def test_get_current_access_token():
     ssm_parameters_expected = f"test_value_{SSMParameter.PDS_API_ACCESS_TOKEN.value}"
-
     actual = nhs_oauth_service.get_current_access_token()
     assert ssm_parameters_expected == actual
 

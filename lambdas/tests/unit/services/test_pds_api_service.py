@@ -11,7 +11,7 @@ from utils.exceptions import PdsErrorException
 
 ACCESS_TOKEN = "Sr5PGv19wTEHJdDr2wx2f7IGd0cw"
 
-fake_ssm_service = FakeSSMService()
+fake_ssm_service = FakeSSMService
 pds_service = PdsApiService(fake_ssm_service)
 
 

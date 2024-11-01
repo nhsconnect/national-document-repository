@@ -5,8 +5,8 @@ class FakeSSMService:
     def get_ssm_parameters(self, parameters_keys, *arg, **kwargs):
         return {parameter: f"test_value_{parameter}" for parameter in parameters_keys}
 
-    def get_ssm_parameter(self, parameters_keys, *arg, **kwargs):
-        return f"test_value_{parameters_keys[0]}"
+    def get_ssm_parameter(self, parameter_key, *arg, **kwargs):
+        return f"test_value_{parameter_key}"
 
     def update_ssm_parameter(self, *arg, **kwargs):
         pass
