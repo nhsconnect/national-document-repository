@@ -1,99 +1,147 @@
+import hashlib
+from unittest.mock import patch
+
 import pytest
 from botocore.exceptions import ClientError
 from services.edge_presign_service import EdgePresignService
+from tests.unit.conftest import (
+    MOCK_TABLE_NAME,
+    MOCKED_LG_BUCKET_ENV,
+    MOCKED_LG_BUCKET_URL,
+)
 from tests.unit.enums.test_edge_presign_values import (
-    ENV,
-    EXPECTED_DYNAMO_DB_CONDITION_EXPRESSION,
-    EXPECTED_DYNAMO_DB_EXPRESSION_ATTRIBUTE_VALUES,
     EXPECTED_EDGE_NO_CLIENT_ERROR_CODE,
     EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE,
-    EXPECTED_SSM_PARAMETER_KEY,
-    EXPECTED_SUCCESS_RESPONSE,
-    NHS_DOMAIN,
-    TABLE_NAME,
+    EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE,
+    EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE,
+    MOCKED_AUTH_QUERY,
 )
 from utils.lambda_exceptions import CloudFrontEdgeException
 
-edge_presign_service = EdgePresignService()
-
 
 @pytest.fixture
-def mock_dynamo_service(mocker):
-    return mocker.patch.object(edge_presign_service, "dynamo_service", autospec=True)
-
-
-@pytest.fixture
-def mock_ssm_service(mocker):
-    return mocker.patch.object(edge_presign_service, "ssm_service", autospec=True)
-
-
-@pytest.fixture
-def valid_origin_url():
-    return f"https://{ENV}.{NHS_DOMAIN}"
-
-
-def test_attempt_url_update_success(
-    mock_dynamo_service, mock_ssm_service, valid_origin_url
-):
+@patch("services.edge_presign_service.SSMService")
+@patch("services.edge_presign_service.DynamoDBService")
+def edge_presign_service(mock_dynamo_service, mock_ssm_service):
+    mock_ssm_service.get_ssm_parameter.return_value = MOCK_TABLE_NAME
     mock_dynamo_service.update_item.return_value = None
-    mock_ssm_service.get_ssm_parameter.return_value = TABLE_NAME
-    uri_hash = "valid_hash"
-
-    response = edge_presign_service.attempt_url_update(
-        uri_hash=uri_hash, origin_url=valid_origin_url
-    )
-
-    expected_table_name = f"{ENV}_{TABLE_NAME}"
-    assert response == EXPECTED_SUCCESS_RESPONSE  # Success scenario returns None
-    mock_ssm_service.get_ssm_parameter.assert_called_once_with(
-        EXPECTED_SSM_PARAMETER_KEY
-    )
-    mock_dynamo_service.update_item.assert_called_once_with(
-        table_name=expected_table_name,
-        key=uri_hash,
-        updated_fields={"IsRequested": True},
-        condition_expression=EXPECTED_DYNAMO_DB_CONDITION_EXPRESSION,
-        expression_attribute_values=EXPECTED_DYNAMO_DB_EXPRESSION_ATTRIBUTE_VALUES,
-    )
+    return EdgePresignService()
 
 
-def test_attempt_url_update_client_error(
-    mock_dynamo_service, mock_ssm_service, valid_origin_url
-):
-    mock_dynamo_service.update_item.side_effect = ClientError(
+@pytest.fixture
+def request_values():
+    return {
+        "uri": "/some/path",
+        "querystring": MOCKED_AUTH_QUERY,
+        "domain_name": MOCKED_LG_BUCKET_URL,
+    }
+
+
+def test_use_presign(edge_presign_service, request_values):
+    with patch.object(
+        edge_presign_service, "attempt_presign_ingestion"
+    ) as mock_attempt_presign_ingestion:
+        edge_presign_service.use_presign(request_values)
+
+        expected_hash = hashlib.md5(
+            f"{request_values['uri']}?{request_values['querystring']}".encode("utf-8")
+        ).hexdigest()
+        mock_attempt_presign_ingestion.assert_called_once_with(
+            uri_hash=expected_hash, domain_name=MOCKED_LG_BUCKET_URL
+        )
+
+
+def test_attempt_presign_ingestion_success(edge_presign_service):
+    edge_presign_service.attempt_presign_ingestion("hashed_uri", MOCKED_LG_BUCKET_URL)
+
+
+def test_attempt_presign_ingestion_client_error(edge_presign_service):
+    client_error = ClientError(
         {"Error": {"Code": "ConditionalCheckFailedException"}}, "UpdateItem"
     )
-    mock_ssm_service.get_ssm_parameter.return_value = TABLE_NAME
-    uri_hash = "valid_hash"
+    edge_presign_service.dynamo_service.update_item.side_effect = client_error
 
     with pytest.raises(CloudFrontEdgeException) as exc_info:
-        edge_presign_service.attempt_url_update(
-            uri_hash=uri_hash, origin_url=valid_origin_url
+        edge_presign_service.attempt_presign_ingestion(
+            "hashed_uri", MOCKED_LG_BUCKET_URL
         )
 
     assert exc_info.value.status_code == 400
-    assert exc_info.value.message == EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE
     assert exc_info.value.err_code == EXPECTED_EDGE_NO_CLIENT_ERROR_CODE
+    assert exc_info.value.message == EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE
 
 
-def test_extract_environment_from_url():
-    url = f"https://{ENV}.{NHS_DOMAIN}/path/to/resource"
-    expected_environment = ENV
-    actual_environment = edge_presign_service.extract_environment_from_url(url)
-    assert actual_environment == expected_environment
+def test_update_s3_headers(edge_presign_service, request_values):
+    request = {
+        "headers": {
+            "host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}],
+        }
+    }
 
-    url_invalid = f"https://{NHS_DOMAIN}/path/to/resource"
-    expected_empty_result = ""
-    actual_empty_result = edge_presign_service.extract_environment_from_url(url_invalid)
-    assert actual_empty_result == expected_empty_result
+    response = edge_presign_service.update_s3_headers(request, request_values)
+    assert "authorization" not in response["headers"]
+    assert response["headers"]["host"][0]["value"] == MOCKED_LG_BUCKET_URL
 
 
-def test_extend_table_name():
-    base_table_name = TABLE_NAME
-    expected_table_with_env = f"{ENV}_{base_table_name}"
-    actual_table_with_env = edge_presign_service.extend_table_name(base_table_name, ENV)
-    assert actual_table_with_env == expected_table_with_env
+def test_filter_request_values_success(edge_presign_service):
+    request = {
+        "uri": "/test/uri",
+        "querystring": MOCKED_AUTH_QUERY,
+        "headers": {"host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}]},
+        "origin": {"s3": {"domainName": MOCKED_LG_BUCKET_URL}},
+    }
+    result = edge_presign_service.filter_request_values(request)
+    assert result["uri"] == "/test/uri"
+    assert result["querystring"] == MOCKED_AUTH_QUERY
+    assert result["domain_name"] == MOCKED_LG_BUCKET_URL
 
-    expected_table_no_env = base_table_name
-    actual_table_no_env = edge_presign_service.extend_table_name(base_table_name, "")
-    assert actual_table_no_env == expected_table_no_env
+
+def test_filter_request_values_missing_component(edge_presign_service):
+    request = {
+        "uri": "/test/uri",
+        "querystring": MOCKED_AUTH_QUERY,
+        "headers": {"host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}]},
+    }
+    with pytest.raises(CloudFrontEdgeException) as exc_info:
+        edge_presign_service.filter_request_values(request)
+
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.err_code == EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE
+    assert exc_info.value.message == EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE
+
+
+def test_filter_domain_for_env(edge_presign_service):
+    # Environments
+    assert (
+        edge_presign_service.filter_domain_for_env("ndra-lloyd-test-test.com") == "ndra"
+    )
+    assert (
+        edge_presign_service.filter_domain_for_env("ndr-test-lloyd-test-test.com")
+        == "ndr-test"
+    )
+    assert (
+        edge_presign_service.filter_domain_for_env("pre-prod-lloyd-test-test.com")
+        == "pre-prod"
+    )
+    # Production
+    assert (
+        edge_presign_service.filter_domain_for_env("prod-lloyd-test-test.com") == "prod"
+    )
+    assert edge_presign_service.filter_domain_for_env("lloyd-test-test.com") == ""
+    assert edge_presign_service.filter_domain_for_env("invalid.com") == ""
+
+
+def test_extend_table_name(edge_presign_service):
+    # Environments
+    assert (
+        edge_presign_service.extend_table_name(MOCK_TABLE_NAME, MOCKED_LG_BUCKET_ENV)
+        == f"{MOCKED_LG_BUCKET_ENV}_{MOCK_TABLE_NAME}"
+    )
+    # Production
+    assert (
+        edge_presign_service.extend_table_name(MOCK_TABLE_NAME, "") == MOCK_TABLE_NAME
+    )
+    assert (
+        edge_presign_service.extend_table_name(MOCK_TABLE_NAME, "prod")
+        == f"prod_{MOCK_TABLE_NAME}"
+    )

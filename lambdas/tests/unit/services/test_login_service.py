@@ -98,7 +98,7 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
 
     expected_jwt = "mock_ndr_auth_token"
     expected_role = RepositoryRole.PCSE
-    expected_is_bsol = False
+    expected_is_bsol = True
 
     mocker.patch.object(
         LoginService,

@@ -360,7 +360,7 @@ describe('Navigation', () => {
 
 const renderComponent = (docType: DOCUMENT_TYPE, history: MemoryHistory) => {
     const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
-        numberOfFiles: mockLgSearchResult.number_of_files,
+        numberOfFiles: mockLgSearchResult.numberOfFiles,
         docType,
         recordType: docType.toString(),
         resetDocState: mockResetDocState,

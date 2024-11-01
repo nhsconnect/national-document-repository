@@ -34,7 +34,7 @@ export type Props = {
     downloadStage: DOWNLOAD_STAGE;
     lastUpdated: string;
     numberOfFiles: number;
-    totalFileSizeInByte: number;
+    totalFileSizeInBytes: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     stage: LG_RECORD_STAGE;
     refreshRecord: () => void;
@@ -45,7 +45,7 @@ function LloydGeorgeViewRecordStage({
     downloadStage,
     lastUpdated,
     numberOfFiles,
-    totalFileSizeInByte,
+    totalFileSizeInBytes,
     setStage,
     refreshRecord,
     cloudFrontUrl,
@@ -95,7 +95,7 @@ function LloydGeorgeViewRecordStage({
         downloadStage,
         lastUpdated,
         numberOfFiles,
-        totalFileSizeInByte,
+        totalFileSizeInBytes,
     };
 
     const pageHeader = 'Available records';
@@ -260,14 +260,14 @@ function LloydGeorgeViewRecordStage({
 
 type RecordDetailsProps = Pick<
     Props,
-    'downloadStage' | 'lastUpdated' | 'numberOfFiles' | 'totalFileSizeInByte'
+    'downloadStage' | 'lastUpdated' | 'numberOfFiles' | 'totalFileSizeInBytes'
 >;
 
 const RecordDetails = ({
     downloadStage,
     lastUpdated,
     numberOfFiles,
-    totalFileSizeInByte,
+    totalFileSizeInBytes,
 }: RecordDetailsProps) => {
     switch (downloadStage) {
         case DOWNLOAD_STAGE.INITIAL:
@@ -278,7 +278,7 @@ const RecordDetails = ({
             const detailsProps = {
                 lastUpdated,
                 numberOfFiles,
-                totalFileSizeInByte,
+                totalFileSizeInBytes,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         }

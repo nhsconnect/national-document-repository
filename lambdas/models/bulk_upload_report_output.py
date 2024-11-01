@@ -19,6 +19,7 @@ class ReportBase:
         self.total_suspended = set()
         self.total_deceased = set()
         self.total_restricted = set()
+        self.total_ingested = set()
 
     def get_total_successful_nhs_numbers(self) -> list:
         if self.total_successful:
@@ -39,6 +40,9 @@ class ReportBase:
 
     def get_total_restricted_count(self) -> int:
         return len(self.total_restricted)
+
+    def get_total_ingested_count(self) -> int:
+        return len(self.total_ingested)
 
     @staticmethod
     def get_sorted(to_sort: set) -> list:
@@ -64,6 +68,7 @@ class OdsReport(ReportBase):
         logger.info(f"Generating ODS report file for {self.uploader_ods_code}")
 
         for item in self.report_items:
+            self.total_ingested.add(item.nhs_number)
             if item.upload_status == UploadStatus.COMPLETE:
                 self.process_successful_report_item(item)
             elif item.upload_status == UploadStatus.FAILED:
@@ -77,7 +82,7 @@ class OdsReport(ReportBase):
         if item.pds_ods_code == PatientOdsInactiveStatus.SUSPENDED:
             self.total_suspended.add((item.nhs_number, item.date))
         elif item.pds_ods_code == PatientOdsInactiveStatus.DECEASED:
-            self.total_deceased.add((item.nhs_number, item.date, item.failure_reason))
+            self.total_deceased.add((item.nhs_number, item.date, item.reason))
         elif item.pds_ods_code == PatientOdsInactiveStatus.RESTRICTED:
             self.total_restricted.add((item.nhs_number, item.date))
         elif (
@@ -95,7 +100,7 @@ class OdsReport(ReportBase):
             < item.timestamp
         )
 
-        if (item.failure_reason and is_new_failure) or is_timestamp_newer:
+        if (item.reason and is_new_failure) or is_timestamp_newer:
             self.failures_per_patient.update(
                 {
                     item.nhs_number: item.model_dump(
@@ -103,7 +108,7 @@ class OdsReport(ReportBase):
                             underscore(str(MetadataReport.Date)),
                             underscore(str(MetadataReport.Timestamp)),
                             underscore(str(MetadataReport.UploaderOdsCode)),
-                            underscore(str(MetadataReport.FailureReason)),
+                            underscore(str(MetadataReport.Reason)),
                         },
                         by_alias=True,
                     )
@@ -120,13 +125,13 @@ class OdsReport(ReportBase):
             self.failures_per_patient.pop(patient)
 
         for patient_data in self.failures_per_patient.values():
-            reason = patient_data.get(MetadataReport.FailureReason)
+            reason = patient_data.get(MetadataReport.Reason)
             self.unique_failures[reason] = self.unique_failures.get(reason, 0) + 1
 
     def get_unsuccessful_reasons_data_rows(self):
         return [
-            [MetadataReport.FailureReason, failure_reason, count]
-            for failure_reason, count in self.unique_failures.items()
+            [MetadataReport.Reason, reason, count]
+            for reason, count in self.unique_failures.items()
         ]
 
 
@@ -143,6 +148,7 @@ class SummaryReport(ReportBase):
         ods_code_success_total = {}
 
         for report in self.ods_reports:
+            self.total_ingested.update(report.total_ingested)
             self.total_successful.update(report.total_successful)
             self.total_registered_elsewhere.update(report.total_registered_elsewhere)
             self.total_suspended.update(report.total_suspended)
@@ -153,7 +159,7 @@ class SummaryReport(ReportBase):
             for reason, count in report.unique_failures.items():
                 self.reason_summary.append(
                     [
-                        f"{MetadataReport.FailureReason} for {report.uploader_ods_code}",
+                        f"{MetadataReport.Reason} for {report.uploader_ods_code}",
                         reason,
                         count,
                     ]

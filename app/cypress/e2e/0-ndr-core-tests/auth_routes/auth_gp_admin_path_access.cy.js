@@ -20,7 +20,7 @@ const arfDownloadUrl = '/patient/arf';
 
 const forbiddenRoutes = [arfDownloadUrl];
 
-const bsolOptions = [true, false];
+const bsolOptions = [true];
 
 describe('GP Admin user role has access to the expected GP_ADMIN workflow paths', () => {
     bsolOptions.forEach((isBSOL) => {

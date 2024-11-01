@@ -4,7 +4,7 @@ from enum import StrEnum
 class MetadataReport(StrEnum):
     NhsNumber = "NhsNumber"
     UploadStatus = "UploadStatus"
-    FailureReason = "FailureReason"
+    Reason = "Reason"
     PdsOdsCode = "PdsOdsCode"
     UploaderOdsCode = "UploaderOdsCode"
     FilePath = "FilePath"

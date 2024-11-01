@@ -5,6 +5,8 @@ describe('PdfViewer', () => {
     it('renders an embed element', () => {
         render(<PdfViewer fileUrl="https://test" />);
 
-        expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+        const embedElement = screen.getByTitle('Embedded PDF') as HTMLEmbedElement;
+        expect(embedElement).toBeInTheDocument();
+        expect(embedElement.src).toMatch(/#toolbar$/);
     });
 });

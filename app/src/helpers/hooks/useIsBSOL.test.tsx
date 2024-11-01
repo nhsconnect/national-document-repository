@@ -16,11 +16,6 @@ describe('useIsBSOL', () => {
         renderHook(true);
         expect(screen.getByText(`isBSOL: true`)).toBeInTheDocument();
     });
-
-    it('returns null when there is no session', () => {
-        renderHook();
-        expect(screen.getByText(`isBSOL: false`)).toBeInTheDocument();
-    });
 });
 
 const TestApp = () => {

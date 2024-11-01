@@ -14,10 +14,11 @@ from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 REGION_NAME = "eu-west-2"
 
-MOCK_CLOUDFRONT_URL = "test-cloudfront-url.com"
 MOCK_TABLE_NAME = "test-table"
 MOCK_BUCKET = "test-s3-bucket"
-
+MOCK_CLOUDFRONT_URL = "test-cloudfront-url.com"
+MOCKED_LG_BUCKET_ENV = "test"
+MOCKED_LG_BUCKET_URL = f"{MOCKED_LG_BUCKET_ENV}-lloyd-test-test.com"
 MOCK_ARF_TABLE_NAME_ENV_NAME = "DOCUMENT_STORE_DYNAMODB_NAME"
 MOCK_ARF_BUCKET_ENV_NAME = "DOCUMENT_STORE_BUCKET_NAME"
 
@@ -104,6 +105,8 @@ MOCK_APPCONFIG_CONFIGURATION_ID = "C1234"
 MOCK_PRESIGNED_URL_ROLE_ARN_KEY = "PRESIGNED_ASSUME_ROLE"
 MOCK_PRESIGNED_URL_ROLE_ARN_VALUE = "arn:aws:iam::test123"
 
+STITCH_METADATA_DYNAMODB_NAME_VALUE = "test_stitch_metadata"
+
 
 @pytest.fixture
 def set_env(monkeypatch):
@@ -158,6 +161,9 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_STATISTICS_TABLE_NAME, MOCK_STATISTICS_TABLE)
     monkeypatch.setenv(
         MOCK_STATISTICAL_REPORTS_BUCKET_ENV_NAME, MOCK_STATISTICS_REPORT_BUCKET_NAME
+    )
+    monkeypatch.setenv(
+        "STITCH_METADATA_DYNAMODB_NAME", STITCH_METADATA_DYNAMODB_NAME_VALUE
     )
 
 

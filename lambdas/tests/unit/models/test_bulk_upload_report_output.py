@@ -78,6 +78,16 @@ def test_report_base_get_sorted_returns_empty():
 def test_ods_report_populate_report_populates_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": {
+            "9000000000",
+            "9000000001",
+            "9000000002",
+            "9000000003",
+            "9000000004",
+            "9000000005",
+            "9000000006",
+            "9000000007",
+        },
         "total_successful": {
             ("9000000000", "2012-01-13"),
             ("9000000001", "2012-01-13"),
@@ -95,19 +105,19 @@ def test_ods_report_populate_report_populates_successfully():
         "failures_per_patient": {
             "9000000005": {
                 "Date": "2012-01-13",
-                "FailureReason": "Could not find the given patient on PDS",
+                "Reason": "Could not find the given patient on PDS",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
             },
             "9000000006": {
                 "Date": "2012-01-13",
-                "FailureReason": "Could not find the given patient on PDS",
+                "Reason": "Could not find the given patient on PDS",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
             },
             "9000000007": {
                 "Date": "2012-01-13",
-                "FailureReason": "Lloyd George file already exists",
+                "Reason": "Lloyd George file already exists",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
             },
@@ -131,8 +141,8 @@ def test_ods_report_populate_report_populates_successfully():
 def test_ods_report_process_failed_report_item_handles_failures():
     old_time_stamp = 1698661500
     new_time_stamp = 1698661501
-    old_failure_reason = "old reason"
-    newest_failure_reason = "new reason"
+    old_reason = "old reason"
+    newest_reason = "new reason"
 
     test_items = [
         BulkUploadReport(
@@ -141,7 +151,7 @@ def test_ods_report_process_failed_report_item_handles_failures():
             date="2023-10-30",
             upload_status=UploadStatus.FAILED,
             file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
-            failure_reason=old_failure_reason,
+            reason=old_reason,
             pds_ods_code=TEST_UPLOADER_ODS_1,
             uploader_ods_code=TEST_UPLOADER_ODS_1,
         )
@@ -153,7 +163,7 @@ def test_ods_report_process_failed_report_item_handles_failures():
         date="2023-10-30",
         upload_status=UploadStatus.FAILED,
         file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
-        failure_reason=newest_failure_reason,
+        reason=newest_reason,
         pds_ods_code=TEST_UPLOADER_ODS_1,
         uploader_ods_code=TEST_UPLOADER_ODS_1,
     )
@@ -161,7 +171,7 @@ def test_ods_report_process_failed_report_item_handles_failures():
     expected = {
         "9000000009": {
             "Date": "2023-10-30",
-            "FailureReason": old_failure_reason,
+            "Reason": old_reason,
             "Timestamp": old_time_stamp,
             "UploaderOdsCode": TEST_UPLOADER_ODS_1,
         }
@@ -181,7 +191,7 @@ def test_ods_report_process_failed_report_item_handles_failures():
     expected = {
         "9000000009": {
             "Date": "2023-10-30",
-            "FailureReason": newest_failure_reason,
+            "Reason": newest_reason,
             "Timestamp": new_time_stamp,
             "UploaderOdsCode": TEST_UPLOADER_ODS_1,
         }
@@ -199,8 +209,8 @@ def test_ods_report_get_unsuccessful_reasons_data_rows_returns_correct_rows():
     )
 
     expected = [
-        [MetadataReport.FailureReason, "Could not find the given patient on PDS", 2],
-        [MetadataReport.FailureReason, "Lloyd George file already exists", 1],
+        [MetadataReport.Reason, "Could not find the given patient on PDS", 2],
+        [MetadataReport.Reason, "Lloyd George file already exists", 1],
     ]
 
     actual = report.get_unsuccessful_reasons_data_rows()
@@ -211,6 +221,7 @@ def test_ods_report_get_unsuccessful_reasons_data_rows_returns_correct_rows():
 def test_ods_report_populate_report_empty_list_populates_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": set(),
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),
@@ -275,6 +286,24 @@ def test_summary_report_populate_report_populates_successfully():
 
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": {
+            "9000000006",
+            "9000000009",
+            "9000000005",
+            "9000000010",
+            "9000000013",
+            "9000000016",
+            "9000000004",
+            "9000000007",
+            "9000000012",
+            "9000000011",
+            "9000000002",
+            "9000000003",
+            "9000000001",
+            "9000000000",
+            "9000000014",
+            "9000000015",
+        },
         "total_successful": {
             ("9000000000", "2012-01-13"),
             ("9000000001", "2012-01-13"),
@@ -306,10 +335,10 @@ def test_summary_report_populate_report_populates_successfully():
             ["Success by ODS", "Z12345", 5],
         ],
         "reason_summary": [
-            ["FailureReason for Y12345", "Could not find the given patient on PDS", 2],
-            ["FailureReason for Y12345", "Lloyd George file already exists", 1],
-            ["FailureReason for Z12345", "Could not find the given patient on PDS", 2],
-            ["FailureReason for Z12345", "Lloyd George file already exists", 1],
+            ["Reason for Y12345", "Could not find the given patient on PDS", 2],
+            ["Reason for Y12345", "Lloyd George file already exists", 1],
+            ["Reason for Z12345", "Could not find the given patient on PDS", 2],
+            ["Reason for Z12345", "Lloyd George file already exists", 1],
         ],
     }
 
@@ -336,6 +365,7 @@ def test_summary_report_populate_report_empty_reports_objects_populate_successfu
 
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": set(),
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),
@@ -359,6 +389,7 @@ def test_summary_report_populate_report_empty_reports_objects_populate_successfu
 def test_summary_report_populate_report_no_report_objects_populate_successfully():
     expected = {
         "generated_at": get_timestamp(),
+        "total_ingested": set(),
         "total_successful": set(),
         "total_registered_elsewhere": set(),
         "total_suspended": set(),

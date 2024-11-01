@@ -1,58 +1,58 @@
-# test_enums.py
-
 from enums.lambda_error import LambdaError
+from tests.unit.conftest import MOCKED_LG_BUCKET_URL
 
-ENV = "test"
-
-TABLE_NAME = "CloudFrontEdgeReference"
-
-NHS_DOMAIN = "example.gov.uk"
-
-EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE = LambdaError.EdgeNoClient.value["message"]
-
-EXPECTED_EDGE_NO_CLIENT_ERROR_CODE = LambdaError.EdgeNoClient.value["err_code"]
-
-EXPECTED_DYNAMO_DB_CONDITION_EXPRESSION = (
-    "attribute_not_exists(IsRequested) OR IsRequested = :false"
+MOCKED_AUTH_QUERY = (
+    "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date"
+    "&X-Amz-Expires=3600&X-Amz-SignedHeaders=signed"
+    "&X-Amz-Signature=sig&X-Amz-Security-Token=token"
 )
-EXPECTED_DYNAMO_DB_EXPRESSION_ATTRIBUTE_VALUES = {":false": False}
+MOCKED_PARTIAL_QUERY = (
+    "X-Amz-Algorithm=algo&X-Amz-Credential=cred&X-Amz-Date=date" "&X-Amz-Expires=3600"
+)
 
-EXPECTED_SSM_PARAMETER_KEY = "EDGE_REFERENCE_TABLE"
-
-EXPECTED_SUCCESS_RESPONSE = None
-
-VALID_EVENT_MODEL = {
-    "Records": [
-        {
-            "cf": {
-                "request": {
-                    "headers": {
-                        "authorization": [
-                            {"key": "Authorization", "value": "Bearer token"}
-                        ],
-                        "host": [{"key": "Host", "value": NHS_DOMAIN}],
-                    },
-                    "querystring": f"origin=https://test.{NHS_DOMAIN}&other=param",
-                    "uri": "/some/path",
-                }
-            }
-        }
-    ]
+MOCKED_HEADERS = {
+    "cloudfront-viewer-country": [{"key": "CloudFront-Viewer-Country", "value": "US"}],
+    "x-forwarded-for": [{"key": "X-Forwarded-For", "value": "1.2.3.4"}],
+    "host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}],
 }
 
-MISSING_ORIGIN_EVENT_MODEL = {
+EXPECTED_EDGE_NO_QUERY_MESSAGE = LambdaError.EdgeNoQuery.value["message"]
+EXPECTED_EDGE_NO_QUERY_ERROR_CODE = LambdaError.EdgeNoQuery.value["err_code"]
+EXPECTED_EDGE_MALFORMED_QUERY_MESSAGE = LambdaError.EdgeRequiredQuery.value["message"]
+EXPECTED_EDGE_MALFORMED_QUERY_ERROR_CODE = LambdaError.EdgeRequiredQuery.value[
+    "err_code"
+]
+EXPECTED_EDGE_MALFORMED_HEADER_MESSAGE = LambdaError.EdgeRequiredHeaders.value[
+    "message"
+]
+EXPECTED_EDGE_MALFORMED_HEADER_ERROR_CODE = LambdaError.EdgeRequiredHeaders.value[
+    "err_code"
+]
+EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE = LambdaError.EdgeNoOrigin.value["message"]
+EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE = LambdaError.EdgeNoOrigin.value["err_code"]
+
+EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE = LambdaError.EdgeNoClient.value["message"]
+EXPECTED_EDGE_NO_CLIENT_ERROR_CODE = LambdaError.EdgeNoClient.value["err_code"]
+EXPECTED_EDGE_MALFORMED_ERROR_MESSAGE = LambdaError.EdgeMalformed.value["message"]
+EXPECTED_EDGE_MALFORMED_ERROR_CODE = LambdaError.EdgeMalformed.value["err_code"]
+
+
+MOCK_S3_EDGE_EVENT = {
     "Records": [
         {
             "cf": {
                 "request": {
-                    "headers": {
-                        "authorization": [
-                            {"key": "Authorization", "value": "Bearer token"}
-                        ],
-                        "host": [{"key": "Host", "value": NHS_DOMAIN}],
-                    },
-                    "querystring": "other=param",
+                    "headers": MOCKED_HEADERS,
+                    "querystring": MOCKED_AUTH_QUERY,
                     "uri": "/some/path",
+                    "origin": {
+                        "s3": {
+                            "authMethod": "none",
+                            "customHeaders": {},
+                            "domainName": MOCKED_LG_BUCKET_URL,
+                            "path": "",
+                        }
+                    },
                 }
             }
         }

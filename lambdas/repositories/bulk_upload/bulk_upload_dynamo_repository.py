@@ -32,7 +32,7 @@ class BulkUploadDynamoRepository:
         self,
         staging_metadata: StagingMetadata,
         upload_status: UploadStatus,
-        failure_reason: str = None,
+        reason: str = None,
         pds_ods_code: str = "",
     ):
         nhs_number = staging_metadata.nhs_number
@@ -41,7 +41,7 @@ class BulkUploadDynamoRepository:
             dynamo_record = BulkUploadReport(
                 upload_status=upload_status,
                 nhs_number=nhs_number,
-                failure_reason=failure_reason,
+                reason=reason,
                 file_path=file.file_path,
                 pds_ods_code=pds_ods_code,
                 uploader_ods_code=file.gp_practice_code,
