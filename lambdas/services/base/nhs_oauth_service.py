@@ -14,7 +14,7 @@ logger = LoggingService(__name__)
 
 class NhsOauthService:
     def __init__(self, ssm_service):
-        self.ssm_service = ssm_service
+        self.ssm_service = ssm_service()
 
     def create_access_token(self):
         access_token_response = self.get_current_access_token()
@@ -72,11 +72,10 @@ class NhsOauthService:
         )
 
     def get_current_access_token(self):
-        parameters = [
-            SSMParameter.PDS_API_ACCESS_TOKEN.value,
-        ]
+        parameter = SSMParameter.PDS_API_ACCESS_TOKEN.value
+
         ssm_response = self.ssm_service.get_ssm_parameter(
-            parameters_keys=parameters, with_decryption=True
+            parameter, with_decryption=True
         )
         return ssm_response
 

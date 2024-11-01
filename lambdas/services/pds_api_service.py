@@ -61,10 +61,9 @@ class PdsApiService(PatientSearch, NhsOauthService):
             raise PdsTooManyRequestsException("Failed to perform patient search")
 
     def get_endpoint_for_pds_api_request(self):
-        parameters = [
-            SSMParameter.PDS_API_ENDPOINT.value,
-        ]
+        parameter = SSMParameter.PDS_API_ENDPOINT.value
+
         ssm_response = self.ssm_service.get_ssm_parameter(
-            parameters_keys=parameters, with_decryption=True
+            parameter_key=parameter, with_decryption=True
         )
         return ssm_response

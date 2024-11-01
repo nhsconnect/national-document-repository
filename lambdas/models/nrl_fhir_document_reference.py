@@ -1,4 +1,7 @@
+from typing import Optional
+
 from fhir.resources.R4B.documentreference import DocumentReference
+from models.nrl_sqs_message import NrlAttachment
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
@@ -10,6 +13,7 @@ class FhirDocumentReference(BaseModel):
     custodian: str = "None"
     snomed_code_doc_type: str = "None"
     snomed_code_category: str = "None"
+    attachment: Optional[NrlAttachment] = {}
 
     def build_fhir_dict(self):
         example = {
@@ -54,15 +58,7 @@ class FhirDocumentReference(BaseModel):
             ],
             "content": [
                 {
-                    "attachment": {
-                        "contentType": "application/pdf",
-                        "language": "en-US",
-                        "url": "https://spine-proxy.national.ncrs.nhs.uk/https%3A%2F%2Fp1.nhs.uk%2FMentalhealthCrisisPlanReport.pdf",
-                        "size": 3654,
-                        "hash": "2jmj7l5rSw0yVb/vlWAYkK/YBwk=",
-                        "title": "Mental health crisis plan report",
-                        "creation": "2022-12-21T10:45:41+11:00",
-                    },
+                    "attachment": self.attachment,
                     "format": {
                         "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode",
                         "code": "urn:nhs-ic:unstructured",
