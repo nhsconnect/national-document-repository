@@ -438,6 +438,9 @@ def test_generate_summary_report_with_two_ods_reports(
 def test_generate_success_report_writes_csv(
     bulk_upload_report_service, mock_get_times_for_scan, mocker
 ):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv"
+    )
     bulk_upload_report_service.write_and_upload_additional_reports = mocker.MagicMock()
 
     test_ods_reports = bulk_upload_report_service.generate_ods_reports(
@@ -445,6 +448,11 @@ def test_generate_success_report_writes_csv(
     )
 
     bulk_upload_report_service.generate_success_report(test_ods_reports)
+    expected = readfile("expected_success_report.csv")
+    with open(f"/tmp/{mock_file_name}") as test_file:
+        actual = test_file.read()
+        assert expected == actual
+    os.remove(f"/tmp/{mock_file_name}")
 
     bulk_upload_report_service.write_and_upload_additional_reports.assert_called()
 

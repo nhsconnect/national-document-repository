@@ -151,12 +151,18 @@ class BulkUploadReportService:
             MetadataReport.NhsNumber,
             MetadataReport.UploaderOdsCode,
             MetadataReport.Date,
+            MetadataReport.RegisteredAtUploaderPractice,
         ]
         data_rows = []
         for report in ods_reports:
             for patient in report.get_sorted(report.total_successful):
                 data_rows.append(
-                    [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
+                    [
+                        str(patient[0]),
+                        str(report.uploader_ods_code),
+                        str(patient[1]),
+                        str(patient[2]),
+                    ]
                 )
 
         if data_rows:

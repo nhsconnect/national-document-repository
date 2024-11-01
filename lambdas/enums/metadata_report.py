@@ -11,6 +11,7 @@ class MetadataReport(StrEnum):
     Date = "Date"
     Timestamp = "Timestamp"
     ID = "ID"
+    RegisteredAtUploaderPractice = "RegisteredAtUploaderPractice"
 
     @staticmethod
     def list():
