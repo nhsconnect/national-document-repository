@@ -38,9 +38,9 @@ class BulkUploadReport(BaseModel):
             self.uploader_ods_code != self.pds_ods_code
             and self.pds_ods_code not in PatientOdsInactiveStatus.list()
         ):
-            return str(False)
+            return False
 
-        return str(True)
+        return True
 
 
 def date_string_yyyymmdd(time_now: datetime) -> str:
