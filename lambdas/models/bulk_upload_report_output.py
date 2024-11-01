@@ -19,6 +19,7 @@ class ReportBase:
         self.total_suspended = set()
         self.total_deceased = set()
         self.total_restricted = set()
+        self.total_ingested = set()
 
     def get_total_successful_nhs_numbers(self) -> list:
         if self.total_successful:
@@ -39,6 +40,9 @@ class ReportBase:
 
     def get_total_restricted_count(self) -> int:
         return len(self.total_restricted)
+
+    def get_total_ingested_count(self) -> int:
+        return len(self.total_ingested)
 
     @staticmethod
     def get_sorted(to_sort: set) -> list:
@@ -64,6 +68,7 @@ class OdsReport(ReportBase):
         logger.info(f"Generating ODS report file for {self.uploader_ods_code}")
 
         for item in self.report_items:
+            self.total_ingested.add(item.nhs_number)
             if item.upload_status == UploadStatus.COMPLETE:
                 self.process_successful_report_item(item)
             elif item.upload_status == UploadStatus.FAILED:
@@ -151,6 +156,7 @@ class SummaryReport(ReportBase):
         ods_code_success_total = {}
 
         for report in self.ods_reports:
+            self.total_ingested.update(report.total_ingested)
             self.total_successful.update(report.total_successful)
             self.total_registered_elsewhere.update(report.total_registered_elsewhere)
             self.total_suspended.update(report.total_suspended)
