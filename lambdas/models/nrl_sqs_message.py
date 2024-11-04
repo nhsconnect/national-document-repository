@@ -20,8 +20,8 @@ class NrlSqsMessage(BaseModel):
     )
 
     nhs_number: str
-    snomed_doc_type: str
-    snomed_doc_category: str
+    snomed_code_doc_type: str
+    snomed_code_category: str
     description: str = ""
     attachment: Optional[NrlAttachment] = None
     action: str

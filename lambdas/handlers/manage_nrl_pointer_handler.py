@@ -37,6 +37,8 @@ def lambda_handler(event, context):
         nrl_message = NrlSqsMessage(**sqs_message)
         NrlSqsMessage.model_validate(nrl_message)
         request_context.patient_nhs_no = nrl_message.nhs_number
-        c = nrl_message.model_dump(by_alias=True)
-        document = FhirDocumentReference(**c).build_fhir_dict()
+        c = nrl_message.model_dump(
+            by_alias=True, exclude_none=True, exclude_defaults=True
+        )
+        document = FhirDocumentReference(**c).build_fhir_dict().json()
         actions_options[nrl_message.action](document)

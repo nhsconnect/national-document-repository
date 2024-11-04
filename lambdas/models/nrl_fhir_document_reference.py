@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 from fhir.resources.R4B.documentreference import DocumentReference
@@ -8,9 +9,8 @@ from pydantic.alias_generators import to_camel
 
 class FhirDocumentReference(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel)
-
     nhs_number: str
-    custodian: str = "None"
+    custodian: str = os.getenv("NRL_END_USER_ODS_CODE", "")
     snomed_code_doc_type: str = "None"
     snomed_code_category: str = "None"
     attachment: Optional[NrlAttachment] = {}
@@ -44,6 +44,7 @@ class FhirDocumentReference(BaseModel):
                         {
                             "system": "http://snomed.info/sct",
                             "code": self.snomed_code_category,
+                            "display": "Care plan",
                         }
                     ]
                 }
@@ -58,7 +59,9 @@ class FhirDocumentReference(BaseModel):
             ],
             "content": [
                 {
-                    "attachment": self.attachment,
+                    "attachment": self.attachment.model_dump(
+                        by_alias=True, exclude_none=True, exclude_defaults=True
+                    ),
                     "format": {
                         "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode",
                         "code": "urn:nhs-ic:unstructured",
