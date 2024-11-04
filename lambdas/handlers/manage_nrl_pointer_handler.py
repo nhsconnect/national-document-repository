@@ -20,6 +20,7 @@ logger = LoggingService(__name__)
         "APPCONFIG_CONFIGURATION",
         "APPCONFIG_ENVIRONMENT",
         "NRL_API_ENDPOINT",
+        "NRL_END_USER_ODS_CODE",
     ]
 )
 @handle_lambda_exceptions
@@ -32,13 +33,29 @@ def lambda_handler(event, context):
         "UPDATE": nrl_api_service.update_pointer,
         "DELETE": nrl_api_service.delete_pointer,
     }
+    unhandled_messages = []
+
     for sqs_message in sqs_messages:
-        sqs_message = json.loads(sqs_message["body"])
-        nrl_message = NrlSqsMessage(**sqs_message)
-        NrlSqsMessage.model_validate(nrl_message)
-        request_context.patient_nhs_no = nrl_message.nhs_number
-        c = nrl_message.model_dump(
-            by_alias=True, exclude_none=True, exclude_defaults=True
-        )
-        document = FhirDocumentReference(**c).build_fhir_dict().json()
-        actions_options[nrl_message.action](document)
+        try:
+            sqs_message = json.loads(sqs_message["body"])
+            nrl_message = NrlSqsMessage(**sqs_message)
+            NrlSqsMessage.model_validate(nrl_message)
+            request_context.patient_nhs_no = nrl_message.nhs_number
+            logger.info(
+                f"Processing SQS message for nhs number: {nrl_message.nhs_number}"
+            )
+            nrl_verified_message = nrl_message.model_dump(
+                by_alias=True, exclude_none=True, exclude_defaults=True
+            )
+            document = (
+                FhirDocumentReference(
+                    **nrl_verified_message, custodian=nrl_api_service.end_user_ods_code
+                )
+                .build_fhir_dict()
+                .json()
+            )
+            actions_options[nrl_message.action](document)
+        except Exception as error:
+            unhandled_messages.append(sqs_message)
+            logger.info(f"Failed to process current message due to error: {error}")
+            logger.info("Continue on next message")

@@ -10,6 +10,10 @@ class OAuthErrorException(Exception):
     pass
 
 
+class NrlApiException(Exception):
+    pass
+
+
 class PdsErrorException(Exception):
     pass
 

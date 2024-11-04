@@ -3,10 +3,12 @@ import os
 import uuid
 
 import requests
+from requests import HTTPError
 from requests.adapters import HTTPAdapter
 from services.base.nhs_oauth_service import NhsOauthService
 from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
+from utils.exceptions import NrlApiException
 
 logger = LoggingService(__name__)
 
@@ -24,20 +26,30 @@ class NrlApiService(NhsOauthService):
         self.endpoint = os.getenv("NRL_API_ENDPOINT")
         self.session = requests.Session()
         self.session.mount("https://", adapter)
-        self.end_user_ods_code = os.getenv("NRL_END_USER_ODS_CODE", "")
+        self.end_user_ods_code = self._get_end_user_ods_code()
         self.headers = {
             "Authorization": f"Bearer {self.create_access_token()}",
             "NHSD-End-User-Organisation-ODS": self.end_user_ods_code,
         }
 
-    def create_new_pointer(self, body):
-        self.set_x_request_id()
-        headers = self.headers
-        headers["Accept"] = "application/json"
-        response = self.session.post(
-            url=self.endpoint, headers=headers, json=json.loads(body)
+    def _get_end_user_ods_code(self):
+        ssm_key_parameter = os.getenv("NRL_END_USER_ODS_CODE")
+        return self.ssm_service.get_ssm_parameter(
+            ssm_key_parameter, with_decryption=True
         )
-        response.raise_for_status()
+
+    def create_new_pointer(self, body):
+        try:
+            self.set_x_request_id()
+            headers = self.headers
+            headers["Accept"] = "application/json"
+            response = self.session.post(
+                url=self.endpoint, headers=headers, json=json.loads(body)
+            )
+            response.raise_for_status()
+        except HTTPError as e:
+            logger.error(e.response)
+            raise NrlApiException("Error while creating new NRL Pointer")
 
     def update_pointer(self):
         self.set_x_request_id()
