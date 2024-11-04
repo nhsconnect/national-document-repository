@@ -25,7 +25,7 @@ class NrlApiService(NhsOauthService):
         self.endpoint = os.getenv("NRL_API_ENDPOINT")
         self.session = requests.Session()
         self.session.mount("https://", adapter)
-        self.end_user_ods_code = os.getenv("NRL_END_USER_ODS_CODE")
+        self.end_user_ods_code = os.getenv("NRL_END_USER_ODS_CODE", "")
         self.headers = {
             "Authorization": f"Bearer {self.create_access_token()}",
             "NHSD-End-User-Organisation-ODS": self.end_user_ods_code,

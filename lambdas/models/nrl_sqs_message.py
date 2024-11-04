@@ -5,13 +5,13 @@ from pydantic.alias_generators import to_camel
 
 
 class NrlAttachment(BaseModel):
-    content_type: str
+    content_type: str = ""
     language: str = "en-US"
-    url: str
-    size: int
-    hash: str
+    url: str = ""
+    size: int = 0
+    hash: str = ""
     title: str = ""
-    creation: str
+    creation: str = ""
 
 
 class NrlSqsMessage(BaseModel):
