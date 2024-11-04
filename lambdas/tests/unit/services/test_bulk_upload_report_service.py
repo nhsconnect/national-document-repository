@@ -553,6 +553,9 @@ def test_generate_restricted_report_does_not_write_when_no_data(
 def test_generate_rejected_report_writes_csv(
     bulk_upload_report_service, mock_get_times_for_scan, mocker
 ):
+    mock_file_name = (
+        f"daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv"
+    )
     bulk_upload_report_service.write_and_upload_additional_reports = mocker.MagicMock()
 
     test_ods_reports = bulk_upload_report_service.generate_ods_reports(
@@ -560,6 +563,12 @@ def test_generate_rejected_report_writes_csv(
     )
 
     bulk_upload_report_service.generate_rejected_report(test_ods_reports)
+
+    expected = readfile("expected_rejected_report.csv")
+    with open(f"/tmp/{mock_file_name}") as test_file:
+        actual = test_file.read()
+        assert expected == actual
+    os.remove(f"/tmp/{mock_file_name}")
 
     bulk_upload_report_service.write_and_upload_additional_reports.assert_called()
 
@@ -588,6 +597,7 @@ def test_write_and_upload_additional_reports_creates_csv_and_writes_to_s3(
         MetadataReport.UploaderOdsCode,
         MetadataReport.Date,
         MetadataReport.Reason,
+        MetadataReport.RegisteredAtUploaderPractice,
     ]
 
     mock_data_rows = [
@@ -596,27 +606,43 @@ def test_write_and_upload_additional_reports_creates_csv_and_writes_to_s3(
             "Y12345",
             "2012-01-13",
             "Could not find the given patient on PDS",
+            "True",
         ],
         [
             "9000000006",
             "Y12345",
             "2012-01-13",
             "Could not find the given patient on PDS",
+            "True",
         ],
-        ["9000000007", "Y12345", "2012-01-13", "Lloyd George file already exists"],
+        [
+            "9000000007",
+            "Y12345",
+            "2012-01-13",
+            "Lloyd George file already exists",
+            "True",
+        ],
         [
             "9000000014",
             "Z12345",
             "2012-01-13",
             "Could not find the given patient on PDS",
+            "True",
         ],
         [
             "9000000015",
             "Z12345",
             "2012-01-13",
             "Could not find the given patient on PDS",
+            "True",
         ],
-        ["9000000016", "Z12345", "2012-01-13", "Lloyd George file already exists"],
+        [
+            "9000000016",
+            "Z12345",
+            "2012-01-13",
+            "Lloyd George file already exists",
+            "True",
+        ],
     ]
 
     bulk_upload_report_service.write_and_upload_additional_reports(

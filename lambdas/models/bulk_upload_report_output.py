@@ -124,6 +124,9 @@ class OdsReport(ReportBase):
                     )
                 }
             )
+            self.failures_per_patient[item.nhs_number][
+                MetadataReport.RegisteredAtUploaderPractice.value
+            ] = item.get_registered_at_uploader_practice_status()
 
     def set_unique_failures(self):
         patients_to_remove = {

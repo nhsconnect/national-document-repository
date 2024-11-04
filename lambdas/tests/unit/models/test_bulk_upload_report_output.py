@@ -108,18 +108,21 @@ def test_ods_report_populate_report_populates_successfully():
                 "Reason": "Could not find the given patient on PDS",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
+                MetadataReport.RegisteredAtUploaderPractice.value: True,
             },
             "9000000006": {
                 "Date": "2012-01-13",
                 "Reason": "Could not find the given patient on PDS",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
+                MetadataReport.RegisteredAtUploaderPractice.value: True,
             },
             "9000000007": {
                 "Date": "2012-01-13",
                 "Reason": "Lloyd George file already exists",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
+                MetadataReport.RegisteredAtUploaderPractice.value: True,
             },
         },
         "unique_failures": {
@@ -174,6 +177,7 @@ def test_ods_report_process_failed_report_item_handles_failures():
             "Reason": old_reason,
             "Timestamp": old_time_stamp,
             "UploaderOdsCode": TEST_UPLOADER_ODS_1,
+            MetadataReport.RegisteredAtUploaderPractice.value: True,
         }
     }
 
@@ -194,6 +198,7 @@ def test_ods_report_process_failed_report_item_handles_failures():
             "Reason": newest_reason,
             "Timestamp": new_time_stamp,
             "UploaderOdsCode": TEST_UPLOADER_ODS_1,
+            MetadataReport.RegisteredAtUploaderPractice.value: True,
         }
     }
 

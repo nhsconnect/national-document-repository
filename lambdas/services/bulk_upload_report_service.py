@@ -258,6 +258,7 @@ class BulkUploadReportService:
             MetadataReport.UploaderOdsCode,
             MetadataReport.Date,
             MetadataReport.Reason,
+            MetadataReport.RegisteredAtUploaderPractice,
         ]
 
         data_rows = []
@@ -269,6 +270,7 @@ class BulkUploadReportService:
                         report_item[MetadataReport.UploaderOdsCode],
                         report_item[MetadataReport.Date],
                         report_item[MetadataReport.Reason],
+                        report_item[MetadataReport.RegisteredAtUploaderPractice],
                     ]
                 )
 
