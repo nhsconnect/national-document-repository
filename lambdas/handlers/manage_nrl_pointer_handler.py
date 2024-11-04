@@ -39,4 +39,4 @@ def lambda_handler(event, context):
         request_context.patient_nhs_no = nrl_message.nhs_number
         c = nrl_message.model_dump(by_alias=True)
         document = FhirDocumentReference(**c).build_fhir_dict()
-        actions_options[sqs_messages.get("action", "POST")](document)
+        actions_options[nrl_message.action](document)
