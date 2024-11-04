@@ -1,11 +1,10 @@
+import json
 import os
 import uuid
 
 import requests
-from models.nrl_fhir_document_reference import FhirDocumentReference
 from requests.adapters import HTTPAdapter
 from services.base.nhs_oauth_service import NhsOauthService
-from services.mock_pds_service import MockPdsApiService
 from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
 
@@ -35,7 +34,9 @@ class NrlApiService(NhsOauthService):
         self.set_x_request_id()
         headers = self.headers
         headers["Accept"] = "application/json"
-        response = self.session.post(url="", headers=headers, json=body)
+        response = self.session.post(
+            url=self.endpoint, headers=headers, json=json.loads(body)
+        )
         response.raise_for_status()
 
     def update_pointer(self):
@@ -46,18 +47,3 @@ class NrlApiService(NhsOauthService):
 
     def set_x_request_id(self):
         self.headers["X-Request-ID"] = str(uuid.uuid4())
-
-
-class NrlPointerService:
-    def __init__(self):
-        pass
-
-    def prepare_request(self):
-        new_doc = FhirDocumentReference()
-        return new_doc.build_fhir_dict().json()
-
-
-def test_prepare_request():
-    service = NrlPointerService()
-    body = service.prepare_request()
-    NrlApiService(MockPdsApiService).create_new_pointer(body)
