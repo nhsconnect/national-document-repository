@@ -1,7 +1,7 @@
 import pytest
 from requests import Response
 from services.nrl_api_service import NrlApiService
-from unit.helpers.mock_services import FakeSSMService
+from tests.unit.helpers.mock_services import FakeSSMService
 from utils.exceptions import NrlApiException
 
 ACCESS_TOKEN = "Sr5PGv19wTEHJdDr2wx2f7IGd0cw"
