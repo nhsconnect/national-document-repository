@@ -29,10 +29,10 @@ class BulkUploadReport(BaseModel):
     uploader_ods_code: str = Field(alias=MetadataReport.UploaderOdsCode)
     reason: Optional[str] = Field(default="", alias=MetadataReport.Reason)
 
-    def get_registered_at_uploader_practice_status(self):
+    def get_registered_at_uploader_practice_status(self) -> str:
         if self.pds_ods_code in PatientOdsInactiveStatus.list():
             return self.pds_ods_code
-        return self.uploader_ods_code == self.pds_ods_code
+        return str(self.uploader_ods_code == self.pds_ods_code)
 
 
 def date_string_yyyymmdd(time_now: datetime) -> str:
