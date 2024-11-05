@@ -54,7 +54,7 @@ def lambda_handler(event, context):
                 .build_fhir_dict()
                 .json()
             )
-            actions_options[nrl_message.action](document)
+            actions_options[nrl_message.action](json.loads(document))
         except Exception as error:
             unhandled_messages.append(sqs_message)
             logger.info(f"Failed to process current message due to error: {error}")

@@ -1,4 +1,3 @@
-import json
 import os
 import uuid
 
@@ -41,12 +40,12 @@ class NrlApiService(NhsOauthService):
     def create_new_pointer(self, body):
         try:
             self.set_x_request_id()
-            headers = self.headers
-            headers["Accept"] = "application/json"
+            self.headers["Accept"] = "application/json"
             response = self.session.post(
-                url=self.endpoint, headers=headers, json=json.loads(body)
+                url=self.endpoint, headers=self.headers, json=body
             )
             response.raise_for_status()
+            self.headers.pop("Accept")
         except HTTPError as e:
             logger.error(e.response)
             raise NrlApiException("Error while creating new NRL Pointer")
