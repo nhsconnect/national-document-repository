@@ -107,13 +107,13 @@ def test_failed_upload_ids_and_timestamp_are_auto_populated_if_not_given(mock_uu
 
 
 def test_get_registered_at_uploader_status_returns_true_uploader_ods_and_pds_ods_are_the_same():
-    assert mock_report.get_registered_at_uploader_practice_status() is True
+    assert mock_report.get_registered_at_uploader_practice_status() == "True"
 
 
 def test_get_registered_at_uploader_status_returns_false_uploader_ods_and_pds_ods_are_different():
     mock_report.uploader_ods_code = "Z12345"
 
-    assert mock_report.get_registered_at_uploader_practice_status() is False
+    assert mock_report.get_registered_at_uploader_practice_status() == "False"
 
 
 def test_get_registered_at_uploader_status_returns_correct_status():
