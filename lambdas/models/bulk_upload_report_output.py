@@ -77,15 +77,11 @@ class OdsReport(ReportBase):
         self.set_unique_failures()
 
     def process_successful_report_item(self, item: BulkUploadReport):
-
         if item.pds_ods_code == PatientOdsInactiveStatus.SUSPENDED:
             self.total_suspended.add((item.nhs_number, item.date))
-
         elif item.pds_ods_code == PatientOdsInactiveStatus.DECEASED:
-
             self.total_deceased.add((item.nhs_number, item.date, item.reason))
         elif item.pds_ods_code == PatientOdsInactiveStatus.RESTRICTED:
-
             self.total_restricted.add((item.nhs_number, item.date))
         elif (
             item.uploader_ods_code != item.pds_ods_code
