@@ -1,6 +1,7 @@
 import os
 import uuid
 
+from models.nrl_sqs_message import NrlSqsMessage
 from models.staging_metadata import StagingMetadata
 from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
@@ -39,3 +40,7 @@ class BulkUploadSqsRepository:
             message_body=sqs_message["body"],
             nhs_number=nhs_number,
         )
+
+    def send_message_to_nrl_fifo(self, queue_url: str, message: NrlSqsMessage):
+
+        self.sqs_repository.send_message_standard(queue_url, message.model_dump())

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from enums.snomed_codes import SnomedCodesCatagory, SnomedCodesType
 from pydantic import AliasGenerator, BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
@@ -20,8 +21,8 @@ class NrlSqsMessage(BaseModel):
     )
 
     nhs_number: str
-    snomed_code_doc_type: str
-    snomed_code_category: str
+    snomed_code_doc_type: str = SnomedCodesType.LLOYD_GEORGE
+    snomed_code_category: str = SnomedCodesCatagory.CARE_PLAN
     description: str = ""
     attachment: Optional[NrlAttachment] = None
     action: str
