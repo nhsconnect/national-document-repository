@@ -1,6 +1,7 @@
 import json
 import os
 
+from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.nrl_fhir_document_reference import FhirDocumentReference
@@ -22,8 +23,8 @@ class NRLBatchCreatePointer:
     def __init__(self):
         self.nrl_service = NrlApiService(SSMService)
         self.dynamo_service = DynamoDBService()
-        self.table_name = os.getenv("table_name")
-        self.progress: [ProgressForPatient] = []
+        self.table_name = os.getenv("table_name", "")
+        self.progress: list[ProgressForPatient] = []
         self.progress_store = "nrl_batch_update_progress.json"
 
     def main(self):
@@ -62,20 +63,23 @@ class NRLBatchCreatePointer:
 
         table = DynamoDBService().get_table(self.table_name)
         results = {}
-        columns_to_fetch = [DocumentReferenceMetadataFields.NHS_NUMBER.value]
+        columns_to_fetch = DocumentReferenceMetadataFields.NHS_NUMBER.value
 
-        response = table.scan(ProjectionExpression=columns_to_fetch)
-
+        response = table.scan(
+            ProjectionExpression=columns_to_fetch,
+            FilterExpression=Attr(columns_to_fetch).exists(),
+        )
         # handle pagination
         while "LastEvaluatedKey" in response:
 
-            results += self.create_progress_dict(response, results)
+            results.update(self.create_progress_dict(response, results))
             response = table.scan(
                 ExclusiveStartKey=response["LastEvaluatedKey"],
                 ProjectionExpression=columns_to_fetch,
+                FilterExpression=Attr(columns_to_fetch).exists(),
             )
 
-        results += self.create_progress_dict(response, results)
+        results.update(self.create_progress_dict(response, results))
         self.progress = list(results.values())
         logger.info(f"Totally {len(results)} patients found.")
 
@@ -93,7 +97,7 @@ class NRLBatchCreatePointer:
                     # TODO update snomed and attachment, once the API is ready
                     document = (
                         FhirDocumentReference(
-                            nhs_number=patient.nhs_number,
+                            nhsNumber=patient.nhs_number,
                             custodian=self.nrl_service.end_user_ods_code,
                         )
                         .build_fhir_dict()
@@ -113,9 +117,14 @@ class NRLBatchCreatePointer:
                         )
                     )
                     logger.error(str(e))
+            self.save_progress()
 
     def save_progress(self):
         with open(self.progress_store, "w") as f:
             progress_list = [patient.model_dump() for patient in self.progress]
             json_str = json.dumps(progress_list)
-            return f.write(json_str)
+            f.write(json_str)
+
+
+if __name__ == "__main__":
+    NRLBatchCreatePointer().main()
