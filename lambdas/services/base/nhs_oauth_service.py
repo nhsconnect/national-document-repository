@@ -14,7 +14,7 @@ logger = LoggingService(__name__)
 
 class NhsOauthService:
     def __init__(self, ssm_service):
-        self.ssm_service = ssm_service()
+        self.ssm_service = ssm_service
 
     def create_access_token(self):
         access_token_response = self.get_current_access_token()

@@ -2,6 +2,7 @@ import json
 
 from models.nrl_fhir_document_reference import FhirDocumentReference
 from models.nrl_sqs_message import NrlSqsMessage
+from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService
 from services.nrl_api_service import NrlApiService
 from utils.audit_logging_setup import LoggingService
@@ -27,7 +28,9 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     logger.info(f"Received event: {event}")
     sqs_messages = event.get("Records", [])
-    nrl_api_service = NrlApiService(SSMService)
+    ssm_service = SSMService()
+    oauth_service = NhsOauthService(ssm_service)
+    nrl_api_service = NrlApiService(ssm_service, oauth_service)
     actions_options = {
         "POST": nrl_api_service.create_new_pointer,
         "UPDATE": nrl_api_service.update_pointer,

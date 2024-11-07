@@ -12,9 +12,9 @@ class FakeSSMService:
         pass
 
 
-class FakePDSService:
+class FakOAuthService:
     def __init__(self, *arg, **kwargs):
         pass
 
-    def pds_request(self, *arg, **kwargs):
-        pass
+    def create_access_token(self, *arg, **kwargs):
+        return "Sr5PGv19wTEHJdDr2wx2f7IGd0cw"

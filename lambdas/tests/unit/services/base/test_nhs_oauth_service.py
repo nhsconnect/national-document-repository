@@ -8,7 +8,7 @@ from tests.unit.helpers.data.pds.access_token_response import RESPONSE_TOKEN
 from tests.unit.helpers.mock_services import FakeSSMService
 from utils.exceptions import OAuthErrorException
 
-fake_ssm_service = FakeSSMService
+fake_ssm_service = FakeSSMService()
 nhs_oauth_service = NhsOauthService(fake_ssm_service)
 
 

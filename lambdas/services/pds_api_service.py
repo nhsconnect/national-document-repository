@@ -6,7 +6,6 @@ from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError, HTTPError, Timeout
-from services.base.nhs_oauth_service import NhsOauthService
 from services.patient_search_service import PatientSearch
 from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
@@ -15,10 +14,10 @@ from utils.exceptions import PdsErrorException, PdsTooManyRequestsException
 logger = LoggingService(__name__)
 
 
-class PdsApiService(PatientSearch, NhsOauthService):
-    def __init__(self, ssm_service):
-        super().__init__(ssm_service)
-
+class PdsApiService(PatientSearch):
+    def __init__(self, ssm_service, auth_service):
+        self.ssm_service = ssm_service
+        self.auth_service = auth_service
         retry_strategy = Retry(
             total=3,
             status_forcelist=[429, 500, 502, 503, 504],
@@ -33,7 +32,7 @@ class PdsApiService(PatientSearch, NhsOauthService):
     def pds_request(self, nhs_number: str, retry_on_expired: bool):
         try:
             endpoint = self.get_endpoint_for_pds_api_request()
-            access_token = self.create_access_token()
+            access_token = self.auth_service.create_access_token()
 
             x_request_id = str(uuid.uuid4())
 

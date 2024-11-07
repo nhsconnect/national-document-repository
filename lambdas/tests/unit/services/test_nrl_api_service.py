@@ -1,7 +1,7 @@
 import pytest
 from requests import Response
 from services.nrl_api_service import NrlApiService
-from tests.unit.helpers.mock_services import FakeSSMService
+from tests.unit.helpers.mock_services import FakeSSMService, FakOAuthService
 from utils.exceptions import NrlApiException
 
 ACCESS_TOKEN = "Sr5PGv19wTEHJdDr2wx2f7IGd0cw"
@@ -9,12 +9,11 @@ ACCESS_TOKEN = "Sr5PGv19wTEHJdDr2wx2f7IGd0cw"
 
 @pytest.fixture
 def nrl_service(set_env, mocker):
-    mocker.patch(
-        "services.nrl_api_service.NhsOauthService.create_access_token",
-        return_value=ACCESS_TOKEN,
-    )
-    fake_ssm_service = FakeSSMService
-    nrl_service = NrlApiService(fake_ssm_service)
+
+    fake_ssm_service = FakeSSMService()
+    fake_auth_service = FakOAuthService(fake_ssm_service)
+
+    nrl_service = NrlApiService(fake_ssm_service, fake_auth_service)
     mocker.patch.object(nrl_service, "session")
     yield nrl_service
 

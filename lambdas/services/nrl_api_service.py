@@ -4,7 +4,6 @@ import uuid
 import requests
 from requests import HTTPError
 from requests.adapters import HTTPAdapter
-from services.base.nhs_oauth_service import NhsOauthService
 from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NrlApiException
@@ -12,9 +11,10 @@ from utils.exceptions import NrlApiException
 logger = LoggingService(__name__)
 
 
-class NrlApiService(NhsOauthService):
-    def __init__(self, ssm_service):
-        super().__init__(ssm_service)
+class NrlApiService:
+    def __init__(self, ssm_service, auth_service):
+        self.ssm_service = ssm_service
+        self.auth_service = auth_service
         retry_strategy = Retry(
             total=3,
             status_forcelist=[429, 500, 502, 503, 504],
@@ -27,7 +27,7 @@ class NrlApiService(NhsOauthService):
         self.session.mount("https://", adapter)
         self.end_user_ods_code = self._get_end_user_ods_code()
         self.headers = {
-            "Authorization": f"Bearer {self.create_access_token()}",
+            "Authorization": f"Bearer {self.auth_service.create_access_token()}",
             "NHSD-End-User-Organisation-ODS": self.end_user_ods_code,
         }
 
