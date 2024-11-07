@@ -53,7 +53,7 @@ def test_process_delete_event_with_one_message(mock_service, context, set_env):
     mock_service.delete_pointer.assert_called_once()
 
 
-def test_process_event_with_few_message(mock_service, context, set_env):
+def test_process_event_with_multiple_messages(mock_service, context, set_env):
     event = {
         "Records": [build_test_sqs_message("POST"), build_test_sqs_message("DELETE")]
     }

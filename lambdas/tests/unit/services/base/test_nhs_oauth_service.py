@@ -180,7 +180,7 @@ def test_pds_request_not_refresh_token_if_more_than_10_seconds_before_expiry(moc
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
 
-    nhs_oauth_service.create_access_token()
+    nhs_oauth_service.get_active_access_token()
 
     mock_get_parameters.assert_called_once()
     mock_new_access_token.assert_not_called()
@@ -204,7 +204,7 @@ def test_pds_request_refresh_token_9_seconds_before_expiration(
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
 
-    nhs_oauth_service.create_access_token()
+    nhs_oauth_service.get_active_access_token()
 
     mock_get_parameters.assert_called_once()
     mock_new_access_token.assert_called_once()
@@ -226,7 +226,7 @@ def test_pds_request_refresh_token_if_already_expired(mocker):
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
 
-    nhs_oauth_service.create_access_token()
+    nhs_oauth_service.get_active_access_token()
 
     mock_get_parameters.assert_called_once()
     mock_new_access_token.assert_called_once()
@@ -248,7 +248,7 @@ def test_pds_request_refresh_token_if_already_expired_11_seconds_ago(mocker):
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
 
-    nhs_oauth_service.create_access_token()
+    nhs_oauth_service.get_active_access_token()
 
     mock_get_parameters.assert_called_once()
     mock_new_access_token.assert_called_once()
@@ -268,7 +268,7 @@ def test_pds_request_expired_token(mocker):
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
 
-    actual = nhs_oauth_service.create_access_token()
+    actual = nhs_oauth_service.get_active_access_token()
     assert actual == new_mock_access_token
     mock_get_parameters.assert_called_once()
     mock_new_access_token.assert_called_once()

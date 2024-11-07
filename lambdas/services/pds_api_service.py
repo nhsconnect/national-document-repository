@@ -32,7 +32,7 @@ class PdsApiService(PatientSearch):
     def pds_request(self, nhs_number: str, retry_on_expired: bool):
         try:
             endpoint = self.get_endpoint_for_pds_api_request()
-            access_token = self.auth_service.create_access_token()
+            access_token = self.auth_service.get_active_access_token()
 
             x_request_id = str(uuid.uuid4())
 
