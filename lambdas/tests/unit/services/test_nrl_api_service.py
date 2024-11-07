@@ -37,5 +37,5 @@ def test_create_new_pointer_raise_error(nrl_service):
 
 
 def test_get_end_user_ods_code(nrl_service):
-    actual = nrl_service._get_end_user_ods_code()
+    actual = nrl_service.__get_end_user_ods_code()
     assert actual == "test_value_test_nrl_user_ods_ssm_key"

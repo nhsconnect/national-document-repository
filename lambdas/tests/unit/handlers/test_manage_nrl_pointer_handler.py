@@ -2,6 +2,7 @@ import json
 
 import pytest
 from handlers.manage_nrl_pointer_handler import lambda_handler
+from utils.exceptions import NrlApiException
 
 
 @pytest.fixture
@@ -39,7 +40,6 @@ def test_process_event_with_one_message(mock_service, context, set_env):
 
 def test_process_update_event_with_one_message(mock_service, context, set_env):
     event = {"Records": [build_test_sqs_message("UPDATE")]}
-
     lambda_handler(event, context)
 
     mock_service.update_pointer.assert_called_once()
@@ -62,3 +62,15 @@ def test_process_event_with_few_message(mock_service, context, set_env):
 
     mock_service.create_new_pointer.assert_called_once()
     mock_service.delete_pointer.assert_called_once()
+
+
+def test_failed_to_create_a_pointer(mock_service, context, set_env, caplog):
+    event = {"Records": [build_test_sqs_message("POST")]}
+    mock_service.create_new_pointer.side_effect = NrlApiException("test exception")
+
+    lambda_handler(event, context)
+
+    expected_log = "Failed to process current message due to error: test exception"
+    actual_log = caplog.records[-2].msg
+    assert actual_log == expected_log
+    mock_service.create_new_pointer.assert_called_once()

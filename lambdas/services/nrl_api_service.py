@@ -25,19 +25,19 @@ class NrlApiService:
         self.endpoint = os.getenv("NRL_API_ENDPOINT")
         self.session = requests.Session()
         self.session.mount("https://", adapter)
-        self.end_user_ods_code = self._get_end_user_ods_code()
+        self.end_user_ods_code = self.__get_end_user_ods_code()
         self.headers = {
             "Authorization": f"Bearer {self.auth_service.create_access_token()}",
             "NHSD-End-User-Organisation-ODS": self.end_user_ods_code,
         }
 
-    def _get_end_user_ods_code(self):
+    def __get_end_user_ods_code(self):
         ssm_key_parameter = os.getenv("NRL_END_USER_ODS_CODE")
         return self.ssm_service.get_ssm_parameter(
             ssm_key_parameter, with_decryption=True
         )
 
-    def create_new_pointer(self, body):
+    def create_new_pointer(self, body, retry_on_expired: bool = True):
         try:
             self.set_x_request_id()
             self.headers["Accept"] = "application/json"
@@ -45,10 +45,17 @@ class NrlApiService:
                 url=self.endpoint, headers=self.headers, json=body
             )
             response.raise_for_status()
+            logger.info("Successfully created new pointer")
             self.headers.pop("Accept")
         except HTTPError as e:
             logger.error(e.response)
-            raise NrlApiException("Error while creating new NRL Pointer")
+            if e.response.status_code == 429 and retry_on_expired:
+                self.headers["Authorization"] = (
+                    f"Bearer {self.auth_service.create_access_token()}"
+                )
+                self.create_new_pointer(body, retry_on_expired=False)
+            else:
+                raise NrlApiException("Error while creating new NRL Pointer")
 
     def update_pointer(self):
         self.set_x_request_id()
