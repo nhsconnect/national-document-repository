@@ -1,17 +1,20 @@
 import json
+import logging
 import os
 
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.nrl_fhir_document_reference import FhirDocumentReference
+from models.nrl_sqs_message import NrlAttachment
 from pydantic import BaseModel, ValidationError
 from services.base.dynamo_service import DynamoDBService
+from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService
 from services.nrl_api_service import NrlApiService
-from utils.audit_logging_setup import LoggingService
 
-logger = LoggingService(__name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class ProgressForPatient(BaseModel):
@@ -21,7 +24,9 @@ class ProgressForPatient(BaseModel):
 
 class NRLBatchCreatePointer:
     def __init__(self):
-        self.nrl_service = NrlApiService(SSMService)
+        ssm_service = SSMService()
+        auth_service = NhsOauthService(ssm_service)
+        self.nrl_service = NrlApiService(ssm_service, auth_service)
         self.dynamo_service = DynamoDBService()
         self.table_name = os.getenv("table_name", "")
         self.progress: list[ProgressForPatient] = []
@@ -98,7 +103,12 @@ class NRLBatchCreatePointer:
                     document = (
                         FhirDocumentReference(
                             nhsNumber=patient.nhs_number,
+                            snomedCodeDocType="16521000000101",
+                            snomedCodeCategory="734163000",
                             custodian=self.nrl_service.end_user_ods_code,
+                            attachment=NrlAttachment(
+                                url="https://example.org/my-doc.pdf"
+                            ),
                         )
                         .build_fhir_dict()
                         .json()
@@ -127,4 +137,9 @@ class NRLBatchCreatePointer:
 
 
 if __name__ == "__main__":
+    table_name = input("Which table would you like to run the batch script? ")
+    os.environ["table_name"] = table_name
+    os.environ["NRL_END_USER_ODS_CODE"] = "ndr_ods_code"
+    endpoint = input("What is nrl endpoint would you like use? ")
+    os.environ["NRL_API_ENDPOINT"] = endpoint
     NRLBatchCreatePointer().main()
