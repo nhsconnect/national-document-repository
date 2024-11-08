@@ -550,6 +550,11 @@ def test_generate_restricted_report_does_not_write_when_no_data(
     bulk_upload_report_service.s3_service.upload_file.assert_not_called()
 
 
+@pytest.mark.parametrize("mock_file_name, expected_file", [()])
+def test_report_handler_generates_reports_as_expected():
+    pass
+
+
 def test_generate_rejected_report_writes_csv(
     bulk_upload_report_service, mock_get_times_for_scan, mocker
 ):
