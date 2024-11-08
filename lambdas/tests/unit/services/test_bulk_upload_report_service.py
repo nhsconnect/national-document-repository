@@ -420,22 +420,54 @@ def test_generate_ods_reports_writes_multiple_ods_reports(
 
 
 @pytest.mark.parametrize(
-    "mock_file_name, expected_file",
+    "generated_file, mock_file",
     [
         (
             f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv",
             "expected_bulk_upload_summary_report.csv",
-        )
+        ),
+        (
+            f"daily_statistical_report_entire_bulk_upload_{MOCK_START_REPORT_TIME}_to_{MOCK_END_REPORT_TIME}.csv",
+            "expected_bulk_upload_summary_report.csv",
+        ),
+        (
+            f"daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv",
+            "expected_success_report.csv",
+        ),
+        (
+            f"daily_statistical_report_bulk_upload_deceased_{MOCK_TIMESTAMP}.csv",
+            "expected_deceased_report.csv",
+        ),
+        (
+            f"daily_statistical_report_bulk_upload_suspended_{MOCK_TIMESTAMP}.csv",
+            "expected_suspended_report.csv",
+        ),
+        (
+            f"daily_statistical_report_bulk_upload_restricted_{MOCK_TIMESTAMP}.csv",
+            "expected_restricted_report.csv",
+        ),
+        (
+            f"daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv",
+            "expected_rejected_report.csv",
+        ),
     ],
 )
 def test_report_handler_generates_reports_as_expected(
     bulk_upload_report_service,
-    mock_file_name,
-    expected_file,
+    mock_file,
+    generated_file,
     mock_get_times_for_scan,
     mock_get_db_with_data,
 ):
-    pass
+
+    bulk_upload_report_service.report_handler()
+
+    expected = readfile(mock_file)
+
+    with open(f"/tmp/{generated_file}") as test_file:
+        actual = test_file.read()
+        assert expected == actual
+    os.remove(f"/tmp/{generated_file}")
 
 
 def test_generate_summary_report_with_two_ods_reports(
