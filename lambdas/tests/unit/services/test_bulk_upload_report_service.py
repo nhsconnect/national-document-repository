@@ -419,6 +419,25 @@ def test_generate_ods_reports_writes_multiple_ods_reports(
     os.remove(f"/tmp/{mock_file_name_uploader_2}")
 
 
+@pytest.mark.parametrize(
+    "mock_file_name, expected_file",
+    [
+        (
+            f"daily_statistical_report_bulk_upload_summary_{MOCK_TIMESTAMP}.csv",
+            "expected_bulk_upload_summary_report.csv",
+        )
+    ],
+)
+def test_report_handler_generates_reports_as_expected(
+    bulk_upload_report_service,
+    mock_file_name,
+    expected_file,
+    mock_get_times_for_scan,
+    mock_get_db_with_data,
+):
+    pass
+
+
 def test_generate_summary_report_with_two_ods_reports(
     bulk_upload_report_service, mock_get_times_for_scan
 ):
@@ -548,11 +567,6 @@ def test_generate_restricted_report_does_not_write_when_no_data(
     bulk_upload_report_service.generate_restricted_report(blank_ods_reports)
 
     bulk_upload_report_service.s3_service.upload_file.assert_not_called()
-
-
-@pytest.mark.parametrize("mock_file_name, expected_file", [()])
-def test_report_handler_generates_reports_as_expected():
-    pass
 
 
 def test_generate_rejected_report_writes_csv(
