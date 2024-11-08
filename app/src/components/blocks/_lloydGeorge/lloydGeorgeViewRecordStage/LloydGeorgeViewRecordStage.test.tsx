@@ -20,6 +20,7 @@ import LloydGeorgeViewRecordStage, { Props } from './LloydGeorgeViewRecordStage'
 import { createMemoryHistory } from 'history';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import * as ReactRouter from 'react-router-dom';
+import { useRef } from 'react';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../../helpers/hooks/useRole');
@@ -83,6 +84,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         async (stage) => {
             renderComponent({
                 downloadStage: stage,
+                cloudFrontUrl: '',
             });
 
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
@@ -447,6 +449,8 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
         totalFileSizeInBytes: mockPdf.totalFileSizeInBytes,
         refreshRecord: jest.fn(),
         cloudFrontUrl: 'http://test.com',
+        showMenu: true,
+        resetDocState: jest.fn(),
         ...propsOverride,
     };
     render(<TestApp {...props} />);
