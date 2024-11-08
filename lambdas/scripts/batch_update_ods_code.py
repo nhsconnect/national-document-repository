@@ -6,6 +6,10 @@ import time
 from typing import Dict
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from handlers.data_collection_handler import lambda_handler as data_collection_handler
+from handlers.statistical_report_handler import (
+    lambda_handler as statistical_report_handler,
+)
 from models.pds_models import Patient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from requests import HTTPError
@@ -235,3 +239,5 @@ def setup_logging_for_local_script():
 if __name__ == "__main__":
     setup_logging_for_local_script()
     BatchUpdate().main()
+    data_collection_handler({}, {})
+    statistical_report_handler({}, {})
