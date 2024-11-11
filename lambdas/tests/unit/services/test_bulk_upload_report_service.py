@@ -467,10 +467,7 @@ def test_report_handler_generates_reports_as_expected(
     with open(f"/tmp/{generated_file}") as test_file:
         actual = test_file.read()
         assert expected == actual
-
-    filelist = [file for file in os.listdir("/tmp/") if file.endswith(".csv")]
-    for file in filelist:
-        os.remove(os.path.join("/tmp/", file))
+    os.remove(f"/tmp/{generated_file}")
 
 
 def test_generate_summary_report_with_two_ods_reports(
