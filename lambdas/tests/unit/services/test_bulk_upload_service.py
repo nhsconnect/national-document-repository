@@ -190,6 +190,7 @@ def test_lambda_handler_handle_pds_too_many_requests_exception(
         mock_back_to_queue.assert_any_call(message)
 
 
+@pytest.mark.focus
 def test_handle_sqs_message_happy_path(
     set_env,
     mocker,
@@ -200,7 +201,10 @@ def test_handle_sqs_message_happy_path(
     mock_pds_validation,
     mock_ods_validation,
 ):
+    # given
     TEST_STAGING_METADATA.retries = 0
+
+    # when
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
@@ -213,6 +217,8 @@ def test_handle_sqs_message_happy_path(
     mocker.patch.object(repo_under_test.s3_repository, "check_virus_result")
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    # then
     mock_create_lg_records_and_copy_files.assert_called_with(
         TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
     )

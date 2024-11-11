@@ -42,5 +42,4 @@ class BulkUploadSqsRepository:
         )
 
     def send_message_to_nrl_fifo(self, queue_url: str, message: NrlSqsMessage):
-
         self.sqs_repository.send_message_standard(queue_url, message.model_dump())

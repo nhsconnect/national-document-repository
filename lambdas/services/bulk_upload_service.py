@@ -4,6 +4,7 @@ import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
@@ -271,8 +272,12 @@ class BulkUploadService:
             patient_ods_code,
         )
 
-        NrlMessage = NrlSqsMessage(nhsNumber=staging_metadata.nhs_number)
-        self.send_message_to_nrl_fifo(self.nrl_queue_url, NrlMessage)
+        NrlMessage = NrlSqsMessage(
+            nhs_number=staging_metadata.nhs_number, action=NrlActionTypes.action
+        )
+        self.sqs_repository.send_message_to_nrl_fifo(
+            queue_url=self.nrl_queue_url, message=NrlMessage
+        )
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
         sample_file_path = staging_metadata.files[0].file_path
