@@ -284,7 +284,16 @@ class BulkUploadReportService:
     def write_items_to_csv(items: list[BulkUploadReport], csv_file_path: str):
         logger.info("Writing scan results to csv file")
         with open(csv_file_path, "w") as output_file:
-            field_names = MetadataReport.list()
+            field_names = [
+                MetadataReport.NhsNumber,
+                MetadataReport.UploadStatus,
+                MetadataReport.Reason,
+                MetadataReport.PdsOdsCode,
+                MetadataReport.UploaderOdsCode,
+                MetadataReport.FilePath,
+                MetadataReport.Date,
+                MetadataReport.Timestamp,
+            ]
             dict_writer_object = csv.DictWriter(output_file, fieldnames=field_names)
             dict_writer_object.writeheader()
             for item in items:

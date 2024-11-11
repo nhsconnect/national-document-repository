@@ -427,10 +427,6 @@ def test_generate_ods_reports_writes_multiple_ods_reports(
             "expected_bulk_upload_summary_report.csv",
         ),
         (
-            f"daily_statistical_report_entire_bulk_upload_{MOCK_START_REPORT_TIME}_to_{MOCK_END_REPORT_TIME}.csv",
-            "expected_bulk_upload_summary_report.csv",
-        ),
-        (
             f"daily_statistical_report_bulk_upload_success_{MOCK_TIMESTAMP}.csv",
             "expected_success_report.csv",
         ),
@@ -450,6 +446,10 @@ def test_generate_ods_reports_writes_multiple_ods_reports(
             f"daily_statistical_report_bulk_upload_rejected_{MOCK_TIMESTAMP}.csv",
             "expected_rejected_report.csv",
         ),
+        (
+            f"daily_statistical_report_entire_bulk_upload_{MOCK_START_REPORT_TIME}_to_{MOCK_END_REPORT_TIME}.csv",
+            "expected_statistical_report_entire_bulk_upload.csv",
+        ),
     ],
 )
 def test_report_handler_generates_reports_as_expected(
@@ -467,7 +467,10 @@ def test_report_handler_generates_reports_as_expected(
     with open(f"/tmp/{generated_file}") as test_file:
         actual = test_file.read()
         assert expected == actual
-    os.remove(f"/tmp/{generated_file}")
+
+    filelist = [file for file in os.listdir("/tmp/") if file.endswith(".csv")]
+    for file in filelist:
+        os.remove(os.path.join("/tmp/", file))
 
 
 def test_generate_summary_report_with_two_ods_reports(
