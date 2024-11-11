@@ -6,15 +6,13 @@ import time
 from typing import Dict
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from handlers.data_collection_handler import lambda_handler as data_collection_handler
-from handlers.statistical_report_handler import (
-    lambda_handler as statistical_report_handler,
-)
 from models.pds_models import Patient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from requests import HTTPError
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
+from services.data_collection_service import DataCollectionService
+from services.statistical_report_service import StatisticalReportService
 from utils.exceptions import PdsErrorException, PdsResponseValidationException
 from utils.utilities import get_pds_service
 
@@ -239,5 +237,9 @@ def setup_logging_for_local_script():
 if __name__ == "__main__":
     setup_logging_for_local_script()
     BatchUpdate().main()
-    data_collection_handler({}, {})
-    statistical_report_handler({}, {})
+    print("Starting data collection process")
+    service = DataCollectionService()
+    service.collect_all_data_and_write_to_dynamodb()
+    print("Starting creating statistical report")
+    service = StatisticalReportService()
+    service.make_weekly_summary_and_output_to_bucket()
