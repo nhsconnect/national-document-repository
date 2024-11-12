@@ -1,5 +1,6 @@
-from enum import Enum
+from enum import StrEnum, auto
 
 
-class NrlActionTypes(str, Enum):
-    action = "POST"
+class NrlActionTypes(StrEnum):
+    CREATE = auto()
+    DELETE = auto()

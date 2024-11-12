@@ -5,5 +5,5 @@ class SnomedCodesType(StrEnum):
     LLOYD_GEORGE = "16521000000101"
 
 
-class SnomedCodesCatagory(StrEnum):
+class SnomedCodesCategory(StrEnum):
     CARE_PLAN = "734163000"
