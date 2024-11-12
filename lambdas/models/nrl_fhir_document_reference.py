@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 
 from fhir.resources.R4B.documentreference import DocumentReference
@@ -10,30 +9,33 @@ from pydantic.alias_generators import to_camel
 class FhirDocumentReference(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel)
     nhs_number: str
-    custodian: str = os.getenv("NRL_END_USER_ODS_CODE", "")
+    custodian: str
     snomed_code_doc_type: str = "None"
     snomed_code_category: str = "None"
+    snomed_code_category_display: str = "Care plan"
     attachment: Optional[NrlAttachment] = {}
 
     def build_fhir_dict(self):
-        example = {
+        snomed_url = "http://snomed.info/sct"
+        fhir_base_url = "https://fhir.nhs.uk/Id"
+        structure_json = {
             "status": "current",
             "subject": {
                 "identifier": {
-                    "system": "https://fhir.nhs.uk/Id/nhs-number",
+                    "system": fhir_base_url + "/nhs-number",
                     "value": self.nhs_number,
                 }
             },
             "custodian": {
                 "identifier": {
-                    "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                    "system": fhir_base_url + "/ods-organization-code",
                     "value": self.custodian,
                 }
             },
             "type": {
                 "coding": [
                     {
-                        "system": "http://snomed.info/sct",
+                        "system": snomed_url,
                         "code": self.snomed_code_doc_type,
                     }
                 ]
@@ -42,9 +44,9 @@ class FhirDocumentReference(BaseModel):
                 {
                     "coding": [
                         {
-                            "system": "http://snomed.info/sct",
+                            "system": snomed_url,
                             "code": self.snomed_code_category,
-                            "display": "Care plan",
+                            "display": self.snomed_code_category_display,
                         }
                     ]
                 }
@@ -52,7 +54,7 @@ class FhirDocumentReference(BaseModel):
             "author": [
                 {
                     "identifier": {
-                        "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                        "system": fhir_base_url + "/ods-organization-code",
                         "value": self.custodian,
                     }
                 }
@@ -70,4 +72,4 @@ class FhirDocumentReference(BaseModel):
                 }
             ],
         }
-        return DocumentReference(**example)
+        return DocumentReference(**structure_json)

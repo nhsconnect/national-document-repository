@@ -168,6 +168,8 @@ def set_env(monkeypatch):
     monkeypatch.setenv(
         "STITCH_METADATA_DYNAMODB_NAME", STITCH_METADATA_DYNAMODB_NAME_VALUE
     )
+    monkeypatch.setenv("NRL_API_ENDPOINT", FAKE_URL)
+    monkeypatch.setenv("NRL_END_USER_ODS_CODE", "test_nrl_user_ods_ssm_key")
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(

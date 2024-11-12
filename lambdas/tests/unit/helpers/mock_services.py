@@ -18,3 +18,11 @@ class FakePDSService:
 
     def pds_request(self, *arg, **kwargs):
         pass
+
+
+class FakOAuthService:
+    def __init__(self, *arg, **kwargs):
+        pass
+
+    def get_active_access_token(self, *arg, **kwargs):
+        return "Sr5PGv19wTEHJdDr2wx2f7IGd0cw"
