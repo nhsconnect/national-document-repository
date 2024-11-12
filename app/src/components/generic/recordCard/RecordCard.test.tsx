@@ -3,7 +3,6 @@ import useConfig from '../../../helpers/hooks/useConfig';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getLloydGeorgeRecord from '../../../helpers/requests/getLloydGeorgeRecord';
-import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import { render, screen, waitFor } from '@testing-library/react';
 import RecordCard, { Props } from './RecordCard';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
@@ -41,10 +40,10 @@ describe('RecordCard Component', () => {
         heading: 'Mock Header Record',
         fullScreenHandler: mockFullScreenHandler,
         detailsElement: <div>Mock Details Element</div>,
-        downloadStage: DOWNLOAD_STAGE.INITIAL,
         isFullScreen: false,
         refreshRecord: jest.fn(),
         cloudFrontUrl: 'https://test.com',
+        resetDocStage: jest.fn(),
     };
 
     beforeEach(() => {
@@ -109,9 +108,9 @@ describe('RecordCard Component', () => {
             });
         });
 
-        it('renders ProgressBar while isLoading is true', async () => {
-            render(<RecordCard {...props} />);
-            expect(screen.getByText('Loading...')).toBeInTheDocument();
+        it('renders nothing while no cloudFrontUrl', async () => {
+            render(<RecordCard {...props} cloudFrontUrl="" />);
+            expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
         });
 
         it('removes ProgressBar once loading is complete', async () => {
@@ -164,11 +163,6 @@ describe('RecordCard Component', () => {
             render(<RecordCard {...props} cloudFrontUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
             expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
-        });
-
-        it('does not render PdfViewer when downloadStage is FAILED', async () => {
-            render(<RecordCard {...props} downloadStage={DOWNLOAD_STAGE.FAILED} />);
-            expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
         });
     });
 
