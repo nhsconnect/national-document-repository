@@ -273,10 +273,13 @@ class BulkUploadService:
         )
 
         NrlMessage = NrlSqsMessage(
-            nhs_number=staging_metadata.nhs_number, action=NrlActionTypes.action
+            nhs_number=staging_metadata.nhs_number, action=NrlActionTypes.CREATE
         )
         self.sqs_repository.send_message_to_nrl_fifo(
-            queue_url=self.nrl_queue_url, message=NrlMessage
+            queue_url=self.nrl_queue_url,
+            message=NrlMessage,
+            nhs_number=staging_metadata.nhs_number,
+            group_id=f"nrl_sqs_{uuid.uuid4()}",
         )
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
