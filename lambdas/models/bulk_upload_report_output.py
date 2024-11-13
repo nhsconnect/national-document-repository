@@ -77,8 +77,6 @@ class OdsReport(ReportBase):
         self.set_unique_failures()
 
     def process_successful_report_item(self, item: BulkUploadReport):
-        self.total_successful.add((item.nhs_number, item.date))
-
         if item.pds_ods_code == PatientOdsInactiveStatus.SUSPENDED:
             self.total_suspended.add((item.nhs_number, item.date))
         elif item.pds_ods_code == PatientOdsInactiveStatus.DECEASED:
@@ -90,6 +88,14 @@ class OdsReport(ReportBase):
             and item.pds_ods_code not in PatientOdsInactiveStatus.list()
         ):
             self.total_registered_elsewhere.add((item.nhs_number, item.date))
+
+        self.total_successful.add(
+            (
+                item.nhs_number,
+                item.date,
+                item.get_registered_at_uploader_practice_status(),
+            )
+        )
 
     def process_failed_report_item(self, item: BulkUploadReport):
         is_new_failure = item.nhs_number not in self.failures_per_patient
@@ -114,6 +120,9 @@ class OdsReport(ReportBase):
                     )
                 }
             )
+            self.failures_per_patient[item.nhs_number][
+                MetadataReport.RegisteredAtUploaderPractice.value
+            ] = item.get_registered_at_uploader_practice_status()
 
     def set_unique_failures(self):
         patients_to_remove = {
