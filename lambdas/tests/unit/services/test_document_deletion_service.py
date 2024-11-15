@@ -4,7 +4,12 @@ import pytest
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_deletion_service import DocumentDeletionService
-from tests.unit.conftest import MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME, TEST_NHS_NUMBER
+from tests.unit.conftest import (
+    MOCK_ARF_TABLE_NAME,
+    MOCK_LG_TABLE_NAME,
+    NRL_SQS_URL,
+    TEST_NHS_NUMBER,
+)
 from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
@@ -35,7 +40,7 @@ def mocked_document_query(
 def mock_deletion_service(set_env, mocker):
     mocker.patch("services.document_deletion_service.DocumentService")
     mocker.patch("services.document_deletion_service.LloydGeorgeStitchJobService")
-
+    mocker.patch("services.document_deletion_service.SQSService")
     yield DocumentDeletionService()
 
 
@@ -214,4 +219,27 @@ def test_delete_documents_references_in_stitch_table(mocker, mock_deletion_servi
     ]
     mock_deletion_service.document_service.dynamo_service.update_item.assert_has_calls(
         expected_calls
+    )
+
+
+def test_send_sqs_message_to_remove_pointer(mocker, mock_deletion_service):
+    mocker.patch("uuid.uuid4", return_value="test_uuid")
+
+    expected_message_body = (
+        '{{"nhs_number":"{}",'
+        '"snomed_code_doc_type":"16521000000101",'
+        '"snomed_code_category":"734163000",'
+        '"description":"",'
+        '"attachment":null,'
+        '"action":"delete"}}'
+    ).format(TEST_NHS_NUMBER)
+
+    mock_deletion_service.send_sqs_message_to_remove_pointer(TEST_NHS_NUMBER)
+
+    assert mock_deletion_service.sqs_service.send_message_fifo.call_count == 1
+
+    mock_deletion_service.sqs_service.send_message_fifo.assert_called_with(
+        group_id="NRL_delete_test_uuid",
+        message_body=expected_message_body,
+        queue_url=NRL_SQS_URL,
     )
