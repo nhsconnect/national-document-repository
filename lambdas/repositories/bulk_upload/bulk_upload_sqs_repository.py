@@ -41,5 +41,9 @@ class BulkUploadSqsRepository:
             nhs_number=nhs_number,
         )
 
-    def send_message_to_nrl_fifo(self, queue_url: str, message: NrlSqsMessage):
-        self.sqs_repository.send_message_standard(queue_url, message.model_dump())
+    def send_message_to_nrl_fifo(
+        self, queue_url: str, message: NrlSqsMessage, group_id: str, nhs_number
+    ):
+        self.sqs_repository.send_message_with_nhs_number_attr_fifo(
+            queue_url, message.model_dump(), group_id, nhs_number
+        )
