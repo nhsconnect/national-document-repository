@@ -2,8 +2,18 @@ import boto3
 
 
 class SSMService:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.initialised = False
+        return cls._instance
+
     def __init__(self):
-        self.client = boto3.client("ssm", region_name="eu-west-2")
+        if not self.initialised:
+            self.client = boto3.client("ssm", region_name="eu-west-2")
+            self.initialised = True
 
     def get_ssm_parameter(self, parameter_key: str, with_decryption=False):
         ssm_response = self.client.get_parameter(

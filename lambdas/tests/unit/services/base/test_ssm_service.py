@@ -89,3 +89,12 @@ def test_update_ssm_parameter(mocker):
         Type="SecureString",
         Overwrite=True,
     )
+
+
+def test_ssm_service_singleton_instance(mocker):
+    mocker.patch("boto3.client")
+
+    instance_1 = SSMService()
+    instance_2 = SSMService()
+
+    assert instance_1 is instance_2
