@@ -1,0 +1,64 @@
+name: Subscribe to MNS
+
+on:
+  workflow_dispatch:
+    inputs:
+      sandbox:
+        description: Which sandbox would you like to run against?
+        required: true
+        type: string
+        default: ndr
+      environments:
+        description: Which environment settings to use?
+        required: true
+        type: string
+        default: development
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  Subscribe to MNS:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
+
+      - name: Copy files
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python_version: 3.11
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Start virtual environment
+        run: |
+          source ./lambdas/venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Get MNS subscription IDs and store
+        run: |
+          ./lambdas/venv/bin/python3 lambdas/scripts/mns_subscription.py
+        env:
+          ENV: ${{ vars.BUILD_ENV }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+
+# rather than copy everything over, the script could use boto3,
+# this github action could set up amazon connection
+# will still need a virtual env to make this work.
