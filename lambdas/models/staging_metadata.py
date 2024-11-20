@@ -5,6 +5,7 @@ from pydantic_core import PydanticCustomError
 
 METADATA_FILENAME = "metadata.csv"
 NHS_NUMBER_FIELD_NAME = "NHS-NO"
+NHS_NUMBER_PLACEHOLDER = "0000000000"
 
 
 def to_upper_case_with_hyphen(field_name: str) -> str:
@@ -18,13 +19,9 @@ class MetadataFile(BaseModel):
 
     file_path: str = Field(alias="FILEPATH")
     page_count: str = Field(alias="PAGE COUNT")
-
-    # A temporary field just to let us retrieve nhs_number during validation.
-    # For the purpose of single source of truth, better to refer to the nhs number at StagingMetadata
     nhs_number: Optional[str] = Field(
         alias=NHS_NUMBER_FIELD_NAME, exclude=True, default=None
     )
-
     gp_practice_code: str
     section: str
     sub_section: Optional[str]
@@ -51,15 +48,14 @@ class MetadataFile(BaseModel):
 class StagingMetadata(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    nhs_number: str = Field(alias=NHS_NUMBER_FIELD_NAME)
+    nhs_number: str = Field(default=NHS_NUMBER_PLACEHOLDER, alias=NHS_NUMBER_FIELD_NAME)
     files: list[MetadataFile]
-
     retries: int = 0
 
     @field_validator("nhs_number")
     @classmethod
     def validate_nhs_number(cls, nhs_number: str) -> str:
-        if nhs_number.isdigit() and len(nhs_number) == 10:
+        if nhs_number and nhs_number.isdigit():
             return nhs_number
 
-        raise ValueError("NHS number must be a 10 digit number")
+        return NHS_NUMBER_PLACEHOLDER
