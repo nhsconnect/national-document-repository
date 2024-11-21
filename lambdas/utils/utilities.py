@@ -6,7 +6,10 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 from inflection import camelize
+from services.base.nhs_oauth_service import NhsOauthService
+from services.base.ssm_service import SSMService
 from services.mock_pds_service import MockPdsApiService
+from services.patient_search_service import PatientSearch
 from services.pds_api_service import PdsApiService
 from utils.exceptions import InvalidResourceIdException
 
@@ -42,12 +45,13 @@ def create_reference_id() -> str:
     return str(uuid.uuid4())
 
 
-def get_pds_service():
-    return (
-        PdsApiService
-        if (os.getenv("PDS_FHIR_IS_STUBBED") == "false")
-        else MockPdsApiService
-    )
+def get_pds_service() -> PatientSearch:
+    if os.getenv("PDS_FHIR_IS_STUBBED") not in ["False", "false"]:
+        return MockPdsApiService()
+
+    ssm_service = SSMService()
+    auth_service = NhsOauthService(ssm_service)
+    return PdsApiService(ssm_service, auth_service)
 
 
 def redact_id_to_last_4_chars(str_id: str) -> str:

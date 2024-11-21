@@ -10,7 +10,6 @@ from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
 from requests import HTTPError
-from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
@@ -213,10 +212,7 @@ def validate_patient_date_of_birth(file_date_of_birth, pds_patient_details):
 
 
 def getting_patient_info_from_pds(nhs_number: str) -> Patient:
-    pds_service_class = get_pds_service()
-    ssm_service = SSMService()
-    auth_service = NhsOauthService(ssm_service)
-    pds_service = pds_service_class(ssm_service, auth_service)
+    pds_service = get_pds_service()
     pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
     check_pds_response_status(pds_response)
     patient = parse_pds_response(pds_response)
