@@ -1,6 +1,3 @@
-import os
-from unittest import mock
-
 import pytest
 from services.mock_pds_service import MockPdsApiService
 from services.pds_api_service import PdsApiService
@@ -40,23 +37,24 @@ def test_decapitalise_keys():
     assert actual == expected
 
 
-def test_get_pds_service_returns_stubbed_pds_when_true():
-    with mock.patch.dict(os.environ, {"PDS_FHIR_IS_STUBBED": "True"}):
-        response = get_pds_service()
+def test_get_pds_service_returns_stubbed_pds_when_true(monkeypatch):
+    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", "True")
+
+    response = get_pds_service()
 
     assert isinstance(response, MockPdsApiService)
 
 
 def test_get_pds_service_returns_stubbed_pds_when_unset():
-    with mock.patch.dict(os.environ, {}, clear=True):
-        response = get_pds_service()
+    response = get_pds_service()
 
     assert isinstance(response, MockPdsApiService)
 
 
-def test_get_pds_service_returns_real_pds():
-    with mock.patch.dict(os.environ, {"PDS_FHIR_IS_STUBBED": "False"}):
-        response = get_pds_service()
+def test_get_pds_service_returns_real_pds(monkeypatch):
+    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", "False")
+
+    response = get_pds_service()
 
     assert isinstance(response, PdsApiService)
 
