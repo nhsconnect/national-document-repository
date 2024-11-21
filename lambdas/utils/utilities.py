@@ -46,12 +46,12 @@ def create_reference_id() -> str:
 
 
 def get_pds_service() -> PatientSearch:
-    if os.getenv("PDS_FHIR_IS_STUBBED") not in ["False", "false"]:
+    if os.getenv("PDS_FHIR_IS_STUBBED") in ["False", "false"]:
+        ssm_service = SSMService()
+        auth_service = NhsOauthService(ssm_service)
+        return PdsApiService(ssm_service, auth_service)
+    else:
         return MockPdsApiService()
-
-    ssm_service = SSMService()
-    auth_service = NhsOauthService(ssm_service)
-    return PdsApiService(ssm_service, auth_service)
 
 
 def redact_id_to_last_4_chars(str_id: str) -> str:
