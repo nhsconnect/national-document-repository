@@ -16,7 +16,6 @@ logger = LoggingService(__name__)
         "APPCONFIG_CONFIGURATION",
         "APPCONFIG_ENVIRONMENT",
         "LLOYD_GEORGE_DYNAMODB_NAME",
-        "MNS_NOTIFICATION_QUEUE_URL",
         # might not need the name of the queue, as this is what is trigging the lamdba
     ]
 )
@@ -31,8 +30,12 @@ def lambda_handler(event, context):
     for sqs_message in sqs_messages:
         try:
             sqs_message = json.loads(sqs_message["body"])
+            # event_type = sqs_message["type"]
+            # nhs_number = sqs_message["subject"]["nhsNumber"]
             mns_message = MNSSQSMessage(**sqs_message)
             MNSSQSMessage.model_validate(mns_message)
+
+            return mns_message.subject.nhs_number
         except Exception as error:
             logger.error(f"Error processing SQS message: {error}.")
             logger.info("Continuing to next message.")
