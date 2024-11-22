@@ -39,7 +39,25 @@ class MNSNotificationService:
         pass
 
     def handle_gp_change_notification(self, message: MNSSQSMessage):
-        pass
+
+        patient_document_references = self.get_patient_documents(
+            message.subject.nhs_number
+        )
+
+        if len(patient_document_references) < 1:
+            logger.info("Patient is not held in the National Document Repository.")
+            logger.info("Moving on to the next message.")
+            return
+
+        updated_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
+
+        for reference in patient_document_references:
+            if reference["CurrentGpOds"] is not updated_ods_code:
+                self.dynamo_service.update_item(
+                    table_name=self.table,
+                    key=reference["ID"],
+                    updated_fields={"CurrentGpOds": updated_ods_code},
+                )
 
     def handle_death_notification(self, message: MNSSQSMessage):
         if self.is_informal_death_notification(message):
@@ -62,10 +80,12 @@ class MNSNotificationService:
             self.update_patient_details(
                 patient_documents, PatientOdsInactiveStatus.DECEASED.value
             )
-            return
 
         update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
         self.update_patient_details(patient_documents, update_ods_code)
+
+    # def do_not_have_patient_records(self, patient_documents_references):
+    #     return len(patient_documents_references) < 1
 
     def is_informal_death_notification(self, message: MNSSQSMessage) -> bool:
         return (
@@ -74,7 +94,7 @@ class MNSNotificationService:
         )
 
     def get_patient_documents(self, nhs_number: str):
-        logger.info("Checking if patient is held in the National Document Repository.")
+        logger.info("Getting patient document references...")
         response = self.dynamo_service.query_table_by_index(
             table_name=self.table,
             index_name="NhsNumberIndex",
@@ -83,13 +103,15 @@ class MNSNotificationService:
         )
         return response["Items"]
 
-    def update_patient_details(self, patient_documents: dict, code: str) -> None:
+    def update_patient_details(self, patient_documents: list[dict], code: str) -> None:
         for document in patient_documents:
             self.dynamo_service.update_item(
                 table_name=self.table,
                 key=document["ID"],
                 updated_fields={"CurrentGpOds": code},
             )
+
+        # logger.info(f"Updated patient CurrentGpOds from {patient_documents[0]["CurrentGpOds"]} to {code}")
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
         time.sleep(0.2)  # buffer to avoid over stretching PDS API
