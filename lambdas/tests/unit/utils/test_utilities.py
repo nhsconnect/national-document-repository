@@ -37,8 +37,15 @@ def test_decapitalise_keys():
     assert actual == expected
 
 
-def test_get_pds_service_returns_stubbed_pds_when_true(monkeypatch):
-    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", "True")
+@pytest.mark.parametrize(
+    "stub_value",
+    [
+        ("True"),
+        ("true"),
+    ],
+)
+def test_get_pds_service_returns_stubbed_pds_when_true(monkeypatch, stub_value):
+    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", stub_value)
 
     response = get_pds_service()
 
@@ -51,8 +58,15 @@ def test_get_pds_service_returns_stubbed_pds_when_unset():
     assert isinstance(response, MockPdsApiService)
 
 
-def test_get_pds_service_returns_real_pds(monkeypatch):
-    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", "False")
+@pytest.mark.parametrize(
+    "stub_value",
+    [
+        ("False"),
+        ("false"),
+    ],
+)
+def test_get_pds_service_returns_real_pds(monkeypatch, stub_value):
+    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", stub_value)
 
     response = get_pds_service()
 
