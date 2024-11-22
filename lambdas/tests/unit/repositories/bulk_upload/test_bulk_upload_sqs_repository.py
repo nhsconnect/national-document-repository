@@ -55,5 +55,8 @@ def test_send_message_to_nrl_sqs_fifo(set_env, repo_under_test):
     )
     messsage_body = TEST_NRL_SQS_MESSAGE.model_dump()
     repo_under_test.sqs_repository.send_message_with_nhs_number_attr_fifo.assert_called_with(
-        "https://test-queue.com", messsage_body, "123", "9000000009"
+        queue_url="https://test-queue.com",
+        message_body=messsage_body,
+        group_id="123",
+        nhs_number="9000000009",
     )
