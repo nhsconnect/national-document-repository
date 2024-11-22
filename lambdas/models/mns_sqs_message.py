@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import AliasGenerator, BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
@@ -22,6 +20,6 @@ class MNSSQSMessage(BaseModel):
     id: str
     type: str
     subject: MNSMessageSubject
-    source: Optional[dict] = None
-    time: Optional[str] = None
-    data: Optional[dict] = None
+    source: dict
+    time: str
+    data: dict
