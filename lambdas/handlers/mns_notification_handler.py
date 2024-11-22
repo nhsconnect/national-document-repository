@@ -1,6 +1,8 @@
 import json
 
+from enums.mns_notification_types import MNSNotificationTypes
 from models.mns_sqs_message import MNSSQSMessage
+from services.process_mns_message_service import MNSNotificationService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -16,7 +18,6 @@ logger = LoggingService(__name__)
         "APPCONFIG_CONFIGURATION",
         "APPCONFIG_ENVIRONMENT",
         "LLOYD_GEORGE_DYNAMODB_NAME",
-        # might not need the name of the queue, as this is what is trigging the lamdba
     ]
 )
 # need to check what this does
@@ -35,17 +36,11 @@ def lambda_handler(event, context):
             mns_message = MNSSQSMessage(**sqs_message)
             MNSSQSMessage.model_validate(mns_message)
 
-            return mns_message.subject.nhs_number
+            if mns_message.type in MNSNotificationTypes.list():
+                notification_service = MNSNotificationService(mns_message)
+                notification_service.handle_mns_notification()
+
+            continue
         except Exception as error:
             logger.error(f"Error processing SQS message: {error}.")
             logger.info("Continuing to next message.")
-            pass
-
-    # how do we want to handle empty messages, bulk up load
-    # if "Records" not in event or len(event["Records"]) < 1:
-    #     http_status_code = 400
-    #     response_body = f"No sqs messages found in event: {event}. Event ignored."
-    #     logger.error(response_body, {"Result": "Did not process MNS notification."})
-    #     return ApiGatewayResponse(
-    #         status_code=http_status_code, body=response_body, methods="GET"
-    #     )
