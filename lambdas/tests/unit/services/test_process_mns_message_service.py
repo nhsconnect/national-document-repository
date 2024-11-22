@@ -1,4 +1,7 @@
+from unittest.mock import call
+
 import pytest
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from models.mns_sqs_message import MNSSQSMessage
 from services.process_mns_message_service import MNSNotificationService
 from tests.unit.handlers.test_mns_notification_handler import (
@@ -32,7 +35,6 @@ informal_death_notification_message = MNSSQSMessage(**MOCK_INFORMAL_DEATH_MESSAG
 
 
 def test_handle_gp_change_message_called_message_type_GP_change(mns_service):
-
     mns_service.handle_mns_notification(gp_change_message)
     mns_service.handle_gp_change_notification.assert_called()
 
@@ -52,11 +54,25 @@ def test_is_informal_death_notification(mns_service):
     )
 
 
-def test_have_patient_in_table(mns_service):
-    result = mns_service.have_patient_in_table(gp_change_message)
-    mns_service.dynamo_service.query_table_by_index.assert_called()
-    mns_service.dynamo_service.return_value.query_table_by_index.return_value = (
-        MOCK_SEARCH_RESPONSE
+def test_update_patient_details(mns_service):
+    mns_service.update_patient_details(
+        MOCK_SEARCH_RESPONSE["Items"], PatientOdsInactiveStatus.DECEASED.value
     )
-
-    assert result is True
+    calls = [
+        call(
+            table_name=mns_service.table,
+            key="3d8683b9-1665-40d2-8499-6e8302d507ff",
+            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED.value},
+        ),
+        call(
+            table_name=mns_service.table,
+            key="4d8683b9-1665-40d2-8499-6e8302d507ff",
+            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED.value},
+        ),
+        call(
+            table_name=mns_service.table,
+            key="5d8683b9-1665-40d2-8499-6e8302d507ff",
+            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED.value},
+        ),
+    ]
+    mns_service.dynamo_service.update_item.assert_has_calls(calls, any_order=False)
