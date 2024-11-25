@@ -76,6 +76,7 @@ def test_pds_request_expired_token(mocker, mock_get_patient_data):
         return_value="api.test/endpoint/",
     )
     mocker.patch("time.time", return_value=1700000000.953031)
+
     mocker.patch("uuid.uuid4", return_value="123412342")
 
     expected = mock_get_patient_data.get.return_value
@@ -107,6 +108,7 @@ def test_pds_request_valid_token_expired_response(mocker):
         return_value="api.test/endpoint/",
     )
     mocker.patch("time.time", side_effect=[1600000000.953031, 1700000000.953031])
+
     mocker.patch("uuid.uuid4", return_value="123412342")
 
     mock_session = mocker.patch.object(pds_service, "session")
@@ -135,6 +137,7 @@ def test_pds_request_valid_token_expired_response_no_retry(mocker):
         return_value="api.test/endpoint/",
     )
     mocker.patch("time.time", return_value=1600000000.953031)
+
     mocker.patch("uuid.uuid4", return_value="123412342")
 
     mock_session = mocker.patch.object(pds_service, "session")

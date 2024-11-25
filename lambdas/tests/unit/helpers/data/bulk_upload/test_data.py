@@ -133,11 +133,11 @@ def build_test_sqs_message_from_nhs_number(nhs_number: str) -> dict:
 
 
 def build_test_nrl_sqs_fifo_message(nhs_number: str, action: str) -> NrlSqsMessage:
-    dict = {
+    message_body = {
         "nhs_number": nhs_number,
         "action": action,
     }
-    nrl_sqs_message = NrlSqsMessage.parse_obj(dict)
+    nrl_sqs_message = NrlSqsMessage(**message_body)
     return nrl_sqs_message
 
 
