@@ -3,10 +3,12 @@ from copy import copy
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
+from models.nrl_sqs_message import NrlSqsMessage
 from models.pds_models import Patient
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
@@ -201,6 +203,9 @@ def test_handle_sqs_message_happy_path(
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
+    mock_nrl_message = NrlSqsMessage(
+        nhs_number=TEST_STAGING_METADATA.nhs_number, action=NrlActionTypes.CREATE
+    )
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
@@ -218,6 +223,11 @@ def test_handle_sqs_message_happy_path(
     )
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_called_with(
+        queue_url="https://test-queue.com",
+        message=mock_nrl_message,
+        group_id=f"nrl_sqs_{mock_uuid}",
+    )
 
 
 def set_up_mocks_for_non_ascii_files(
@@ -330,6 +340,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA, UploadStatus.FAILED, str(mocked_error), ""
     )
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
@@ -366,6 +377,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
         str(mocked_error),
         "",
     )
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_is_infected(
@@ -403,6 +415,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     )
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_not_exist(
@@ -432,6 +445,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
         "One or more of the files is not accessible from staging bucket",
         "Y12345",
     )
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_formally_deceased(
@@ -469,6 +483,7 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_forma
         "Patient is deceased - FORMAL",
         PatientOdsInactiveStatus.DECEASED,
     )
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_called()
 
 
 def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_informally_deceased_and_historical(
@@ -506,6 +521,7 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_infor
         "Patient matched on historical name, Patient is deceased - INFORMAL",
         "Y12345",
     )
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_called()
 
 
 def test_handle_sqs_message_calls_report_upload_successful_when_patient_has_historical_name_and_rest(
@@ -617,6 +633,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     mock_report_upload_failure.assert_not_called()
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(

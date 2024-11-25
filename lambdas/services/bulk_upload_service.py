@@ -272,13 +272,12 @@ class BulkUploadService:
             patient_ods_code,
         )
 
-        NrlMessage = NrlSqsMessage(
+        nrl_sqs_message = NrlSqsMessage(
             nhs_number=staging_metadata.nhs_number, action=NrlActionTypes.CREATE
         )
         self.sqs_repository.send_message_to_nrl_fifo(
             queue_url=self.nrl_queue_url,
-            message=NrlMessage,
-            nhs_number=staging_metadata.nhs_number,
+            message=nrl_sqs_message,
             group_id=f"nrl_sqs_{uuid.uuid4()}",
         )
 
