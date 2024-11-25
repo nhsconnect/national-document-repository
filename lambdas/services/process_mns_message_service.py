@@ -29,11 +29,18 @@ class MNSNotificationService:
         self.pds_service = pds_service_class(ssm_service, auth_service)
 
     def handle_mns_notification(self, message: MNSSQSMessage):
-        action = {
-            MNSNotificationTypes.CHANGE_OF_GP.value: self.handle_gp_change_notification,
-            MNSNotificationTypes.DEATH_NOTIFICATION.value: self.handle_death_notification,
-        }
-        action.get(message.type)(message)
+        try:
+            action = {
+                MNSNotificationTypes.CHANGE_OF_GP.value: self.handle_gp_change_notification,
+                MNSNotificationTypes.DEATH_NOTIFICATION.value: self.handle_death_notification,
+            }
+            action.get(message.type)(message)
+
+        except KeyError as e:
+            logger.info(f"Do not have key {message.type}")
+            logger.info(f"Unable to process message: {message.id}")
+            logger.info(f"{e}")
+            return
 
     def handle_subscription_notification(self, message):
         pass
@@ -111,7 +118,7 @@ class MNSNotificationService:
                 updated_fields={"CurrentGpOds": code},
             )
 
-        # logger.info(f"Updated patient CurrentGpOds from {patient_documents[0]["CurrentGpOds"]} to {code}")
+            logger.info("Updating patient document reference")
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
         time.sleep(0.2)  # buffer to avoid over stretching PDS API

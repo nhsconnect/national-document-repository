@@ -20,7 +20,6 @@ logger = LoggingService(__name__)
         "LLOYD_GEORGE_DYNAMODB_NAME",
     ]
 )
-# need to check what this does
 @override_error_check
 @handle_lambda_exceptions
 def lambda_handler(event, context):
@@ -37,8 +36,8 @@ def lambda_handler(event, context):
             MNSSQSMessage.model_validate(mns_message)
 
             if mns_message.type in MNSNotificationTypes.list():
-                notification_service = MNSNotificationService(mns_message)
-                notification_service.handle_mns_notification()
+                notification_service = MNSNotificationService()
+                notification_service.handle_mns_notification(mns_message)
 
             continue
         except Exception as error:
