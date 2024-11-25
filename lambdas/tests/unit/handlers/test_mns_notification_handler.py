@@ -12,7 +12,7 @@ MOCK_GP_CHANGE_MESSAGE_BODY = {
     "id": TEST_UUID,
     "type": MNSNotificationTypes.CHANGE_OF_GP.value,
     "subject": {
-        "nhs_number": TEST_NHS_NUMBER,
+        "nhsNumber": TEST_NHS_NUMBER,
         "family_name": "SMITH",
         "dob": "2017-10-02",
     },
@@ -25,8 +25,8 @@ MOCK_GP_CHANGE_MESSAGE_BODY = {
     },
     "time": MOCK_TIME,
     "data": {
-        "full_url": FAKE_URL,
-        "version_id": TEST_UUID,
+        "fullUrl": FAKE_URL,
+        "versionId": TEST_UUID,
         "provenance": {
             "name": "Fake GP",
             "identifiers": {
@@ -43,8 +43,8 @@ MOCK_DEATH_MESSAGE_BODY = {
     "type": "pds-death-notification-1",
     "subject": {
         "dob": "2017-10-02",
-        "family_name": "DAWKINS",
-        "nhs_number": TEST_NHS_NUMBER,
+        "familyName": "DAWKINS",
+        "nhsNumber": TEST_NHS_NUMBER,
     },
     "source": {
         "name": "NHS DIGITAL",

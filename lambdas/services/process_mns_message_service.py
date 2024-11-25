@@ -1,5 +1,5 @@
 import os
-from datetime import time
+import time
 from urllib.error import HTTPError
 
 from botocore.exceptions import ClientError
@@ -23,7 +23,7 @@ class MNSNotificationService:
     def __init__(self):
         self.message = None
         self.dynamo_service = DynamoDBService()
-        self.table = os.getenv("LLOYD_GEORGE_DYNAMODB_TABLE")
+        self.table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         pds_service_class = get_pds_service()
         ssm_service = SSMService()
         auth_service = NhsOauthService(ssm_service)
@@ -31,13 +31,13 @@ class MNSNotificationService:
 
     def handle_mns_notification(self, message: MNSSQSMessage):
         try:
-            action = {
-                MNSNotificationTypes.CHANGE_OF_GP.value: self.handle_gp_change_notification,
-                MNSNotificationTypes.DEATH_NOTIFICATION.value: self.handle_death_notification,
-            }
-            action.get(message.type)(message)
+            if message.type == MNSNotificationTypes.CHANGE_OF_GP.value:
+                self.handle_gp_change_notification(message)
 
-        except KeyError as e:
+            if message.type == MNSNotificationTypes.DEATH_NOTIFICATION.value:
+                self.handle_death_notification(message)
+
+        except Exception as e:
             logger.info(f"Do not have key {message.type}")
             logger.info(f"Unable to process message: {message.id}")
             logger.info(f"{e}")
@@ -116,13 +116,17 @@ class MNSNotificationService:
 
     def update_patient_details(self, patient_documents: list[dict], code: str) -> None:
         for document in patient_documents:
-            self.dynamo_service.update_item(
-                table_name=self.table,
-                key=document["ID"],
-                updated_fields={"CurrentGpOds": code},
-            )
+            try:
+                self.dynamo_service.update_item(
+                    table_name=self.table,
+                    key=document["ID"],
+                    updated_fields={"CurrentGpOds": code},
+                )
 
-            logger.info("Updating patient document reference")
+                logger.info("Updating patient document reference")
+            except ClientError as e:
+                logger.error("Unable to update patient document reference")
+                raise e
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
         time.sleep(0.2)  # buffer to avoid over stretching PDS API

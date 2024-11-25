@@ -38,11 +38,10 @@ def lambda_handler(event, context):
 
             mns_message = MNSSQSMessage(**sqs_message)
             MNSSQSMessage.model_validate(mns_message)
-            if mns_message.type in MNSNotificationTypes.__members__.values():
 
+            if mns_message.type in MNSNotificationTypes:
                 notification_service = MNSNotificationService()
                 notification_service.handle_mns_notification(mns_message)
-
             continue
         except Exception as error:
             logger.error(f"Error processing SQS message: {error}.")
