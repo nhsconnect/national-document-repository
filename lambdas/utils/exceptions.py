@@ -138,7 +138,3 @@ class StatisticDataNotFoundException(Exception):
 
 class PdsResponseValidationException(Exception):
     pass
-
-
-class NRLQueueException(Exception):
-    pass
