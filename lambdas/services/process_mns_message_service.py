@@ -2,6 +2,7 @@ import os
 from datetime import time
 from urllib.error import HTTPError
 
+from botocore.exceptions import ClientError
 from enums.death_notification_status import DeathNotificationStatus
 from enums.mns_notification_types import MNSNotificationTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
@@ -73,23 +74,26 @@ class MNSNotificationService:
             )
             return
 
-        patient_documents = self.get_patient_documents(message.subject.nhs_number)
+        try:
+            patient_documents = self.get_patient_documents(message.subject.nhs_number)
 
-        if len(patient_documents) < 1:
-            logger.info("Patient is not held in the National Document Repository.")
-            logger.info("Moving on to the next message.")
-            return
+            if len(patient_documents) < 1:
+                logger.info("Patient is not held in the National Document Repository.")
+                logger.info("Moving on to the next message.")
+                return
 
-        if (
-            message.data["deathNotificationStatus"]
-            == DeathNotificationStatus.FORMAL.value
-        ):
-            self.update_patient_details(
-                patient_documents, PatientOdsInactiveStatus.DECEASED.value
-            )
+            if (
+                message.data["deathNotificationStatus"]
+                == DeathNotificationStatus.FORMAL.value
+            ):
+                self.update_patient_details(
+                    patient_documents, PatientOdsInactiveStatus.DECEASED.value
+                )
 
-        update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
-        self.update_patient_details(patient_documents, update_ods_code)
+            update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
+            self.update_patient_details(patient_documents, update_ods_code)
+        except ClientError as e:
+            logger.info(f"{e}")
 
     # def do_not_have_patient_records(self, patient_documents_references):
     #     return len(patient_documents_references) < 1

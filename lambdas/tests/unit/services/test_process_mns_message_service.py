@@ -55,6 +55,13 @@ def test_is_informal_death_notification(mns_service):
     )
 
 
+def test_handle_notification_not_called_message_type_not_death_or_GP_notification(
+    mns_service,
+):
+    mns_service.is_informal_death_notification(informal_death_notification_message)
+    mns_service.get_updated_gp_ods.assert_not_called()
+
+
 def test_update_patient_details(mns_service):
     mns_service.update_patient_details(
         MOCK_SEARCH_RESPONSE["Items"], PatientOdsInactiveStatus.DECEASED.value

@@ -1,5 +1,6 @@
 import json
 
+import requests
 from enums.mns_notification_types import MNSNotificationTypes
 from models.mns_sqs_message import MNSSQSMessage
 from services.process_mns_message_service import MNSNotificationService
@@ -30,12 +31,15 @@ def lambda_handler(event, context):
     for sqs_message in sqs_messages:
         try:
             sqs_message = json.loads(sqs_message["body"])
-            # event_type = sqs_message["type"]
-            # nhs_number = sqs_message["subject"]["nhsNumber"]
+
+            if sqs_message["type"] == MNSNotificationTypes.SUBSCRIPTION:
+                handle_subscription(sqs_message)
+                continue
+
             mns_message = MNSSQSMessage(**sqs_message)
             MNSSQSMessage.model_validate(mns_message)
+            if mns_message.type in MNSNotificationTypes.__members__.values():
 
-            if mns_message.type in MNSNotificationTypes.list():
                 notification_service = MNSNotificationService()
                 notification_service.handle_mns_notification(mns_message)
 
@@ -43,3 +47,12 @@ def lambda_handler(event, context):
         except Exception as error:
             logger.error(f"Error processing SQS message: {error}.")
             logger.info("Continuing to next message.")
+
+
+def handle_subscription(message):
+    try:
+        url = message["SubscribeURL"]
+        response = requests.get(url)
+        response.raise_for_status()
+    except Exception as error:
+        logger.error(f"Error processing subscription request: {error}.")

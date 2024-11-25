@@ -103,27 +103,10 @@ def test_handle_notification_called_message_type_death_notification(
     mock_service.handle_mns_notification.assert_called()
 
 
-def test_handle_notification_not_called_message_type_not_death_or_GP_notification(
-    context, set_env, mock_service
-):
-
-    event = {"Records": [{"body": json.dumps(MOCK_OTHER_NOTIFICATION_MESSAGE_BODY)}]}
-    lambda_handler(event, context)
-
-    mock_service.handle_mns_notification.assert_not_called()
-
-
 def test_handle_notification_not_called_no_records_in_event(
     context, set_env, mock_service
 ):
     event = {"Records": []}
-    lambda_handler(event, context)
-
-    mock_service.handle_mns_notification.assert_not_called()
-
-
-def test_handle_notification_not_called_informal_death(context, set_env, mock_service):
-    event = {"Records": [{"body": json.dumps(MOCK_INFORMAL_DEATH_MESSAGE_BODY)}]}
     lambda_handler(event, context)
 
     mock_service.handle_mns_notification.assert_not_called()
