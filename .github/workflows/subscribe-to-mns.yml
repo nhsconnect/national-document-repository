@@ -22,6 +22,11 @@ permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
+env:
+  SANDBOX: ${{ inputs.sandbox }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   Subscribe to MNS:
     runs-on: ubuntu-latest
@@ -45,19 +50,22 @@ jobs:
 
       - name: Make virtual environment
         run: |
-          make env
+          python3 -m venv venv
 
       - name: Start virtual environment
         run: |
           source ./lambdas/venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
+      - name: Install pipeline dependencies
+        run: |
+          pip install -r ./lambdas/requirements/layers/requirements_github_runner.txt
+          echo "Installed requirements"
+
       - name: Get MNS subscription IDs and store
         run: |
+          echo "Staring subscription script"
           ./lambdas/venv/bin/python3 lambdas/scripts/mns_subscription.py
-        env:
-          ENV: ${{ vars.BUILD_ENV }}
-          AWS_REGION: ${{ vars.AWS_REGION }}
 
 # rather than copy everything over, the script could use boto3,
 # this github action could set up amazon connection
