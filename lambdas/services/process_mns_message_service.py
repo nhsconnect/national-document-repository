@@ -1,19 +1,16 @@
 import os
-import time
-from urllib.error import HTTPError
 
 from botocore.exceptions import ClientError
 from enums.death_notification_status import DeathNotificationStatus
 from enums.mns_notification_types import MNSNotificationTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from models.mns_sqs_message import MNSSQSMessage
-from models.pds_models import Patient
-from pydantic_core._pydantic_core import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.nhs_oauth_service import NhsOauthService
+from services.base.sqs_service import SQSService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import PdsErrorException, PdsResponseValidationException
+from utils.exceptions import PdsErrorException
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -28,14 +25,22 @@ class MNSNotificationService:
         ssm_service = SSMService()
         auth_service = NhsOauthService(ssm_service)
         self.pds_service = pds_service_class(ssm_service, auth_service)
+        self.unprocessed_message = []
+        self.sqs_service = SQSService()
+        self.queue = os.getenv("MNS_NOTIFICATION_QUEUE_URL")
 
     def handle_mns_notification(self, message: MNSSQSMessage):
         try:
             if message.type == MNSNotificationTypes.CHANGE_OF_GP.value:
+                logger.info("Handling GP change notification.")
                 self.handle_gp_change_notification(message)
 
             if message.type == MNSNotificationTypes.DEATH_NOTIFICATION.value:
+                logger.info("Handling death status notification.")
                 self.handle_death_notification(message)
+
+        except PdsErrorException("Error when requesting patient from PDS"):
+            self.send_message_back_to_queue(message)
 
         except Exception as e:
             logger.info(
@@ -43,9 +48,6 @@ class MNSNotificationService:
             )
             logger.info(f"{e}")
             return
-
-    def handle_subscription_notification(self, message):
-        pass
 
     def handle_gp_change_notification(self, message: MNSSQSMessage):
 
@@ -95,9 +97,13 @@ class MNSNotificationService:
                 logger.info("Update complete, patient marked DECE.")
                 return
 
-            update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
-            self.update_patient_details(patient_documents, update_ods_code)
-            logger.info("Update complete for death notification change.")
+            if (
+                message.data["deathNotificationStatus"]
+                == DeathNotificationStatus.REMOVED.value
+            ):
+                update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
+                self.update_patient_details(patient_documents, update_ods_code)
+                logger.info("Update complete for death notification change.")
         except ClientError as e:
             logger.error(f"{e}")
 
@@ -131,25 +137,11 @@ class MNSNotificationService:
                 raise e
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
-        time.sleep(0.2)  # buffer to avoid over stretching PDS API
-        logger.info("Getting the latest ODS code from PDS...")
+        patient_details = self.pds_service.fetch_patient_details(nhs_number)
+        return patient_details.general_practice_ods
 
-        try:
-            pds_response = self.pds_service.pds_request(
-                nhs_number=nhs_number, retry_on_expired=True
-            )
-            pds_response.raise_for_status()
-
-            pds_response_json = pds_response.json()
-
-            patient = Patient.model_validate(pds_response_json)
-
-            return patient.get_ods_code_or_inactive_status_for_gp()
-        except HTTPError as e:
-            raise PdsErrorException(
-                f"PDS returned a {e.response.status_code} code response for patient with NHS number {nhs_number}"
-            )
-        except ValidationError:
-            raise PdsResponseValidationException(
-                f"PDS returned an invalid response for patient with NHS number {nhs_number}"
-            )
+    def send_message_back_to_queue(self, message: MNSSQSMessage):
+        logger.info("Sending message back to queue...")
+        self.sqs_service.send_message_standard(
+            queue_url=self.queue, message_body=message.model_dump_json(by_alias=True)
+        )

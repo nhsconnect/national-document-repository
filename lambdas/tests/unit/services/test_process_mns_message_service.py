@@ -9,12 +9,14 @@ from tests.unit.handlers.test_mns_notification_handler import (
     MOCK_DEATH_MESSAGE_BODY,
     MOCK_GP_CHANGE_MESSAGE_BODY,
     MOCK_INFORMAL_DEATH_MESSAGE_BODY,
+    MOCK_REMOVED_DEATH_MESSAGE_BODY,
 )
 from tests.unit.helpers.data.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
 from tests.unit.helpers.mock_services import FakePDSService
+from utils.exceptions import PdsErrorException
 
 
 @pytest.fixture
@@ -23,12 +25,14 @@ def mns_service(mocker, set_env):
     service.pds_service = FakePDSService
     mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(service, "get_updated_gp_ods")
+    mocker.patch.object(service, "sqs_service")
     yield service
 
 
 gp_change_message = MNSSQSMessage(**MOCK_GP_CHANGE_MESSAGE_BODY)
 death_notification_message = MNSSQSMessage(**MOCK_DEATH_MESSAGE_BODY)
 informal_death_notification_message = MNSSQSMessage(**MOCK_INFORMAL_DEATH_MESSAGE_BODY)
+removed_death_notification_message = MNSSQSMessage(**MOCK_REMOVED_DEATH_MESSAGE_BODY)
 
 
 def test_handle_gp_change_message_called_message_type_GP_change(mns_service, mocker):
@@ -62,6 +66,15 @@ def test_handle_notification_not_called_message_type_not_death_or_GP_notificatio
     mns_service.get_updated_gp_ods.assert_not_called()
 
 
+def test_pds_is_called_death_notification_removed(mns_service, mocker):
+    mocker.patch.object(mns_service, "update_patient_details")
+    mns_service.dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE
+    mns_service.handle_mns_notification(removed_death_notification_message)
+
+    mns_service.get_updated_gp_ods.assert_called()
+    mns_service.update_patient_details.assert_called()
+
+
 def test_update_patient_details(mns_service):
     mns_service.update_patient_details(
         MOCK_SEARCH_RESPONSE["Items"], PatientOdsInactiveStatus.DECEASED.value
@@ -91,6 +104,13 @@ def test_update_gp_ods_not_called_empty_dynamo_response(mns_service):
     mns_service.handle_gp_change_notification(gp_change_message)
 
     mns_service.get_updated_gp_ods.assert_not_called()
+
+
+def test_update_gp_ods_called_dynamo_response(mns_service):
+    mns_service.dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE
+    mns_service.handle_gp_change_notification(gp_change_message)
+
+    mns_service.get_updated_gp_ods.assert_called()
 
 
 def test_update_gp_ods_not_called_ods_codes_are_the_same(mns_service):
@@ -125,3 +145,11 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
         ),
     ]
     mns_service.dynamo_service.update_item.assert_has_calls(calls, any_order=False)
+
+
+def test_messages_is_put_back_on_the_queue_when_pds_error_raised(mns_service, mocker):
+    mns_service.get_updated_gp_ods.side_effect = PdsErrorException
+    mocker.patch.object(mns_service, "send_message_back_to_queue")
+    mns_service.handle_gp_change_notification(gp_change_message)
+
+    mns_service.send_message_back_to_queue.assert_called()

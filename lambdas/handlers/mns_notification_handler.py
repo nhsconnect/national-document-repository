@@ -1,6 +1,5 @@
 import json
 
-import requests
 from enums.mns_notification_types import MNSNotificationTypes
 from models.mns_sqs_message import MNSSQSMessage
 from services.process_mns_message_service import MNSNotificationService
@@ -19,6 +18,7 @@ logger = LoggingService(__name__)
         "APPCONFIG_CONFIGURATION",
         "APPCONFIG_ENVIRONMENT",
         "LLOYD_GEORGE_DYNAMODB_NAME",
+        "MNS_NOTIFICATION_QUEUE_URL",
     ]
 )
 @override_error_check
@@ -32,26 +32,26 @@ def lambda_handler(event, context):
         try:
             sqs_message = json.loads(sqs_message["body"])
 
-            if sqs_message["type"] == MNSNotificationTypes.SUBSCRIPTION:
-                handle_subscription(sqs_message)
-                continue
+            # if sqs_message["type"] == MNSNotificationTypes.SUBSCRIPTION:
+            #     handle_subscription(sqs_message)
+            #     continue
 
             mns_message = MNSSQSMessage(**sqs_message)
             MNSSQSMessage.model_validate(mns_message)
 
-            if mns_message.type in MNSNotificationTypes:
+            if mns_message.type in MNSNotificationTypes.__members__.values():
                 notification_service = MNSNotificationService()
                 notification_service.handle_mns_notification(mns_message)
-            continue
+                logger.info("Continuing to next message.")
         except Exception as error:
             logger.error(f"Error processing SQS message: {error}.")
             logger.info("Continuing to next message.")
 
 
-def handle_subscription(message):
-    try:
-        url = message["SubscribeURL"]
-        response = requests.get(url)
-        response.raise_for_status()
-    except Exception as error:
-        logger.error(f"Error processing subscription request: {error}.")
+# def handle_subscription(message):
+#     try:
+#         url = message["SubscribeURL"]
+#         response = requests.get(url)
+#         response.raise_for_status()
+#     except Exception as error:
+#         logger.error(f"Error processing subscription request: {error}.")

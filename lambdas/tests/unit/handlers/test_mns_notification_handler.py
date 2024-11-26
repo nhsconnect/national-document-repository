@@ -13,7 +13,7 @@ MOCK_GP_CHANGE_MESSAGE_BODY = {
     "type": MNSNotificationTypes.CHANGE_OF_GP.value,
     "subject": {
         "nhsNumber": TEST_NHS_NUMBER,
-        "family_name": "SMITH",
+        "familyName": "SMITH",
         "dob": "2017-10-02",
     },
     "source": {
@@ -73,6 +73,9 @@ MOCK_OTHER_NOTIFICATION_MESSAGE_BODY["type"] = "imms-vaccinations-1"
 
 MOCK_INFORMAL_DEATH_MESSAGE_BODY = deepcopy(MOCK_DEATH_MESSAGE_BODY)
 MOCK_INFORMAL_DEATH_MESSAGE_BODY["data"]["deathNotificationStatus"] = "1"
+
+MOCK_REMOVED_DEATH_MESSAGE_BODY = deepcopy(MOCK_DEATH_MESSAGE_BODY)
+MOCK_REMOVED_DEATH_MESSAGE_BODY["data"]["deathNotificationStatus"] = "U"
 
 
 @pytest.fixture
