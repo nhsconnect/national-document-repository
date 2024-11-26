@@ -1,5 +1,6 @@
 import json
 
+from enums.nrl_sqs_upload import NrlActionTypes
 from models.nrl_fhir_document_reference import FhirDocumentReference
 from models.nrl_sqs_message import NrlSqsMessage
 from services.base.nhs_oauth_service import NhsOauthService
@@ -46,21 +47,22 @@ def lambda_handler(event, context):
             nrl_verified_message = nrl_message.model_dump(
                 by_alias=True, exclude_none=True, exclude_defaults=True
             )
-            if nrl_message.action == "create":
-                document = (
-                    FhirDocumentReference(
-                        **nrl_verified_message,
-                        custodian=nrl_api_service.end_user_ods_code,
+            match nrl_message.action:
+                case NrlActionTypes.CREATE:
+                    document = (
+                        FhirDocumentReference(
+                            **nrl_verified_message,
+                            custodian=nrl_api_service.end_user_ods_code,
+                        )
+                        .build_fhir_dict()
+                        .json()
                     )
-                    .build_fhir_dict()
-                    .json()
-                )
 
-                nrl_api_service.create_new_pointer(json.loads(document))
-            elif nrl_message.action == "delete":
-                nrl_api_service.delete_pointer(
-                    nrl_message.nhs_number, nrl_message.snomed_code_doc_type
-                )
+                    nrl_api_service.create_new_pointer(json.loads(document))
+                case NrlActionTypes.DELETE:
+                    nrl_api_service.delete_pointer(
+                        nrl_message.nhs_number, nrl_message.snomed_code_doc_type
+                    )
         except Exception as error:
             unhandled_messages.append(sqs_message)
             logger.info(f"Failed to process current message due to error: {error}")

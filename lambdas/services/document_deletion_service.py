@@ -4,7 +4,9 @@ from typing import Literal
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.s3_lifecycle_tags import S3LifecycleTags
+from enums.snomed_codes import SnomedCodesCategory, SnomedCodesType
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.nrl_sqs_message import NrlSqsMessage
@@ -88,9 +90,9 @@ class DocumentDeletionService:
     def send_sqs_message_to_remove_pointer(self, nhs_number: str):
         delete_nrl_message = NrlSqsMessage(
             nhs_number=nhs_number,
-            action="delete",
-            snomed_code_doc_type="16521000000101",
-            snomed_code_category="734163000",
+            action=NrlActionTypes.DELETE,
+            snomed_code_doc_type=SnomedCodesType.LLOYD_GEORGE,
+            snomed_code_category=SnomedCodesCategory.CARE_PLAN,
         )
         sqs_group_id = f"NRL_delete_{uuid.uuid4()}"
         nrl_queue_url = os.environ["NRL_SQS_QUEUE_URL"]
