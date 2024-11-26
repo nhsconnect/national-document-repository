@@ -1,8 +1,8 @@
 import { Button, Checkboxes, Table } from 'nhsuk-react-components';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
-import { Link, useNavigate } from 'react-router-dom';
-import { routeChildren, routes } from '../../../../types/generic/routes';
+import { useNavigate } from 'react-router-dom';
+import { routeChildren } from '../../../../types/generic/routes';
 import React, { Dispatch, ReactNode, SetStateAction, SyntheticEvent, useState } from 'react';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
