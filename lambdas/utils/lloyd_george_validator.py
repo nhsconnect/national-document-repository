@@ -212,8 +212,7 @@ def validate_patient_date_of_birth(file_date_of_birth, pds_patient_details):
 
 
 def getting_patient_info_from_pds(nhs_number: str) -> Patient:
-    pds_service_class = get_pds_service()
-    pds_service = pds_service_class(SSMService())
+    pds_service = get_pds_service()
     pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
     check_pds_response_status(pds_response)
     patient = parse_pds_response(pds_response)
