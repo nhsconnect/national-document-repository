@@ -89,11 +89,11 @@ def test_ods_report_populate_report_populates_successfully():
             "9000000007",
         },
         "total_successful": {
-            ("9000000000", "2012-01-13"),
-            ("9000000001", "2012-01-13"),
-            ("9000000002", "2012-01-13"),
-            ("9000000003", "2012-01-13"),
-            ("9000000004", "2012-01-13"),
+            ("9000000000", "2012-01-13", "SUSP"),
+            ("9000000001", "2012-01-13", "DECE"),
+            ("9000000002", "2012-01-13", "REST"),
+            ("9000000003", "2012-01-13", "True"),
+            ("9000000004", "2012-01-13", "False"),
         },
         "total_registered_elsewhere": {("9000000004", "2012-01-13")},
         "total_suspended": {("9000000000", "2012-01-13")},
@@ -108,18 +108,21 @@ def test_ods_report_populate_report_populates_successfully():
                 "Reason": "Could not find the given patient on PDS",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
+                MetadataReport.RegisteredAtUploaderPractice.value: "True",
             },
             "9000000006": {
                 "Date": "2012-01-13",
                 "Reason": "Could not find the given patient on PDS",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
+                MetadataReport.RegisteredAtUploaderPractice.value: "True",
             },
             "9000000007": {
                 "Date": "2012-01-13",
                 "Reason": "Lloyd George file already exists",
                 "Timestamp": 1688395681,
                 "UploaderOdsCode": "Y12345",
+                MetadataReport.RegisteredAtUploaderPractice.value: "True",
             },
         },
         "unique_failures": {
@@ -174,6 +177,7 @@ def test_ods_report_process_failed_report_item_handles_failures():
             "Reason": old_reason,
             "Timestamp": old_time_stamp,
             "UploaderOdsCode": TEST_UPLOADER_ODS_1,
+            MetadataReport.RegisteredAtUploaderPractice.value: "True",
         }
     }
 
@@ -194,6 +198,7 @@ def test_ods_report_process_failed_report_item_handles_failures():
             "Reason": newest_reason,
             "Timestamp": new_time_stamp,
             "UploaderOdsCode": TEST_UPLOADER_ODS_1,
+            MetadataReport.RegisteredAtUploaderPractice.value: "True",
         }
     }
 
@@ -305,16 +310,16 @@ def test_summary_report_populate_report_populates_successfully():
             "9000000015",
         },
         "total_successful": {
-            ("9000000000", "2012-01-13"),
-            ("9000000001", "2012-01-13"),
-            ("9000000002", "2012-01-13"),
-            ("9000000003", "2012-01-13"),
-            ("9000000004", "2012-01-13"),
-            ("9000000009", "2012-01-13"),
-            ("9000000010", "2012-01-13"),
-            ("9000000011", "2012-01-13"),
-            ("9000000012", "2012-01-13"),
-            ("9000000013", "2012-01-13"),
+            ("9000000000", "2012-01-13", "SUSP"),
+            ("9000000001", "2012-01-13", "DECE"),
+            ("9000000002", "2012-01-13", "REST"),
+            ("9000000003", "2012-01-13", "True"),
+            ("9000000004", "2012-01-13", "False"),
+            ("9000000009", "2012-01-13", "SUSP"),
+            ("9000000010", "2012-01-13", "DECE"),
+            ("9000000011", "2012-01-13", "REST"),
+            ("9000000012", "2012-01-13", "False"),
+            ("9000000013", "2012-01-13", "True"),
         },
         "total_registered_elsewhere": {
             ("9000000004", "2012-01-13"),

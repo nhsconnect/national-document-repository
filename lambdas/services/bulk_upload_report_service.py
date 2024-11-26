@@ -153,12 +153,18 @@ class BulkUploadReportService:
             MetadataReport.NhsNumber,
             MetadataReport.UploaderOdsCode,
             MetadataReport.Date,
+            MetadataReport.RegisteredAtUploaderPractice,
         ]
         data_rows = []
         for report in ods_reports:
             for patient in report.get_sorted(report.total_successful):
                 data_rows.append(
-                    [str(patient[0]), str(report.uploader_ods_code), str(patient[1])]
+                    [
+                        str(patient[0]),
+                        str(report.uploader_ods_code),
+                        str(patient[1]),
+                        str(patient[2]),
+                    ]
                 )
 
         if data_rows:
@@ -252,6 +258,7 @@ class BulkUploadReportService:
             MetadataReport.UploaderOdsCode,
             MetadataReport.Date,
             MetadataReport.Reason,
+            MetadataReport.RegisteredAtUploaderPractice,
         ]
 
         data_rows = []
@@ -263,6 +270,7 @@ class BulkUploadReportService:
                         report_item[MetadataReport.UploaderOdsCode],
                         report_item[MetadataReport.Date],
                         report_item[MetadataReport.Reason],
+                        report_item[MetadataReport.RegisteredAtUploaderPractice],
                     ]
                 )
 
@@ -276,7 +284,16 @@ class BulkUploadReportService:
     def write_items_to_csv(items: list[BulkUploadReport], csv_file_path: str):
         logger.info("Writing scan results to csv file")
         with open(csv_file_path, "w") as output_file:
-            field_names = MetadataReport.list()
+            field_names = [
+                MetadataReport.NhsNumber,
+                MetadataReport.UploadStatus,
+                MetadataReport.Reason,
+                MetadataReport.PdsOdsCode,
+                MetadataReport.UploaderOdsCode,
+                MetadataReport.FilePath,
+                MetadataReport.Date,
+                MetadataReport.Timestamp,
+            ]
             dict_writer_object = csv.DictWriter(output_file, fieldnames=field_names)
             dict_writer_object.writeheader()
             for item in items:

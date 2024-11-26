@@ -32,13 +32,11 @@ patient_1 = StagingMetadata(
 
 patient_2_file_1 = sample_metadata_model.model_copy(
     update={
-        "file_path": "1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[1234567891]_[25-12-2019].txt",
+        "file_path": "1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt",
         "scan_date": "04/09/2022",
     }
 )
-patient_2 = StagingMetadata(
-    nhs_number="1234567891", files=[patient_2_file_1], retries=0
-)
+patient_2 = StagingMetadata(nhs_number="123456789", files=[patient_2_file_1], retries=0)
 MOCK_METADATA = [patient_1, patient_2]
 
 
@@ -48,8 +46,8 @@ patient_1_file_1_with_temp_nhs_number = patient_1_file_1.model_copy(
 patient_1_file_2_with_temp_nhs_number = patient_1_file_2.model_copy(
     update={"nhs_number": "1234567890"}
 )
-patient_2_file_1_with_temp_nhs_number = patient_2_file_1.model_copy(
-    update={"nhs_number": "1234567891"}
+patient_2_file_1_with_short_nhs_number = patient_2_file_1.model_copy(
+    update={"nhs_number": "123456789"}
 )
 patient_1_with_temp_nhs_number = StagingMetadata(
     nhs_number="1234567890",
@@ -58,12 +56,25 @@ patient_1_with_temp_nhs_number = StagingMetadata(
         patient_1_file_2_with_temp_nhs_number,
     ],
 )
-patient_2_with_temp_nhs_number = StagingMetadata(
-    nhs_number="1234567891", files=[patient_2_file_1_with_temp_nhs_number]
+patient_2_with_short_nhs_number = StagingMetadata(
+    nhs_number="123456789", files=[patient_2_file_1_with_short_nhs_number]
 )
+
+patient_3_with_missing_nhs_number_metadata_file = sample_metadata_model.model_copy(
+    update={
+        "nhs_number": "",
+        "file_path": "1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt",
+        "scan_date": "04/09/2022",
+    }
+)
+patient_3_with_missing_nhs_number = StagingMetadata(
+    nhs_number="0000000000", files=[patient_3_with_missing_nhs_number_metadata_file]
+)
+
 EXPECTED_PARSED_METADATA = [
     patient_1_with_temp_nhs_number,
-    patient_2_with_temp_nhs_number,
+    patient_2_with_short_nhs_number,
+    patient_3_with_missing_nhs_number,
 ]
 
 
@@ -77,8 +88,11 @@ def readfile(filename: str) -> str:
 EXPECTED_SQS_MSG_FOR_PATIENT_1234567890 = readfile(
     "expect_sqs_msg_for_patient_1234567890.json"
 )
-EXPECTED_SQS_MSG_FOR_PATIENT_1234567891 = readfile(
-    "expect_sqs_msg_for_patient_1234567891.json"
+EXPECTED_SQS_MSG_FOR_PATIENT_123456789 = readfile(
+    "expect_sqs_msg_for_patient_123456789.json"
+)
+EXPECTED_SQS_MSG_FOR_PATIENT_0000000000 = readfile(
+    "expect_sqs_msg_for_patient_0000000000.json"
 )
 
 
