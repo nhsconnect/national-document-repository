@@ -81,7 +81,8 @@ def mock_service(mocker):
         "handlers.mns_notification_handler.MNSNotificationService"
     )
     mocked_instance = mocked_class.return_value
-    return mocked_instance
+    mocker.patch.object(mocked_instance, "dynamo_service")
+    yield mocked_instance
 
 
 def test_handle_notification_called_message_type_GP_change(

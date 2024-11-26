@@ -38,8 +38,9 @@ class MNSNotificationService:
                 self.handle_death_notification(message)
 
         except Exception as e:
-            logger.info(f"Do not have key {message.type}")
-            logger.info(f"Unable to process message: {message.id}")
+            logger.info(
+                f"Unable to process message: {message.id}, of type: {message.type}"
+            )
             logger.info(f"{e}")
             return
 
@@ -67,6 +68,8 @@ class MNSNotificationService:
                     updated_fields={"CurrentGpOds": updated_ods_code},
                 )
 
+        logger.info("Update complete for change of GP")
+
     def handle_death_notification(self, message: MNSSQSMessage):
         if self.is_informal_death_notification(message):
             logger.info(
@@ -89,14 +92,14 @@ class MNSNotificationService:
                 self.update_patient_details(
                     patient_documents, PatientOdsInactiveStatus.DECEASED.value
                 )
+                logger.info("Update complete, patient marked DECE.")
+                return
 
             update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
             self.update_patient_details(patient_documents, update_ods_code)
+            logger.info("Update complete for death notification change.")
         except ClientError as e:
-            logger.info(f"{e}")
-
-    # def do_not_have_patient_records(self, patient_documents_references):
-    #     return len(patient_documents_references) < 1
+            logger.error(f"{e}")
 
     def is_informal_death_notification(self, message: MNSSQSMessage) -> bool:
         return (
@@ -116,14 +119,13 @@ class MNSNotificationService:
 
     def update_patient_details(self, patient_documents: list[dict], code: str) -> None:
         for document in patient_documents:
+            logger.info("Updating patient document reference...")
             try:
                 self.dynamo_service.update_item(
                     table_name=self.table,
                     key=document["ID"],
                     updated_fields={"CurrentGpOds": code},
                 )
-
-                logger.info("Updating patient document reference")
             except ClientError as e:
                 logger.error("Unable to update patient document reference")
                 raise e
