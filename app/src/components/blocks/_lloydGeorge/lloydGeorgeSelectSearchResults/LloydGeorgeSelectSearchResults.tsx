@@ -231,17 +231,6 @@ const LloydGeorgeSelectSearchResults = ({
                         Download
                     </Button>
                 )}
-                <Link
-                    id="start-again-link"
-                    data-testid="start-again-link"
-                    to=""
-                    onClick={(e) => {
-                        e.preventDefault();
-                        navigate(routes.START);
-                    }}
-                >
-                    Start again
-                </Link>
             </div>
         </>
     );
