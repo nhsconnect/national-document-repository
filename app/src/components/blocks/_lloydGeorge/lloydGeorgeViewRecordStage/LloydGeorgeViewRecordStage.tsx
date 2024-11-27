@@ -212,6 +212,10 @@ function LloydGeorgeViewRecordStage({
 
             <h1>{pageHeader}</h1>
             <PatientSimpleSummary />
+            <p>
+                To search within the record use <strong>Control</strong> and <strong>F</strong>
+            </p>
+
             {!fullScreen ? (
                 <div className="lloydgeorge_record-stage_flex">
                     <RecordMenuCard
