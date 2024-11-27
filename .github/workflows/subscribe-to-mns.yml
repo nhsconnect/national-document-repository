@@ -47,8 +47,9 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-      - run: |
+      - name: Install dependencies and run script
+        run: |
           pip install boto3 requests pyjwt
           echo "Installed requirements"
-          python ./lambdas/scripts/mns_subscription.py
+          python3 -m .lambdas.scripts.mns_subscription
           echo "Subscription complete"
