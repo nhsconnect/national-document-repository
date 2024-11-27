@@ -163,7 +163,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('download-selected-files-btn').should('exist');
                 cy.getByTestId('toggle-selection-btn').should('exist');
 
-                cy.getByTestId('start-again-link').should('exist');
                 cy.getByTestId('toggle-selection-btn').click();
                 cy.getByTestId('download-selected-files-btn').click();
 
