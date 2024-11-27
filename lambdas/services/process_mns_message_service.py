@@ -25,7 +25,6 @@ class MNSNotificationService:
         ssm_service = SSMService()
         auth_service = NhsOauthService(ssm_service)
         self.pds_service = pds_service_class(ssm_service, auth_service)
-        self.unprocessed_message = []
         self.sqs_service = SQSService()
         self.queue = os.getenv("MNS_NOTIFICATION_QUEUE_URL")
 

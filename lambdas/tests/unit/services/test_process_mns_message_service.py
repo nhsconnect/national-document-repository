@@ -15,17 +15,16 @@ from tests.unit.helpers.data.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
-from tests.unit.helpers.mock_services import FakePDSService
 from utils.exceptions import PdsErrorException
 
 
 @pytest.fixture
 def mns_service(mocker, set_env):
     service = MNSNotificationService()
-    service.pds_service = FakePDSService
     mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(service, "get_updated_gp_ods")
     mocker.patch.object(service, "sqs_service")
+    mocker.patch.object(service, "pds_service")
     yield service
 
 

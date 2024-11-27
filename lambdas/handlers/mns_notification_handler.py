@@ -32,10 +32,6 @@ def lambda_handler(event, context):
         try:
             sqs_message = json.loads(sqs_message["body"])
 
-            # if sqs_message["type"] == MNSNotificationTypes.SUBSCRIPTION:
-            #     handle_subscription(sqs_message)
-            #     continue
-
             mns_message = MNSSQSMessage(**sqs_message)
             MNSSQSMessage.model_validate(mns_message)
 
@@ -46,12 +42,3 @@ def lambda_handler(event, context):
         except Exception as error:
             logger.error(f"Error processing SQS message: {error}.")
             logger.info("Continuing to next message.")
-
-
-# def handle_subscription(message):
-#     try:
-#         url = message["SubscribeURL"]
-#         response = requests.get(url)
-#         response.raise_for_status()
-#     except Exception as error:
-#         logger.error(f"Error processing subscription request: {error}.")

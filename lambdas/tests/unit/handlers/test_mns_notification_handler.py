@@ -85,6 +85,7 @@ def mock_service(mocker):
     )
     mocked_instance = mocked_class.return_value
     mocker.patch.object(mocked_instance, "dynamo_service")
+    mocker.patch.object(mocked_instance, "pds_service")
     yield mocked_instance
 
 
