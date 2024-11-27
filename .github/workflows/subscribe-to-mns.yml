@@ -1,0 +1,54 @@
+name: Subscribe to MNS
+
+on:
+  workflow_dispatch:
+    inputs:
+      sandbox:
+        description: Which sandbox would you like to run against?
+        required: true
+        type: string
+      environment:
+        description: Which environment settings to use?
+        required: true
+        type: string
+        default: development
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+env:
+  SANDBOX: ${{ inputs.sandbox }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  URL: ${{ var.MNS_SUBSCRIPTION_URL }}
+
+jobs:
+  Subscribe_to_MNS:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: |
+          pip install boto3 requests pyjwt
+          echo "Installed requirements"
+          python ./lambdas/scripts/mns_subscription.py
+          echo "Subscription complete"
