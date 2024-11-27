@@ -10,8 +10,9 @@ from services.bulk_upload_metadata_service import BulkUploadMetadataService
 from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, MOCK_STAGING_STORE_BUCKET
 from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_PARSED_METADATA,
+    EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
+    EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
-    EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
     MOCK_METADATA,
 )
 from utils.exceptions import BulkUploadMetadataException
@@ -50,14 +51,20 @@ def test_process_metadata_send_metadata_to_sqs_queue(
         call(
             group_id="bulk_upload_123412342",
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
-            nhs_number="1234567891",
+            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
+            nhs_number="123456789",
+        ),
+        call(
+            group_id="bulk_upload_123412342",
+            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
+            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
+            nhs_number="0000000000",
         ),
     ]
 
     metadata_service.process_metadata(metadata_filename)
 
-    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
+    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 3
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
         expected_calls
     )
@@ -219,8 +226,8 @@ def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service, metadata_servic
         ),
         call(
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
-            nhs_number="1234567891",
+            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
+            nhs_number="123456789",
             group_id="bulk_upload_123412342",
         ),
     ]
