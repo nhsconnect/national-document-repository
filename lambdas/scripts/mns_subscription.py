@@ -48,8 +48,8 @@ def get_subscription_id(event_type):
     try:
         response = requests.post(url, headers=headers, data=request_body)
         response.raise_for_status()
-        id = response.json().get("id")
-        return id
+        subscription_id = response.json().get("id")
+        return subscription_id
     except HTTPError as err:
         print(err)
 

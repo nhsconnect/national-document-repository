@@ -30,7 +30,7 @@ env:
 jobs:
   Subscribe_to_MNS:
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.environment }}
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -40,16 +40,16 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
           mask-aws-account-id: true
 
-      - name: Copy files
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip' # caching pip dependencies
+          cache: 'pip'
       - run: |
-          pip install -r ./lambdas/requirements/layers/requirements_github_runner.txt
+          pip install boto3 requests
           echo "Installed requirements"
           python ./lambdas/scripts/mns_subscription.py
           echo "Subscription complete"
