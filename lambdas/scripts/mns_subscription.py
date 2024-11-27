@@ -1,11 +1,14 @@
 import os
 import uuid
+from urllib.error import HTTPError
 
 import boto3
 import requests
 
 env_prefix = os.getenv("SANDBOX")
 token = os.getenv("TOKEN")
+url = os.getenv("URL")
+
 
 headers = {
     "content-Type": "application/fhir+json",
@@ -19,24 +22,21 @@ events = {
     "pds-death-notification-1": f"/ndr/{env_prefix}/mns/subscription-id/pds-death-notification-1",
 }
 
-url = "https://sandbox.api.service.nhs.uk/multicast-notification-service/subscriptions"
-
-sqs = boto3.client("sqs")
-sqs_url = sqs.get_queue_url(QueueName=f"{env_prefix}-mns-notification-queue")[
+sqs_client = boto3.client("sqs")
+sqs_url = sqs_client.get_queue_url(QueueName=f"{env_prefix}-mns-notification-queue")[
     "QueueUrl"
 ]
-sqs_arn = sqs.get_queue_attributes(QueueUrl=sqs_url, AttributeNames=["QueueArn"])[
-    "Attributes"
-]["QueueArn"]
+sqs_arn = sqs_client.get_queue_attributes(
+    QueueUrl=sqs_url, AttributeNames=["QueueArn"]
+)["Attributes"]["QueueArn"]
 
-ssm = boto3.client("ssm")
+ssm_client = boto3.client("ssm")
 
 
 def get_subscription_id(event_type):
     request_body = {
         "resourceType": "Subscription",
         "status": "requested",
-        "end": "2022-04-05T17:31:00.000Z",
         "reason": "Integration with the National Document Repository.",
         "criteria": f"eventType={event_type}",
         "channel": {
@@ -47,13 +47,13 @@ def get_subscription_id(event_type):
     }
     try:
         response = requests.post(url, headers=headers, data=request_body)
+        response.raise_for_status()
         id = response.json().get("id")
         return id
-    except requests.exceptions.RequestException as e:
-        print(e)
+    except HTTPError as err:
+        print(err)
 
 
 if __name__ == "__main__":
-
     for event, parameter in events.items():
-        ssm.put_parameter(parameter, get_subscription_id(event))
+        ssm_client.put_parameter(parameter, get_subscription_id(event))

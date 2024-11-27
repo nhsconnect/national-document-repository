@@ -7,8 +7,7 @@ on:
         description: Which sandbox would you like to run against?
         required: true
         type: string
-        default: ndr
-      environments:
+      environment:
         description: Which environment settings to use?
         required: true
         type: string
@@ -26,6 +25,7 @@ env:
   SANDBOX: ${{ inputs.sandbox }}
   AWS_REGION: ${{ vars.AWS_REGION }}
   TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  URL: ${{ var.MNS_SUBSCRIPTION_URL }}
 
 jobs:
   Subscribe_to_MNS:
@@ -52,3 +52,4 @@ jobs:
           pip install -r ./lambdas/requirements/layers/requirements_github_runner.txt
           echo "Installed requirements"
           python ./lambdas/scripts/mns_subscription.py
+          echo "Subscription complete"
