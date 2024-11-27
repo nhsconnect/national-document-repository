@@ -6,9 +6,7 @@ from enums.mns_notification_types import MNSNotificationTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from models.mns_sqs_message import MNSSQSMessage
 from services.base.dynamo_service import DynamoDBService
-from services.base.nhs_oauth_service import NhsOauthService
 from services.base.sqs_service import SQSService
-from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import PdsErrorException
 from utils.utilities import get_pds_service
@@ -21,10 +19,7 @@ class MNSNotificationService:
         self.message = None
         self.dynamo_service = DynamoDBService()
         self.table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
-        pds_service_class = get_pds_service()
-        ssm_service = SSMService()
-        auth_service = NhsOauthService(ssm_service)
-        self.pds_service = pds_service_class(ssm_service, auth_service)
+        self.pds_service = get_pds_service()
         self.sqs_service = SQSService()
         self.queue = os.getenv("MNS_NOTIFICATION_QUEUE_URL")
 
@@ -34,11 +29,11 @@ class MNSNotificationService:
                 logger.info("Handling GP change notification.")
                 self.handle_gp_change_notification(message)
 
-            if message.type == MNSNotificationTypes.DEATH_NOTIFICATION.value:
+            elif message.type == MNSNotificationTypes.DEATH_NOTIFICATION.value:
                 logger.info("Handling death status notification.")
                 self.handle_death_notification(message)
 
-        except PdsErrorException("Error when requesting patient from PDS"):
+        except PdsErrorException:
             self.send_message_back_to_queue(message)
 
         except Exception as e:
@@ -49,7 +44,6 @@ class MNSNotificationService:
             return
 
     def handle_gp_change_notification(self, message: MNSSQSMessage):
-
         patient_document_references = self.get_patient_documents(
             message.subject.nhs_number
         )

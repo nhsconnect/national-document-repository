@@ -19,12 +19,12 @@ from utils.exceptions import PdsErrorException
 
 
 @pytest.fixture
-def mns_service(mocker, set_env):
+def mns_service(mocker, set_env, monkeypatch):
+    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", "False")
     service = MNSNotificationService()
     mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(service, "get_updated_gp_ods")
     mocker.patch.object(service, "sqs_service")
-    mocker.patch.object(service, "pds_service")
     yield service
 
 
@@ -147,8 +147,9 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
 
 
 def test_messages_is_put_back_on_the_queue_when_pds_error_raised(mns_service, mocker):
-    mns_service.get_updated_gp_ods.side_effect = PdsErrorException
+    mocker.patch.object(mns_service, "handle_gp_change_notification")
+    mns_service.handle_gp_change_notification.side_effect = PdsErrorException()
     mocker.patch.object(mns_service, "send_message_back_to_queue")
-    mns_service.handle_gp_change_notification(gp_change_message)
+    mns_service.handle_mns_notification(gp_change_message)
 
     mns_service.send_message_back_to_queue.assert_called()
