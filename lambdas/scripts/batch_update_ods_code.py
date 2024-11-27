@@ -10,8 +10,6 @@ from models.pds_models import Patient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from requests import HTTPError
 from services.base.dynamo_service import DynamoDBService
-from services.base.nhs_oauth_service import NhsOauthService
-from services.base.ssm_service import SSMService
 from utils.exceptions import PdsErrorException, PdsResponseValidationException
 from utils.utilities import get_pds_service
 
@@ -33,10 +31,7 @@ class BatchUpdate:
     ):
         self.progress_store = progress_store_file_path
         self.table_name = os.getenv("table_name")
-        pds_service_class = get_pds_service()
-        ssm_service = SSMService()
-        auth_service = NhsOauthService(ssm_service)
-        self.pds_service = pds_service_class(ssm_service, auth_service)
+        self.pds_service = get_pds_service()
         self.dynamo_service = DynamoDBService()
         self.progress: Dict[str, ProgressForPatient] = {}
 

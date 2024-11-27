@@ -2,7 +2,6 @@ from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
-from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
@@ -26,9 +25,8 @@ class SearchPatientDetailsService:
 
     def handle_search_patient_request(self, nhs_number):
         try:
-            auth_service = NhsOauthService(self.ssm_service)
-            pds_api_service = get_pds_service()(self.ssm_service, auth_service)
-            patient_details = pds_api_service.fetch_patient_details(nhs_number)
+            pds_service = get_pds_service()
+            patient_details = pds_service.fetch_patient_details(nhs_number)
 
             self.check_if_user_authorise(
                 gp_ods_for_patient=patient_details.general_practice_ods
