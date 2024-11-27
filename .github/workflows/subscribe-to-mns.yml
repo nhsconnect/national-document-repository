@@ -49,7 +49,7 @@ jobs:
           cache: 'pip'
       - name: Install dependencies and run script
         run: |
-          pip install boto3 requests pyjwt
+          pip install boto3 requests pyjwt cryptography
           echo "Installed requirements"
       - name: Run script
         working-directory: ./lambdas
