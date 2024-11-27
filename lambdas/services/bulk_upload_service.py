@@ -54,7 +54,7 @@ class BulkUploadService:
         self.pdf_content_type = "application/pdf"
         self.unhandled_messages = []
         self.file_path_cache = {}
-        self.nrl_queue_url = os.environ["METADATA_NRL_SQS_URL"]
+        self.nrl_queue_url = os.environ["NRL_SQS_URL"]
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):

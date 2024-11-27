@@ -2,7 +2,7 @@ import copy
 
 import pytest
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
-from tests.unit.conftest import METADATA_NRL_SQS_URL, MOCK_LG_METADATA_SQS_QUEUE
+from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, NRL_SQS_URL
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_GROUP_ID,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
@@ -49,7 +49,7 @@ def test_put_sqs_message_back_to_queue(set_env, repo_under_test, mock_uuid):
 
 def test_send_message_to_nrl_sqs_fifo(set_env, repo_under_test):
     repo_under_test.send_message_to_nrl_fifo(
-        METADATA_NRL_SQS_URL,
+        NRL_SQS_URL,
         TEST_NRL_SQS_MESSAGE,
         TEST_GROUP_ID,
     )
