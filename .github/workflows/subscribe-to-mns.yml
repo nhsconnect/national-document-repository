@@ -24,7 +24,7 @@ permissions:
 env:
   SANDBOX: ${{ inputs.sandbox }}
   AWS_REGION: ${{ vars.AWS_REGION }}
-  URL: ${{ var.MNS_SUBSCRIPTION_URL }}
+  URL: ${{ vars.MNS_SUBSCRIPTION_URL }}
 
 jobs:
   Subscribe_to_MNS:
