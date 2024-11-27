@@ -4,16 +4,20 @@ from urllib.error import HTTPError
 
 import boto3
 import requests
+from services.base.nhs_oauth_service import NhsOauthService
+from services.base.ssm_service import SSMService
 
 env_prefix = os.getenv("SANDBOX")
-token = os.getenv("TOKEN")
 url = os.getenv("URL")
+
+ssm_service = SSMService()
+auth_service = NhsOauthService(ssm_service)
 
 
 headers = {
     "content-Type": "application/fhir+json",
     "accept": "application/json",
-    "authorization": f"Bearer {token}",
+    "authorization": f"Bearer {auth_service.get_active_access_token()}",
     "x-correlation-id": str(uuid.uuid4()),
 }
 
@@ -29,8 +33,6 @@ sqs_url = sqs_client.get_queue_url(QueueName=f"{env_prefix}-mns-notification-que
 sqs_arn = sqs_client.get_queue_attributes(
     QueueUrl=sqs_url, AttributeNames=["QueueArn"]
 )["Attributes"]["QueueArn"]
-
-ssm_client = boto3.client("ssm")
 
 
 def get_subscription_id(event_type):
@@ -56,4 +58,8 @@ def get_subscription_id(event_type):
 
 if __name__ == "__main__":
     for event, parameter in events.items():
-        ssm_client.put_parameter(parameter, get_subscription_id(event))
+        ssm_service.update_ssm_parameter(
+            parameter_key=parameter,
+            parameter_value=get_subscription_id(event),
+            parameter_type="SecureString",
+        )

@@ -24,7 +24,6 @@ permissions:
 env:
   SANDBOX: ${{ inputs.sandbox }}
   AWS_REGION: ${{ vars.AWS_REGION }}
-  TOKEN: ${{ secrets.GITHUB_TOKEN }}
   URL: ${{ var.MNS_SUBSCRIPTION_URL }}
 
 jobs:
@@ -49,7 +48,7 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
       - run: |
-          pip install boto3 requests
+          pip install boto3 requests pyjwt
           echo "Installed requirements"
           python ./lambdas/scripts/mns_subscription.py
           echo "Subscription complete"
