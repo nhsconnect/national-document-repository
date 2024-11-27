@@ -165,17 +165,6 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetD
                             Remove all files
                         </Button>
                     )}
-                    <LinkButton
-                        id="start-again-link"
-                        data-testid="start-again-btn"
-                        type="button"
-                        className="mb-7 ml-3"
-                        onClick={() => {
-                            navigate(routes.LLOYD_GEORGE);
-                        }}
-                    >
-                        Start again
-                    </LinkButton>
                 </div>
             )}
         </>
