@@ -51,5 +51,8 @@ jobs:
         run: |
           pip install boto3 requests pyjwt
           echo "Installed requirements"
-          python3 -m .lambdas.scripts.mns_subscription
+      - name: Run script
+        working-directory: ./lambdas
+        run: |
+          python3 -m scripts.mns_subscription
           echo "Subscription complete"
