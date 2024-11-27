@@ -28,7 +28,7 @@ env:
   TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  Subscribe to MNS:
+  Subscribe_to_MNS:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,29 +44,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python_version: 3.11
-
-      - name: Make virtual environment
-        run: |
-          python3 -m venv venv
-
-      - name: Start virtual environment
-        run: |
-          source ./lambdas/venv/bin/activate
-          echo PATH=$PATH >> $GITHUB_ENV
-
-      - name: Install pipeline dependencies
-        run: |
+          python-version: '3.11'
+          cache: 'pip' # caching pip dependencies
+      - run: |
           pip install -r ./lambdas/requirements/layers/requirements_github_runner.txt
           echo "Installed requirements"
-
-      - name: Get MNS subscription IDs and store
-        run: |
-          echo "Staring subscription script"
-          ./lambdas/venv/bin/python3 lambdas/scripts/mns_subscription.py
-
-# rather than copy everything over, the script could use boto3,
-# this github action could set up amazon connection
-# will still need a virtual env to make this work.
+          python ./lambdas/scripts/mns_subscription.py
