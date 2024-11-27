@@ -34,7 +34,7 @@ informal_death_notification_message = MNSSQSMessage(**MOCK_INFORMAL_DEATH_MESSAG
 removed_death_notification_message = MNSSQSMessage(**MOCK_REMOVED_DEATH_MESSAGE_BODY)
 
 
-def test_handle_gp_change_message_called_message_type_GP_change(mns_service, mocker):
+def test_handle_gp_change_message_called_message_type_gp_change(mns_service, mocker):
     mocker.patch.object(mns_service, "handle_gp_change_notification")
     mns_service.handle_mns_notification(gp_change_message)
 
@@ -58,7 +58,7 @@ def test_is_informal_death_notification(mns_service):
     )
 
 
-def test_handle_notification_not_called_message_type_not_death_or_GP_notification(
+def test_handle_notification_not_called_message_type_not_death_or_gp_notification(
     mns_service,
 ):
     mns_service.is_informal_death_notification(informal_death_notification_message)

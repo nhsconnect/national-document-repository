@@ -89,7 +89,7 @@ def mock_service(mocker):
     yield mocked_instance
 
 
-def test_handle_notification_called_message_type_GP_change(
+def test_handle_notification_called_message_type_gp_change(
     context, set_env, mock_service
 ):
 
