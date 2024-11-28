@@ -77,7 +77,7 @@ class DataCollectionService:
         organisation_data = []
         application_data = []
 
-        for day_start in self._generate_daily_ranges():
+        for day_start in self.generate_daily_ranges():
             day_end = day_start + timedelta(days=1)
             logger.info(f"Collecting data for day: {day_start} to {day_end}")
 
@@ -88,9 +88,8 @@ class DataCollectionService:
 
         return record_store_data + organisation_data + application_data
 
-    def _generate_daily_ranges(self):
-        for i in range(7):
-            yield self.start_date + timedelta(days=i)
+    def generate_daily_ranges(self):
+        return [self.start_date + timedelta(days=i) for i in range(7)]
 
     def write_to_dynamodb_table(self, all_statistic_data: list[StatisticData]):
         logger.info("Writing statistic data to dynamodb table")

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from random import shuffle
 from unittest.mock import call
@@ -19,11 +19,13 @@ from tests.unit.conftest import (
 )
 from tests.unit.helpers.data.statistic.mock_collected_data import (
     ALL_MOCK_DATA_AS_JSON_LIST,
+    ALL_MOCK_WEEKLY_DATA,
     END_DATE,
     MOCK_APPLICATION_DATA,
     MOCK_ORGANISATION_DATA,
     MOCK_RECORD_STORE_DATA,
     START_DATE,
+    START_DATE_STR,
 )
 from tests.unit.helpers.data.statistic.mock_dynamodb_and_s3_records import (
     MOCK_ARF_LIST_OBJECTS_RESULT,
@@ -117,7 +119,6 @@ def mock_query_logs(mocker):
     yield mocked_method
 
 
-@freeze_time(START_DATE.strftime("%Y-%m-%dT%H:%M:%S"))
 @pytest.fixture
 def mock_service(
     set_env, mock_query_logs, mock_dynamo_service, mock_s3_list_all_objects
@@ -126,9 +127,20 @@ def mock_service(
     yield service
 
 
-@pytest.fixture
-def mock_uuid(mocker):
-    yield mocker.patch("uuid.uuid4", return_value="mock_uuid")
+@pytest.fixture()
+def mock_generate_daily_ranges(mocker, mock_service):
+    service = mock_service
+    mock_generate_ranges = mocker.patch.object(service, "generate_daily_ranges")
+    mock_generate_ranges.return_value = [
+        START_DATE,
+        START_DATE + timedelta(days=1),
+        START_DATE + timedelta(days=2),
+        START_DATE + timedelta(days=3),
+        START_DATE + timedelta(days=4),
+        START_DATE + timedelta(days=5),
+        START_DATE + timedelta(days=6),
+    ]
+    yield mock_generate_daily_ranges
 
 
 @pytest.fixture
@@ -175,10 +187,10 @@ def test_collect_all_data_and_write_to_dynamodb(mock_service, mocker):
     mock_service.write_to_dynamodb_table.assert_called_with(mock_collected_data)
 
 
-def test_collect_all_data(mock_service):
-    expected = unordered(
-        MOCK_RECORD_STORE_DATA + MOCK_ORGANISATION_DATA + MOCK_APPLICATION_DATA
-    )
+def test_collect_all_data(mock_uuid, mock_service, mock_generate_daily_ranges):
+    mock_service.today_date = START_DATE_STR
+
+    expected = unordered(ALL_MOCK_WEEKLY_DATA)
 
     actual = mock_service.collect_all_data()
 
@@ -226,7 +238,9 @@ def test_get_all_s3_files_info(mock_s3_list_all_objects, mock_service):
     mock_s3_list_all_objects.assert_has_calls(expected_calls)
 
 
-def test_get_record_store_data(mock_service):
+def test_get_record_store_data(mock_uuid, mock_service):
+    mock_service.today_date = START_DATE_STR
+
     mock_dynamo_scan_result = MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
     s3_list_objects_result = MOCK_ARF_LIST_OBJECTS_RESULT + MOCK_LG_LIST_OBJECTS_RESULT
 
@@ -238,7 +252,7 @@ def test_get_record_store_data(mock_service):
     assert actual == expected
 
 
-def test_get_organisation_data(mock_service, mock_uuid):
+def test_get_organisation_data(mock_uuid, mock_service):
     mock_dynamo_scan_result = MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
 
     actual = mock_service.get_organisation_data(
@@ -249,7 +263,7 @@ def test_get_organisation_data(mock_service, mock_uuid):
     assert actual == expected
 
 
-def test_get_application_data(mock_service, mock_uuid):
+def test_get_application_data(mock_uuid, mock_service):
     actual = mock_service.get_application_data(start_date=START_DATE, end_date=END_DATE)
     expected = unordered(MOCK_APPLICATION_DATA)
 
@@ -438,5 +452,21 @@ def test_get_average_number_of_file_per_patient_larger_mock_data(
             },
         ]
     )
+
+    assert actual == expected
+
+
+def test_generate_daily_ranges(mock_service):
+    mock_service.start_date = START_DATE
+    expected = [
+        START_DATE,
+        START_DATE + timedelta(days=1),
+        START_DATE + timedelta(days=2),
+        START_DATE + timedelta(days=3),
+        START_DATE + timedelta(days=4),
+        START_DATE + timedelta(days=5),
+        START_DATE + timedelta(days=6),
+    ]
+    actual = mock_service.generate_daily_ranges()
 
     assert actual == expected
