@@ -47,7 +47,7 @@ function PatientSearchPage() {
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
         navigate(routes.VERIFY_PATIENT);
     };
-    const pageTitle = 'Search for patient';
+    const pageTitle = 'Search for a patient';
     useTitle({ pageTitle: pageTitle });
 
     const handleSearch = async (data: FieldValues) => {

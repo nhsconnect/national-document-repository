@@ -79,7 +79,7 @@ describe('LloydGeorgeUploadInfectedStage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to search for patient page when button is clicked', () => {
+        it('navigates to search for a patient page when button is clicked', () => {
             render(
                 <LloydGeorgeUploadInfectedStage
                     documents={[uploadDocument]}
