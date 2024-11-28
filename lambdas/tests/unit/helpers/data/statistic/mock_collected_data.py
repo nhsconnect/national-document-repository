@@ -11,7 +11,7 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     HASHED_USER_ID_2_WITH_CLINICAL_ROLE,
 )
 
-TODAY_DATE = datetime.today().strftime("%Y%m%d")
+TODAY_DATE = datetime(2024, 6, 4, 10, 25, 0).strftime("%Y%m%d")
 
 MOCK_RECORD_STORE_DATA = [
     RecordStoreData(

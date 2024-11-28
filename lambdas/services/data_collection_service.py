@@ -46,17 +46,16 @@ class DataCollectionService:
         self.dynamodb_service = DynamoDBService()
         self.s3_service = S3Service()
 
-        end_time = datetime.combine(datetime.today(), datetime.min.time())
-        start_time = end_time - timedelta(days=7)
+        self.end_date = datetime.combine(datetime.today(), datetime.min.time())
+        self.start_date = self.end_date - timedelta(days=7)
 
-        self.weekly_collection_start_time = int(start_time.timestamp())
-        self.weekly_collection_end_time = int(end_time.timestamp())
+        self.weekly_collection_start_date = int(self.start_date.timestamp())
+        self.weekly_collection_end_date = int(self.end_date.timestamp())
         self.today_date = datetime.today().strftime("%Y%m%d")
 
     def collect_all_data_and_write_to_dynamodb(self):
         logger.info(
-            f"Collecting data for the past week: {datetime.fromtimestamp(self.weekly_collection_start_time)} "
-            f"to {datetime.fromtimestamp(self.weekly_collection_end_time)}."
+            f"Collecting data for the past week: {self.start_date} to {self.end_date}."
         )
 
         all_statistic_data = self.collect_all_data()
@@ -90,9 +89,8 @@ class DataCollectionService:
         return record_store_data + organisation_data + application_data
 
     def _generate_daily_ranges(self):
-        start = datetime.fromtimestamp(self.weekly_collection_start_time)
         for i in range(7):
-            yield start + timedelta(days=i)
+            yield self.start_date + timedelta(days=i)
 
     def write_to_dynamodb_table(self, all_statistic_data: list[StatisticData]):
         logger.info("Writing statistic data to dynamodb table")
@@ -175,7 +173,7 @@ class DataCollectionService:
         return record_store_data_for_all_ods_code
 
     def get_organisation_data(
-        self, dynamodb_scan_result: list[dict], start_time: datetime, end_time: datetime
+        self, dynamodb_scan_result: list[dict], start_date: datetime, end_date: datetime
     ) -> list[OrganisationData]:
 
         number_of_patients = self.get_number_of_patients(dynamodb_scan_result)
@@ -183,19 +181,19 @@ class DataCollectionService:
             dynamodb_scan_result
         )
         daily_count_viewed = self.get_cloud_watch_query_result(
-            LloydGeorgeRecordsViewed, start_time, end_time
+            LloydGeorgeRecordsViewed, start_date, end_date
         )
         daily_count_downloaded = self.get_cloud_watch_query_result(
-            LloydGeorgeRecordsDownloaded, start_time, end_time
+            LloydGeorgeRecordsDownloaded, start_date, end_date
         )
         daily_count_deleted = self.get_cloud_watch_query_result(
-            LloydGeorgeRecordsDeleted, start_time, end_time
+            LloydGeorgeRecordsDeleted, start_date, end_date
         )
         daily_count_stored = self.get_cloud_watch_query_result(
-            LloydGeorgeRecordsStored, start_time, end_time
+            LloydGeorgeRecordsStored, start_date, end_date
         )
         daily_count_searched = self.get_cloud_watch_query_result(
-            LloydGeorgeRecordsSearched, start_time, end_time
+            LloydGeorgeRecordsSearched, start_date, end_date
         )
 
         joined_query_result = self.join_results_by_ods_code(
@@ -212,7 +210,7 @@ class DataCollectionService:
 
         organisation_data_for_all_ods_code = [
             OrganisationData(
-                date=start_time.strftime("%Y%m%d"),
+                date=start_date.strftime("%Y%m%d"),
                 **organisation_data_properties,
             )
             for organisation_data_properties in joined_query_result
@@ -221,12 +219,12 @@ class DataCollectionService:
         return organisation_data_for_all_ods_code
 
     def get_application_data(
-        self, start_time: datetime, end_time: datetime
+        self, start_date: datetime, end_date: datetime
     ) -> list[ApplicationData]:
-        user_id_per_ods_code = self.get_active_user_list(start_time, end_time)
+        user_id_per_ods_code = self.get_active_user_list(start_date, end_date)
         application_data_for_all_ods_code = [
             ApplicationData(
-                date=start_time.strftime("%Y%m%d"),
+                date=start_date.strftime("%Y%m%d"),
                 active_user_ids_hashed=active_user_ids_hashed,
                 ods_code=ods_code,
             )
@@ -235,10 +233,10 @@ class DataCollectionService:
         return application_data_for_all_ods_code
 
     def get_active_user_list(
-        self, start_time: datetime, end_time: datetime
+        self, start_date: datetime, end_date: datetime
     ) -> dict[str, list]:
         query_result = self.get_cloud_watch_query_result(
-            query_params=UniqueActiveUserIds, start_time=start_time, end_time=end_time
+            query_params=UniqueActiveUserIds, start_time=start_date, end_time=end_date
         )
         user_ids_per_ods_code = defaultdict(list)
         for entry in query_result:

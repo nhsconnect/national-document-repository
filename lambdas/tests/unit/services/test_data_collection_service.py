@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from random import shuffle
 from unittest.mock import call
@@ -146,18 +146,18 @@ def larger_mock_data():
     return mock_dynamo_scan_result, mock_s3_list_objects_result
 
 
-@freeze_time("2024-06-04T18:00:00Z")
+@freeze_time("2024-06-04T00:00:00Z")
 def test_datetime_correctly_configured_during_initialise(set_env):
     service = DataCollectionService()
 
     assert service.today_date == "20240604"
     assert (
-        service.collection_start_time
-        == datetime.fromisoformat("2024-06-03T18:00:00Z").timestamp()
+        service.weekly_collection_start_date
+        == datetime.fromisoformat("2024-05-28T00:00:00Z").timestamp()
     )
     assert (
-        service.collection_end_time
-        == datetime.fromisoformat("2024-06-04T18:00:00Z").timestamp()
+        service.weekly_collection_end_date
+        == datetime.fromisoformat("2024-06-04T00:00:00Z").timestamp()
     )
 
 
@@ -235,10 +235,16 @@ def test_get_record_store_data(mock_service, mock_uuid):
     assert actual == expected
 
 
+@freeze_time("2024-06-04T10:25:00")
 def test_get_organisation_data(mock_service, mock_uuid):
     mock_dynamo_scan_result = MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
 
-    actual = mock_service.get_organisation_data(mock_dynamo_scan_result)
+    start_date = datetime.now() - timedelta(days=7)
+    end_date = datetime.now()
+
+    actual = mock_service.get_organisation_data(
+        mock_dynamo_scan_result, start_date, end_date
+    )
     expected = unordered(MOCK_ORGANISATION_DATA)
 
     assert actual == expected
