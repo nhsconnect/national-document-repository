@@ -11,12 +11,15 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     HASHED_USER_ID_2_WITH_CLINICAL_ROLE,
 )
 
-TODAY_DATE = datetime(2024, 6, 4, 10, 25, 0).strftime("%Y%m%d")
+START_DATE = datetime(2024, 5, 28, 10, 25, 0)
+END_DATE = datetime(2024, 6, 4, 10, 25, 0)
+START_DATE_STR = datetime(2024, 5, 28, 10, 25, 0).strftime("%Y%m%d")
+END_DATE_STR = datetime(2024, 6, 4, 10, 25, 0).strftime("%Y%m%d")
 
 MOCK_RECORD_STORE_DATA = [
     RecordStoreData(
         statistic_id="mock_uuid",
-        date=TODAY_DATE,
+        date=START_DATE_STR,
         ods_code="H81109",
         total_number_of_records=6,
         number_of_document_types=2,
@@ -26,7 +29,7 @@ MOCK_RECORD_STORE_DATA = [
     ),
     RecordStoreData(
         statistic_id="mock_uuid",
-        date=TODAY_DATE,
+        date=START_DATE_STR,
         ods_code="Y12345",
         total_number_of_records=2,
         number_of_document_types=2,
@@ -38,7 +41,7 @@ MOCK_RECORD_STORE_DATA = [
 MOCK_ORGANISATION_DATA = [
     OrganisationData(
         statistic_id="mock_uuid",
-        date=TODAY_DATE,
+        date=START_DATE_STR,
         ods_code="H81109",
         number_of_patients=2,
         average_records_per_patient=3,
@@ -50,7 +53,7 @@ MOCK_ORGANISATION_DATA = [
     ),
     OrganisationData(
         statistic_id="mock_uuid",
-        date=TODAY_DATE,
+        date=START_DATE_STR,
         ods_code="Y12345",
         number_of_patients=1,
         average_records_per_patient=2,
@@ -65,7 +68,7 @@ MOCK_ORGANISATION_DATA = [
 MOCK_APPLICATION_DATA = [
     ApplicationData(
         statistic_id="mock_uuid",
-        date=TODAY_DATE,
+        date=START_DATE_STR,
         ods_code="H81109",
         active_user_ids_hashed=[
             HASHED_USER_ID_1_WITH_ADMIN_ROLE,
@@ -74,7 +77,7 @@ MOCK_APPLICATION_DATA = [
     ),
     ApplicationData(
         statistic_id="mock_uuid",
-        date=TODAY_DATE,
+        date=START_DATE_STR,
         ods_code="Y12345",
         active_user_ids_hashed=[HASHED_USER_ID_1_WITH_PCSE_ROLE],
     ),
