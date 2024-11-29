@@ -25,15 +25,20 @@ def mns_service(mocker, set_env, monkeypatch):
     mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(service, "get_updated_gp_ods")
     mocker.patch.object(service, "sqs_service")
-
-    mocker.patch.object(service, "handle_death_notification")
     yield service
 
 
 @pytest.fixture
-def mock_handle_gp_change(mns_service, mocker):
-    method = mocker.patch.object(mns_service, "handle_gp_change_notification")
-    yield method
+def mock_handle_gp_change(mocker, mns_service):
+    service = mns_service
+    mocker.patch.object(service, "handle_gp_change_notification")
+    yield service
+
+
+@pytest.fixture
+def mock_handle_death_notification(mocker, mns_service):
+    service = mns_service
+    mocker.patch.object(service, "handle_death_notification")
 
 
 gp_change_message = MNSSQSMessage(**MOCK_GP_CHANGE_MESSAGE_BODY)
@@ -43,15 +48,17 @@ removed_death_notification_message = MNSSQSMessage(**MOCK_REMOVED_DEATH_MESSAGE_
 
 
 def test_handle_gp_change_message_called_message_type_gp_change(
-    mns_service, mock_handle_gp_change
+    mns_service, mock_handle_gp_change, mock_handle_death_notification
 ):
     mns_service.handle_mns_notification(gp_change_message)
 
     mns_service.handle_death_notification.assert_not_called()
-    mock_handle_gp_change.handle_gp_change_notification.assert_called()
+    mns_service.handle_gp_change_notification.assert_called_with(gp_change_message)
 
 
-def test_handle_gp_change_message_not_called_message_death_message(mns_service):
+def test_handle_gp_change_message_not_called_message_death_message(
+    mns_service, mock_handle_death_notification, mock_handle_gp_change
+):
     mns_service.handle_mns_notification(death_notification_message)
 
     mns_service.handle_gp_change_notification.assert_not_called()
@@ -196,7 +203,9 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
     mns_service.dynamo_service.update_item.assert_has_calls(calls, any_order=False)
 
 
-def test_messages_is_put_back_on_the_queue_when_pds_error_raised(mns_service, mocker):
+def test_messages_is_put_back_on_the_queue_when_pds_error_raised(
+    mns_service, mocker, mock_handle_gp_change
+):
     mns_service.handle_gp_change_notification.side_effect = PdsErrorException()
     mocker.patch.object(mns_service, "send_message_back_to_queue")
     mns_service.handle_mns_notification(gp_change_message)
