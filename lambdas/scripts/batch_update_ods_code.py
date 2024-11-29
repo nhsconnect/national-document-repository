@@ -10,7 +10,6 @@ from models.pds_models import Patient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from requests import HTTPError
 from services.base.dynamo_service import DynamoDBService
-from services.base.ssm_service import SSMService
 from services.data_collection_service import DataCollectionService
 from services.statistical_report_service import StatisticalReportService
 from utils.exceptions import PdsErrorException, PdsResponseValidationException
