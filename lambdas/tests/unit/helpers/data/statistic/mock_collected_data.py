@@ -6,6 +6,7 @@ from models.statistics import (
     RecordStoreData,
     StatisticData,
 )
+from tests.unit.conftest import TEST_UUID
 from tests.unit.helpers.data.statistic.mock_dynamodb_and_s3_records import (
     TOTAL_FILE_SIZE_FOR_H81109,
     TOTAL_FILE_SIZE_FOR_Y12345,
@@ -15,7 +16,6 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     HASHED_USER_ID_1_WITH_PCSE_ROLE,
     HASHED_USER_ID_2_WITH_CLINICAL_ROLE,
 )
-from unit.conftest import TEST_UUID
 
 START_DATE = datetime(2024, 5, 28, 10, 25, 0)
 END_DATE = datetime(2024, 6, 4, 10, 25, 0)
