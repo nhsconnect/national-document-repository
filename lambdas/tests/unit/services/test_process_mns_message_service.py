@@ -25,7 +25,15 @@ def mns_service(mocker, set_env, monkeypatch):
     mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(service, "get_updated_gp_ods")
     mocker.patch.object(service, "sqs_service")
+
+    mocker.patch.object(service, "handle_death_notification")
     yield service
+
+
+@pytest.fixture
+def mock_handle_gp_change(mns_service, mocker):
+    method = mocker.patch.object(mns_service, "handle_gp_change_notification")
+    yield method
 
 
 gp_change_message = MNSSQSMessage(**MOCK_GP_CHANGE_MESSAGE_BODY)
@@ -34,18 +42,30 @@ informal_death_notification_message = MNSSQSMessage(**MOCK_INFORMAL_DEATH_MESSAG
 removed_death_notification_message = MNSSQSMessage(**MOCK_REMOVED_DEATH_MESSAGE_BODY)
 
 
-def test_handle_gp_change_message_called_message_type_gp_change(mns_service, mocker):
-    mocker.patch.object(mns_service, "handle_gp_change_notification")
+def test_handle_gp_change_message_called_message_type_gp_change(
+    mns_service, mock_handle_gp_change
+):
     mns_service.handle_mns_notification(gp_change_message)
 
-    mns_service.handle_gp_change_notification.assert_called()
+    mns_service.handle_death_notification.assert_not_called()
+    mock_handle_gp_change.handle_gp_change_notification.assert_called()
 
 
-def test_handle_gp_change_message_not_called_message_death_message(mns_service, mocker):
-    mocker.patch.object(mns_service, "handle_gp_change_notification")
+def test_handle_gp_change_message_not_called_message_death_message(mns_service):
     mns_service.handle_mns_notification(death_notification_message)
 
     mns_service.handle_gp_change_notification.assert_not_called()
+    mns_service.handle_death_notification.assert_called_with(death_notification_message)
+
+
+def test_has_patient_in_ndr_populate_response_from_dynamo(mns_service):
+    response = MOCK_SEARCH_RESPONSE["Items"]
+    assert mns_service.patient_is_present_in_ndr(response) is True
+
+
+def test_has_patient_in_ndr_empty_dynamo_response(mns_service):
+    response = MOCK_EMPTY_RESPONSE["Items"]
+    assert mns_service.patient_is_present_in_ndr(response) is False
 
 
 def test_is_informal_death_notification(mns_service):
@@ -53,9 +73,39 @@ def test_is_informal_death_notification(mns_service):
         mns_service.is_informal_death_notification(death_notification_message) is False
     )
     assert (
+        mns_service.is_informal_death_notification(removed_death_notification_message)
+        is False
+    )
+    assert (
         mns_service.is_informal_death_notification(informal_death_notification_message)
         is True
     )
+
+
+def test_is_removed_death_notification(mns_service):
+    assert (
+        mns_service.is_removed_death_notification(death_notification_message) is False
+    )
+    assert (
+        mns_service.is_removed_death_notification(informal_death_notification_message)
+        is False
+    )
+    assert (
+        mns_service.is_removed_death_notification(removed_death_notification_message)
+        is True
+    )
+
+
+def test_is_formal_death_notification(mns_service):
+    assert (
+        mns_service.is_formal_death_notification(removed_death_notification_message)
+        is False
+    )
+    assert (
+        mns_service.is_formal_death_notification(informal_death_notification_message)
+        is False
+    )
+    assert mns_service.is_formal_death_notification(death_notification_message) is True
 
 
 def test_handle_notification_not_called_message_type_not_death_or_gp_notification(
@@ -76,23 +126,23 @@ def test_pds_is_called_death_notification_removed(mns_service, mocker):
 
 def test_update_patient_details(mns_service):
     mns_service.update_patient_details(
-        MOCK_SEARCH_RESPONSE["Items"], PatientOdsInactiveStatus.DECEASED.value
+        MOCK_SEARCH_RESPONSE["Items"], PatientOdsInactiveStatus.DECEASED
     )
     calls = [
         call(
             table_name=mns_service.table,
             key="3d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED.value},
+            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED},
         ),
         call(
             table_name=mns_service.table,
             key="4d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED.value},
+            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED},
         ),
         call(
             table_name=mns_service.table,
             key="5d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED.value},
+            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED},
         ),
     ]
     mns_service.dynamo_service.update_item.assert_has_calls(calls, any_order=False)
@@ -147,7 +197,6 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
 
 
 def test_messages_is_put_back_on_the_queue_when_pds_error_raised(mns_service, mocker):
-    mocker.patch.object(mns_service, "handle_gp_change_notification")
     mns_service.handle_gp_change_notification.side_effect = PdsErrorException()
     mocker.patch.object(mns_service, "send_message_back_to_queue")
     mns_service.handle_mns_notification(gp_change_message)

@@ -16,7 +16,6 @@ logger = LoggingService(__name__)
 
 class MNSNotificationService:
     def __init__(self):
-        self.message = None
         self.dynamo_service = DynamoDBService()
         self.table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.pds_service = get_pds_service()
@@ -25,32 +24,30 @@ class MNSNotificationService:
 
     def handle_mns_notification(self, message: MNSSQSMessage):
         try:
-            if message.type == MNSNotificationTypes.CHANGE_OF_GP.value:
+            if message.type == MNSNotificationTypes.CHANGE_OF_GP:
                 logger.info("Handling GP change notification.")
                 self.handle_gp_change_notification(message)
 
-            elif message.type == MNSNotificationTypes.DEATH_NOTIFICATION.value:
+            elif message.type == MNSNotificationTypes.DEATH_NOTIFICATION:
                 logger.info("Handling death status notification.")
                 self.handle_death_notification(message)
 
         except PdsErrorException:
+            logger.info("An error occurred when calling PDS")
             self.send_message_back_to_queue(message)
 
-        except Exception as e:
+        except ClientError as e:
             logger.info(
                 f"Unable to process message: {message.id}, of type: {message.type}"
             )
             logger.info(f"{e}")
-            return
 
     def handle_gp_change_notification(self, message: MNSSQSMessage):
         patient_document_references = self.get_patient_documents(
             message.subject.nhs_number
         )
 
-        if len(patient_document_references) < 1:
-            logger.info("Patient is not held in the National Document Repository.")
-            logger.info("Moving on to the next message.")
+        if not self.patient_is_present_in_ndr(patient_document_references):
             return
 
         updated_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
@@ -72,39 +69,36 @@ class MNSNotificationService:
             )
             return
 
-        try:
-            patient_documents = self.get_patient_documents(message.subject.nhs_number)
+        patient_documents = self.get_patient_documents(message.subject.nhs_number)
 
-            if len(patient_documents) < 1:
-                logger.info("Patient is not held in the National Document Repository.")
-                logger.info("Moving on to the next message.")
-                return
+        if not self.patient_is_present_in_ndr(patient_documents):
+            return
 
-            if (
-                message.data["deathNotificationStatus"]
-                == DeathNotificationStatus.FORMAL.value
-            ):
-                self.update_patient_details(
-                    patient_documents, PatientOdsInactiveStatus.DECEASED.value
-                )
-                logger.info("Update complete, patient marked DECE.")
-                return
+        if self.is_formal_death_notification(message):
+            self.update_patient_details(
+                patient_documents, PatientOdsInactiveStatus.DECEASED
+            )
+            logger.info(
+                f"Update complete, patient marked {PatientOdsInactiveStatus.DECEASED}."
+            )
 
-            if (
-                message.data["deathNotificationStatus"]
-                == DeathNotificationStatus.REMOVED.value
-            ):
-                update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
-                self.update_patient_details(patient_documents, update_ods_code)
-                logger.info("Update complete for death notification change.")
-        except ClientError as e:
-            logger.error(f"{e}")
+        elif self.is_removed_death_notification(message):
+            update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
+            self.update_patient_details(patient_documents, update_ods_code)
+            logger.info("Update complete for death notification change.")
 
     def is_informal_death_notification(self, message: MNSSQSMessage) -> bool:
         return (
-            message.data["deathNotificationStatus"]
-            == DeathNotificationStatus.INFORMAL.value
+            message.data["deathNotificationStatus"] == DeathNotificationStatus.INFORMAL
         )
+
+    def is_removed_death_notification(self, message: MNSSQSMessage) -> bool:
+        return (
+            message.data["deathNotificationStatus"] == DeathNotificationStatus.REMOVED
+        )
+
+    def is_formal_death_notification(self, message: MNSSQSMessage) -> bool:
+        return message.data["deathNotificationStatus"] == DeathNotificationStatus.FORMAL
 
     def get_patient_documents(self, nhs_number: str):
         logger.info("Getting patient document references...")
@@ -119,15 +113,11 @@ class MNSNotificationService:
     def update_patient_details(self, patient_documents: list[dict], code: str) -> None:
         for document in patient_documents:
             logger.info("Updating patient document reference...")
-            try:
-                self.dynamo_service.update_item(
-                    table_name=self.table,
-                    key=document["ID"],
-                    updated_fields={"CurrentGpOds": code},
-                )
-            except ClientError as e:
-                logger.error("Unable to update patient document reference")
-                raise e
+            self.dynamo_service.update_item(
+                table_name=self.table,
+                key=document["ID"],
+                updated_fields={"CurrentGpOds": code},
+            )
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
         patient_details = self.pds_service.fetch_patient_details(nhs_number)
@@ -138,3 +128,11 @@ class MNSNotificationService:
         self.sqs_service.send_message_standard(
             queue_url=self.queue, message_body=message.model_dump_json(by_alias=True)
         )
+
+    def patient_is_present_in_ndr(self, dynamo_response):
+        if len(dynamo_response) < 1:
+            logger.info("Patient is not held in the National Document Repository.")
+            logger.info("Moving on to the next message.")
+            return False
+        else:
+            return True
