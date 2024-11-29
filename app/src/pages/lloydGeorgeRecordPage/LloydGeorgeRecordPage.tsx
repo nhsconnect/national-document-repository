@@ -34,11 +34,13 @@ function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-
     const [numberOfFiles, setNumberOfFiles] = useState(0);
     const [totalFileSizeInBytes, settotalFileSizeInBytes] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [cloudFrontUrl, setCloudFrontUrl] = useState('');
+    const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
+
+    const showMenu = role === REPOSITORY_ROLE.GP_ADMIN && hasRecordInStorage;
 
     const resetDocState = () => {
         setNumberOfFiles(0);
@@ -122,6 +124,8 @@ function LloydGeorgeRecordPage() {
                             numberOfFiles={numberOfFiles}
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}
+                            showMenu={showMenu}
+                            resetDocState={resetDocState}
                         />
                     }
                 />

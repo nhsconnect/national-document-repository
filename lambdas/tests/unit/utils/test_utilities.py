@@ -1,9 +1,12 @@
 import pytest
+from services.mock_pds_service import MockPdsApiService
+from services.pds_api_service import PdsApiService
 from utils.exceptions import InvalidResourceIdException
 from utils.utilities import (
     camelize_dict,
     flatten,
     get_file_key_from_s3_url,
+    get_pds_service,
     redact_id_to_last_4_chars,
     validate_nhs_number,
 )
@@ -32,6 +35,42 @@ def test_decapitalise_keys():
     actual = camelize_dict(test_dict)
 
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "stub_value",
+    [
+        ("True"),
+        ("true"),
+    ],
+)
+def test_get_pds_service_returns_stubbed_pds_when_true(monkeypatch, stub_value):
+    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", stub_value)
+
+    response = get_pds_service()
+
+    assert isinstance(response, MockPdsApiService)
+
+
+def test_get_pds_service_returns_stubbed_pds_when_unset():
+    response = get_pds_service()
+
+    assert isinstance(response, MockPdsApiService)
+
+
+@pytest.mark.parametrize(
+    "stub_value",
+    [
+        ("False"),
+        ("false"),
+    ],
+)
+def test_get_pds_service_returns_real_pds(monkeypatch, stub_value):
+    monkeypatch.setenv("PDS_FHIR_IS_STUBBED", stub_value)
+
+    response = get_pds_service()
+
+    assert isinstance(response, PdsApiService)
 
 
 def test_redact_id():

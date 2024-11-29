@@ -375,6 +375,20 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
+  deploy_nrl_pointer_lambda:
+    name: Deploy manage nrl pointer lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: manage_nrl_pointer_handler
+      lambda_aws_name: ManageNrlPointerLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_edge_presign_lambda:
     name: Deploy edge presign cloudfront lambda
     uses: ./.github/workflows/base-lambdas-edge-deploy.yml
@@ -387,3 +401,5 @@ jobs:
       lambda_aws_name: EdgePresignLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from enums.metadata_report import MetadataReport
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_pascal
 from utils.audit_logging_setup import LoggingService
@@ -27,6 +28,13 @@ class BulkUploadReport(BaseModel):
     pds_ods_code: str = Field(alias=MetadataReport.PdsOdsCode)
     uploader_ods_code: str = Field(alias=MetadataReport.UploaderOdsCode)
     reason: Optional[str] = Field(default="", alias=MetadataReport.Reason)
+
+    def get_registered_at_uploader_practice_status(self) -> str:
+        return (
+            self.pds_ods_code
+            if self.pds_ods_code in PatientOdsInactiveStatus.list()
+            else str(self.uploader_ods_code == self.pds_ods_code)
+        )
 
 
 def date_string_yyyymmdd(time_now: datetime) -> str:

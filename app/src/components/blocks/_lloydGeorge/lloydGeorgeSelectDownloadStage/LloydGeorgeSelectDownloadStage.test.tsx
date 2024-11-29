@@ -87,7 +87,6 @@ describe('LloydGeorgeSelectDownloadStage', () => {
         });
         expect(screen.getByTestId('search-result-0')).toBeInTheDocument();
         expect(screen.getByTestId('download-selected-files-btn')).toBeInTheDocument();
-        expect(screen.getByTestId('start-again-link')).toBeInTheDocument();
         expect(screen.getByTestId('toggle-selection-btn')).toBeInTheDocument();
     });
 

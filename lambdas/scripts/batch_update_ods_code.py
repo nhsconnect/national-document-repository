@@ -34,8 +34,7 @@ class BatchUpdate:
     ):
         self.progress_store = progress_store_file_path
         self.table_name = os.getenv("table_name")
-        pds_service_class = get_pds_service()
-        self.pds_service = pds_service_class(SSMService())
+        self.pds_service = get_pds_service()
         self.dynamo_service = DynamoDBService()
         self.progress: Dict[str, ProgressForPatient] = {}
 

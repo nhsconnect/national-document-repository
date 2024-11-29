@@ -1,0 +1,33 @@
+name: Subscribe to MNS
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      sandbox:
+        required: true
+        type: string
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+jobs:
+  batch_update_build_docker_image:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: lambdas
+    steps:
+      - name: Placeholder
+    run: |
+      echo "Running placeholder job on ${inputs.sandbox}"
+
