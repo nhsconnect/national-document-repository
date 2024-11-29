@@ -19,8 +19,8 @@ from unit.conftest import TEST_UUID
 
 START_DATE = datetime(2024, 5, 28, 10, 25, 0)
 END_DATE = datetime(2024, 6, 4, 10, 25, 0)
-START_DATE_STR = datetime(2024, 5, 28, 10, 25, 0).strftime("%Y%m%d")
-END_DATE_STR = datetime(2024, 6, 4, 10, 25, 0).strftime("%Y%m%d")
+START_DATE_STR = START_DATE.strftime("%Y%m%d")
+END_DATE_STR = END_DATE.strftime("%Y%m%d")
 
 MOCK_RECORD_STORE_DATA = [
     RecordStoreData(
