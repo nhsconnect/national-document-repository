@@ -106,6 +106,7 @@ MOCK_PRESIGNED_URL_ROLE_ARN_KEY = "PRESIGNED_ASSUME_ROLE"
 MOCK_PRESIGNED_URL_ROLE_ARN_VALUE = "arn:aws:iam::test123"
 
 STITCH_METADATA_DYNAMODB_NAME_VALUE = "test_stitch_metadata"
+NRL_SQS_URL = "https://sqs.us-east-1.amazonaws.com/177715257436/MyQueue"
 
 
 @pytest.fixture
@@ -167,6 +168,7 @@ def set_env(monkeypatch):
     )
     monkeypatch.setenv("NRL_API_ENDPOINT", FAKE_URL)
     monkeypatch.setenv("NRL_END_USER_ODS_CODE", "test_nrl_user_ods_ssm_key")
+    monkeypatch.setenv("NRL_SQS_QUEUE_URL", NRL_SQS_URL)
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
