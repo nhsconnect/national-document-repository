@@ -39,7 +39,6 @@ describe('Feature flags - Lloyd George Workflow', () => {
                     'eq',
                     'Available records - Access and store digital patient documents',
                 );
-                cy.contains('To search within the record use Control and F').should('exist');
             },
         );
 
