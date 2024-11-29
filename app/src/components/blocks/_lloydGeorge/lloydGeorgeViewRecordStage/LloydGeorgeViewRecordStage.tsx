@@ -212,9 +212,13 @@ function LloydGeorgeViewRecordStage({
 
             <h1>{pageHeader}</h1>
             <PatientSimpleSummary />
-            <p>
-                To search within the record use <strong>Control</strong> and <strong>F</strong>
-            </p>
+            {fullScreen ? (
+                <p>
+                    To search within this record use <strong>Control</strong> and <strong>F</strong>
+                </p>
+            ) : (
+                <p />
+            )}
 
             {!fullScreen ? (
                 <div className="lloydgeorge_record-stage_flex">
@@ -223,7 +227,6 @@ function LloydGeorgeViewRecordStage({
                         setStage={setStage}
                         showMenu={showMenu}
                     />
-
                     <div
                         className={`lloydgeorge_record-stage_flex-row lloydgeorge_record-stage_flex-row${menuClass}`}
                     >
