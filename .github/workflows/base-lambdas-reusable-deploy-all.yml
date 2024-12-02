@@ -404,6 +404,7 @@ jobs:
 
   deploy_mns_notification_lambda:
     name: Deploy mns notification lambda
+    if: !contains( ['ndra', 'ndrb', 'ndrc', 'ndrd'], ${{ inputs.sandbox }} )
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
