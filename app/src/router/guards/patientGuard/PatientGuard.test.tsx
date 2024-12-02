@@ -19,13 +19,13 @@ describe('AuthGuard', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
-    it('navigates user to unauthorised when no patient is searched', async () => {
+    it('navigates user to search patient page when no patient details are stored', async () => {
         mockedUsePatient.mockReturnValue(null);
 
         renderGuard();
 
         await waitFor(async () => {
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UNAUTHORISED);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
         });
     });
 
