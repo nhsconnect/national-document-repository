@@ -404,7 +404,10 @@ jobs:
 
   deploy_mns_notification_lambda:
     name: Deploy mns notification lambda
-    if: ${{ inputs.environment }} != 'development'
+    strategy:
+      matrix:
+        env_to_build_on: ['prod', 'pre-prod', 'ndr-test', 'ndr-dev']
+    if: ${{ matrix.env_to_build_on }} == ${{ inputs.sandbox }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
