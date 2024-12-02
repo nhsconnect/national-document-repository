@@ -45,8 +45,10 @@ class DataCollectionService:
         self.cloudwatch_service = CloudwatchService()
         self.dynamodb_service = DynamoDBService()
         self.s3_service = S3Service()
-
-        self.end_date = datetime.combine(datetime.today(), datetime.min.time())
+        # TODO: PRMP-1123 - Revert "+ timedelta(days=1)" before merging into main
+        self.end_date = datetime.combine(
+            datetime.today() + timedelta(days=1), datetime.min.time()
+        )
         self.start_date = self.end_date - timedelta(days=7)
 
         self.weekly_collection_start_date = int(self.start_date.timestamp())
