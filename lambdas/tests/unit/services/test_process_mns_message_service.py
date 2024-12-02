@@ -1,7 +1,10 @@
+from datetime import datetime
 from unittest.mock import call
 
 import pytest
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from freezegun import freeze_time
 from models.mns_sqs_message import MNSSQSMessage
 from services.process_mns_message_service import MNSNotificationService
 from tests.unit.conftest import TEST_CURRENT_GP_ODS
@@ -41,6 +44,8 @@ def mock_handle_death_notification(mocker, mns_service):
     mocker.patch.object(service, "handle_death_notification")
 
 
+MOCK_UPDATE_TIME = "2024-01-01 12:00:00"
+
 gp_change_message = MNSSQSMessage(**MOCK_GP_CHANGE_MESSAGE_BODY)
 death_notification_message = MNSSQSMessage(**MOCK_DEATH_MESSAGE_BODY)
 informal_death_notification_message = MNSSQSMessage(**MOCK_INFORMAL_DEATH_MESSAGE_BODY)
@@ -75,44 +80,40 @@ def test_has_patient_in_ndr_empty_dynamo_response(mns_service):
     assert mns_service.patient_is_present_in_ndr(response) is False
 
 
-def test_is_informal_death_notification(mns_service):
-    assert (
-        mns_service.is_informal_death_notification(death_notification_message) is False
-    )
-    assert (
-        mns_service.is_informal_death_notification(removed_death_notification_message)
-        is False
-    )
-    assert (
-        mns_service.is_informal_death_notification(informal_death_notification_message)
-        is True
-    )
+@pytest.mark.parametrize(
+    "event_message, output",
+    [
+        (removed_death_notification_message, False),
+        (informal_death_notification_message, True),
+        (death_notification_message, False),
+    ],
+)
+def test_is_informal_death_notification(mns_service, event_message, output):
+    assert mns_service.is_informal_death_notification(event_message) is output
 
 
-def test_is_removed_death_notification(mns_service):
-    assert (
-        mns_service.is_removed_death_notification(death_notification_message) is False
-    )
-    assert (
-        mns_service.is_removed_death_notification(informal_death_notification_message)
-        is False
-    )
-    assert (
-        mns_service.is_removed_death_notification(removed_death_notification_message)
-        is True
-    )
+@pytest.mark.parametrize(
+    "event_message, output",
+    [
+        (removed_death_notification_message, True),
+        (informal_death_notification_message, False),
+        (death_notification_message, False),
+    ],
+)
+def test_is_removed_death_notification(mns_service, event_message, output):
+    assert mns_service.is_removed_death_notification(event_message) is output
 
 
-def test_is_formal_death_notification(mns_service):
-    assert (
-        mns_service.is_formal_death_notification(removed_death_notification_message)
-        is False
-    )
-    assert (
-        mns_service.is_formal_death_notification(informal_death_notification_message)
-        is False
-    )
-    assert mns_service.is_formal_death_notification(death_notification_message) is True
+@pytest.mark.parametrize(
+    "event_message, output",
+    [
+        (removed_death_notification_message, False),
+        (informal_death_notification_message, False),
+        (death_notification_message, True),
+    ],
+)
+def test_is_formal_death_notification(mns_service, event_message, output):
+    assert mns_service.is_formal_death_notification(event_message) is output
 
 
 def test_handle_notification_not_called_message_type_not_death_or_gp_notification(
@@ -131,6 +132,7 @@ def test_pds_is_called_death_notification_removed(mns_service, mocker):
     mns_service.update_patient_details.assert_called()
 
 
+@freeze_time(MOCK_UPDATE_TIME)
 def test_update_patient_details(mns_service):
     mns_service.update_patient_details(
         MOCK_SEARCH_RESPONSE["Items"], PatientOdsInactiveStatus.DECEASED
@@ -139,17 +141,32 @@ def test_update_patient_details(mns_service):
         call(
             table_name=mns_service.table,
             key="3d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED},
+            updated_fields={
+                DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: PatientOdsInactiveStatus.DECEASED,
+                DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
+                    datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
+                ),
+            },
         ),
         call(
             table_name=mns_service.table,
             key="4d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED},
+            updated_fields={
+                DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: PatientOdsInactiveStatus.DECEASED,
+                DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
+                    datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
+                ),
+            },
         ),
         call(
             table_name=mns_service.table,
             key="5d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": PatientOdsInactiveStatus.DECEASED},
+            updated_fields={
+                DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: PatientOdsInactiveStatus.DECEASED,
+                DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
+                    datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
+                ),
+            },
         ),
     ]
     mns_service.dynamo_service.update_item.assert_has_calls(calls, any_order=False)
@@ -177,6 +194,7 @@ def test_update_gp_ods_not_called_ods_codes_are_the_same(mns_service):
     mns_service.dynamo_service.update_item.assert_not_called()
 
 
+@freeze_time(MOCK_UPDATE_TIME)
 def test_handle_gp_change_updates_gp_ods_code(mns_service):
     mns_service.dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE
     other_gp_ods = "Z12345"
@@ -187,17 +205,32 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
         call(
             table_name=mns_service.table,
             key="3d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": other_gp_ods},
+            updated_fields={
+                DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: other_gp_ods,
+                DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
+                    datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
+                ),
+            },
         ),
         call(
             table_name=mns_service.table,
             key="4d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": other_gp_ods},
+            updated_fields={
+                DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: other_gp_ods,
+                DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
+                    datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
+                ),
+            },
         ),
         call(
             table_name=mns_service.table,
             key="5d8683b9-1665-40d2-8499-6e8302d507ff",
-            updated_fields={"CurrentGpOds": other_gp_ods},
+            updated_fields={
+                DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: other_gp_ods,
+                DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
+                    datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
+                ),
+            },
         ),
     ]
     mns_service.dynamo_service.update_item.assert_has_calls(calls, any_order=False)

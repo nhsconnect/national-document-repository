@@ -1,7 +1,9 @@
 import os
+from datetime import datetime
 
 from botocore.exceptions import ClientError
 from enums.death_notification_status import DeathNotificationStatus
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.mns_notification_types import MNSNotificationTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from models.mns_sqs_message import MNSSQSMessage
@@ -57,7 +59,12 @@ class MNSNotificationService:
                 self.dynamo_service.update_item(
                     table_name=self.table,
                     key=reference["ID"],
-                    updated_fields={"CurrentGpOds": updated_ods_code},
+                    updated_fields={
+                        DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: updated_ods_code,
+                        DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
+                            datetime.now().timestamp()
+                        ),
+                    },
                 )
 
         logger.info("Update complete for change of GP")
@@ -116,7 +123,12 @@ class MNSNotificationService:
             self.dynamo_service.update_item(
                 table_name=self.table,
                 key=document["ID"],
-                updated_fields={"CurrentGpOds": code},
+                updated_fields={
+                    DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: code,
+                    DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
+                        datetime.now().timestamp()
+                    ),
+                },
             )
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
