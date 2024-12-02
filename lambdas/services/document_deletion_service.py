@@ -1,10 +1,16 @@
+import os
+import uuid
 from typing import Literal
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.s3_lifecycle_tags import S3LifecycleTags
+from enums.snomed_codes import SnomedCodesCategory, SnomedCodesType
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
+from models.nrl_sqs_message import NrlSqsMessage
+from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_job_service import LloydGeorgeStitchJobService
 from utils.audit_logging_setup import LoggingService
@@ -19,6 +25,7 @@ class DocumentDeletionService:
     def __init__(self):
         self.document_service = DocumentService()
         self.stitch_service = LloydGeorgeStitchJobService()
+        self.sqs_service = SQSService()
 
     def handle_delete(
         self, nhs_number: str, doc_types: list[SupportedDocumentTypes]
@@ -27,6 +34,8 @@ class DocumentDeletionService:
         for doc_type in doc_types:
             files_deleted += self.delete_specific_doc_type(nhs_number, doc_type)
         self.delete_documents_references_in_stitch_table(nhs_number)
+        if SupportedDocumentTypes.LG in doc_types:
+            self.send_sqs_message_to_remove_pointer(nhs_number)
         return files_deleted
 
     def get_documents_references_in_storage(
@@ -41,7 +50,7 @@ class DocumentDeletionService:
 
     def delete_documents_references_in_stitch_table(self, nhs_number: str):
         documents_in_stitch_table = (
-            self.stitch_service.query_stitch_trace_with_nhs_number(nhs_number)
+            self.stitch_service.query_stitch_trace_with_nhs_number(nhs_number) or []
         )
 
         for record in documents_in_stitch_table:
@@ -77,3 +86,18 @@ class DocumentDeletionService:
                 {"Results": "Failed to delete documents"},
             )
             raise DocumentDeletionServiceException(500, LambdaError.DocDelClient)
+
+    def send_sqs_message_to_remove_pointer(self, nhs_number: str):
+        delete_nrl_message = NrlSqsMessage(
+            nhs_number=nhs_number,
+            action=NrlActionTypes.DELETE,
+            snomed_code_doc_type=SnomedCodesType.LLOYD_GEORGE,
+            snomed_code_category=SnomedCodesCategory.CARE_PLAN,
+        )
+        sqs_group_id = f"NRL_delete_{uuid.uuid4()}"
+        nrl_queue_url = os.environ["NRL_SQS_QUEUE_URL"]
+        self.sqs_service.send_message_fifo(
+            queue_url=nrl_queue_url,
+            message_body=delete_nrl_message.model_dump_json(),
+            group_id=sqs_group_id,
+        )
