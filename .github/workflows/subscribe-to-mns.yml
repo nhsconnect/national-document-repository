@@ -6,7 +6,12 @@ on:
       sandbox:
         description: Which sandbox would you like to run against?
         required: true
-        type: string
+        type: choice
+        options:
+          - ndr-dev
+          - test
+          - pre-prod
+          - prod
       environment:
         description: Which environment settings to use?
         required: true
