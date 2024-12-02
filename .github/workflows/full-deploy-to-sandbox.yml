@@ -5,7 +5,6 @@ on:
     inputs:
       build_branch:
         description: "Feature branch to push?"
-
         required: true
         type: "string"
         default: "main"
@@ -18,6 +17,23 @@ on:
         description: "Which Environment settings to use."
         required: true
         type: "string" 
+        default: "development"
+  workflow_call:
+    inputs:
+      build_branch:
+        description: "Feature branch to push."
+        required: true
+        type: "string"
+        default: "main"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
         default: "development"
 
 permissions:
