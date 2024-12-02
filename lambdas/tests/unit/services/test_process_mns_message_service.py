@@ -243,4 +243,4 @@ def test_messages_is_put_back_on_the_queue_when_pds_error_raised(
     mocker.patch.object(mns_service, "send_message_back_to_queue")
     mns_service.handle_mns_notification(gp_change_message)
 
-    mns_service.send_message_back_to_queue.assert_called()
+    mns_service.send_message_back_to_queue.assert_called_with(gp_change_message)
