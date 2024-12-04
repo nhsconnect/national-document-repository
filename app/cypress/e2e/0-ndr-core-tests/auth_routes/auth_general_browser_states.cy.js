@@ -1,5 +1,8 @@
 import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 import { Roles } from '../../../support/roles';
+import dbItem from '../../../fixtures/dynamo-db-items/active-patient.json';
+import { pdsPatients, stubPatients } from '../../../support/patients';
+import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatientLGUpload.json';
 
 describe('Authentication & Authorisation', () => {
     const baseUrl = Cypress.config('baseUrl');
@@ -83,6 +86,44 @@ describe('Authentication & Authorisation', () => {
                     'eq',
                     'Unauthorised account - Access and store digital patient documents',
                 );
+            },
+        );
+    });
+
+    context('Page refresh redirection ', () => {
+        const workspace = Cypress.env('WORKSPACE');
+        dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace);
+
+        const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
+        const verifyUrl = '/patient/verify';
+        const patientSearchUrl = '/patient/search';
+
+        it(
+            'Refreshing the browser after searching for a patient will return the user to the patient search page',
+            { tags: 'regression ', defaultCommandTimeout: 20000 },
+            () => {
+                cy.login(Roles.GP_ADMIN);
+                cy.visit(patientSearchUrl);
+
+                cy.intercept('GET', '/SearchPatient*', {
+                    statusCode: 200,
+                    body: searchPatientPayload,
+                }).as('search');
+                cy.intercept('POST', '/LloydGeorgeStitch*', {
+                    statusCode: 404,
+                }).as('stitch');
+
+                cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
+                cy.getByTestId('search-submit-btn').click();
+
+                cy.url().should('contain', verifyUrl);
+                cy.get('#verify-submit').click();
+
+                cy.url().should('contain', lloydGeorgeRecordUrl);
+
+                cy.reload();
+
+                cy.url().should('contain', patientSearchUrl);
             },
         );
     });
