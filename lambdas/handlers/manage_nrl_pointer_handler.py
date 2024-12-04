@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from enums.nrl_sqs_upload import NrlActionTypes
 from models.nrl_fhir_document_reference import FhirDocumentReference
@@ -59,6 +60,14 @@ def lambda_handler(event, context):
                     )
 
                     nrl_api_service.create_new_pointer(json.loads(document))
+                    logger.info(
+                        f"Create pointer request: Body: {json.loads(document)}, "
+                        f"RequestURL: {nrl_api_service.endpoint}, "
+                        f"HTTPVerb: POST, "
+                        f"NHS Number: {nrl_message.nhs_number}, "
+                        f"ODS code: {nrl_api_service.end_user_ods_code}, "
+                        f"Datetime: {int(datetime.now().timestamp())} "
+                    )
                 case NrlActionTypes.DELETE:
                     nrl_api_service.delete_pointer(
                         nrl_message.nhs_number, nrl_message.snomed_code_doc_type
