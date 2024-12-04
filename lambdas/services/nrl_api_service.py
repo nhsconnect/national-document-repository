@@ -113,7 +113,7 @@ class NrlApiService:
                 f"ODS code: {self.end_user_ods_code}, "
                 f"NHS number: {nhs_number}, "
                 f"Datetime: {int(datetime.now().timestamp())}, "
-                f"UserID: {NRL_USER_ID}, "
+                f"UserID: {self.end_user_ods_code}"
             )
             try:
                 response = self.session.delete(url=url_endpoint, headers=self.headers)
