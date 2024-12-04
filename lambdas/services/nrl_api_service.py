@@ -84,11 +84,10 @@ class NrlApiService:
             )
 
             response.raise_for_status()
-            logger.info(
-                f"Get pointer response: Status code: {response.status_code}, "
-                f"Body: {response.json()}, "
-                f"Date: {response.headers.get('date', 'No date found.')}"
-            )
+            logger.info(f"Get pointer response: Status code: {response.status_code}, ")
+            logger.info(f"Body: {response.json()},")
+            logger.info(f"Date: {response.headers.get('date', 'No date found.')}")
+
             return response.json()
         except HTTPError as e:
             logger.error(e.response.json())
