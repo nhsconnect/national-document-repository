@@ -50,10 +50,10 @@ class NrlApiService:
             )
             response.raise_for_status()
             logger.info(
-                f"Create pointer response: Status code: ${response.status_code}, "
-                f"Body: {response.json()}, "
-                f"Date: ${response.headers.get('date', 'No date found.')}"
+                f"Create pointer response: Status code: ${response.status_code}"
             )
+            logger.info(f"Body: {response.json()},")
+            logger.info(f"Date: ${response.headers.get('date', 'No date found.')}")
             logger.info("Successfully created new pointer")
         except HTTPError as e:
             logger.error(e.response)
@@ -66,13 +66,12 @@ class NrlApiService:
                 raise NrlApiException("Error while creating new NRL Pointer")
 
     def get_pointer(self, nhs_number, record_type=None, retry_on_expired: bool = True):
-        logger.info(
-            f"Get pointer request: URL: {self.endpoint}, "
-            f"HTTP Verb: GET, "
-            f"ODS code: {self.end_user_ods_code}, "
-            f"Datetime: {int(datetime.now().timestamp())}, "
-            f"UserID: {NRL_USER_ID}, "
-        )
+        logger.info(f"Get pointer request: URL: {self.endpoint},")
+        logger.info("HTTP Verb: GET,")
+        logger.info(f"ODS code: {self.end_user_ods_code},")
+        logger.info(f"Datetime: {int(datetime.now().timestamp())},")
+        logger.info(f"UserID: {self.end_user_ods_code},")
+
         try:
             self.set_x_request_id()
             params = {
