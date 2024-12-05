@@ -72,7 +72,7 @@ class NrlApiService:
             "HTTP Verb: GET, \n"
             f"ODS code: {self.end_user_ods_code}, \n"
             f"Datetime: {int(datetime.now().timestamp())}, \n"
-            f"UserID: {self.end_user_ods_code}, \n"
+            f"UserID: {self.end_user_ods_code} - {NRL_USER_ID}, \n"
         )
         try:
             self.set_x_request_id()
@@ -114,7 +114,7 @@ class NrlApiService:
                 f"ODS code: {self.end_user_ods_code}, \n"
                 f"NHS number: {nhs_number}, \n"
                 f"Datetime: {int(datetime.now().timestamp())}, \n"
-                f"UserID: {self.end_user_ods_code} \n"
+                f"UserID: {self.end_user_ods_code} - {NRL_USER_ID} \n"
             )
             try:
                 response = self.session.delete(url=url_endpoint, headers=self.headers)
