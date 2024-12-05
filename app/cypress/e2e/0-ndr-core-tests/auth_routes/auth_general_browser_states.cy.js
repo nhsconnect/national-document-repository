@@ -1,7 +1,6 @@
 import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 import { Roles } from '../../../support/roles';
 import dbItem from '../../../fixtures/dynamo-db-items/active-patient.json';
-import { pdsPatients, stubPatients } from '../../../support/patients';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatientLGUpload.json';
 
 describe('Authentication & Authorisation', () => {
