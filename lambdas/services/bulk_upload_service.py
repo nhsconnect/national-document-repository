@@ -277,8 +277,13 @@ class BulkUploadService:
             file_size = self.s3_repository.file_size_on_lg_bycket(
                 last_document_processed.s3_file_key()
             )
+            document_api_endpoint = (
+                os.environ.get("APIM_API_URL", "")
+                + "/DocumentReference/"
+                + last_document_processed.id
+            )
             doc_details = NrlAttachment(
-                url=last_document_processed.id,
+                url=document_api_endpoint,
                 size=file_size,
                 title=last_document_processed.file_name,
                 creation=last_document_processed.created,

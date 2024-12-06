@@ -29,7 +29,6 @@ class NHSDocumentReference:
         sub_folder: str = "",
         doc_type: str = "",
         uploading: bool = False,
-        size: int = None,
     ) -> None:
         date_now = datetime.now(timezone.utc)
 
@@ -48,7 +47,6 @@ class NHSDocumentReference:
         self.file_location = self.set_file_location()
         self.uploading = uploading
         self.last_updated = int(date_now.timestamp())
-        self.size = size
 
     def set_file_location(self):
         file_location = f"s3://{self.s3_bucket_name}"
