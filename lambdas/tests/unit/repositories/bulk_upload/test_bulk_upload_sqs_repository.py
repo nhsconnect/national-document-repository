@@ -55,7 +55,7 @@ def test_send_message_to_nrl_sqs_fifo(set_env, repo_under_test):
     )
     message_body = TEST_NRL_SQS_MESSAGE
     repo_under_test.sqs_repository.send_message_fifo.assert_called_with(
-        queue_url="https://test-queue.com",
+        queue_url=NRL_SQS_URL,
         message_body=message_body.model_dump_json(),
         group_id="123",
     )
