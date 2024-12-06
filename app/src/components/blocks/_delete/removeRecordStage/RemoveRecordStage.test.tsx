@@ -103,7 +103,6 @@ describe('RemoveRecordStage', () => {
                 ).toBeInTheDocument();
             });
 
-            expect(screen.getByRole('button', { name: 'Start again' })).toBeInTheDocument();
             expect(
                 screen.queryByRole('button', { name: 'Remove all files' }),
             ).not.toBeInTheDocument();
@@ -124,7 +123,6 @@ describe('RemoveRecordStage', () => {
                 ).toBeInTheDocument();
             });
 
-            expect(screen.getByRole('button', { name: 'Start again' })).toBeInTheDocument();
             expect(screen.getByText(searchResults[0].fileName)).toBeInTheDocument();
             expect(screen.getByText(searchResults[1].fileName)).toBeInTheDocument();
         });

@@ -323,7 +323,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 // cancel delete
                 cy.wait('@searchDocs');
-                cy.getByTestId('start-again-btn').click();
+                cy.contains('Go back').click();
 
                 // assert user is returned to view Lloyd George page
                 cy.contains('Lloyd George record').should('be.visible');
