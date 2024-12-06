@@ -3,8 +3,11 @@ import os
 from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
 from models.nhs_document_reference import NHSDocumentReference
+from models.nrl_sqs_message import NrlSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_CURRENT_GP_ODS, TEST_UUID
+
+from lambdas.enums.nrl_sqs_upload import NrlActionTypes
 
 sample_metadata_model = MetadataFile(
     file_path="/1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
@@ -143,6 +146,15 @@ def build_test_sqs_message_from_nhs_number(nhs_number: str) -> dict:
     return build_test_sqs_message(staging_metadata)
 
 
+def build_test_nrl_sqs_fifo_message(nhs_number: str, action: str) -> NrlSqsMessage:
+    message_body = {
+        "nhs_number": nhs_number,
+        "action": action,
+    }
+    nrl_sqs_message = NrlSqsMessage(**message_body)
+    return nrl_sqs_message
+
+
 @freeze_time("2024-01-01 12:00:00")
 def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"):
     doc_ref = NHSDocumentReference(
@@ -160,8 +172,15 @@ def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"
 TEST_NHS_NUMBER_FOR_BULK_UPLOAD = "9000000009"
 TEST_STAGING_METADATA = build_test_staging_metadata(make_valid_lg_file_names(3))
 TEST_SQS_MESSAGE = build_test_sqs_message(TEST_STAGING_METADATA)
+TEST_STAGING_METADATA_SINGLE_FILE = build_test_staging_metadata(
+    make_valid_lg_file_names(1)
+)
+TEST_SQS_MESSAGE_SINGLE_FILE = build_test_sqs_message(TEST_STAGING_METADATA_SINGLE_FILE)
 TEST_FILE_METADATA = TEST_STAGING_METADATA.files[0]
-
+TEST_GROUP_ID = "123"
+TEST_NRL_SQS_MESSAGE = build_test_nrl_sqs_fifo_message(
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD, NrlActionTypes.CREATE
+)
 TEST_STAGING_METADATA_WITH_INVALID_FILENAME = build_test_staging_metadata(
     [*make_valid_lg_file_names(2), "invalid_file_name.txt"]
 )
