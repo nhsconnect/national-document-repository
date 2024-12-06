@@ -55,6 +55,7 @@ def mock_service(mocker, set_env, context):
 def mock_fetch_user_info(mock_service, mocker):
     service = mock_service
     mocker.patch.object(service, "fetch_user_info")
+    mocker.patch.object(service, "get_patient_current_gp_ods")
     yield service
 
 
@@ -89,12 +90,12 @@ def test_get_document_reference_service(mock_service):
 
 
 def test_user_allowed_to_see_file_happy_path(mock_service, mock_fetch_user_info):
-    mock_fetch_user_info.return_value = MOCK_USER_INFO
+    mock_fetch_user_info.fetch_user_info.return_value = MOCK_USER_INFO
     mock_service.dynamo_service.query_table_by_index.return_value = (
         MOCK_SINGLE_DOCUMENT_RESPONSE
     )
-    mock_service.get_ndr_accepted_role_codes.return_value = ["R8000, R8008"]
-
+    mock_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
+    mock_service.get_patient_current_gp_ods.return_value = TEST_CURRENT_GP_ODS
     assert (
         mock_service.user_allowed_to_see_file(
             TEST_UUID, "3d8683b9-1665-40d2-8499-6e8302d507ff"

@@ -8,6 +8,7 @@ from models.document_reference import DocumentReference
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
+from utils.constants.ssm import GP_ADMIN_USER_ROLE_CODES, GP_CLINICAL_USER_ROLE_CODE
 from utils.lambda_exceptions import NRLGetDocumentReferenceException
 from utils.request_context import request_context
 from utils.utilities import get_pds_service
@@ -16,24 +17,19 @@ logger = LoggingService(__name__)
 
 
 class NRLGetDocumentReferenceService:
-
-    # Needs PDS now, so oauth and ssm, may need declaring the handler
-
     def __init__(self):
         self.ssm_service = SSMService()
         self.pds_service = get_pds_service()
-        # question about ssm_service as above function calls one...
         self.dynamo_service = DynamoDBService()
         self.table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
-        # document_service? not using NHS_numbers, using table ids
         self.ssm_prefix = getattr(request_context, "auth_ssm_prefix", "")
 
-    def user_allowed_to_see_file(self, bearer_token, id):
+    def user_allowed_to_see_file(self, bearer_token, document_id):
+        user_details = self.fetch_user_info(bearer_token)
+        user_ods_codes_and_roles = self.get_user_roles_and_ods_codes(user_details)
 
-        user = self.fetch_user_info(bearer_token)
-        user_ods_codes_and_roles = self.get_user_roles_and_ods_codes(user)
+        document_reference = self.get_document_references(document_id)
 
-        document_reference = self.get_document_references(id)
         patient_current_gp_ods_code = self.get_patient_current_gp_ods(
             document_reference.nhs_number
         )
@@ -41,10 +37,12 @@ class NRLGetDocumentReferenceService:
         if self.patient_is_inactive(patient_current_gp_ods_code):
             return False
 
-        for ods_code, roles in user_ods_codes_and_roles.items():
-            if ods_code == patient_current_gp_ods_code:
-                for role in roles:
-                    return role in self.get_ndr_accepted_role_codes()
+        if patient_current_gp_ods_code in user_ods_codes_and_roles:
+            accepted_roles = self.get_ndr_accepted_role_codes()
+            return any(
+                role in accepted_roles
+                for role in user_ods_codes_and_roles[patient_current_gp_ods_code]
+            )
 
     #   first check user has a role with correct ods code
     #   second check that the role id associated with this ods is in our accepted roles
@@ -69,46 +67,37 @@ class NRLGetDocumentReferenceService:
             pass
 
     def get_ndr_accepted_role_codes(self) -> list[str]:
-        roles = []
         ssm_parameters = self.ssm_service.get_ssm_parameters(
             parameters_keys=[
-                "/auth/smartcard/role/gp_admin",
-                "/auth/smartcard/role/gp_clinical",
+                GP_ADMIN_USER_ROLE_CODES,
+                GP_CLINICAL_USER_ROLE_CODE,
             ]
         )
+        return [roles.split(",") for roles in ssm_parameters.values()]
 
-        for key, value in ssm_parameters.items():
-            for role in value:
-                roles.append(role)
-        return roles
-
-    def get_user_roles_and_ods_codes(self, user_info) -> list[dict[str, str]]:
-
+    def get_user_roles_and_ods_codes(self, user_info) -> dict[str, list[str]]:
         ods_codes_and_roles = {}
-
         nrbac_roles = user_info.get("nhsid_nrbac_roles", [])
 
         for role in nrbac_roles:
-            ods_code = role["org_code"]
+            ods_code: str = role["org_code"]
             role_code = self.process_role_code(role["role_code"])
-            if ods_code in ods_codes_and_roles:
-                ods_codes_and_roles[ods_code].append(role_code)
-            else:
-                ods_codes_and_roles[ods_code] = [role_code]
-
+            ods_codes_and_roles.setdefault(ods_code, []).append(role_code)
         return ods_codes_and_roles
 
     def process_role_code(self, role_codes) -> str:
-        role_codes_split = role_codes.split(":")
-        for role_code in role_codes_split:
-            if role_code[0].upper() == "R":
+        for role_code in role_codes.split(":"):
+            if role_code.startswith("R"):
                 return role_code
 
     def get_dynamo_table_to_search_for_patient(self, snomed_code):
         pass
 
     def patient_is_inactive(self, current_gp_ods_code):
-        return current_gp_ods_code in PatientOdsInactiveStatus
+        try:
+            return current_gp_ods_code in PatientOdsInactiveStatus
+        except TypeError:
+            return False
 
     def get_document_references(self, id: str) -> DocumentReference:
 
@@ -122,7 +111,6 @@ class NRLGetDocumentReferenceService:
             return DocumentReference.model_validate(table_item["Items"][0])
         else:
             raise NRLGetDocumentReferenceException(
-                message="No document references found",
                 status_code=404,
             )
 
