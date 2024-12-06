@@ -1,7 +1,6 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { Button, Table, WarningCallout } from 'nhsuk-react-components';
-import LinkButton from '../../../generic/linkButton/LinkButton';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import getDocumentSearchResults from '../../../../helpers/requests/getDocumentSearchResults';
 import usePatient from '../../../../helpers/hooks/usePatient';
@@ -165,17 +164,6 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetD
                             Remove all files
                         </Button>
                     )}
-                    <LinkButton
-                        id="start-again-link"
-                        data-testid="start-again-btn"
-                        type="button"
-                        className="mb-7 ml-3"
-                        onClick={() => {
-                            navigate(routes.LLOYD_GEORGE);
-                        }}
-                    >
-                        Start again
-                    </LinkButton>
                 </div>
             )}
         </>
