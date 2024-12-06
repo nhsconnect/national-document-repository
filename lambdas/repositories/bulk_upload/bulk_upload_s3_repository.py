@@ -96,8 +96,3 @@ class BulkUploadS3Repository:
 
     def file_exists_on_staging_bucket(self, file_key: str) -> bool:
         return self.s3_repository.file_exist_on_s3(self.staging_bucket_name, file_key)
-
-    def file_size_on_lg_bucket(self, file_key: str) -> int:
-        return self.s3_repository.get_file_size(
-            s3_bucket_name=self.lg_bucket_name, object_key=file_key
-        )

@@ -238,12 +238,8 @@ def test_handle_sqs_message_happy_path_single_file(
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
-    mock_file_size = 300
     mock_nrl_attachment = NrlAttachment(
         url=f"/DocumentReference/{TEST_DOCUMENT_REFERENCE.id}",
-        creation=TEST_DOCUMENT_REFERENCE.created,
-        title=TEST_DOCUMENT_REFERENCE.file_name,
-        size=mock_file_size,
     )
     mock_nrl_message = NrlSqsMessage(
         nhs_number=TEST_STAGING_METADATA.nhs_number,
@@ -261,11 +257,7 @@ def test_handle_sqs_message_happy_path_single_file(
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
     )
     mocker.patch.object(repo_under_test.s3_repository, "check_virus_result")
-    mocker.patch.object(
-        repo_under_test.s3_repository,
-        "file_size_on_lg_bucket",
-        return_value=mock_file_size,
-    )
+
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE_SINGLE_FILE)
 
     mock_create_lg_records_and_copy_files.assert_called_with(

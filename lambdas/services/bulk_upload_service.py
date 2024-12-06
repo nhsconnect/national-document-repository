@@ -274,9 +274,6 @@ class BulkUploadService:
             patient_ods_code,
         )
         if len(file_names) == 1:
-            file_size = self.s3_repository.file_size_on_lg_bucket(
-                last_document_processed.s3_file_key
-            )
             document_api_endpoint = (
                 os.environ.get("APIM_API_URL", "")
                 + "/DocumentReference/"
@@ -284,9 +281,6 @@ class BulkUploadService:
             )
             doc_details = NrlAttachment(
                 url=document_api_endpoint,
-                size=file_size,
-                title=last_document_processed.file_name,
-                creation=last_document_processed.created,
             )
             nrl_sqs_message = NrlSqsMessage(
                 nhs_number=staging_metadata.nhs_number,
