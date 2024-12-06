@@ -78,3 +78,7 @@ class GenerateManifestZipException(LambdaException):
 
 class CloudFrontEdgeException(LambdaException):
     pass
+
+
+class NRLGetDocumentReferenceException(LambdaException):
+    pass
