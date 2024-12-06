@@ -125,3 +125,38 @@ UNEXPECTED_RESPONSE = {
         "RetryAttempts": 0,
     },
 }
+
+MOCK_SINGLE_DOCUMENT_RESPONSE = {
+    "Items": [
+        {
+            "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2024-01-01T12:00:00.000Z",
+            "Deleted": "",
+            "FileLocation": "s3://test-s3-bucket/9000000009/test-key-123",
+            "FileName": "document.csv",
+            "NhsNumber": "9000000009",
+            "VirusScannerResult": "Clean",
+            "CurrentGpOds": "Y12345",
+            "Uploaded": "True",
+            "Uploading": "False",
+            "LastUpdated": 1704110400,  # Timestamp: 2024-01-01T12:00:00
+        },
+    ],
+    "Count": 1,
+    "ScannedCount": 1,
+    "ResponseMetadata": {
+        "RequestId": "JHJBP4GU007VMB2V8C9NEKUL8VVV4KQNSO5AEMVJF66Q9ASUAAJG",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "server": "Server",
+            "date": "Tue, 29 Aug 2023 11:08:21 GMT",
+            "content-type": "application/x-amz-json-1.0",
+            "content-length": "510",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "JHJBP4GU007VMB2V8C9NEKUL8VVV4KQNSO5AEMVJF66Q9ASUAAJG",
+            "x-amz-crc32": "820258331",
+        },
+        "RetryAttempts": 0,
+    },
+}
