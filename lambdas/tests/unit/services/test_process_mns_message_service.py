@@ -80,61 +80,25 @@ def test_has_patient_in_ndr_empty_dynamo_response(mns_service):
     assert mns_service.patient_is_present_in_ndr(response) is False
 
 
-@pytest.mark.parametrize(
-    "event_message, output",
-    [
-        (removed_death_notification_message, False),
-        (informal_death_notification_message, True),
-        (death_notification_message, False),
-    ],
-)
-def test_is_informal_death_notification(mns_service, event_message, output):
-    assert mns_service.is_informal_death_notification(event_message) is output
-
-
-@pytest.mark.parametrize(
-    "event_message, output",
-    [
-        (removed_death_notification_message, True),
-        (informal_death_notification_message, False),
-        (death_notification_message, False),
-    ],
-)
-def test_is_removed_death_notification(mns_service, event_message, output):
-    assert mns_service.is_removed_death_notification(event_message) is output
-
-
-@pytest.mark.parametrize(
-    "event_message, output",
-    [
-        (removed_death_notification_message, False),
-        (informal_death_notification_message, False),
-        (death_notification_message, True),
-    ],
-)
-def test_is_formal_death_notification(mns_service, event_message, output):
-    assert mns_service.is_formal_death_notification(event_message) is output
-
-
 def test_handle_notification_not_called_message_type_not_death_or_gp_notification(
     mns_service,
 ):
-    mns_service.is_informal_death_notification(informal_death_notification_message)
+    mns_service.handle_mns_notification(informal_death_notification_message)
     mns_service.get_updated_gp_ods.assert_not_called()
 
 
 def test_pds_is_called_death_notification_removed(mns_service, mocker):
-    mocker.patch.object(mns_service, "update_patient_details")
+    mocker.patch.object(mns_service, "update_patient_ods_code")
     mns_service.dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE
     mns_service.handle_mns_notification(removed_death_notification_message)
 
     mns_service.get_updated_gp_ods.assert_called()
-    mns_service.update_patient_details.assert_called()
+    mns_service.update_patient_ods_code.assert_called()
 
 
 @freeze_time(MOCK_UPDATE_TIME)
 def test_update_patient_details(mns_service):
-    mns_service.update_patient_details(
+    mns_service.update_patient_ods_code(
         MOCK_SEARCH_RESPONSE["Items"], PatientOdsInactiveStatus.DECEASED
     )
     calls = [

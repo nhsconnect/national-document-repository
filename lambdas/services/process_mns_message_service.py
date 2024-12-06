@@ -26,13 +26,13 @@ class MNSNotificationService:
 
     def handle_mns_notification(self, message: MNSSQSMessage):
         try:
-            if message.type == MNSNotificationTypes.CHANGE_OF_GP:
-                logger.info("Handling GP change notification.")
-                self.handle_gp_change_notification(message)
-
-            elif message.type == MNSNotificationTypes.DEATH_NOTIFICATION:
-                logger.info("Handling death status notification.")
-                self.handle_death_notification(message)
+            match message.type:
+                case MNSNotificationTypes.CHANGE_OF_GP:
+                    logger.info("Handling GP change notification.")
+                    self.handle_gp_change_notification(message)
+                case MNSNotificationTypes.DEATH_NOTIFICATION:
+                    logger.info("Handling death status notification.")
+                    self.handle_death_notification(message)
 
         except PdsErrorException:
             logger.info("An error occurred when calling PDS")
@@ -70,42 +70,38 @@ class MNSNotificationService:
         logger.info("Update complete for change of GP")
 
     def handle_death_notification(self, message: MNSSQSMessage):
-        if self.is_informal_death_notification(message):
-            logger.info(
-                "Patient is deceased - INFORMAL, moving on to the next message."
-            )
-            return
+        death_notification_type = message.data["deathNotificationStatus"]
+        match death_notification_type:
+            case DeathNotificationStatus.INFORMAL:
+                logger.info(
+                    "Patient is deceased - INFORMAL, moving on to the next message."
+                )
+                return
 
-        patient_documents = self.get_patient_documents(message.subject.nhs_number)
+            case DeathNotificationStatus.REMOVED:
+                patient_documents = self.get_patient_documents(
+                    message.subject.nhs_number
+                )
+                if not self.patient_is_present_in_ndr(patient_documents):
+                    return
 
-        if not self.patient_is_present_in_ndr(patient_documents):
-            return
+                updated_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
+                self.update_patient_ods_code(patient_documents, updated_ods_code)
+                logger.info("Update complete for death notification change.")
 
-        if self.is_formal_death_notification(message):
-            self.update_patient_details(
-                patient_documents, PatientOdsInactiveStatus.DECEASED
-            )
-            logger.info(
-                f"Update complete, patient marked {PatientOdsInactiveStatus.DECEASED}."
-            )
+            case DeathNotificationStatus.FORMAL:
+                patient_documents = self.get_patient_documents(
+                    message.subject.nhs_number
+                )
+                if not self.patient_is_present_in_ndr(patient_documents):
+                    return
 
-        elif self.is_removed_death_notification(message):
-            update_ods_code = self.get_updated_gp_ods(message.subject.nhs_number)
-            self.update_patient_details(patient_documents, update_ods_code)
-            logger.info("Update complete for death notification change.")
-
-    def is_informal_death_notification(self, message: MNSSQSMessage) -> bool:
-        return (
-            message.data["deathNotificationStatus"] == DeathNotificationStatus.INFORMAL
-        )
-
-    def is_removed_death_notification(self, message: MNSSQSMessage) -> bool:
-        return (
-            message.data["deathNotificationStatus"] == DeathNotificationStatus.REMOVED
-        )
-
-    def is_formal_death_notification(self, message: MNSSQSMessage) -> bool:
-        return message.data["deathNotificationStatus"] == DeathNotificationStatus.FORMAL
+                self.update_patient_ods_code(
+                    patient_documents, PatientOdsInactiveStatus.DECEASED
+                )
+                logger.info(
+                    f"Update complete, patient marked {PatientOdsInactiveStatus.DECEASED}."
+                )
 
     def get_patient_documents(self, nhs_number: str):
         logger.info("Getting patient document references...")
@@ -117,7 +113,7 @@ class MNSNotificationService:
         )
         return response["Items"]
 
-    def update_patient_details(self, patient_documents: list[dict], code: str) -> None:
+    def update_patient_ods_code(self, patient_documents: list[dict], code: str) -> None:
         for document in patient_documents:
             logger.info("Updating patient document reference...")
             self.dynamo_service.update_item(
