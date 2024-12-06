@@ -3,10 +3,12 @@ from copy import copy
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
+from models.nrl_sqs_message import NrlAttachment, NrlSqsMessage
 from models.pds_models import Patient
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
@@ -14,6 +16,7 @@ from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (
     MOCK_LG_BUCKET,
     MOCK_STAGING_STORE_BUCKET,
+    NRL_SQS_URL,
     TEST_CURRENT_GP_ODS,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import (
@@ -21,9 +24,11 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_FILE_METADATA,
     TEST_SQS_10_MESSAGES_AS_LIST,
     TEST_SQS_MESSAGE,
+    TEST_SQS_MESSAGE_SINGLE_FILE,
     TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
     TEST_SQS_MESSAGES_AS_LIST,
     TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_SINGLE_FILE,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
     build_test_sqs_message,
     build_test_staging_metadata_from_patient_name,
@@ -220,6 +225,59 @@ def test_handle_sqs_message_happy_path(
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
     repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+
+
+def test_handle_sqs_message_happy_path_single_file(
+    set_env,
+    mocker,
+    mock_uuid,
+    repo_under_test,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
+    mock_ods_validation,
+):
+    TEST_STAGING_METADATA.retries = 0
+    mock_file_size = 300
+    mock_nrl_attachment = NrlAttachment(
+        url=f"/DocumentReference/{TEST_DOCUMENT_REFERENCE.id}",
+        creation=TEST_DOCUMENT_REFERENCE.created,
+        title=TEST_DOCUMENT_REFERENCE.file_name,
+        size=mock_file_size,
+    )
+    mock_nrl_message = NrlSqsMessage(
+        nhs_number=TEST_STAGING_METADATA.nhs_number,
+        action=NrlActionTypes.CREATE,
+        attachment=mock_nrl_attachment,
+    )
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_create_lg_records_and_copy_files.return_value = TEST_DOCUMENT_REFERENCE
+    mock_report_upload_complete = mocker.patch.object(
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
+    )
+    mocker.patch.object(repo_under_test.s3_repository, "check_virus_result")
+    mocker.patch.object(
+        repo_under_test.s3_repository,
+        "file_size_on_lg_bucket",
+        return_value=mock_file_size,
+    )
+    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE_SINGLE_FILE)
+
+    mock_create_lg_records_and_copy_files.assert_called_with(
+        TEST_STAGING_METADATA_SINGLE_FILE, TEST_CURRENT_GP_ODS
+    )
+    mock_report_upload_complete.assert_called()
+    mock_remove_ingested_file_from_source_bucket.assert_called()
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_called_with(
+        queue_url=NRL_SQS_URL,
+        message=mock_nrl_message,
+        group_id=f"nrl_sqs_{mock_uuid}",
+    )
 
 
 def set_up_mocks_for_non_ascii_files(

@@ -172,6 +172,10 @@ def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"
 TEST_NHS_NUMBER_FOR_BULK_UPLOAD = "9000000009"
 TEST_STAGING_METADATA = build_test_staging_metadata(make_valid_lg_file_names(3))
 TEST_SQS_MESSAGE = build_test_sqs_message(TEST_STAGING_METADATA)
+TEST_STAGING_METADATA_SINGLE_FILE = build_test_staging_metadata(
+    make_valid_lg_file_names(1)
+)
+TEST_SQS_MESSAGE_SINGLE_FILE = build_test_sqs_message(TEST_STAGING_METADATA_SINGLE_FILE)
 TEST_FILE_METADATA = TEST_STAGING_METADATA.files[0]
 TEST_GROUP_ID = "123"
 TEST_NRL_SQS_MESSAGE = build_test_nrl_sqs_fifo_message(

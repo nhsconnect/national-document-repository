@@ -274,8 +274,8 @@ class BulkUploadService:
             patient_ods_code,
         )
         if len(file_names) == 1:
-            file_size = self.s3_repository.file_size_on_lg_bycket(
-                last_document_processed.s3_file_key()
+            file_size = self.s3_repository.file_size_on_lg_bucket(
+                last_document_processed.s3_file_key
             )
             document_api_endpoint = (
                 os.environ.get("APIM_API_URL", "")

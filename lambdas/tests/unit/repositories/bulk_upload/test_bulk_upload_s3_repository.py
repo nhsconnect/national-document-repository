@@ -162,3 +162,12 @@ def test_create_lg_records_and_copy_files_keep_track_of_successfully_ingested_fi
     actual = repo_under_test.source_bucket_files_in_transaction
 
     assert actual == expected
+
+
+def test_file_size_on_lg_bucket(set_env, repo_under_test):
+    key = "mock_test_key"
+    repo_under_test.s3_repository.get_file_size.return_value = "111"
+
+    response = repo_under_test.file_size_on_lg_bucket(key)
+
+    assert response == "111"
