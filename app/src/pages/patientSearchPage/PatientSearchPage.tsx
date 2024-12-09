@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { routes } from '../../types/generic/routes';
 import { FieldValues, useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
-import { Button, Fieldset, Input } from 'nhsuk-react-components';
+import { Button, Input } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
 import { useNavigate } from 'react-router-dom';
