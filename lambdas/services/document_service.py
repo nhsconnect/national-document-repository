@@ -49,7 +49,7 @@ class DocumentService:
         table: str,
         search_condition: str,
         search_key: str,
-        index_name: str,
+        index_name: str = None,
         query_filter: Attr | ConditionBase = None,
     ) -> list[DocumentReference]:
         documents = []

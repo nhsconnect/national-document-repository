@@ -1,3 +1,4 @@
+from services.dynamic_configuration_service import DynamicConfigurationService
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -23,10 +24,13 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     document_id = event["pathParameters"]["id"]
     bearer_token = event["headers"]["Authorization"]
-
+    configuration_service = DynamicConfigurationService()
+    configuration_service.set_auth_ssm_prefix()
     get_document_service = NRLGetDocumentReferenceService()
     placeholder = get_document_service.handle_get_document_reference_request(
         document_id, bearer_token
     )
 
-    return ApiGatewayResponse(status_code=200, body=placeholder, methods="GET")
+    return ApiGatewayResponse(
+        status_code=200, body=placeholder, methods="GET"
+    ).create_api_gateway_response()
