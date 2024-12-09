@@ -130,13 +130,13 @@ function LloydGeorgeDownloadComplete({
                     </ol>
                 </>
             )}
-            <h2>Your responsibilities with this record</h2>
+            <h2 className="nhsuk-heading-l">Your responsibilities with this record</h2>
             <p>
                 Everyone in a health and care organisation is responsible for managing records
                 appropriately. It is important all general practice staff understand their
                 responsibilities for creating, maintaining, and disposing of records appropriately.
             </p>
-            <h3>Follow the Record Management Code of Practice</h3>
+            <h3 className="nhsuk-heading-m">Follow the Record Management Code of Practice</h3>
             <p>
                 The{' '}
                 <a href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code">
