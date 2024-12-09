@@ -44,6 +44,8 @@ function RecordMenuCard({
                             setStage={setStage}
                         />
                     )}
+                    <br />
+                    <br />
                     {downloadActions.length > 0 && (
                         <SideMenuSubSection
                             actionLinks={downloadActions}
@@ -61,7 +63,6 @@ const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps)
     return (
         <>
             <h2 className="nhsuk-heading-m">{heading}</h2>
-
             {actionLinks.map((link) => (
                 <LinkItem key={link.key} link={link} setStage={setStage} />
             ))}
