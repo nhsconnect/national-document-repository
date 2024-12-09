@@ -42,7 +42,7 @@ describe('PatientSearchPage', () => {
                 mockedUseRole.mockReturnValue(role);
 
                 renderPatientSearchPage();
-                expect(screen.getByText('Search for patient')).toBeInTheDocument();
+                expect(screen.getByText('Search for a patient')).toBeInTheDocument();
                 expect(
                     screen.getByRole('textbox', { name: 'Enter NHS number' }),
                 ).toBeInTheDocument();

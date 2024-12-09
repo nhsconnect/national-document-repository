@@ -58,7 +58,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#nhs-number-input').type(testPatient);
                 cy.title().should(
                     'eq',
-                    'Search for patient - Access and store digital patient documents',
+                    'Search for a patient - Access and store digital patient documents',
                 );
 
                 cy.get('#search-submit').click();
