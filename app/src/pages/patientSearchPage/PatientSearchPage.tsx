@@ -107,32 +107,29 @@ function PatientSearchPage() {
                     )}
                 </>
             )}
+            <h1>{pageTitle}</h1>
             <form onSubmit={handleSubmit(handleSearch, handleError)} noValidate>
-                <Fieldset>
-                    <Fieldset.Legend headingLevel="h1" isPageHeading>
-                        {pageTitle}
-                    </Fieldset.Legend>
-                    <Input
-                        id="nhs-number-input"
-                        data-testid="nhs-number-input"
-                        label="Enter NHS number"
-                        hint="A 10-digit number, for example, 485 777 3456"
-                        type="text"
-                        {...searchProps}
-                        error={
-                            submissionState !== SEARCH_STATES.SEARCHING && inputError
-                                ? inputError
-                                : false
-                        }
-                        name="nhsNumber"
-                        inputRef={nhsNumberRef as InputRef}
-                        readOnly={
-                            submissionState === SEARCH_STATES.SUCCEEDED ||
-                            submissionState === SEARCH_STATES.SEARCHING
-                        }
-                        autoComplete="off"
-                    />
-                </Fieldset>
+                <Input
+                    id="nhs-number-input"
+                    data-testid="nhs-number-input"
+                    label="Enter NHS number"
+                    hint="A 10-digit number, for example, 485 777 3456"
+                    type="text"
+                    {...searchProps}
+                    error={
+                        submissionState !== SEARCH_STATES.SEARCHING && inputError
+                            ? inputError
+                            : false
+                    }
+                    name="nhsNumber"
+                    inputRef={nhsNumberRef as InputRef}
+                    readOnly={
+                        submissionState === SEARCH_STATES.SUCCEEDED ||
+                        submissionState === SEARCH_STATES.SEARCHING
+                    }
+                    autoComplete="off"
+                />
+
                 {submissionState === SEARCH_STATES.SEARCHING ? (
                     <SpinnerButton
                         id="patient-search-spinner"
