@@ -62,9 +62,9 @@ def lambda_handler(event, context):
                     logger.info(
                         f"Create pointer request: Body: {json.loads(document)}, \n"
                         f"RequestURL: {nrl_api_service.endpoint}, \n"
-                        "HTTPVerb: POST, \n"
+                        "HTTP Verb: POST, \n"
                         f"NHS Number: {nrl_message.nhs_number}, \n"
-                        f"ODS code: {nrl_api_service.end_user_ods_code}, \n"
+                        f"ODS Code: {nrl_api_service.end_user_ods_code}, \n"
                         f"Datetime: {int(datetime.now().timestamp())} "
                     )
                     nrl_api_service.create_new_pointer(json.loads(document))

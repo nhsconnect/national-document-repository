@@ -70,7 +70,7 @@ class NrlApiService:
         logger.info(
             f"Get pointer request: URL: {self.endpoint}, \n"
             "HTTP Verb: GET, \n"
-            f"ODS code: {self.end_user_ods_code}, \n"
+            f"ODS Code: {self.end_user_ods_code}, \n"
             f"Datetime: {int(datetime.now().timestamp())}, \n"
             f"UserID: {self.end_user_ods_code} - {NRL_USER_ID}, \n"
         )
@@ -111,8 +111,8 @@ class NrlApiService:
             logger.info(
                 f"Delete pointer request: URL: {url_endpoint}, \n"
                 f"HTTP Verb: DELETE, \n"
-                f"ODS code: {self.end_user_ods_code}, \n"
-                f"NHS number: {nhs_number}, \n"
+                f"ODS Code: {self.end_user_ods_code}, \n"
+                f"NHS Number: {nhs_number}, \n"
                 f"Datetime: {int(datetime.now().timestamp())}, \n"
                 f"UserID: {self.end_user_ods_code} - {NRL_USER_ID} \n"
             )
