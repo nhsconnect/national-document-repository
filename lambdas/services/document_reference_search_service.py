@@ -34,7 +34,7 @@ class DocumentReferenceSearchService(DocumentService):
                 logger.info(f"Searching for results in {table_name}")
 
                 documents: list[DocumentReference] = (
-                    self.fetch_documents_from_table_with_filter(
+                    self.fetch_documents_from_table_with_nhs_number(
                         nhs_number,
                         table_name,
                         query_filter=delete_filter_expression,

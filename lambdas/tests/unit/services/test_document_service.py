@@ -141,7 +141,7 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
 
     mock_dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE
 
-    results = mock_service.fetch_documents_from_table_with_filter(
+    results = mock_service.fetch_documents_from_table_with_nhs_number(
         nhs_number=TEST_NHS_NUMBER,
         table=MOCK_LG_TABLE_NAME,
         query_filter=mock_filter_expression,
@@ -171,7 +171,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
     ]
     mock_dynamo_service.query_table_by_index.return_value = MOCK_EMPTY_RESPONSE
 
-    results = mock_service.fetch_documents_from_table_with_filter(
+    results = mock_service.fetch_documents_from_table_with_nhs_number(
         nhs_number=TEST_NHS_NUMBER,
         table=MOCK_LG_TABLE_NAME,
         query_filter=mock_filter_expression,

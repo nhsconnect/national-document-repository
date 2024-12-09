@@ -2,11 +2,11 @@ import os
 from urllib.error import HTTPError
 
 import requests
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from models.document_reference import DocumentReference
-from services.base.dynamo_service import DynamoDBService
+from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
+from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.constants.ssm import GP_ADMIN_USER_ROLE_CODES, GP_CLINICAL_USER_ROLE_CODE
 from utils.lambda_exceptions import NRLGetDocumentReferenceException
@@ -20,15 +20,27 @@ class NRLGetDocumentReferenceService:
     def __init__(self):
         self.ssm_service = SSMService()
         self.pds_service = get_pds_service()
-        self.dynamo_service = DynamoDBService()
+        self.document_service = DocumentService()
         self.table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.ssm_prefix = getattr(request_context, "auth_ssm_prefix", "")
+        get_document_presign_url_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
+        self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
+        self.s3_service = S3Service(
+            custom_aws_role=get_document_presign_url_aws_role_arn
+        )
 
-    def user_allowed_to_see_file(self, bearer_token, document_id):
-        user_details = self.fetch_user_info(bearer_token)
-        user_ods_codes_and_roles = self.get_user_roles_and_ods_codes(user_details)
-
+    def handle_get_document_reference_request(self, document_id, bearer_token):
         document_reference = self.get_document_references(document_id)
+        user_details = self.fetch_user_info(bearer_token)
+
+        if not self.is_user_allowed_to_see_file(user_details, document_reference):
+            return "403"
+
+        presign_url = self.create_document_presigned_url(document_reference)
+        return presign_url
+
+    def is_user_allowed_to_see_file(self, user_details, document_reference):
+        user_ods_codes_and_roles = self.get_user_roles_and_ods_codes(user_details)
 
         patient_current_gp_ods_code = self.get_patient_current_gp_ods(
             document_reference.nhs_number
@@ -44,9 +56,6 @@ class NRLGetDocumentReferenceService:
                 for role in user_ods_codes_and_roles[patient_current_gp_ods_code]
             )
 
-    #   first check user has a role with correct ods code
-    #   second check that the role id associated with this ods is in our accepted roles
-
     def fetch_user_info(self, bearer_token) -> dict:
         logger.info(f"Fetching user info with bearer token: {bearer_token}")
         request_url = self.ssm_prefix + self.ssm_service.get_ssm_parameter(
@@ -58,13 +67,11 @@ class NRLGetDocumentReferenceService:
                 url=request_url, headers={"Authorization": f"Bearer {bearer_token}"}
             )
             response.raise_for_status()
-
             return response.json()
 
         except HTTPError as error:
             print(error)
-            # Check status code, and raise?
-            pass
+            raise NRLGetDocumentReferenceException(400)
 
     def get_ndr_accepted_role_codes(self) -> list[str]:
         ssm_parameters = self.ssm_service.get_ssm_parameters(
@@ -90,38 +97,43 @@ class NRLGetDocumentReferenceService:
             if role_code.startswith("R"):
                 return role_code
 
-    def get_dynamo_table_to_search_for_patient(self, snomed_code):
-        pass
-
     def patient_is_inactive(self, current_gp_ods_code):
         try:
             return current_gp_ods_code in PatientOdsInactiveStatus
         except TypeError:
             return False
 
-    def get_document_references(self, id: str) -> DocumentReference:
-
-        table_item = self.dynamo_service.query_table_by_index(
-            table_name=self.table,
-            index_name=DocumentReferenceMetadataFields.ID,
-            search_key=DocumentReferenceMetadataFields.ID,
-            search_condition=id,
+    def get_document_references(self, document_id: str) -> DocumentReference:
+        documents = self.document_service.fetch_documents_from_table(
+            table=self.table,
+            search_condition=document_id,
+            search_key="ID",
+            index_name="ID",
         )
-        if len(table_item["Items"]) > 0:
-            return DocumentReference.model_validate(table_item["Items"][0])
+        if len(documents) > 0:
+            return documents[0]
         else:
-            raise NRLGetDocumentReferenceException(
-                status_code=404,
-            )
-
-    #   otherwise we don't have the patient, and want to return what status code? do that here?
-    # or raise/throw an error that the handler catches and returns the api gateway.
+            print(404)
+            raise NRLGetDocumentReferenceException(404)
 
     def get_patient_current_gp_ods(self, nhs_number):
         patient_details = self.pds_service.fetch_patient_details(nhs_number)
         return patient_details.general_practice_ods
 
-    #     seeing as we're calling pds here, do we want to update our table at the same time?
+    def create_document_presigned_url(self, document_reference: DocumentReference):
+        bucket_name = document_reference.get_bucket_name()
+        file_location = document_reference.get_file_key()
+        presign_url_response = self.s3_service.create_download_presigned_url(
+            s3_bucket_name=bucket_name,
+            file_key=file_location,
+        )
+        return self.format_cloudfront_url(presign_url_response, self.cloudfront_url)
 
-    def generate_cloud_front_url(self):
-        pass
+    def format_cloudfront_url(self, presign_url: str, cloudfront_domain: str) -> str:
+        url_parts = presign_url.split("/")
+        if len(url_parts) < 4:
+            raise ValueError("Invalid presigned URL format")
+
+        path_parts = url_parts[3:]
+        formatted_url = f"https://{cloudfront_domain}/{'/'.join(path_parts)}"
+        return formatted_url

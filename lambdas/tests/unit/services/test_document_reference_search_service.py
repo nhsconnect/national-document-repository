@@ -25,7 +25,7 @@ def patched_service(mocker, set_env):
     service = DocumentReferenceSearchService()
     mocker.patch.object(service, "s3_service")
     mocker.patch.object(service, "dynamo_service")
-    mocker.patch.object(service, "fetch_documents_from_table_with_filter")
+    mocker.patch.object(service, "fetch_documents_from_table_with_nhs_number")
     mocker.patch.object(service, "is_upload_in_process", return_value=False)
     yield service
 
@@ -41,7 +41,7 @@ def test_get_document_references_raise_json_error_when_no_table_list(
 def test_get_document_references_raise_validation_error(
     patched_service, validation_error
 ):
-    patched_service.fetch_documents_from_table_with_filter.side_effect = (
+    patched_service.fetch_documents_from_table_with_nhs_number.side_effect = (
         validation_error
     )
     with pytest.raises(DocumentRefSearchException):
@@ -49,21 +49,23 @@ def test_get_document_references_raise_validation_error(
 
 
 def test_get_document_references_raise_client_error(patched_service):
-    patched_service.fetch_documents_from_table_with_filter.side_effect = ClientError(
-        {
-            "Error": {
-                "Code": "test",
-                "Message": "test",
-            }
-        },
-        "test",
+    patched_service.fetch_documents_from_table_with_nhs_number.side_effect = (
+        ClientError(
+            {
+                "Error": {
+                    "Code": "test",
+                    "Message": "test",
+                }
+            },
+            "test",
+        )
     )
     with pytest.raises(DocumentRefSearchException):
         patched_service.get_document_references("111111111")
 
 
 def test_get_document_references_raise_dynamodb_error(patched_service):
-    patched_service.fetch_documents_from_table_with_filter.side_effect = (
+    patched_service.fetch_documents_from_table_with_nhs_number.side_effect = (
         DynamoServiceException()
     )
     with pytest.raises(DocumentRefSearchException):
@@ -71,7 +73,7 @@ def test_get_document_references_raise_dynamodb_error(patched_service):
 
 
 def test_get_document_references_dynamo_return_empty_response(patched_service):
-    patched_service.fetch_documents_from_table_with_filter.return_value = []
+    patched_service.fetch_documents_from_table_with_nhs_number.return_value = []
     expected_results = []
 
     actual = patched_service.get_document_references("1111111111")
@@ -84,7 +86,7 @@ def test_get_document_references_dynamo_return_successful_response_single_table(
 ):
     monkeypatch.setenv("DYNAMODB_TABLE_LIST", json.dumps(["test_table"]))
 
-    patched_service.fetch_documents_from_table_with_filter.return_value = (
+    patched_service.fetch_documents_from_table_with_nhs_number.return_value = (
         MOCK_DOCUMENT_REFERENCE
     )
     expected_results = [EXPECTED_RESPONSE]
@@ -96,7 +98,7 @@ def test_get_document_references_dynamo_return_successful_response_single_table(
 def test_get_document_references_dynamo_return_successful_response_multiple_tables(
     patched_service,
 ):
-    patched_service.fetch_documents_from_table_with_filter.return_value = (
+    patched_service.fetch_documents_from_table_with_nhs_number.return_value = (
         MOCK_DOCUMENT_REFERENCE
     )
     expected_results = [EXPECTED_RESPONSE, EXPECTED_RESPONSE]
@@ -109,7 +111,7 @@ def test_get_document_references_dynamo_return_successful_response_multiple_tabl
 def test_get_document_references_raise_error_when_upload_is_in_process(
     patched_service,
 ):
-    patched_service.fetch_documents_from_table_with_filter.return_value = (
+    patched_service.fetch_documents_from_table_with_nhs_number.return_value = (
         MOCK_DOCUMENT_REFERENCE
     )
     patched_service.is_upload_in_process.return_value = True
