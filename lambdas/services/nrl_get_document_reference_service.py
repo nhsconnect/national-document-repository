@@ -80,7 +80,7 @@ class NRLGetDocumentReferenceService:
                 GP_CLINICAL_USER_ROLE_CODE,
             ]
         )
-        return [roles.split(",") for roles in ssm_parameters.values()]
+        return [role for roles in ssm_parameters.values() for role in roles.split(",")]
 
     def get_user_roles_and_ods_codes(self, user_info) -> dict[str, list[str]]:
         ods_codes_and_roles = {}
@@ -108,7 +108,6 @@ class NRLGetDocumentReferenceService:
             table=self.table,
             search_condition=document_id,
             search_key="ID",
-            index_name="ID",
         )
         if len(documents) > 0:
             return documents[0]
@@ -121,7 +120,7 @@ class NRLGetDocumentReferenceService:
         return patient_details.general_practice_ods
 
     def create_document_presigned_url(self, document_reference: DocumentReference):
-        bucket_name = document_reference.get_bucket_name()
+        bucket_name = document_reference.get_file_bucket()
         file_location = document_reference.get_file_key()
         presign_url_response = self.s3_service.create_download_presigned_url(
             s3_bucket_name=bucket_name,

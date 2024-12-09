@@ -1,8 +1,7 @@
 import pytest
-from models.document_reference import DocumentReference
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
 from tests.unit.conftest import TEST_CURRENT_GP_ODS, TEST_UUID
-from tests.unit.helpers.data.dynamo_responses import MOCK_SINGLE_DOCUMENT_RESPONSE
+from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
 
 MOCK_USER_INFO = {
     "nhsid_useruid": TEST_UUID,
@@ -42,18 +41,19 @@ MOCK_USER_INFO = {
 
 
 @pytest.fixture
-def mock_service(mocker, set_env, context):
+def patched_service(mocker, set_env, context):
     service = NRLGetDocumentReferenceService()
     mocker.patch.object(service, "ssm_service")
     mocker.patch.object(service, "pds_service")
-    mocker.patch.object(service, "dynamo_service")
+    mocker.patch.object(service, "document_service")
     mocker.patch.object(service, "get_ndr_accepted_role_codes")
     yield service
 
 
 @pytest.fixture
-def mock_fetch_user_info(mock_service, mocker):
-    service = mock_service
+def mock_fetch_user_info(patched_service, mocker):
+    service = patched_service
+    mocker.patch.object(service, "get_user_roles_and_ods_codes")
     mocker.patch.object(service, "fetch_user_info")
     mocker.patch.object(service, "get_patient_current_gp_ods")
     yield service
@@ -67,38 +67,42 @@ def mock_fetch_user_info(mock_service, mocker):
         ("S8001:G8005:R8008", "R8008"),
     ],
 )
-def test_process_role_code_returns_correct_role(mock_service, input, expected):
-    assert mock_service.process_role_code(input) == expected
+def test_process_role_code_returns_correct_role(patched_service, input, expected):
+    assert patched_service.process_role_code(input) == expected
 
 
-def test_get_user_roles_and_ods_codes(mock_service):
+def test_get_user_roles_and_ods_codes(patched_service):
     expected = {"B9A5A": ["R8000", "R8015"], TEST_CURRENT_GP_ODS: ["R8008"]}
 
-    assert mock_service.get_user_roles_and_ods_codes(MOCK_USER_INFO) == expected
+    assert patched_service.get_user_roles_and_ods_codes(MOCK_USER_INFO) == expected
 
 
-def test_get_document_reference_service(mock_service):
-    response = mock_service.dynamo_service.query_table_by_index.return_value = (
-        MOCK_SINGLE_DOCUMENT_RESPONSE
+def test_get_document_reference_service(patched_service):
+    (patched_service.document_service.fetch_documents_from_table.return_value) = (
+        create_test_doc_store_refs()
     )
-    expected = DocumentReference.model_validate(response["Items"][0])
 
-    actual = mock_service.get_document_references(
+    actual = patched_service.get_document_references(
         "3d8683b9-1665-40d2-8499-6e8302d507ff"
     )
-    assert actual == expected
+    assert actual == create_test_doc_store_refs()[0]
 
 
-def test_user_allowed_to_see_file_happy_path(mock_service, mock_fetch_user_info):
-    mock_fetch_user_info.fetch_user_info.return_value = MOCK_USER_INFO
-    mock_service.dynamo_service.query_table_by_index.return_value = (
-        MOCK_SINGLE_DOCUMENT_RESPONSE
-    )
-    mock_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
-    mock_service.get_patient_current_gp_ods.return_value = TEST_CURRENT_GP_ODS
+def test_user_allowed_to_see_file_happy_path(patched_service, mock_fetch_user_info):
+    # mock_fetch_user_info.fetch_user_info.return_value = MOCK_USER_INFO
+    # patched_service.document_service.fetch_documents_from_table.return_value = (
+    #     MOCK_SINGLE_DOCUMENT_RESPONSE
+    # )
+    patched_service.get_user_roles_and_ods_codes.return_value = {
+        "TEST_ODS": ["R8000", "R3002", "R8003"],
+        "Y12345": ["R8000", "R1234"],
+    }
+
+    patched_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
+    patched_service.get_patient_current_gp_ods.return_value = TEST_CURRENT_GP_ODS
     assert (
-        mock_service.is_user_allowed_to_see_file(
-            TEST_UUID, "3d8683b9-1665-40d2-8499-6e8302d507ff"
+        patched_service.is_user_allowed_to_see_file(
+            TEST_UUID, create_test_doc_store_refs()[0]
         )
         is True
     )
