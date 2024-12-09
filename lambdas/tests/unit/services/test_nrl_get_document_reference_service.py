@@ -97,7 +97,7 @@ def test_user_allowed_to_see_file_happy_path(mock_service, mock_fetch_user_info)
     mock_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
     mock_service.get_patient_current_gp_ods.return_value = TEST_CURRENT_GP_ODS
     assert (
-        mock_service.user_allowed_to_see_file(
+        mock_service.is_user_allowed_to_see_file(
             TEST_UUID, "3d8683b9-1665-40d2-8499-6e8302d507ff"
         )
         is True

@@ -164,7 +164,7 @@ class ProcessNemsMessageService:
 
     def update_LG_table_with_current_GP(self, nhs_number: str, new_ods_code: str):
         logger.info("getting record from DB")
-        documents = self.document_service.fetch_documents_from_table(
+        documents = self.document_service.fetch_documents_from_table_with_nhs_number(
             nhs_number, self.table
         )
         if documents:

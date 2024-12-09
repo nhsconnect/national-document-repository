@@ -1,12 +1,14 @@
+from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = LoggingService(__name__)
 
 
+@handle_lambda_exceptions
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[
@@ -22,22 +24,12 @@ logger = LoggingService(__name__)
     ]
 )
 def lambda_handler(event, context):
+    document_id = event["pathParameters"]["id"]
+    bearer_token = event["headers"]["Authorization"]
 
-    try:
-        # # document_id = event["pathParameters"]["id"]
-        # # bearer_token = event["headers"]["Authorization"]
-        #
-        # get_document_service = NRLGetDocumentReferenceService()
+    get_document_service = NRLGetDocumentReferenceService()
+    placeholder = get_document_service.handle_get_document_reference_request(
+        document_id, bearer_token
+    )
 
-        #
-        # def extract_document_details_from_event():
-        #     pass
-
-        placeholder = "cloudfront presigned url"
-
-        return ApiGatewayResponse(status_code=200, body=placeholder, methods="GET")
-    # except NoAvailableDocument() as error:
-    #     return ApiGatewayResponse()
-
-    except AuthorisationException() as error:
-        return ApiGatewayResponse(status_code=403, body=error.body, methods="GET")
+    return ApiGatewayResponse(status_code=200, body=placeholder, methods="GET")

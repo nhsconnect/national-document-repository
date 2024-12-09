@@ -1,5 +1,5 @@
-from unit.conftest import FAKE_URL, TEST_UUID
-from unit.services.test_authoriser_service import MOCK_SESSION_ID
+from tests.unit.conftest import FAKE_URL, TEST_UUID
+from tests.unit.services.test_authoriser_service import MOCK_SESSION_ID
 
 MOCK_VALID_EVENT = {
     "resource": "/DocumentReference/{id}",

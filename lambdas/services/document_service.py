@@ -27,37 +27,38 @@ class DocumentService:
     ) -> list[DocumentReference]:
         table_name = doc_type.get_dynamodb_table_name()
 
-        return self.fetch_documents_from_table_with_filter(
+        return self.fetch_documents_from_table_with_nhs_number(
             nhs_number, table_name, query_filter=query_filter
         )
 
-    def fetch_documents_from_table(
-        self, nhs_number: str, table: str
+    def fetch_documents_from_table_with_nhs_number(
+        self, nhs_number: str, table: str, query_filter: Attr | ConditionBase = None
     ) -> list[DocumentReference]:
-        documents = []
-        response = self.dynamo_service.query_table_by_index(
-            table_name=table,
+        documents = self.fetch_documents_from_table(
+            table=table,
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
             search_condition=nhs_number,
-            requested_fields=DocumentReferenceMetadataFields.list(),
+            query_filter=query_filter,
         )
 
-        for item in response["Items"]:
-            document = DocumentReference.model_validate(item)
-            documents.append(document)
         return documents
 
-    def fetch_documents_from_table_with_filter(
-        self, nhs_number: str, table: str, query_filter: Attr | ConditionBase
+    def fetch_documents_from_table(
+        self,
+        table: str,
+        search_condition: str,
+        search_key: str,
+        index_name: str,
+        query_filter: Attr | ConditionBase = None,
     ) -> list[DocumentReference]:
         documents = []
 
         response = self.dynamo_service.query_table_by_index(
             table_name=table,
-            index_name="NhsNumberIndex",
-            search_key="NhsNumber",
-            search_condition=nhs_number,
+            index_name=index_name,
+            search_key=search_key,
+            search_condition=search_condition,
             requested_fields=DocumentReferenceMetadataFields.list(),
             query_filter=query_filter,
         )
