@@ -72,6 +72,10 @@ function RecordCard({
                                 View in full screen
                             </button>
                         )}
+                        <p>
+                            To search within this record use <strong>Control</strong> and{' '}
+                            <strong>F</strong>
+                        </p>
                     </Card.Content>
                     <div>{children}</div>
                 </Card>
