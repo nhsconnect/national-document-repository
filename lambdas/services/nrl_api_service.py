@@ -57,7 +57,7 @@ class NrlApiService:
 
             logger.info("Successfully created new pointer")
         except HTTPError as e:
-            logger.error(e.response)
+            logger.error(e.response.content)
             if e.response.status_code == 401 and retry_on_expired:
                 self.headers["Authorization"] = (
                     f"Bearer {self.auth_service.get_active_access_token()}"
