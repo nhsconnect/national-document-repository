@@ -12,7 +12,7 @@ function PatientGuard({ children }: Props) {
     const navigate = useNavigate();
     useEffect(() => {
         if (!patient) {
-            navigate(routes.UNAUTHORISED);
+            navigate(routes.SEARCH_PATIENT);
         }
     }, [patient, navigate]);
     return <>{children}</>;
