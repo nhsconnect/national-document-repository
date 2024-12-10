@@ -35,35 +35,16 @@ def patch_service(mocker, stitch_service):
     return stitch_service
 
 
-def test_format_cloudfront_url_valid(stitch_service):
-    presign_url = "https://example.com/path/to/resource"
-    cloudfront_domain = "d12345.cloudfront.net"
-    expected_url = "https://d12345.cloudfront.net/path/to/resource"
-    assert (
-        stitch_service.format_cloudfront_url(presign_url, cloudfront_domain)
-        == expected_url
-    )
-
-
-@pytest.mark.parametrize(
-    "presign_url",
-    ["https://example.com", "https:/example.com/path"],
-)
-def test_format_cloudfront_url_invalid(stitch_service, presign_url):
-    cloudfront_domain = "d12345.cloudfront.net"
-    with pytest.raises(ValueError, match="Invalid presigned URL format"):
-        stitch_service.format_cloudfront_url(presign_url, cloudfront_domain)
-
-
 def test_create_document_stitch_presigned_url(stitch_service, mocker):
     expected_url = "https://d12345.cloudfront.net/path/to/resource"
 
     stitch_service.s3_service.create_download_presigned_url.return_value = (
         "https://example.com/path/to/resource"
     )
-    stitch_service.format_cloudfront_url = mocker.MagicMock(
-        return_value="https://d12345.cloudfront.net/path/to/resource"
-    )
+    mocker.patch(
+        "services.lloyd_george_stitch_job_service.format_cloudfront_url"
+    ).return_value = "https://d12345.cloudfront.net/path/to/resource"
+
     stitched_file_location = "path/to/stitched/file"
 
     result = stitch_service.create_document_stitch_presigned_url(stitched_file_location)
