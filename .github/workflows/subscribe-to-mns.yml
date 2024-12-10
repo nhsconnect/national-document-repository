@@ -9,7 +9,7 @@ on:
         type: choice
         options:
           - ndr-dev
-          - test
+          - ndr-test
           - pre-prod
           - prod
       environment:
