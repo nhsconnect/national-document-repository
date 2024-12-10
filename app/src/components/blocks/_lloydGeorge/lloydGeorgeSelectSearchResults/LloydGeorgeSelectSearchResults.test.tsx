@@ -55,7 +55,6 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
             expect(screen.getByTestId('download-selected-files-btn')).toBeInTheDocument();
             expect(screen.getByTestId('toggle-selection-btn')).toBeInTheDocument();
-            expect(screen.getByTestId('start-again-link')).toBeInTheDocument();
         });
 
         it('shows error box when download selected files button is clicked but no files selected', async () => {
@@ -293,16 +292,6 @@ describe('LloydGeorgeSelectSearchResults', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to start page when user clicks on start again link', () => {
-            renderComponent();
-
-            act(() => {
-                userEvent.click(screen.getByRole('link', { name: 'Start again' }));
-            });
-
-            expect(mockNavigate).toHaveBeenCalledWith(routes.START);
-        });
-
         it('sets submission state when download selected files button is clicked and not all files selected', () => {
             renderComponent();
 

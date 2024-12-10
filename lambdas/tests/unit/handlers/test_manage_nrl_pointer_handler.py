@@ -13,7 +13,7 @@ def mock_service(mocker):
     return mocked_instance
 
 
-def build_test_sqs_message(action="POST"):
+def build_test_sqs_message(action="create"):
     SQS_Message = {
         "nhs_number": "123456789",
         "snomed_code_doc_type": "16521000000101",
@@ -31,22 +31,15 @@ def build_test_sqs_message(action="POST"):
 
 
 def test_process_event_with_one_message(mock_service, context, set_env):
-    event = {"Records": [build_test_sqs_message("POST")]}
+    event = {"Records": [build_test_sqs_message("create")]}
 
     lambda_handler(event, context)
 
     mock_service.create_new_pointer.assert_called_once()
 
 
-def test_process_update_event_with_one_message(mock_service, context, set_env):
-    event = {"Records": [build_test_sqs_message("UPDATE")]}
-    lambda_handler(event, context)
-
-    mock_service.update_pointer.assert_called_once()
-
-
 def test_process_delete_event_with_one_message(mock_service, context, set_env):
-    event = {"Records": [build_test_sqs_message("DELETE")]}
+    event = {"Records": [build_test_sqs_message("delete")]}
 
     lambda_handler(event, context)
 
@@ -55,7 +48,7 @@ def test_process_delete_event_with_one_message(mock_service, context, set_env):
 
 def test_process_event_with_multiple_messages(mock_service, context, set_env):
     event = {
-        "Records": [build_test_sqs_message("POST"), build_test_sqs_message("DELETE")]
+        "Records": [build_test_sqs_message("create"), build_test_sqs_message("delete")]
     }
 
     lambda_handler(event, context)
@@ -65,7 +58,7 @@ def test_process_event_with_multiple_messages(mock_service, context, set_env):
 
 
 def test_failed_to_create_a_pointer(mock_service, context, set_env, caplog):
-    event = {"Records": [build_test_sqs_message("POST")]}
+    event = {"Records": [build_test_sqs_message("create")]}
     mock_service.create_new_pointer.side_effect = NrlApiException("test exception")
 
     lambda_handler(event, context)
