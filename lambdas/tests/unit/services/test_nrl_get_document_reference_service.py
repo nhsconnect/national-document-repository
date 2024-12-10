@@ -1,6 +1,6 @@
 import pytest
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
-from tests.unit.conftest import TEST_CURRENT_GP_ODS, TEST_UUID
+from tests.unit.conftest import FAKE_URL, TEST_CURRENT_GP_ODS, TEST_UUID
 from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
 
 MOCK_USER_INFO = {
@@ -42,8 +42,11 @@ MOCK_USER_INFO = {
 
 @pytest.fixture
 def patched_service(mocker, set_env, context):
+    mocker.patch("services.base.s3_service.IAMService")
+
     service = NRLGetDocumentReferenceService()
     mocker.patch.object(service, "ssm_service")
+    mocker.patch.object(service, "s3_service")
     mocker.patch.object(service, "pds_service")
     mocker.patch.object(service, "document_service")
     mocker.patch.object(service, "get_ndr_accepted_role_codes")
@@ -106,3 +109,10 @@ def test_user_allowed_to_see_file_happy_path(patched_service, mock_fetch_user_in
         )
         is True
     )
+
+
+def test_create_document_reference_fhir_response(patched_service):
+    response = patched_service.create_document_reference_fhir_response(
+        create_test_doc_store_refs()[0], FAKE_URL
+    )
+    print(response.json())

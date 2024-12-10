@@ -3,7 +3,12 @@ from urllib.error import HTTPError
 
 import requests
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from fhir.resources.R4B.documentreference import (
+    DocumentReference as R4FhirDocumentReference,
+)
 from models.document_reference import DocumentReference
+from models.nrl_fhir_document_reference import FhirDocumentReference
+from models.nrl_sqs_message import NrlAttachment
 from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
@@ -38,6 +43,22 @@ class NRLGetDocumentReferenceService:
 
         presign_url = self.create_document_presigned_url(document_reference)
         return presign_url
+
+    def create_document_reference_fhir_response(
+        self, document_reference: DocumentReference, presign_url: str
+    ) -> R4FhirDocumentReference:
+        document_details = NrlAttachment(
+            url=presign_url,
+            title=document_reference.file_name,
+            creation=document_reference.created,
+        )
+        fhir_document_reference: R4FhirDocumentReference = FhirDocumentReference(
+            nhsNumber=document_reference.nhs_number,
+            custodian=document_reference.current_gp_ods,
+            attachment=document_details,
+        ).build_fhir_dict()
+        # fhir_document_reference.authenticator.(document_reference.current_gp_ods)
+        return fhir_document_reference
 
     def is_user_allowed_to_see_file(self, user_details, document_reference):
         user_ods_codes_and_roles = self.get_user_roles_and_ods_codes(user_details)

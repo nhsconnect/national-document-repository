@@ -1,5 +1,6 @@
 from typing import Optional
 
+from enums.snomed_codes import SnomedCodesCategory, SnomedCodesType
 from fhir.resources.R4B.documentreference import DocumentReference
 from models.nrl_sqs_message import NrlAttachment
 from pydantic import BaseModel, ConfigDict
@@ -10,8 +11,8 @@ class FhirDocumentReference(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel)
     nhs_number: str
     custodian: str
-    snomed_code_doc_type: str = "None"
-    snomed_code_category: str = "None"
+    snomed_code_doc_type: str = SnomedCodesType.LLOYD_GEORGE
+    snomed_code_category: str = SnomedCodesCategory.CARE_PLAN
     snomed_code_category_display: str = "Care plan"
     attachment: Optional[NrlAttachment] = NrlAttachment()
 
@@ -59,6 +60,7 @@ class FhirDocumentReference(BaseModel):
                     }
                 }
             ],
+            "authenticator": {"identifier": {"value": self.custodian}},
             "content": [
                 {
                     "attachment": self.attachment.model_dump(

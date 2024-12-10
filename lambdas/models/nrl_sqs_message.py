@@ -6,6 +6,10 @@ from pydantic.alias_generators import to_camel
 
 
 class NrlAttachment(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(serialization_alias=to_camel)
+    )
+
     content_type: str = "application/pdf"
     language: str = "en-UK"
     url: str = ""
