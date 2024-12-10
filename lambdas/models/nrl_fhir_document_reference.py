@@ -13,7 +13,7 @@ class FhirDocumentReference(BaseModel):
     snomed_code_doc_type: str = "None"
     snomed_code_category: str = "None"
     snomed_code_category_display: str = "Care plan"
-    attachment: Optional[NrlAttachment] = {}
+    attachment: Optional[NrlAttachment] = NrlAttachment()
 
     def build_fhir_dict(self):
         snomed_url = "http://snomed.info/sct"
