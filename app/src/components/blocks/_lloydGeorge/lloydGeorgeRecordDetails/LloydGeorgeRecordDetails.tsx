@@ -1,5 +1,4 @@
 import React from 'react';
-import formatFileSize from '../../../../helpers/utils/formatFileSize';
 
 export type Props = {
     lastUpdated: string;
