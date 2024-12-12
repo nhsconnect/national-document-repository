@@ -11,7 +11,9 @@ const DocumentSearchResults = (props: Props) => {
         new Date(a.created) < new Date(b.created) ? 1 : -1;
 
     const orderedResults = [...props.searchResults].sort(sortMethod);
-    const tableCaption = <h2 style={{ fontSize: 32 }}>List of documents available</h2>;
+    const tableCaption = (
+        <h2 className="document-search-table-caption">List of documents available</h2>
+    );
     return (
         <Table id="available-files-table-title" caption={tableCaption}>
             <Table.Head>

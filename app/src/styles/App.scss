@@ -807,3 +807,39 @@ $hunit: '%';
 .nhs-warning-color {
     color: $color_nhsuk-red;
 }
+
+.complete-stage-paragraph {
+    font-weight: '600';
+}
+
+.document-search-table-caption {
+    font-size: 32;
+}
+
+.search-result-spinner-div {
+    display: flex;
+}
+
+.nhsuk-button.nhsuk-button--secondary.margin {
+    margin-left: 72;
+}
+
+.table-cell-uploading-cell-thin {
+    width: '140px';
+}
+
+.table-cell-uploading-cell-wide {
+    width: '200px';
+}
+
+.nhsuk-form-group--error.margin {
+    margin-bottom: 50;
+}
+
+.details-margin {
+    margin-bottom: 50;
+}
+
+.upload-callout-warning {
+    margin-top: 75;
+}

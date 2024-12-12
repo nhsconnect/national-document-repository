@@ -54,13 +54,8 @@ const UploadSummary = ({ documents }: Props) => {
             )}
             <h1 id="upload-summary-header">{pageHeader}</h1>
             {failedUploads.length > 0 && (
-                <div className={'nhsuk-form-group--error'}>
-                    <Table
-                        responsive
-                        caption={tableCaption}
-                        style={tableMargin}
-                        id="failed-uploads"
-                    >
+                <div className={'nhsuk-form-group--error margin'}>
+                    <Table responsive caption={tableCaption} id="failed-uploads">
                         <Table.Body>
                             {failedUploads.map((document) => {
                                 return (
@@ -82,7 +77,7 @@ const UploadSummary = ({ documents }: Props) => {
                 </h2>
             )}
             {successfulUploads.length > 0 && (
-                <Details style={tableMargin}>
+                <Details className="details-margin">
                     <Details.Summary
                         id="successful-uploads-dropdown"
                         aria-label="View successfully uploaded documents"
@@ -122,7 +117,7 @@ const UploadSummary = ({ documents }: Props) => {
             )}
             <PatientSummary />
 
-            <WarningCallout style={{ marginTop: 75 }} id="close-page-warning">
+            <WarningCallout className="upload-callout-warning" id="close-page-warning">
                 <WarningCallout.Label>Before you close this page</WarningCallout.Label>
                 <ul>
                     <li>

@@ -74,7 +74,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 Only permanently delete all documents for this patient if you have a valid reason
                 to. For example, if the retention period of these documents has been reached.
             </p>
-            <div style={{ display: 'flex' }}>
+            <div className="search-result-spinner-div">
                 {props.downloadState === SUBMISSION_STATE.PENDING ? (
                     <SpinnerButton
                         id="download-spinner"
@@ -96,9 +96,8 @@ const DocumentSearchResultsOptions = (props: Props) => {
                     Download Manifest URL
                 </a>
                 <Button
-                    className="nhsuk-button nhsuk-button--secondary"
+                    className="nhsuk-button nhsuk-button--secondary margin"
                     data-testid="delete-all-documents-btn"
-                    style={{ marginLeft: 72 }}
                     onClick={deleteAllDocuments}
                 >
                     Delete All Documents
