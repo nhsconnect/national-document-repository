@@ -1,10 +1,19 @@
+import json
+
+import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from tests.unit.helpers.data.dynamo.dynamo_stream import (
+    MOCK_OLD_IMAGE_EVENT,
+    MOCK_OLD_IMAGE_MODEL,
+)
+from unit.conftest import TEST_DOCUMENT_LOCATION, TEST_NHS_NUMBER, TEST_UUID
 from utils.dynamo_utils import (
     create_expression_attribute_placeholder,
     create_expression_attribute_values,
     create_expression_value_placeholder,
     create_expressions,
     create_update_expression,
+    parse_dynamo_record,
 )
 
 
@@ -104,3 +113,41 @@ def test_create_expression_attribute_placeholder_camel_case():
     actual = create_expression_attribute_placeholder(test_value)
 
     assert actual == expected
+
+
+def test_parse_dynamo_record_parses_correctly():
+    test_data = MOCK_OLD_IMAGE_EVENT
+
+    expected = {
+        "ContentType": MOCK_OLD_IMAGE_MODEL.content_type,
+        "FileName": MOCK_OLD_IMAGE_MODEL.file_name,
+        "Uploading": MOCK_OLD_IMAGE_MODEL.uploading,
+        "TTL": MOCK_OLD_IMAGE_MODEL.ttl,
+        "Created": MOCK_OLD_IMAGE_MODEL.created,
+        "Uploaded": MOCK_OLD_IMAGE_MODEL.uploaded,
+        "FileLocation": TEST_DOCUMENT_LOCATION,
+        "CurrentGpOds": MOCK_OLD_IMAGE_MODEL.current_gp_ods,
+        "VirusScannerResult": MOCK_OLD_IMAGE_MODEL.virus_scanner_result,
+        "Deleted": MOCK_OLD_IMAGE_MODEL.deleted,
+        "ID": TEST_UUID,
+        "LastUpdated": MOCK_OLD_IMAGE_MODEL.last_updated,
+        "NhsNumber": TEST_NHS_NUMBER,
+    }
+
+    actual = parse_dynamo_record(test_data)
+
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "test_json_string",
+    [
+        '{"Test": {"BOOL": "Not Bool"}}',
+        '{"Test": {"N": "Not Integer"}}',
+    ],
+)
+def test_parse_dynamo_record_raises_value_error(test_json_string):
+    test_object = json.loads(test_json_string)
+
+    with pytest.raises(ValueError):
+        parse_dynamo_record(test_object)

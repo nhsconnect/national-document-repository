@@ -2,14 +2,17 @@ from datetime import datetime, timezone
 
 from boto3.dynamodb.conditions import Attr, ConditionBase
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
-from utils.exceptions import FileUploadInProgress, NoAvailableDocument
+from utils.exceptions import (
+    DocumentServiceException,
+    FileUploadInProgress,
+    NoAvailableDocument,
+)
 
 logger = LoggingService(__name__)
 
@@ -67,22 +70,15 @@ class DocumentService:
             documents.append(document)
         return documents
 
-    def delete_documents(
+    def delete_document_references(
         self,
         table_name: str,
         document_references: list[DocumentReference],
-        type_of_delete: str,
+        document_ttl_days: int,
     ):
         deletion_date = datetime.now(timezone.utc)
 
-        if type_of_delete == S3LifecycleTags.DEATH_DELETE.value:
-            ttl_days = S3LifecycleDays.DEATH_DELETE
-            tag_key = str(S3LifecycleTags.DEATH_DELETE.value)
-        else:
-            ttl_days = S3LifecycleDays.SOFT_DELETE
-            tag_key = str(S3LifecycleTags.SOFT_DELETE.value)
-
-        ttl_seconds = ttl_days * 24 * 60 * 60
+        ttl_seconds = document_ttl_days * 24 * 60 * 60
         document_reference_ttl = int(deletion_date.timestamp() + ttl_seconds)
 
         update_fields = {
@@ -95,16 +91,27 @@ class DocumentService:
         logger.info(f"Deleting items in table: {table_name}")
 
         for reference in document_references:
-            self.s3_service.create_object_tag(
-                file_key=reference.get_file_key(),
-                s3_bucket_name=reference.get_file_bucket(),
-                tag_key=tag_key,
-                tag_value=str(S3LifecycleTags.ENABLE_TAG.value),
-            )
-
             self.dynamo_service.update_item(
                 table_name, reference.id, updated_fields=update_fields
             )
+
+    def delete_document_object(self, bucket: str, key: str):
+        file_exists = self.s3_service.file_exist_on_s3(
+            s3_bucket_name=bucket, file_key=key
+        )
+
+        if not file_exists:
+            raise DocumentServiceException("Document does not exist in S3")
+
+        logger.info("Located file, attempting S3 object deletion")
+        self.s3_service.delete_object(s3_bucket_name=bucket, file_key=key)
+
+        file_exists = self.s3_service.file_exist_on_s3(
+            s3_bucket_name=bucket, file_key=key
+        )
+
+        if file_exists:
+            raise DocumentServiceException("Document located in S3 after deletion")
 
     def update_documents(
         self,

@@ -42,6 +42,10 @@ class DynamoServiceException(Exception):
     pass
 
 
+class DocumentServiceException(Exception):
+    pass
+
+
 class MissingEnvVarException(Exception):
     pass
 

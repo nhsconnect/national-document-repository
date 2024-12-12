@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 from unittest.mock import call
 
 import pytest
+from enums.document_retention import DocumentRetentionDays
 from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
@@ -15,7 +15,7 @@ from tests.unit.conftest import (
     MOCK_TABLE_NAME,
     TEST_NHS_NUMBER,
 )
-from tests.unit.helpers.data.dynamo_responses import (
+from tests.unit.helpers.data.dynamo.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
@@ -23,6 +23,7 @@ from tests.unit.helpers.data.test_documents import (
     create_test_lloyd_george_doc_store_refs,
 )
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
+from utils.exceptions import DocumentServiceException
 
 MOCK_DOCUMENT = MOCK_SEARCH_RESPONSE["Items"][0]
 
@@ -191,22 +192,15 @@ def test_delete_documents_soft_delete(
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_date = datetime.now()
-    ttl_date = test_date + timedelta(days=float(S3LifecycleDays.SOFT_DELETE))
+    ttl_date = test_date + timedelta(days=float(DocumentRetentionDays.SOFT_DELETE))
 
     test_update_fields = {
         "Deleted": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "TTL": int(ttl_date.timestamp()),
     }
 
-    mock_service.delete_documents(
-        MOCK_TABLE_NAME, [test_doc_ref], str(S3LifecycleTags.SOFT_DELETE.value)
-    )
-
-    mock_s3_service.create_object_tag.assert_called_once_with(
-        file_key=test_doc_ref.get_file_key(),
-        s3_bucket_name=test_doc_ref.get_file_bucket(),
-        tag_key="soft-delete",
-        tag_value="true",
+    mock_service.delete_document_references(
+        MOCK_TABLE_NAME, [test_doc_ref], DocumentRetentionDays.SOFT_DELETE
     )
 
     mock_dynamo_service.update_item.assert_called_once_with(
@@ -221,22 +215,15 @@ def test_delete_documents_death_delete(
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_date = datetime.now()
-    ttl_date = test_date + timedelta(days=float(S3LifecycleDays.DEATH_DELETE))
+    ttl_date = test_date + timedelta(days=float(DocumentRetentionDays.DEATH))
 
     test_update_fields = {
         "Deleted": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "TTL": int(ttl_date.timestamp()),
     }
 
-    mock_service.delete_documents(
-        MOCK_TABLE_NAME, [test_doc_ref], str(S3LifecycleTags.DEATH_DELETE.value)
-    )
-
-    mock_s3_service.create_object_tag.assert_called_once_with(
-        file_key=test_doc_ref.get_file_key(),
-        s3_bucket_name=test_doc_ref.get_file_bucket(),
-        tag_key="patient-death",
-        tag_value="true",
+    mock_service.delete_document_references(
+        MOCK_TABLE_NAME, [test_doc_ref], DocumentRetentionDays.DEATH
     )
 
     mock_dynamo_service.update_item.assert_called_once_with(
@@ -296,3 +283,51 @@ def test_check_existing_lloyd_george_records_return_true_if_upload_in_progress(
     response = mock_service.is_upload_in_process(mock_records_upload_in_process)
 
     assert response
+
+
+def test_delete_document_object_successfully_deletes_s3_object(mock_service, caplog):
+    test_bucket = "test-s3-bucket"
+    test_file_key = "9000000000/test-file.pdf"
+
+    expected_log_message = "Located file, attempting S3 object deletion"
+
+    mock_service.s3_service.file_exist_on_s3.side_effect = [
+        True,
+        False,
+    ]
+
+    mock_service.delete_document_object(bucket=test_bucket, key=test_file_key)
+
+    assert mock_service.s3_service.file_exist_on_s3.call_count == 2
+    mock_service.s3_service.file_exist_on_s3.assert_called_with(
+        s3_bucket_name=test_bucket, file_key=test_file_key
+    )
+    mock_service.s3_service.delete_object.assert_called_with(
+        s3_bucket_name=test_bucket, file_key=test_file_key
+    )
+
+    assert expected_log_message in caplog.records[-1].msg
+
+
+def test_delete_document_object_fails_to_delete_s3_object(mock_service, caplog):
+    test_bucket = "test-s3-bucket"
+    test_file_key = "9000000000/test-file.pdf"
+
+    expected_err_msg = "Document located in S3 after deletion" ""
+
+    mock_service.s3_service.file_exist_on_s3.side_effect = [
+        True,
+        True,
+    ]
+
+    with pytest.raises(DocumentServiceException) as e:
+        mock_service.delete_document_object(bucket=test_bucket, key=test_file_key)
+
+    assert mock_service.s3_service.file_exist_on_s3.call_count == 2
+    mock_service.s3_service.file_exist_on_s3.assert_called_with(
+        s3_bucket_name=test_bucket, file_key=test_file_key
+    )
+    mock_service.s3_service.delete_object.assert_called_with(
+        s3_bucket_name=test_bucket, file_key=test_file_key
+    )
+    assert expected_err_msg == str(e.value)

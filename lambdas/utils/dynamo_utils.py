@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, Dict
 
 import inflection
 from enums.dynamo_filter import AttributeOperator
@@ -131,3 +132,18 @@ def filter_uploaded_docs_and_recently_uploading_docs():
     return delete_filter_expression & (
         uploaded_filter_expression | uploading_filter_expression
     )
+
+
+def parse_dynamo_record(dynamodb_record: Dict[str, Any]) -> Dict[str, Any]:
+    result = {}
+    for key, value in dynamodb_record.items():
+        match value:
+            case {"S": str(s)}:
+                result[key] = s
+            case {"N": str(n)}:
+                result[key] = int(n)
+            case {"BOOL": bool(b)}:
+                result[key] = b
+            case _:
+                raise ValueError(f"Unsupported DynamoDB type for key {key}: {value}")
+    return result

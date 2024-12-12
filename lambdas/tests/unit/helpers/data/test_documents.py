@@ -10,7 +10,7 @@ from tests.unit.conftest import (
     TEST_NHS_NUMBER,
     TEST_UUID,
 )
-from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
+from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
 
 
 def create_test_doc_store_refs():
