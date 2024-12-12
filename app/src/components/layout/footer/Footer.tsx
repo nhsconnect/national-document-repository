@@ -16,7 +16,7 @@ function Footer() {
                     Privacy notice
                 </NHSFooter.ListItem>
             </NHSFooter.List>
-            <NHSFooter.Copyright>&copy; {'Crown copyright'}</NHSFooter.Copyright>
+            <NHSFooter.Copyright>&copy; {'NHS England'}</NHSFooter.Copyright>
         </NHSFooter>
     );
 }
