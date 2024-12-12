@@ -19,7 +19,6 @@ const FakeProgress = require('fake-progress');
 export type Props = {
     deleteAfterDownload: boolean;
     selectedDocuments?: Array<string>;
-    numberOfFiles: number;
 };
 
 type DownloadLinkAttributes = {
@@ -27,11 +26,7 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadStage({
-    deleteAfterDownload = false,
-    selectedDocuments,
-    numberOfFiles,
-}: Props) {
+function LloydGeorgeDownloadStage({ deleteAfterDownload = false, selectedDocuments }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
@@ -48,8 +43,6 @@ function LloydGeorgeDownloadStage({
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
-
-    const pageDownloadCountId = 'download-file-header-' + numberOfFiles + '-files';
 
     const progressTimer = useMemo(() => {
         return new FakeProgress({
@@ -145,7 +138,6 @@ function LloydGeorgeDownloadStage({
         navigate,
         mockLocal,
         selectedDocuments,
-        numberOfFiles,
     ]);
 
     const pageHeader = 'Downloading documents';
@@ -157,9 +149,6 @@ function LloydGeorgeDownloadStage({
                 <h1 data-testid="lloyd-george-download-header">{pageHeader}</h1>
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
                 <h3 className="nhsuk-heading-s">NHS number: {patientDetails?.nhsNumber}</h3>
-                <h4 data-testid={pageDownloadCountId}>
-                    Preparing download for {numberOfFiles} files
-                </h4>
             </div>
 
             <Card className="lloydgeorge_downloadall-stage_details">

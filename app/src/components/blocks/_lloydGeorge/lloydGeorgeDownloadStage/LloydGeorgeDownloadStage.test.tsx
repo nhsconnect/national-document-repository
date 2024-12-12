@@ -220,7 +220,6 @@ describe('LloydGeorgeDownloadStage', () => {
 
 const renderComponent = (history: MemoryHistory, propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
-        numberOfFiles: mockPdf.numberOfFiles,
         deleteAfterDownload: false,
         ...propsOverride,
     };

@@ -31,8 +31,6 @@ describe('LloydGeorgeRecordDetails', () => {
 const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Props = {
         lastUpdated: mockPdf.lastUpdated,
-        numberOfFiles: mockPdf.numberOfFiles,
-        totalFileSizeInBytes: mockPdf.totalFileSizeInBytes,
         ...propsOverride,
     };
     return render(<LgRecordDetails {...props} />);
