@@ -2,11 +2,11 @@ import json
 
 import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from tests.unit.conftest import TEST_DOCUMENT_LOCATION, TEST_NHS_NUMBER, TEST_UUID
 from tests.unit.helpers.data.dynamo.dynamo_stream import (
     MOCK_OLD_IMAGE_EVENT,
     MOCK_OLD_IMAGE_MODEL,
 )
-from unit.conftest import TEST_DOCUMENT_LOCATION, TEST_NHS_NUMBER, TEST_UUID
 from utils.dynamo_utils import (
     create_expression_attribute_placeholder,
     create_expression_attribute_values,
