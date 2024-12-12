@@ -1,6 +1,9 @@
 import { Card } from 'nhsuk-react-components';
 import React, { ReactNode, useEffect, useRef } from 'react';
 import PdfViewer from '../pdfViewer/PdfViewer';
+
+import PdfJsIframe from '../pdfViewer/research/PdfJsIframe';
+
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 
@@ -40,6 +43,10 @@ function RecordCard({
 
     const Record = () => {
         return cloudFrontUrl ? <PdfViewer fileUrl={cloudFrontUrl} /> : null;
+    };
+
+    const Record1 = () => {
+        return cloudFrontUrl ? <PdfJsIframe fileUrl={cloudFrontUrl} /> : null;
     };
 
     const RecordLayout = ({ children }: { children: ReactNode }) => {
@@ -85,6 +92,7 @@ function RecordCard({
     return (
         <RecordLayout>
             <Record />
+            <Record1 />
         </RecordLayout>
     );
 }
