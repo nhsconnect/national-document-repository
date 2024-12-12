@@ -9,7 +9,6 @@ import useRole from '../../../../helpers/hooks/useRole';
 import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
