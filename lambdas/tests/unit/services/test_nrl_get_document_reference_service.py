@@ -112,7 +112,6 @@ def test_user_allowed_to_see_file_happy_path(patched_service, mock_fetch_user_in
 
 
 def test_create_document_reference_fhir_response(patched_service):
-    response = patched_service.create_document_reference_fhir_response(
+    patched_service.create_document_reference_fhir_response(
         create_test_doc_store_refs()[0], FAKE_URL
     )
-    print(response.json())

@@ -6,7 +6,7 @@ from utils.request_context import request_context
 
 
 class LambdaError(Enum):
-    def create_error_body(self, params: Optional[dict] = None) -> str:
+    def create_error_response(self, params: Optional[dict] = None) -> ErrorResponse:
         err_code = self.value["err_code"]
         message = self.value["message"]
         if "%" in message and params:
@@ -16,10 +16,13 @@ class LambdaError(Enum):
         error_response = ErrorResponse(
             err_code=err_code, message=message, interaction_id=interaction_id
         )
-        return error_response.create()
+        return error_response
 
     def to_str(self) -> str:
         return f"[{self.value['err_code']}] {self.value['message']}"
+
+    def create_error_body(self, params: Optional[dict] = None) -> str:
+        return self.create_error_response(params).create()
 
     """
     Errors for SearchPatientException
@@ -390,7 +393,21 @@ class LambdaError(Enum):
         "err_code": "US_5001",
         "message": "Dynamo client error",
     }
-
+    """
+       Errors for get document reference lambda 
+    """
+    DocumentReferenceNotFound = {
+        "err_code": "NRL_DR_4041",
+        "message": "Document reference not found",
+    }
+    DocumentReferenceGeneralError = {
+        "err_code": "NRL_DR_4041",
+        "message": "An error occurred while fetching the document",
+    }
+    DocumentReferenceUnauthorised = {
+        "err_code": "NRL_DR_4031",
+        "message": "User is unauthorised to view record",
+    }
     """
         Edge Lambda Errors
     """

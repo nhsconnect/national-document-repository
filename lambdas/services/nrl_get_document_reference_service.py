@@ -1,14 +1,12 @@
 import os
-from urllib.error import HTTPError
 
 import requests
+from enums.lambda_error import LambdaError
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
-from fhir.resources.R4B.documentreference import (
-    DocumentReference as R4FhirDocumentReference,
-)
 from models.document_reference import DocumentReference
 from models.nrl_fhir_document_reference import FhirDocumentReference
 from models.nrl_sqs_message import NrlAttachment
+from requests.exceptions import HTTPError
 from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
@@ -39,25 +37,29 @@ class NRLGetDocumentReferenceService:
         user_details = self.fetch_user_info(bearer_token)
 
         if not self.is_user_allowed_to_see_file(user_details, document_reference):
-            return "403"
+            raise NRLGetDocumentReferenceException(
+                403, LambdaError.DocumentReferenceUnauthorised
+            )
 
         presign_url = self.create_document_presigned_url(document_reference)
-        return presign_url
+        response = self.create_document_reference_fhir_response(
+            document_reference, presign_url
+        )
+        return response
 
     def create_document_reference_fhir_response(
         self, document_reference: DocumentReference, presign_url: str
-    ) -> R4FhirDocumentReference:
+    ) -> dict:
         document_details = NrlAttachment(
             url=presign_url,
             title=document_reference.file_name,
             creation=document_reference.created,
         )
-        fhir_document_reference: R4FhirDocumentReference = FhirDocumentReference(
+        fhir_document_reference = FhirDocumentReference(
             nhsNumber=document_reference.nhs_number,
             custodian=document_reference.current_gp_ods,
             attachment=document_details,
         ).build_fhir_dict()
-        # fhir_document_reference.authenticator.(document_reference.current_gp_ods)
         return fhir_document_reference
 
     def is_user_allowed_to_see_file(self, user_details, document_reference):
@@ -91,8 +93,10 @@ class NRLGetDocumentReferenceService:
             return response.json()
 
         except HTTPError as error:
-            print(error)
-            raise NRLGetDocumentReferenceException(400)
+            logger.error(f"HTTP error {error.response.content}")
+            raise NRLGetDocumentReferenceException(
+                400, LambdaError.DocumentReferenceGeneralError
+            )
 
     def get_ndr_accepted_role_codes(self) -> list[str]:
         ssm_parameters = self.ssm_service.get_ssm_parameters(
@@ -133,8 +137,9 @@ class NRLGetDocumentReferenceService:
         if len(documents) > 0:
             return documents[0]
         else:
-            print(404)
-            raise NRLGetDocumentReferenceException(404)
+            raise NRLGetDocumentReferenceException(
+                404, LambdaError.DocumentReferenceNotFound
+            )
 
     def get_patient_current_gp_ods(self, nhs_number):
         patient_details = self.pds_service.fetch_patient_details(nhs_number)

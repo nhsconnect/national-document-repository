@@ -4,6 +4,7 @@ from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.lambda_exceptions import NRLGetDocumentReferenceException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = LoggingService(__name__)
@@ -26,11 +27,18 @@ def lambda_handler(event, context):
     bearer_token = event["headers"]["Authorization"]
     configuration_service = DynamicConfigurationService()
     configuration_service.set_auth_ssm_prefix()
-    get_document_service = NRLGetDocumentReferenceService()
-    placeholder = get_document_service.handle_get_document_reference_request(
-        document_id, bearer_token
-    )
+    try:
+        get_document_service = NRLGetDocumentReferenceService()
+        placeholder = get_document_service.handle_get_document_reference_request(
+            document_id, bearer_token
+        )
 
-    return ApiGatewayResponse(
-        status_code=200, body=placeholder, methods="GET"
-    ).create_api_gateway_response()
+        return ApiGatewayResponse(
+            status_code=200, body=placeholder, methods="GET"
+        ).create_api_gateway_response()
+    except NRLGetDocumentReferenceException as e:
+        return ApiGatewayResponse(
+            status_code=e.status_code,
+            body=e.error.create_error_response().create_error_fhir_response(),
+            methods="GET",
+        ).create_api_gateway_response()

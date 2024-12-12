@@ -1,7 +1,6 @@
 from typing import Optional
 
 from enums.snomed_codes import SnomedCodesCategory, SnomedCodesType
-from fhir.resources.R4B.documentreference import DocumentReference
 from models.nrl_sqs_message import NrlAttachment
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -74,4 +73,4 @@ class FhirDocumentReference(BaseModel):
                 }
             ],
         }
-        return DocumentReference(**structure_json)
+        return structure_json
