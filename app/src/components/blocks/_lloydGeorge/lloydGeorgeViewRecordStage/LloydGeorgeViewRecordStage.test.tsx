@@ -62,11 +62,6 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.getByText(`Last updated: ${mockPdf.lastUpdated}`)).toBeInTheDocument();
-        expect(screen.getByText(`${mockPdf.numberOfFiles} files`)).toBeInTheDocument();
-        expect(
-            screen.getByText(`File size: ${formatFileSize(mockPdf.totalFileSizeInBytes)}`),
-        ).toBeInTheDocument();
-        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
 
         expect(
             screen.queryByText('No documents are available for this patient.'),

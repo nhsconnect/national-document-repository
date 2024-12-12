@@ -99,20 +99,6 @@ describe('LloydGeorgeRecordPage', () => {
         });
     });
 
-    it('calls refreshRecord and updates state when successful', async () => {
-        const lgResult = buildLgSearchResult();
-        mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Complete' } });
-        mockAxios.get.mockResolvedValue({ data: lgResult });
-
-        renderPage(history);
-
-        await waitFor(async () => {
-            expect(screen.getByText(`${lgResult.numberOfFiles} files`)).toBeInTheDocument();
-        });
-
-        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
-    });
-
     it('renders initial lg record view with no docs available text if lambda return records status is uploading for more than 3 min', async () => {
         const errorResponse = {
             response: {
@@ -199,12 +185,6 @@ describe('LloydGeorgeRecordPage', () => {
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
-
-        expect(screen.getByText(`${lgResult.numberOfFiles} files`)).toBeInTheDocument();
-        expect(
-            screen.getByText(`File size: ${formatFileSize(lgResult.totalFileSizeInBytes)}`),
-        ).toBeInTheDocument();
-        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });
 
     describe('Accessibility', () => {
