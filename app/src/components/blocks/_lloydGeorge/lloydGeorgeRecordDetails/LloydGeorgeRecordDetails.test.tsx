@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import LgRecordDetails, { Props } from './LloydGeorgeRecordDetails';
 import { buildLgSearchResult } from '../../../../helpers/test/testBuilders';
-import formatFileSize from '../../../../helpers/utils/formatFileSize';
 
 const mockPdf = buildLgSearchResult();
 
