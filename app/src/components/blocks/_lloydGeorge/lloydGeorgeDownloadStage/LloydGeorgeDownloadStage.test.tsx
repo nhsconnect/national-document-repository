@@ -222,6 +222,7 @@ const renderComponent = (history: MemoryHistory, propsOverride?: Partial<Props>)
     const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
         deleteAfterDownload: false,
         ...propsOverride,
+        numberOfFiles: mockPdf.numberOfFiles,
     };
 
     return render(

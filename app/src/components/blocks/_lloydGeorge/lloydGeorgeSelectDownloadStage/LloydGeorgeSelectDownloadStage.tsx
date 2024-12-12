@@ -150,6 +150,7 @@ function LloydGeorgeSelectDownloadStage({
                         <LloydGeorgeDownloadStage
                             deleteAfterDownload={deleteAfterDownload}
                             selectedDocuments={selectedDocuments}
+                            numberOfFiles={numberOfFilesForDownload}
                         />
                     }
                 />
