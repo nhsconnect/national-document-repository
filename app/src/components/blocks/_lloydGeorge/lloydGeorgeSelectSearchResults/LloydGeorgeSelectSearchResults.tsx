@@ -8,6 +8,7 @@ import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearc
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import BackButton from '../../../generic/backButton/BackButton';
+import formatFileSize from '../../../../helpers/utils/formatFileSize';
 
 export type Props = {
     searchResults: Array<SearchResult>;
@@ -108,6 +109,7 @@ const AvailableFilesTable = ({
                         )}
                         <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
                         <Table.Cell className={'table-column-header'}>Upload date</Table.Cell>
+                        <Table.Cell className={'table-column-header'}>File Size</Table.Cell>
                     </Table.Row>
                 </Table.Head>
                 <Table.Body>
@@ -146,6 +148,12 @@ const AvailableFilesTable = ({
                                 data-testid="created"
                             >
                                 {getFormattedDatetime(new Date(result.created))}
+                            </Table.Cell>
+                            <Table.Cell
+                                id={'available-files-row-' + index + '-file-size'}
+                                data-testid="file-size"
+                            >
+                                {result.fileSize}
                             </Table.Cell>
                         </Table.Row>
                     ))}
