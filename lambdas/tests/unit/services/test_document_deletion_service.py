@@ -1,19 +1,24 @@
 from unittest.mock import call
 
 import pytest
-from enums.s3_lifecycle_tags import S3LifecycleTags
+from enums.document_retention import DocumentRetentionDays
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_deletion_service import DocumentDeletionService
 from tests.unit.conftest import (
     MOCK_ARF_TABLE_NAME,
+    MOCK_BUCKET,
     MOCK_LG_TABLE_NAME,
     NRL_SQS_URL,
+    TEST_FILE_KEY,
     TEST_NHS_NUMBER,
 )
+from tests.unit.helpers.data.dynamo.dynamo_stream import MOCK_OLD_IMAGE_MODEL
 from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
 )
+from utils.exceptions import DocumentServiceException
+from utils.lambda_exceptions import DocumentDeletionServiceException
 
 TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
 TEST_LG_DOC_STORE_REFERENCES = create_test_lloyd_george_doc_store_refs()
@@ -65,6 +70,14 @@ def mock_document_query(mocker):
     )
 
 
+@pytest.fixture
+def mock_delete_document_object(mocker, mock_deletion_service):
+    yield mocker.patch.object(
+        mock_deletion_service.document_service,
+        "delete_document_object",
+    )
+
+
 def test_handle_delete_for_all_doc_type(
     mock_delete_specific_doc_type, mock_deletion_service, mocker
 ):
@@ -73,7 +86,7 @@ def test_handle_delete_for_all_doc_type(
         mocker.MagicMock()
     )
 
-    actual = mock_deletion_service.handle_delete(
+    actual = mock_deletion_service.handle_reference_delete(
         TEST_NHS_NUMBER, [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG]
     )
 
@@ -97,7 +110,7 @@ def test_handle_delete_all_doc_type_when_only_lg_records_available(
     )
 
     expected = TEST_LG_DOC_STORE_REFERENCES
-    actual = mock_deletion_service.handle_delete(
+    actual = mock_deletion_service.handle_reference_delete(
         nhs_number, [SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF]
     )
 
@@ -124,7 +137,7 @@ def test_handle_delete_for_one_doc_type(
         mocker.MagicMock()
     )
 
-    actual = mock_deletion_service.handle_delete(TEST_NHS_NUMBER, [doc_type])
+    actual = mock_deletion_service.handle_reference_delete(TEST_NHS_NUMBER, [doc_type])
 
     assert actual == expected
 
@@ -140,7 +153,7 @@ def test_handle_delete_when_no_record_for_patient_return_empty_list(
     )
 
     expected = []
-    actual = mock_deletion_service.handle_delete(
+    actual = mock_deletion_service.handle_reference_delete(
         TEST_NHS_NUMBER_WITH_NO_RECORD,
         [SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF],
     )
@@ -163,18 +176,17 @@ def test_delete_specific_doc_type(
         "get_documents_references_in_storage",
         return_value=doc_ref,
     )
-    mock_deletion_service.document_service.delete_documents.return_value = []
-    type_of_delete = str(S3LifecycleTags.SOFT_DELETE.value)
+    mock_deletion_service.document_service.delete_document_references.return_value = []
 
     expected = doc_ref
     actual = mock_deletion_service.delete_specific_doc_type(TEST_NHS_NUMBER, doc_type)
 
     assert actual == expected
 
-    mock_deletion_service.document_service.delete_documents.assert_called_once_with(
+    mock_deletion_service.document_service.delete_document_references.assert_called_once_with(
         table_name=table_name,
         document_references=doc_ref,
-        type_of_delete=type_of_delete,
+        document_ttl_days=DocumentRetentionDays.SOFT_DELETE,
     )
 
 
@@ -189,17 +201,17 @@ def test_delete_specific_doc_type_when_no_record_for_given_patient(
     mocker.patch.object(
         mock_deletion_service, "get_documents_references_in_storage", return_value=[]
     )
-    mock_deletion_service.document_service.delete_documents.return_value = []
+    mock_deletion_service.document_service.delete_document_references.return_value = []
     actual = mock_deletion_service.delete_specific_doc_type(
         TEST_NHS_NUMBER_WITH_NO_RECORD, doc_type
     )
 
     assert actual == expected
 
-    mock_deletion_service.document_service.delete_documents.assert_not_called()
+    mock_deletion_service.document_service.delete_document_references.assert_not_called()
 
 
-def test_delete_documents_references_in_stitch_table(mocker, mock_deletion_service):
+def test_delete_documents_references_in_stitch_table(mock_deletion_service):
     mock_deletion_service.stitch_service.query_stitch_trace_with_nhs_number.return_value = (
         TEST_LG_DOC_STORE_REFERENCES
     )
@@ -243,3 +255,42 @@ def test_send_sqs_message_to_remove_pointer(mocker, mock_deletion_service):
         message_body=expected_message_body,
         queue_url=NRL_SQS_URL,
     )
+
+
+def test_handle_object_delete_successfully_deletes_s3_object(
+    mock_deletion_service, mock_delete_document_object, caplog
+):
+    test_reference = MOCK_OLD_IMAGE_MODEL
+
+    expected_log_message = "Successfully deleted Document Reference S3 Object"
+
+    mock_deletion_service.handle_object_delete(test_reference)
+
+    mock_delete_document_object.assert_called_once_with(
+        bucket=MOCK_BUCKET, key=TEST_FILE_KEY
+    )
+    assert expected_log_message in caplog.records[-1].msg
+
+
+def test_handle_object_delete_invalid_filepath_raises_exception(
+    mock_deletion_service, mock_delete_document_object
+):
+    test_reference = MOCK_OLD_IMAGE_MODEL
+    test_reference.file_location = ""
+
+    with pytest.raises(DocumentDeletionServiceException):
+        mock_deletion_service.handle_object_delete(test_reference)
+        mock_delete_document_object.assert_not_called()
+
+
+def test_handle_object_delete_DocumentService_exception_raises_exception(
+    mock_deletion_service, mock_delete_document_object, caplog
+):
+    test_reference = MOCK_OLD_IMAGE_MODEL
+    mock_delete_document_object.side_effect = DocumentServiceException()
+
+    with pytest.raises(DocumentDeletionServiceException):
+        mock_deletion_service.handle_object_delete(test_reference)
+        mock_delete_document_object.assert_called_once_with(
+            bucket=MOCK_BUCKET, key=TEST_FILE_KEY
+        )

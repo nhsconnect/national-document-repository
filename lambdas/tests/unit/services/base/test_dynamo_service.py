@@ -7,9 +7,9 @@ from botocore.exceptions import ClientError
 from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.base.dynamo_service import DynamoDBService
-from tests.unit.conftest import MOCK_TABLE_NAME, TEST_NHS_NUMBER
-from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
-from tests.unit.helpers.data.dynamo_scan_response import (
+from tests.unit.conftest import MOCK_CLIENT_ERROR, MOCK_TABLE_NAME, TEST_NHS_NUMBER
+from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
+from tests.unit.helpers.data.dynamo.dynamo_scan_response import (
     EXPECTED_ITEMS_FOR_PAGINATED_RESULTS,
     MOCK_PAGINATED_RESPONSE_1,
     MOCK_PAGINATED_RESPONSE_2,
@@ -18,10 +18,6 @@ from tests.unit.helpers.data.dynamo_scan_response import (
 )
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DynamoServiceException
-
-MOCK_CLIENT_ERROR = ClientError(
-    {"Error": {"Code": 500, "Message": "Test error message"}}, "Query"
-)
 
 
 @pytest.fixture

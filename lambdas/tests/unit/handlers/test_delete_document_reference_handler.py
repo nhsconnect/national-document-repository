@@ -1,10 +1,10 @@
 import json
-from enum import Enum
 
 import pytest
 from botocore.exceptions import ClientError
 from handlers.delete_document_reference_handler import lambda_handler
 from services.document_deletion_service import DocumentDeletionService
+from tests.unit.conftest import MockError
 from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
@@ -16,12 +16,9 @@ TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
 TEST_LG_DOC_STORE_REFERENCES = create_test_lloyd_george_doc_store_refs()
 
 
-class MockError(Enum):
-    Error = {
-        "message": "Client error",
-        "err_code": "AB_XXXX",
-        "interaction_id": "88888888-4444-4444-4444-121212121212",
-    }
+@pytest.fixture
+def mock_handle_delete(mocker):
+    yield mocker.patch.object(DocumentDeletionService, "handle_reference_delete")
 
 
 @pytest.mark.parametrize(
@@ -256,8 +253,3 @@ def test_lambda_handler_handle_lambda_exception(
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_and_lg_doctype_delete_event, context)
     assert expected == actual
-
-
-@pytest.fixture
-def mock_handle_delete(mocker):
-    yield mocker.patch.object(DocumentDeletionService, "handle_delete")

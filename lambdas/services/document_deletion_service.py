@@ -1,11 +1,12 @@
 import os
 import uuid
 from typing import Literal
+from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
+from enums.document_retention import DocumentRetentionDays
 from enums.lambda_error import LambdaError
 from enums.nrl_sqs_upload import NrlActionTypes
-from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.snomed_codes import SnomedCodesCategory, SnomedCodesType
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
@@ -15,7 +16,7 @@ from services.document_service import DocumentService
 from services.lloyd_george_stitch_job_service import LloydGeorgeStitchJobService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted
-from utils.exceptions import DynamoServiceException
+from utils.exceptions import DocumentServiceException, DynamoServiceException
 from utils.lambda_exceptions import DocumentDeletionServiceException
 
 logger = LoggingService(__name__)
@@ -27,7 +28,7 @@ class DocumentDeletionService:
         self.stitch_service = LloydGeorgeStitchJobService()
         self.sqs_service = SQSService()
 
-    def handle_delete(
+    def handle_reference_delete(
         self, nhs_number: str, doc_types: list[SupportedDocumentTypes]
     ) -> list[DocumentReference]:
         files_deleted = []
@@ -37,6 +38,34 @@ class DocumentDeletionService:
         if SupportedDocumentTypes.LG in doc_types:
             self.send_sqs_message_to_remove_pointer(nhs_number)
         return files_deleted
+
+    def handle_object_delete(self, deleted_reference: DocumentReference):
+        try:
+            s3_uri = deleted_reference.file_location
+
+            parsed_uri = urlparse(s3_uri)
+            bucket_name = parsed_uri.netloc
+            object_key = parsed_uri.path.lstrip("/")
+
+            if not bucket_name or not object_key:
+                raise DocumentDeletionServiceException(
+                    400, LambdaError.DocDelObjectFailure
+                )
+
+            self.document_service.delete_document_object(
+                bucket=bucket_name, key=object_key
+            )
+
+            logger.info(
+                "Successfully deleted Document Reference S3 Object",
+                {"Result": "Successful deletion"},
+            )
+        except DocumentServiceException as e:
+            logger.error(
+                str(e),
+                {"Results": "Failed to delete document"},
+            )
+            raise DocumentDeletionServiceException(400, LambdaError.DocDelObjectFailure)
 
     def get_documents_references_in_storage(
         self,
@@ -69,10 +98,10 @@ class DocumentDeletionService:
         try:
             results = self.get_documents_references_in_storage(nhs_number, doc_type)
             if results:
-                self.document_service.delete_documents(
+                self.document_service.delete_document_references(
                     table_name=doc_type.get_dynamodb_table_name(),
                     document_references=results,
-                    type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
+                    document_ttl_days=DocumentRetentionDays.SOFT_DELETE,
                 )
 
             logger.info(

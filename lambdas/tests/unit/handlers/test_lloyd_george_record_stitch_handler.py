@@ -3,7 +3,6 @@ import os
 import tempfile
 
 import pytest
-from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.trace_status import TraceStatus
 from handlers.lloyd_george_record_stitch_handler import (
@@ -20,9 +19,6 @@ from tests.unit.helpers.data.test_documents import (
 from utils.lambda_exceptions import LGStitchServiceException
 from utils.lambda_response import ApiGatewayResponse
 
-MOCK_CLIENT_ERROR = ClientError(
-    {"Error": {"Code": "500", "Message": "test error"}}, "testing"
-)
 MOCK_LG_DYNAMODB_RESPONSE_NO_RECORD = {"Items": [], "Count": 0}
 MOCK_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
 MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"

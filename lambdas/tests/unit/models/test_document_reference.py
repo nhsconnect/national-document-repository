@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
-from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
+from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
 from utils.exceptions import InvalidDocumentReferenceException
 
 MOCK_DOCUMENT_REFERENCE = DocumentReference.model_validate(

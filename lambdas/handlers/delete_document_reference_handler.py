@@ -43,7 +43,7 @@ def lambda_handler(event, context):
 
     deletion_service = DocumentDeletionService()
 
-    files_deleted = deletion_service.handle_delete(nhs_number, document_types)
+    files_deleted = deletion_service.handle_reference_delete(nhs_number, document_types)
     if files_deleted:
         logger.info(
             "Documents were deleted successfully", {"Result": "Successful deletion"}
