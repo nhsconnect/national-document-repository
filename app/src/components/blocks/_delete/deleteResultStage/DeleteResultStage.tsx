@@ -42,7 +42,7 @@ function DeleteResultStage({ numberOfFiles, setDownloadStage }: Props) {
                 </Card.Content>
             </Card>
             <p>You can no longer access this record using our storage.</p>
-            <h2>What happens next</h2>
+            <h2 className="nhsuk-heading-l">What happens next</h2>
             <ol>
                 <li>
                     Make sure you safely store the paper version of this record, as it may be the
@@ -56,13 +56,13 @@ function DeleteResultStage({ numberOfFiles, setDownloadStage }: Props) {
                     If you think you’ve made a mistake, you will need to upload this record again
                 </li>
             </ol>
-            <h3>Your responsibilities after removing this record</h3>
+            <h3 className="nhsuk-heading-m">Your responsibilities after removing this record</h3>
             <p>
                 Everyone in a health and care organisation is responsible for managing records
                 appropriately. It is important all general practice staff understand their
                 responsibilities for creating, and disposing of records appropriately.
             </p>
-            <h3>Follow the Record Management Code of Practice</h3>
+            <h3 className="nhsuk-heading-m">Follow the Record Management Code of Practice</h3>
             <p>
                 The{' '}
                 <a
