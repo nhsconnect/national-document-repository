@@ -1,7 +1,7 @@
-import json
-
 import pytest
+from enums.snomed_codes import SnomedCodes
 from handlers.manage_nrl_pointer_handler import lambda_handler
+from models.nrl_sqs_message import NrlSqsMessage
 from utils.exceptions import NrlApiException
 
 
@@ -14,18 +14,14 @@ def mock_service(mocker):
 
 
 def build_test_sqs_message(action="create"):
-    SQS_Message = {
-        "nhs_number": "123456789",
-        "snomed_code_doc_type": "16521000000101",
-        "snomed_code_category": "734163000",
-        "action": action,
-        "attachment": {
-            "contentType": "application/pdf",
-            "url": "https://example.org/my-doc.pdf",
-        },
-    }
+    sqs_message = NrlSqsMessage(
+        nhs_number="123456789",
+        action=action,
+        snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+        snomed_code_category=SnomedCodes.CARE_PLAN.value,
+    ).model_dump_json()
     return {
-        "body": json.dumps(SQS_Message),
+        "body": sqs_message,
         "eventSource": "aws:sqs",
     }
 
