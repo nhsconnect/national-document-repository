@@ -2,7 +2,13 @@ import json
 
 import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from tests.unit.conftest import TEST_DOCUMENT_LOCATION, TEST_NHS_NUMBER, TEST_UUID
+from tests.unit.conftest import (
+    TEST_CURRENT_GP_ODS,
+    TEST_DOCUMENT_LOCATION,
+    TEST_FILE_KEY,
+    TEST_NHS_NUMBER,
+    TEST_UUID,
+)
 from tests.unit.helpers.data.dynamo.dynamo_stream import (
     MOCK_OLD_IMAGE_EVENT,
     MOCK_OLD_IMAGE_MODEL,
@@ -117,20 +123,21 @@ def test_create_expression_attribute_placeholder_camel_case():
 
 def test_parse_dynamo_record_parses_correctly():
     test_data = MOCK_OLD_IMAGE_EVENT
+    test_image = MOCK_OLD_IMAGE_MODEL
 
     expected = {
-        "ContentType": MOCK_OLD_IMAGE_MODEL.content_type,
-        "FileName": MOCK_OLD_IMAGE_MODEL.file_name,
-        "Uploading": MOCK_OLD_IMAGE_MODEL.uploading,
-        "TTL": MOCK_OLD_IMAGE_MODEL.ttl,
-        "Created": MOCK_OLD_IMAGE_MODEL.created,
-        "Uploaded": MOCK_OLD_IMAGE_MODEL.uploaded,
+        "ContentType": test_image.content_type,
+        "FileName": TEST_FILE_KEY,
+        "Uploading": test_image.uploading,
+        "TTL": test_image.ttl,
+        "Created": test_image.created,
+        "Uploaded": test_image.uploaded,
         "FileLocation": TEST_DOCUMENT_LOCATION,
-        "CurrentGpOds": MOCK_OLD_IMAGE_MODEL.current_gp_ods,
-        "VirusScannerResult": MOCK_OLD_IMAGE_MODEL.virus_scanner_result,
-        "Deleted": MOCK_OLD_IMAGE_MODEL.deleted,
+        "CurrentGpOds": TEST_CURRENT_GP_ODS,
+        "VirusScannerResult": test_image.virus_scanner_result,
+        "Deleted": test_image.deleted,
         "ID": TEST_UUID,
-        "LastUpdated": MOCK_OLD_IMAGE_MODEL.last_updated,
+        "LastUpdated": test_image.last_updated,
         "NhsNumber": TEST_NHS_NUMBER,
     }
 

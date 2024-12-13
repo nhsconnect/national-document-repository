@@ -103,7 +103,9 @@ class DocumentService:
         if not file_exists:
             raise DocumentServiceException("Document does not exist in S3")
 
-        logger.info("Located file, attempting S3 object deletion")
+        logger.info(
+            f"Located file `{key}` in `{bucket}`, attempting S3 object deletion"
+        )
         self.s3_service.delete_object(s3_bucket_name=bucket, file_key=key)
 
         file_exists = self.s3_service.file_exist_on_s3(

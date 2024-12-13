@@ -289,7 +289,7 @@ def test_delete_document_object_successfully_deletes_s3_object(mock_service, cap
     test_bucket = "test-s3-bucket"
     test_file_key = "9000000000/test-file.pdf"
 
-    expected_log_message = "Located file, attempting S3 object deletion"
+    expected_log_message = f"Located file `{test_file_key}` in `{test_bucket}`, attempting S3 object deletion"
 
     mock_service.s3_service.file_exist_on_s3.side_effect = [
         True,
@@ -313,7 +313,7 @@ def test_delete_document_object_fails_to_delete_s3_object(mock_service, caplog):
     test_bucket = "test-s3-bucket"
     test_file_key = "9000000000/test-file.pdf"
 
-    expected_err_msg = "Document located in S3 after deletion" ""
+    expected_err_msg = "Document located in S3 after deletion"
 
     mock_service.s3_service.file_exist_on_s3.side_effect = [
         True,
