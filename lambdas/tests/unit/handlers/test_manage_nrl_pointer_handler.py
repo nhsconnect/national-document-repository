@@ -1,7 +1,7 @@
 import pytest
 from enums.snomed_codes import SnomedCodes
 from handlers.manage_nrl_pointer_handler import lambda_handler
-from models.nrl_sqs_message import NrlSqsMessage
+from models.nrl_sqs_message import NrlAttachment, NrlSqsMessage
 from utils.exceptions import NrlApiException
 
 
@@ -14,11 +14,15 @@ def mock_service(mocker):
 
 
 def build_test_sqs_message(action="create"):
+    doc_details = NrlAttachment(
+        url="https://example.org/my-doc.pdf",
+    )
     sqs_message = NrlSqsMessage(
         nhs_number="123456789",
         action=action,
         snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
         snomed_code_category=SnomedCodes.CARE_PLAN.value,
+        attachment=doc_details,
     ).model_dump_json()
     return {
         "body": sqs_message,

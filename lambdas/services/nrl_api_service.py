@@ -2,8 +2,8 @@ import os
 import uuid
 
 import requests
-from requests import HTTPError
 from requests.adapters import HTTPAdapter
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NrlApiException
@@ -46,7 +46,7 @@ class NrlApiService:
             )
             response.raise_for_status()
             logger.info("Successfully created new pointer")
-        except HTTPError as e:
+        except (ConnectionError, Timeout, HTTPError) as e:
             logger.error(e.response.content)
             if e.response.status_code == 401 and retry_on_expired:
                 self.headers["Authorization"] = (
