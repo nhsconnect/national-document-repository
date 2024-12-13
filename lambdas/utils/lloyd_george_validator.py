@@ -190,8 +190,6 @@ def validate_patient_name_using_full_name_history(
     )
 
     for name in pds_patient_details.name:
-        if name.use == "usual":
-            continue
         historic_first_name_in_pds: str = name.given[0]
         historic_family_name_in_pds = name.family
         if validate_patient_name(
