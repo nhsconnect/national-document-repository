@@ -65,7 +65,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.wait('@search');
                 cy.title().should(
                     'eq',
-                    'Verify patient details - Access and store digital patient documents',
+                    'Patient details - Access and store digital patient documents',
                 );
 
                 cy.url().should('include', 'verify');
@@ -73,7 +73,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#gp-message').should('be.visible');
                 cy.get('#gp-message').should(
                     'have.text',
-                    'Check these patient details match the records or attachments you plan to use',
+                    'This page displays the current data recorded in the Patient Demographic Service for this patient.',
                 );
                 cy.get('#verify-submit').click();
 
@@ -192,4 +192,4 @@ describe('GP Workflow: Patient search and verify', () => {
             },
         );
     });
-});
+})
