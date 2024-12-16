@@ -80,13 +80,13 @@ function PatientResultPage() {
                 {isGp && (
                     <>
                         <p id="gp-message">
-													This page displays the current data recorded in the Patient Demographic Service 
-													for this patient.
+                          This page displays the current data recorded in the Patient Demographic Service 
+                          for this patient.
                         </p>
                     </>
                 )}
                 <Button type="submit" id="verify-submit" className="nhsuk-u-margin-top-6">
-									Confirm patient details and continue
+                  Confirm patient details and continue
                 </Button>
             </form>
         </div>

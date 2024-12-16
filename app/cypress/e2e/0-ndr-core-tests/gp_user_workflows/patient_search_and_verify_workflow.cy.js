@@ -192,4 +192,4 @@ describe('GP Workflow: Patient search and verify', () => {
             },
         );
     });
-})
+});
