@@ -45,7 +45,7 @@ class DocumentReference(BaseModel):
     uploaded: bool
     uploading: bool
     last_updated: int
-    file_size: int
+    # file_size: int
 
     def get_file_name_path(self):
         return pathlib.Path(self.file_name)
