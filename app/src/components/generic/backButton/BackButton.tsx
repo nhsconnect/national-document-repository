@@ -14,7 +14,7 @@ const BackButton = ({ toLocation, backLinkText = 'Go back' }: BackButtonProps) =
     const onBack = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
 
-        if (toLocation) navigate(toLocation);				
+        if (toLocation) navigate(toLocation);
         else navigate(-1);
     };
 

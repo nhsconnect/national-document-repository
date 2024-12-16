@@ -128,7 +128,10 @@ function LloydGeorgeViewRecordStage({
                     Exit full screen
                 </BackLink>
             ) : (
-                <BackButton toLocation={routes.VERIFY_PATIENT} backLinkText="Go back to Patient details" />
+                <BackButton
+                    toLocation={routes.VERIFY_PATIENT}
+                    backLinkText="Go back to Patient details"
+                />
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">

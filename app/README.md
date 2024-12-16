@@ -22,7 +22,7 @@ The National Document Repository user interface (UI) has been developed with Rea
 
 ### 1. Set Env Variables
 
-In the app/ directory create a `.env` file by duplicating [.env.template](.env.template) and adding any missing values. This file is sourced to
+In the app/ directory create a `.env` file by duplicating the [.env.template](.env.template) and adding any missing values. This file is sourced to
 your shell env so make sure it doesn't have any extra whitespace, comments etc.
 The `local` environment variable will allow your local app to bypass auth and mock most lambda requests.
 

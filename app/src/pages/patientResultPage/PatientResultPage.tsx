@@ -8,7 +8,6 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
-import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 import useTitle from '../../helpers/hooks/useTitle';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 
@@ -80,13 +79,13 @@ function PatientResultPage() {
                 {isGp && (
                     <>
                         <p id="gp-message">
-                          This page displays the current data recorded in the Patient Demographic Service 
-                          for this patient.
+                            This page displays the current data recorded in the Patient Demographic
+                            Service for this patient.
                         </p>
                     </>
                 )}
                 <Button type="submit" id="verify-submit" className="nhsuk-u-margin-top-6">
-                  Confirm patient details and continue
+                    Confirm patient details and continue
                 </Button>
             </form>
         </div>
