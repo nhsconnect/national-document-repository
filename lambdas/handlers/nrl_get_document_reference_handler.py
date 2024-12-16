@@ -29,12 +29,12 @@ def lambda_handler(event, context):
     configuration_service.set_auth_ssm_prefix()
     try:
         get_document_service = NRLGetDocumentReferenceService()
-        placeholder = get_document_service.handle_get_document_reference_request(
+        document_ref = get_document_service.handle_get_document_reference_request(
             document_id, bearer_token
         )
 
         return ApiGatewayResponse(
-            status_code=200, body=placeholder, methods="GET"
+            status_code=200, body=document_ref, methods="GET"
         ).create_api_gateway_response()
     except NRLGetDocumentReferenceException as e:
         return ApiGatewayResponse(

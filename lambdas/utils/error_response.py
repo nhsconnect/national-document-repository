@@ -1,6 +1,6 @@
 import json
 
-from fhir.resources.R4B.operationoutcome import OperationOutcome
+from fhir.resources.R4B.operationoutcome import OperationOutcome, OperationOutcomeIssue
 
 
 class ErrorResponse:
@@ -20,9 +20,11 @@ class ErrorResponse:
 
     def create_error_fhir_response(self) -> str:
         operation_outcome = OperationOutcome.construct()
-        operation_outcome.severity = "error"
-        operation_outcome.code = self.err_code
-        operation_outcome.details = self.message
+        operation_outcome.issue = list()
+        issue = OperationOutcomeIssue.construct(
+            code=self.err_code, details=self.message, severity="error"
+        )
+        operation_outcome.issue.append(issue)
         return operation_outcome.json()
 
     def __eq__(self, other):
