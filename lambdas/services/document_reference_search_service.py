@@ -49,10 +49,21 @@ class DocumentReferenceSearchService(DocumentService):
                         423, LambdaError.UploadInProgressError
                     )
                 results.extend(
-                    document.model_dump(
-                        include={"file_name", "created", "virus_scanner_result", "id"},
-                        by_alias=True,
-                    )
+                    {
+                        **document.model_dump(
+                            include={
+                                "file_name",
+                                "created",
+                                "virus_scanner_result",
+                                "id",
+                            },
+                            by_alias=True,
+                        ),
+                        "fileSize": self.s3_service.get_file_size(
+                            bucket_name=document.get_file_bucket(),
+                            object_key=document.get_file_key(),
+                        ),
+                    }
                     for document in documents
                 )
             return results
