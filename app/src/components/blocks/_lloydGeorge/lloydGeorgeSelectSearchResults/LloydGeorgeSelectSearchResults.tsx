@@ -153,7 +153,7 @@ const AvailableFilesTable = ({
                                 id={'available-files-row-' + index + '-file-size'}
                                 data-testid="file-size"
                             >
-                                {result.fileSize}
+                                {formatFileSize(result.fileSize)}
                             </Table.Cell>
                         </Table.Row>
                     ))}

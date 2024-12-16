@@ -57,6 +57,20 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(screen.getByTestId('toggle-selection-btn')).toBeInTheDocument();
         });
 
+        it('renders the correct table headers', () => {
+            renderComponent({ selectedDocuments: mockSelectedDocuments });
+
+            const headers = screen.getAllByRole('columnheader');
+            const expectedHeaders = ['Selected', 'Filename', 'Upload date', 'File Size'];
+
+            expectedHeaders.forEach((headerText, index) => {
+                expect(headers[index]).toHaveTextContent(headerText);
+            });
+
+            const filesTable = screen.getByTestId('available-files-table-title');
+            expect(filesTable).toHaveTextContent(/bytes|KB|MB|GB/);
+        });
+
         it('shows error box when download selected files button is clicked but no files selected', async () => {
             renderComponent({ selectedDocuments: [] });
 
