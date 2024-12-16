@@ -5,7 +5,6 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import LloydGeorgeSelectSearchResults, { Props } from './LloydGeorgeSelectSearchResults';
 import userEvent from '@testing-library/user-event';
-import { routes } from '../../../../types/generic/routes';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
@@ -61,7 +60,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             renderComponent({ selectedDocuments: mockSelectedDocuments });
 
             const headers = screen.getAllByRole('columnheader');
-            const expectedHeaders = ['Selected', 'Filename', 'Upload date', 'File Size'];
+            const expectedHeaders = ['Selected', 'Filename', 'Upload date', 'File size'];
 
             expectedHeaders.forEach((headerText, index) => {
                 expect(headers[index]).toHaveTextContent(headerText);
