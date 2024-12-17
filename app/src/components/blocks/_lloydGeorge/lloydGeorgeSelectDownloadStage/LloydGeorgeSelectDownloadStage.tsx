@@ -86,7 +86,6 @@ function LloydGeorgeSelectDownloadStage({
         const onPageLoad = async () => {
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING);
             if (!nhsNumber) {
-                // TODO PRMP-1074 check that this doesn't break the local, mocked behaviour
                 navigate(routes.SEARCH_PATIENT);
                 return;
             }
