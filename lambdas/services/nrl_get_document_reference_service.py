@@ -122,11 +122,8 @@ class NRLGetDocumentReferenceService:
             if role_code.startswith("R"):
                 return role_code
 
-    def patient_is_inactive(self, current_gp_ods_code):
-        try:
-            return current_gp_ods_code in PatientOdsInactiveStatus
-        except TypeError:
-            return False
+    def patient_is_inactive(self, current_gp_ods_code: str):
+        return current_gp_ods_code in PatientOdsInactiveStatus.__members__.values()
 
     def get_document_references(self, document_id: str) -> DocumentReference:
         documents = self.document_service.fetch_documents_from_table(

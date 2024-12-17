@@ -3,6 +3,8 @@ from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
 from tests.unit.conftest import FAKE_URL, TEST_CURRENT_GP_ODS, TEST_UUID
 from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
+from unit.helpers.mock_response import MockResponse
+from utils.constants.ssm import GP_ADMIN_USER_ROLE_CODES, GP_CLINICAL_USER_ROLE_CODE
 from utils.lambda_exceptions import NRLGetDocumentReferenceException
 
 MOCK_USER_INFO = {
@@ -51,7 +53,6 @@ def patched_service(mocker, set_env, context):
     mocker.patch.object(service, "s3_service")
     mocker.patch.object(service, "pds_service")
     mocker.patch.object(service, "document_service")
-    mocker.patch.object(service, "get_ndr_accepted_role_codes")
     yield service
 
 
@@ -62,6 +63,7 @@ def mock_fetch_user_info(patched_service, mocker):
     mocker.patch.object(service, "fetch_user_info")
     mocker.patch.object(service, "get_patient_current_gp_ods")
     mocker.patch.object(service, "patient_is_inactive")
+    mocker.patch.object(service, "get_ndr_accepted_role_codes")
     yield service
 
 
@@ -209,4 +211,75 @@ def test_user_allowed_to_see_file_inactive_patient(
             TEST_UUID, create_test_doc_store_refs()[0]
         )
         is False
+    )
+
+
+def test_fetch_user_info(patched_service, mocker, mock_userinfo):
+    mock_response = MockResponse(status_code=200, json_data=mock_userinfo["user_info"])
+    mocker.patch("requests.get", return_value=mock_response)
+    mock_token = "access_token"
+    actual = patched_service.fetch_user_info(mock_token)
+
+    assert actual == mock_userinfo["user_info"]
+
+
+def test_fetch_user_info_throws_exception_for_non_200_response(patched_service, mocker):
+    mock_response = MockResponse(status_code=400, json_data="")
+    mocker.patch("requests.get", return_value=mock_response)
+
+    with pytest.raises(NRLGetDocumentReferenceException):
+        patched_service.fetch_user_info("access_token")
+
+
+def test_get_ndr_accepted_role_codes(patched_service, mocker):
+    parameters = [
+        GP_ADMIN_USER_ROLE_CODES,
+        GP_CLINICAL_USER_ROLE_CODE,
+    ]
+    ssm_parameters_expected = {
+        GP_ADMIN_USER_ROLE_CODES: "R1111,R1112,R1113",
+        GP_CLINICAL_USER_ROLE_CODE: "R2111,R2112,R2113",
+    }
+    patched_service.ssm_service.get_ssm_parameters = mocker.MagicMock(
+        return_value=ssm_parameters_expected
+    )
+
+    actual = patched_service.get_ndr_accepted_role_codes()
+
+    patched_service.ssm_service.get_ssm_parameters.assert_called_with(
+        parameters_keys=parameters
+    )
+    assert actual == ["R1111", "R1112", "R1113", "R2111", "R2112", "R2113"]
+
+
+@pytest.mark.parametrize(
+    "input_gp_ods_code, expected",
+    [
+        ("REST", True),
+        ("Y12345", False),
+    ],
+)
+def test_patient_is_inactive(patched_service, input_gp_ods_code, expected):
+    actual = patched_service.patient_is_inactive(input_gp_ods_code)
+    assert actual is expected
+
+
+def test_create_document_presigned_url(patched_service, mocker):
+    expected_url = "https://d12345.cloudfront.net/path/to/resource"
+
+    patched_service.s3_service.create_download_presigned_url.return_value = (
+        "https://example.com/path/to/resource"
+    )
+    mocker.patch(
+        "services.nrl_get_document_reference_service.format_cloudfront_url"
+    ).return_value = "https://d12345.cloudfront.net/path/to/resource"
+
+    result = patched_service.create_document_presigned_url(
+        create_test_doc_store_refs()[0]
+    )
+    assert result == expected_url
+
+    patched_service.s3_service.create_download_presigned_url.assert_called_once_with(
+        s3_bucket_name="test-s3-bucket",
+        file_key="9000000009/test-key-123",
     )
