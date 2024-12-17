@@ -115,6 +115,7 @@ function PatientSearchPage() {
                     <Input
                         id="nhs-number-input"
                         data-testid="nhs-number-input"
+                        className="nhsuk-input--width-10"
                         label="Enter NHS number"
                         hint="A 10-digit number, for example, 485 777 3456"
                         type="text"
