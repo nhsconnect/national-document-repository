@@ -60,7 +60,7 @@ class DocumentReferenceSearchService(DocumentService):
                             by_alias=True,
                         ),
                         "fileSize": self.s3_service.get_file_size(
-                            bucket_name=document.get_file_bucket(),
+                            s3_bucket_name=document.get_file_bucket(),
                             object_key=document.get_file_key(),
                         ),
                     }
