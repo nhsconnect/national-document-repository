@@ -139,3 +139,7 @@ class S3Service:
         for paginated_result in s3_paginator.paginate(Bucket=bucket_name):
             s3_list_objects_result += paginated_result.get("Contents", [])
         return s3_list_objects_result
+
+    def get_file_size(self, s3_bucket_name: str, object_key: str) -> int:
+        response = self.client.head_object(Bucket=s3_bucket_name, Key=object_key)
+        return response.get("ContentLength", 0)
