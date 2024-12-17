@@ -1,6 +1,7 @@
 import React from 'react';
 import { Footer as NHSFooter } from 'nhsuk-react-components';
 import { routes } from '../../../types/generic/routes';
+import ServiceUpdatesLink from '../../generic/serviceUpdatesLink/ServiceUpdatesLink';
 
 function Footer() {
     return (
@@ -15,6 +16,7 @@ function Footer() {
                 >
                     Privacy notice
                 </NHSFooter.ListItem>
+                <ServiceUpdatesLink />
             </NHSFooter.List>
             <NHSFooter.Copyright>&copy; {'Crown copyright'}</NHSFooter.Copyright>
         </NHSFooter>
