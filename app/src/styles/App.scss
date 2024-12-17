@@ -678,9 +678,16 @@ $hunit: '%';
     }
 
     &_item {
-        a,
-        a:hover {
+
+        a {
             color: $color_nhsuk-white;
+            text-decoration: underline;
+            text-decoration-color: $color_nhsuk-white;
+            text-underline-offset: 2px;
+        }
+
+        a:hover {
+            text-decoration: none;
         }
 
         a:visited {
@@ -690,7 +697,9 @@ $hunit: '%';
         &--desktop {
             margin: 0 2rem;
         }
+
     }
+
 }
 
 // Generic
