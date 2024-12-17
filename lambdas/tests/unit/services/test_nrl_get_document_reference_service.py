@@ -3,7 +3,7 @@ from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
 from tests.unit.conftest import FAKE_URL, TEST_CURRENT_GP_ODS, TEST_UUID
 from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
-from unit.helpers.mock_response import MockResponse
+from tests.unit.helpers.mock_response import MockResponse
 from utils.constants.ssm import GP_ADMIN_USER_ROLE_CODES, GP_CLINICAL_USER_ROLE_CODE
 from utils.lambda_exceptions import NRLGetDocumentReferenceException
 
