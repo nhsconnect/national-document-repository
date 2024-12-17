@@ -1,7 +1,7 @@
 import json
 
 from enums.nrl_sqs_upload import NrlActionTypes
-from models.nrl_fhir_document_reference import FhirDocumentReference
+from models.fhir.R4.nrl_fhir_document_reference import FhirDocumentReference
 from models.nrl_sqs_message import NrlSqsMessage
 from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService

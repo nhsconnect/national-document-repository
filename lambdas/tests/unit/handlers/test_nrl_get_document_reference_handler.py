@@ -39,11 +39,27 @@ def test_lambda_handler_happy_path(set_env, mock_service, context):
 def test_lambda_handler_error(set_env, mock_service, context):
     expected_exception = {
         "resourceType": "OperationOutcome",
-        "issue": [{"severity": "error", "code": "AB_XXXX", "details": "Client error"}],
+        "issue": [
+            {
+                "severity": "error",
+                "code": "exception",
+                "details": {
+                    "coding": [
+                        {
+                            "system": "http://hl7.org/fhir/issue-type",
+                            "code": "forbidden",
+                            "display": "Forbidden",
+                        }
+                    ],
+                },
+                "diagnostics": "Client error",
+            }
+        ],
     }
+
     mock_service.handle_get_document_reference_request.side_effect = (
         NRLGetDocumentReferenceException(400, LambdaError.MockError)
     )
     response = lambda_handler(MOCK_VALID_EVENT, context)
     assert response["statusCode"] == 400
-    assert response["body"] == json.dumps(expected_exception)
+    assert json.loads(response["body"]) == expected_exception

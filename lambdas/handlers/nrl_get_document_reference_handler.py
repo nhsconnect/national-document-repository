@@ -39,6 +39,8 @@ def lambda_handler(event, context):
     except NRLGetDocumentReferenceException as e:
         return ApiGatewayResponse(
             status_code=e.status_code,
-            body=e.error.create_error_response().create_error_fhir_response(),
+            body=e.error.create_error_response().create_error_fhir_response(
+                e.error.value.get("fhir_coding")
+            ),
             methods="GET",
         ).create_api_gateway_response()

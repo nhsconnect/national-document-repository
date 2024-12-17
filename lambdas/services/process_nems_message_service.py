@@ -3,8 +3,8 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import ParseError
 
 from botocore.exceptions import ClientError
-from enums.fhir_resource_message_types import FHIR_RESOURCE_MESSAGE_TYPES
-from enums.fhir_resource_types import FHIR_RESOURCE_TYPES
+from enums.fhir.fhir_resource_message_types import FHIR_RESOURCE_MESSAGE_TYPES
+from enums.fhir.fhir_resource_types import FHIR_RESOURCE_TYPES
 from enums.nems_error_types import NEMS_ERROR_TYPES
 from fhir.resources.STU3.bundle import Bundle
 from pydantic import ValidationError as PydanticValidationError

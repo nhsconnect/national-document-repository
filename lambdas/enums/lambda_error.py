@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Optional
 
+from enums.fhir.fhir_issue_type import FhirIssueCoding
 from utils.error_response import ErrorResponse
 from utils.request_context import request_context
 
@@ -11,7 +12,6 @@ class LambdaError(Enum):
         message = self.value["message"]
         if "%" in message and params:
             message = message % params
-
         interaction_id = getattr(request_context, "request_id", None)
         error_response = ErrorResponse(
             err_code=err_code, message=message, interaction_id=interaction_id
@@ -399,14 +399,17 @@ class LambdaError(Enum):
     DocumentReferenceNotFound = {
         "err_code": "NRL_DR_4041",
         "message": "Document reference not found",
+        "fhir_coding": FhirIssueCoding.NOT_FOUND,
     }
     DocumentReferenceGeneralError = {
-        "err_code": "NRL_DR_4041",
+        "err_code": "NRL_DR_4031",
         "message": "An error occurred while fetching the document",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
     DocumentReferenceUnauthorised = {
-        "err_code": "NRL_DR_4031",
+        "err_code": "NRL_DR_4011",
         "message": "User is unauthorised to view record",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
     """
         Edge Lambda Errors
@@ -492,6 +495,7 @@ class LambdaError(Enum):
         "message": "Client error",
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
 
     """

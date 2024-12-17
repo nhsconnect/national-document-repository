@@ -4,7 +4,7 @@ import requests
 from enums.lambda_error import LambdaError
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from models.document_reference import DocumentReference
-from models.nrl_fhir_document_reference import FhirDocumentReference
+from models.fhir.R4.nrl_fhir_document_reference import FhirDocumentReference
 from models.nrl_sqs_message import NrlAttachment
 from requests.exceptions import HTTPError
 from services.base.s3_service import S3Service
