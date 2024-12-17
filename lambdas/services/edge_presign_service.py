@@ -20,6 +20,7 @@ class EdgePresignService:
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
     def use_presign(self, request_values: dict):
+        logger.info("use presign")
         uri: str = request_values["uri"]
         querystring: str = request_values["querystring"]
         domain_name: str = request_values["domain_name"]
@@ -35,6 +36,7 @@ class EdgePresignService:
 
     def attempt_presign_ingestion(self, uri_hash: str, domain_name: str) -> None:
         try:
+            logger.info(f"attempting presign ingestion for {domain_name}")
             environment = self.filter_domain_for_env(domain_name)
             logger.info(f"Environment found: {environment}")
             base_table_name: str = self.ssm_service.get_ssm_parameter(
