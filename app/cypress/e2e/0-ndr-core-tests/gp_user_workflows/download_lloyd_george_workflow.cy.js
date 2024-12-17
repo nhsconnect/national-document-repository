@@ -19,18 +19,21 @@ const testFiles = [
         created: '2024-05-07T14:52:00.827602Z',
         virusScannerResult: 'Clean',
         id: 'test-id',
+        fileSize: 200,
     },
     {
         fileName: '2of2_testy_test.pdf',
         created: '2024-05-07T14:52:00.827602Z',
         virusScannerResult: 'Clean',
         id: 'test-id-2',
+        fileSize: 200,
     },
     {
         fileName: '1of1_lone_test_file.pdf',
         created: '2024-01-01T14:52:00.827602Z',
         virusScannerResult: 'Clean',
         id: 'test-id-3',
+        fileSize: 200,
     },
 ];
 
@@ -40,6 +43,7 @@ const singleTestFile = [
         created: '2024-01-01T14:52:00.827602Z',
         virusScannerResult: 'Clean',
         id: 'test-id-3',
+        fileSize: 200,
     },
 ];
 
