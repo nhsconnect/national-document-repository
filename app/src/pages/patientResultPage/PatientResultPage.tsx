@@ -47,7 +47,7 @@ function PatientResultPage() {
     useTitle({ pageTitle: pageHeader });
     return (
         <div style={{ maxWidth: 730 }}>
-            <BackButton />
+            <BackButton toLocation={routes.SEARCH_PATIENT} />
             {inputError && (
                 <ErrorBox
                     messageTitle={'There is a problem'}
