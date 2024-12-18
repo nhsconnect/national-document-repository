@@ -7,7 +7,7 @@ const ServiceUpdatesLink = () => {
             data-testid="service-updates-link"
             rel="noopener"
             target="_blank"
-            aria-label="(Service updates - Opens in a new tab)"
+            aria-label="Service updates - Opens in a new tab"
         >
             Service updates
         </NHSFooter.ListItem>
