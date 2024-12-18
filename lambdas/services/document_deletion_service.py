@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.s3_lifecycle_tags import S3LifecycleTags
-from enums.snomed_codes import SnomedCodesCategory, SnomedCodesType
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.nrl_sqs_message import NrlSqsMessage
@@ -91,13 +91,13 @@ class DocumentDeletionService:
         delete_nrl_message = NrlSqsMessage(
             nhs_number=nhs_number,
             action=NrlActionTypes.DELETE,
-            snomed_code_doc_type=SnomedCodesType.LLOYD_GEORGE,
-            snomed_code_category=SnomedCodesCategory.CARE_PLAN,
+            snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+            snomed_code_category=SnomedCodes.CARE_PLAN.value,
         )
         sqs_group_id = f"NRL_delete_{uuid.uuid4()}"
         nrl_queue_url = os.environ["NRL_SQS_QUEUE_URL"]
         self.sqs_service.send_message_fifo(
             queue_url=nrl_queue_url,
-            message_body=delete_nrl_message.model_dump_json(),
+            message_body=delete_nrl_message.model_dump_json(exclude_unset=True),
             group_id=sqs_group_id,
         )

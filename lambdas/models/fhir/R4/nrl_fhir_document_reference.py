@@ -1,6 +1,6 @@
 from typing import Optional
 
-from enums.snomed_codes import SnomedCodesCategory, SnomedCodesType
+from enums.snomed_codes import SnomedCode, SnomedCodes
 from models.nrl_sqs_message import NrlAttachment
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -10,9 +10,11 @@ class FhirDocumentReference(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel)
     nhs_number: str
     custodian: str
-    snomed_code_doc_type: str = SnomedCodesType.LLOYD_GEORGE
-    snomed_code_category: str = SnomedCodesCategory.CARE_PLAN
-    snomed_code_category_display: str = "Care plan"
+    snomed_code_doc_type: SnomedCode = SnomedCodes.LLOYD_GEORGE.value
+    snomed_code_category: SnomedCode = SnomedCodes.CARE_PLAN.value
+    snomed_code_practice_setting: SnomedCode = (
+        SnomedCodes.GENERAL_MEDICAL_PRACTICE.value
+    )
     attachment: Optional[NrlAttachment] = NrlAttachment()
 
     def build_fhir_dict(self):
@@ -36,7 +38,8 @@ class FhirDocumentReference(BaseModel):
                 "coding": [
                     {
                         "system": snomed_url,
-                        "code": self.snomed_code_doc_type,
+                        "code": self.snomed_code_doc_type.code,
+                        "display": self.snomed_code_doc_type.display_name,
                     }
                 ]
             },
@@ -45,8 +48,8 @@ class FhirDocumentReference(BaseModel):
                     "coding": [
                         {
                             "system": snomed_url,
-                            "code": self.snomed_code_category,
-                            "display": self.snomed_code_category_display,
+                            "code": self.snomed_code_category.code,
+                            "display": self.snomed_code_category.display_name,
                         }
                     ]
                 }
@@ -72,5 +75,16 @@ class FhirDocumentReference(BaseModel):
                     },
                 }
             ],
+            "context": {
+                "practiceSetting": {
+                    "coding": [
+                        {
+                            "system": snomed_url,
+                            "code": self.snomed_code_practice_setting.code,
+                            "display": self.snomed_code_practice_setting.display_name,
+                        }
+                    ]
+                }
+            },
         }
         return structure_json
