@@ -41,15 +41,13 @@ function LloydGeorgeDownloadStage({
         filename: '',
     });
     const linkRef = useRef<HTMLAnchorElement | null>(null);
-
+    const pageDownloadCountId = 'download-file-header-' + numberOfFiles + '-files';
     const mounted = useRef(false);
     const navigate = useNavigate();
     const { mockLocal } = useConfig();
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
-
-    const pageDownloadCountId = 'download-file-header-' + numberOfFiles + '-files';
 
     const progressTimer = useMemo(() => {
         return new FakeProgress({
@@ -145,7 +143,6 @@ function LloydGeorgeDownloadStage({
         navigate,
         mockLocal,
         selectedDocuments,
-        numberOfFiles,
     ]);
 
     const pageHeader = 'Downloading documents';
