@@ -3,8 +3,8 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import ParseError
 
 from botocore.exceptions import ClientError
-from enums.fhir_resource_message_types import FHIR_RESOURCE_MESSAGE_TYPES
-from enums.fhir_resource_types import FHIR_RESOURCE_TYPES
+from enums.fhir.fhir_resource_message_types import FHIR_RESOURCE_MESSAGE_TYPES
+from enums.fhir.fhir_resource_types import FHIR_RESOURCE_TYPES
 from enums.nems_error_types import NEMS_ERROR_TYPES
 from fhir.resources.STU3.bundle import Bundle
 from pydantic import ValidationError as PydanticValidationError
@@ -164,7 +164,7 @@ class ProcessNemsMessageService:
 
     def update_LG_table_with_current_GP(self, nhs_number: str, new_ods_code: str):
         logger.info("getting record from DB")
-        documents = self.document_service.fetch_documents_from_table(
+        documents = self.document_service.fetch_documents_from_table_with_nhs_number(
             nhs_number, self.table
         )
         if documents:
