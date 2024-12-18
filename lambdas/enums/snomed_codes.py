@@ -14,5 +14,5 @@ class SnomedCodes(Enum):
     )
     CARE_PLAN = SnomedCode(code="734163000", display_name="Care plan")
     GENERAL_MEDICAL_PRACTICE = SnomedCode(
-        code="408443003", display_name="General medical practice"
+        code="1060971000000108", display_name="General practice service"
     )
