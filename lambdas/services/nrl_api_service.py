@@ -1,6 +1,6 @@
-import datetime
 import os
 import uuid
+from datetime import datetime
 
 import requests
 from enums.snomed_codes import SnomedCode
