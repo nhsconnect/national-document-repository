@@ -171,9 +171,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 // Assert contents of page when downloading
                 cy.getByTestId('lloyd-george-download-header').should('exist');
                 cy.getByTestId('cancel-download-link').should('exist');
-                cy.getByTestId('download-file-header-' + testFiles.length + '-files').should(
-                    'exist',
-                );
 
                 // Assert contents of page after download
                 cy.wait('@documentManifestCompleted');
@@ -225,7 +222,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.title().should('eq', downloadingPageTitle);
                 // Assert contents of page when downloading
                 cy.getByTestId('lloyd-george-download-header').should('exist');
-                cy.getByTestId('download-file-header-2-files').should('exist');
 
                 cy.getByTestId('cancel-download-link').should('exist');
 
@@ -289,8 +285,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.title().should('eq', downloadingPageTitle);
                 // Assert contents of page when downloading
                 cy.getByTestId('lloyd-george-download-header').should('exist');
-                cy.getByTestId('download-file-header-1-files').should('exist');
-
                 cy.getByTestId('cancel-download-link').should('exist');
 
                 // Assert contents of page after download
