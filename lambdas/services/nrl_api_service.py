@@ -48,9 +48,9 @@ class NrlApiService:
                 url=self.endpoint, headers=self.headers, json=body
             )
             logger.info(
-                f"Create pointer response: Status code: ${response.status_code}, "
+                f"Create pointer response: Status code: {response.status_code}, "
                 f"Body: {response.json()}, "
-                f"Date: ${response.headers.get('date', 'No date found.')}"
+                f"Date: {response.headers.get('date', 'No date found.')}"
             )
             response.raise_for_status()
             logger.info("Successfully created new pointer")
