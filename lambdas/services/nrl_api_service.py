@@ -1,3 +1,4 @@
+import datetime
 import os
 import uuid
 
@@ -10,6 +11,7 @@ from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NrlApiException
 
 logger = LoggingService(__name__)
+NRL_USER_ID = "National-Document-Repository"
 
 
 class NrlApiService:
@@ -45,6 +47,11 @@ class NrlApiService:
             response = self.session.post(
                 url=self.endpoint, headers=self.headers, json=body
             )
+            logger.info(
+                f"Create pointer response: Status code: ${response.status_code}, "
+                f"Body: {response.json()}, "
+                f"Date: ${response.headers.get('date', 'No date found.')}"
+            )
             response.raise_for_status()
             logger.info("Successfully created new pointer")
         except (ConnectionError, Timeout, HTTPError) as e:
@@ -70,6 +77,18 @@ class NrlApiService:
             response = self.session.get(
                 url=self.endpoint, params=params, headers=self.headers
             )
+            logger.info(
+                f"Get pointer request: URL: {self.endpoint}/{params}, "
+                "HTTP Verb: GET, "
+                f"ODS Code: {self.end_user_ods_code}, "
+                f"Datetime: {int(datetime.now().timestamp())}, "
+                f"UserID: {self.end_user_ods_code} - {NRL_USER_ID}"
+            )
+            logger.info(
+                f"Get pointer response: Status code: {response.status_code}, "
+                f"Body: {response.json()}, "
+                f"Date: {response.headers.get('date', 'No date found.')}"
+            )
             response.raise_for_status()
             return response.json()
         except HTTPError as e:
@@ -90,7 +109,19 @@ class NrlApiService:
             url_endpoint = self.endpoint + f"/{pointer_id}"
             try:
                 response = self.session.delete(url=url_endpoint, headers=self.headers)
-                logger.info(response.json())
+                logger.info(
+                    f"Delete pointer request: URL: {url_endpoint}, "
+                    f"HTTP Verb: DELETE, "
+                    f"ODS Code: {self.end_user_ods_code}, "
+                    f"NHS Number: {nhs_number}, "
+                    f"Datetime: {int(datetime.now().timestamp())}, "
+                    f"UserID: {self.end_user_ods_code} - {NRL_USER_ID}."
+                )
+                logger.info(
+                    f"Delete pointer response: Body: {response.json()}, "
+                    f"Status Code: {response.status_code}, "
+                    f"Date: {response.headers.get('date', 'No date found.')}"
+                )
                 response.raise_for_status()
             except HTTPError as e:
                 logger.error(e.response.json())
