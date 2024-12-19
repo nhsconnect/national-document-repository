@@ -793,6 +793,10 @@ $hunit: '%';
     border: none;
 }
 
+.govuk-phase-banner__content__tag {
+    text-transform: none;
+}
+
 .govuk-warning-text__icon {
     border: 3px solid $color_nhsuk-yellow;
     background: $color_nhsuk-yellow;
