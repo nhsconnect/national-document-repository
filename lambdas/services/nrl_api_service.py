@@ -50,7 +50,7 @@ class NrlApiService:
             logger.info(
                 f"Create pointer response: Status code: {response.status_code}, "
                 f"Body: {response.json()}, "
-                f"Date: {response.headers.get('date', 'No date found.')}"
+                f"Headers: {response.headers}"
             )
             response.raise_for_status()
             logger.info("Successfully created new pointer")
@@ -87,7 +87,7 @@ class NrlApiService:
             logger.info(
                 f"Get pointer response: Status code: {response.status_code}, "
                 f"Body: {response.json()}, "
-                f"Date: {response.headers.get('date', 'No date found.')}"
+                f"Headers: {response.headers}"
             )
             response.raise_for_status()
             return response.json()
@@ -120,7 +120,7 @@ class NrlApiService:
                 logger.info(
                     f"Delete pointer response: Body: {response.json()}, "
                     f"Status Code: {response.status_code}, "
-                    f"Date: {response.headers.get('date', 'No date found.')}"
+                    f"Headers: {response.headers}"
                 )
                 response.raise_for_status()
             except HTTPError as e:
