@@ -8,7 +8,6 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
-import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 import useTitle from '../../helpers/hooks/useTitle';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 
@@ -44,11 +43,11 @@ function PatientResultPage() {
     };
     const showWarning = patientDetails?.superseded || patientDetails?.restricted;
     const isGp = userIsGPAdmin || userIsGPClinical;
-    const pageHeader = 'Verify patient details';
+    const pageHeader = 'Patient details';
     useTitle({ pageTitle: pageHeader });
     return (
         <div style={{ maxWidth: 730 }}>
-            <BackButton />
+            <BackButton toLocation={routes.SEARCH_PATIENT} />
             {inputError && (
                 <ErrorBox
                     messageTitle={'There is a problem'}
@@ -80,18 +79,15 @@ function PatientResultPage() {
                 {isGp && (
                     <>
                         <p id="gp-message">
-                            Check these patient details match the records or attachments you plan to
-                            use
+                            This page displays the current data recorded in the Patient Demographic
+                            Service for this patient.
                         </p>
                     </>
                 )}
-                <Button type="submit" id="verify-submit">
-                    Accept details are correct
+                <Button type="submit" id="verify-submit" className="nhsuk-u-margin-top-6">
+                    Confirm patient details and continue
                 </Button>
             </form>
-            <p>
-                If patient details are incorrect, please contact the <ServiceDeskLink />
-            </p>
         </div>
     );
 }
