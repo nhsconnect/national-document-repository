@@ -1,8 +1,8 @@
 import os
 import uuid
-from datetime import datetime
 
 import requests
+from enums.snomed_codes import SnomedCode
 from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 from urllib3 import Retry
@@ -10,8 +10,6 @@ from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NrlApiException
 
 logger = LoggingService(__name__)
-
-NRL_USER_ID = "National-Document-Repository"
 
 
 class NrlApiService:
@@ -44,17 +42,10 @@ class NrlApiService:
     def create_new_pointer(self, body, retry_on_expired: bool = True):
         try:
             self.set_x_request_id()
-
             response = self.session.post(
                 url=self.endpoint, headers=self.headers, json=body
             )
             response.raise_for_status()
-            logger.info(
-                f"Create pointer response: Status code: ${response.status_code} \r"
-                f"Body: {response.json()}, \r"
-                f"Date: ${response.headers.get('date', 'No date found.')}"
-            )
-
             logger.info("Successfully created new pointer")
         except (ConnectionError, Timeout, HTTPError) as e:
             logger.error(e.response.content)
@@ -66,32 +57,20 @@ class NrlApiService:
             else:
                 raise NrlApiException("Error while creating new NRL Pointer")
 
-    def get_pointer(self, nhs_number, record_type=None, retry_on_expired: bool = True):
-
+    def get_pointer(
+        self, nhs_number, record_type: SnomedCode = None, retry_on_expired: bool = True
+    ):
         try:
             self.set_x_request_id()
             params = {
                 "subject:identifier": f"https://fhir.nhs.uk/Id/nhs-number|{nhs_number}"
             }
             if record_type:
-                params["type"] = f"http://snomed.info/sct|{record_type}"
+                params["type"] = f"http://snomed.info/sct|{record_type.code}"
             response = self.session.get(
                 url=self.endpoint, params=params, headers=self.headers
             )
-            logger.info(
-                f"Get pointer request: URL: {self.endpoint}/{params}, \r"
-                "HTTP Verb: GET, \r"
-                f"ODS Code: {self.end_user_ods_code}, \r"
-                f"Datetime: {int(datetime.now().timestamp())}, \r"
-                f"UserID: {self.end_user_ods_code} - {NRL_USER_ID}"
-            )
-
             response.raise_for_status()
-            logger.info(
-                f"Get pointer response: Status code: {response.status_code}, \r"
-                f"Body: {response.json()}, \r"
-                f"Date: {response.headers.get('date', 'No date found.')}"
-            )
             return response.json()
         except HTTPError as e:
             logger.error(e.response.json())
@@ -103,28 +82,16 @@ class NrlApiService:
             else:
                 raise NrlApiException("Error while getting NRL Pointer")
 
-    def delete_pointer(self, nhs_number, record_type):
+    def delete_pointer(self, nhs_number, record_type: SnomedCode = None):
         search_results = self.get_pointer(nhs_number, record_type).get("entry", [])
         for entry in search_results:
             self.set_x_request_id()
             pointer_id = entry.get("resource", {}).get("id")
             url_endpoint = self.endpoint + f"/{pointer_id}"
-            logger.info(
-                f"Delete pointer request: URL: {url_endpoint}, \r"
-                f"HTTP Verb: DELETE, \r"
-                f"ODS Code: {self.end_user_ods_code}, \r"
-                f"NHS Number: {nhs_number}, \r"
-                f"Datetime: {int(datetime.now().timestamp())}, \r"
-                f"UserID: {self.end_user_ods_code} - {NRL_USER_ID}"
-            )
             try:
                 response = self.session.delete(url=url_endpoint, headers=self.headers)
+                logger.info(response.json())
                 response.raise_for_status()
-                logger.info(
-                    f"Delete pointer response: Body: {response.json()}, \r"
-                    f"Status Code: {response.status_code}, \r"
-                    f"Date: {response.headers.get('date', 'No date found.')}"
-                )
             except HTTPError as e:
                 logger.error(e.response.json())
                 if e.response.status_code == 401:
