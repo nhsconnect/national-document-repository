@@ -22,7 +22,7 @@ describe('Footer', () => {
                 'href',
                 routes.PRIVACY_POLICY,
             );
-            expect(screen.getByTestId('privacy-link')).toHaveAttribute('rel', 'opener');
+            expect(screen.getByTestId('privacy-link')).toHaveAttribute('rel', 'noopener');
             expect(screen.getByTestId('privacy-link')).toHaveAttribute('target', '_blank');
         });
     });
