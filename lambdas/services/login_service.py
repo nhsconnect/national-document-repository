@@ -177,7 +177,6 @@ class LoginService:
                 organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
             ):
                 return RepositoryRole.GP_ADMIN
-            return RepositoryRole.NONE
 
         if (
             smartcard_role
@@ -188,7 +187,6 @@ class LoginService:
                 organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
             ):
                 return RepositoryRole.GP_CLINICAL
-            return RepositoryRole.NONE
 
         if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
             logger.info("PCSE: smartcard ODS identified")
@@ -196,7 +194,6 @@ class LoginService:
                 organisation, self.token_handler_ssm_service.get_org_ods_codes()[0]
             ):
                 return RepositoryRole.PCSE
-            return RepositoryRole.NONE
 
         logger.error(
             f"{LambdaError.LoginNoRole.to_str()}", {"Result": "Unsuccessful login"}

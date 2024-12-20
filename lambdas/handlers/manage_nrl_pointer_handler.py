@@ -1,5 +1,6 @@
 import json
 
+from enums.nrl_sqs_upload import NrlActionTypes
 from models.nrl_fhir_document_reference import FhirDocumentReference
 from models.nrl_sqs_message import NrlSqsMessage
 from services.base.nhs_oauth_service import NhsOauthService
@@ -31,11 +32,7 @@ def lambda_handler(event, context):
     ssm_service = SSMService()
     oauth_service = NhsOauthService(ssm_service)
     nrl_api_service = NrlApiService(ssm_service, oauth_service)
-    actions_options = {
-        "POST": nrl_api_service.create_new_pointer,
-        "UPDATE": nrl_api_service.update_pointer,
-        "DELETE": nrl_api_service.delete_pointer,
-    }
+
     unhandled_messages = []
 
     for sqs_message in sqs_messages:
@@ -48,16 +45,24 @@ def lambda_handler(event, context):
                 f"Processing SQS message for nhs number: {nrl_message.nhs_number}"
             )
             nrl_verified_message = nrl_message.model_dump(
-                by_alias=True, exclude_none=True, exclude_defaults=True
+                by_alias=True, exclude_none=True
             )
-            document = (
-                FhirDocumentReference(
-                    **nrl_verified_message, custodian=nrl_api_service.end_user_ods_code
-                )
-                .build_fhir_dict()
-                .json()
-            )
-            actions_options[nrl_message.action](json.loads(document))
+            match nrl_message.action:
+                case NrlActionTypes.CREATE:
+                    document = (
+                        FhirDocumentReference(
+                            **nrl_verified_message,
+                            custodian=nrl_api_service.end_user_ods_code,
+                        )
+                        .build_fhir_dict()
+                        .json()
+                    )
+
+                    nrl_api_service.create_new_pointer(json.loads(document))
+                case NrlActionTypes.DELETE:
+                    nrl_api_service.delete_pointer(
+                        nrl_message.nhs_number, nrl_message.snomed_code_doc_type
+                    )
         except Exception as error:
             unhandled_messages.append(sqs_message)
             logger.info(f"Failed to process current message due to error: {error}")

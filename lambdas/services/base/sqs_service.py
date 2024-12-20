@@ -8,6 +8,11 @@ class SQSService:
         self.client = boto3.client("sqs", config=config)
         super().__init__(*args, **kwargs)
 
+    def send_message_fifo(self, queue_url: str, message_body: str, group_id: str):
+        self.client.send_message(
+            QueueUrl=queue_url, MessageBody=message_body, MessageGroupId=group_id
+        )
+
     def send_message_standard(self, queue_url: str, message_body: str):
         self.client.send_message(QueueUrl=queue_url, MessageBody=message_body)
 
