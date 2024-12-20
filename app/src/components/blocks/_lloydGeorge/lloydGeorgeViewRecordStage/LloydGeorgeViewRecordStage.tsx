@@ -97,8 +97,6 @@ function LloydGeorgeViewRecordStage({
     const recordDetailsProps: RecordDetailsProps = {
         downloadStage,
         lastUpdated,
-        numberOfFiles,
-        totalFileSizeInBytes,
     };
 
     const pageHeader = 'Available records';
@@ -258,17 +256,9 @@ function LloydGeorgeViewRecordStage({
     );
 }
 
-type RecordDetailsProps = Pick<
-    Props,
-    'downloadStage' | 'lastUpdated' | 'numberOfFiles' | 'totalFileSizeInBytes'
->;
+type RecordDetailsProps = Pick<Props, 'downloadStage' | 'lastUpdated'>;
 
-const RecordDetails = ({
-    downloadStage,
-    lastUpdated,
-    numberOfFiles,
-    totalFileSizeInBytes,
-}: RecordDetailsProps) => {
+const RecordDetails = ({ downloadStage, lastUpdated }: RecordDetailsProps) => {
     switch (downloadStage) {
         case DOWNLOAD_STAGE.INITIAL:
         case DOWNLOAD_STAGE.PENDING:
@@ -277,8 +267,6 @@ const RecordDetails = ({
         case DOWNLOAD_STAGE.SUCCEEDED: {
             const detailsProps = {
                 lastUpdated,
-                numberOfFiles,
-                totalFileSizeInBytes,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         }
