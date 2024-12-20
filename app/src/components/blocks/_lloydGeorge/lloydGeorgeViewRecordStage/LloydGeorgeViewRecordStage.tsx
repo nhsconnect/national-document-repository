@@ -26,7 +26,7 @@ import {
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routes, routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
@@ -126,7 +126,10 @@ function LloydGeorgeViewRecordStage({
                     Exit full screen
                 </BackLink>
             ) : (
-                <BackButton />
+                <BackButton
+                    toLocation={routes.VERIFY_PATIENT}
+                    backLinkText="Go back to Patient details"
+                />
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">

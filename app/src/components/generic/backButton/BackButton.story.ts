@@ -18,4 +18,17 @@ export const BackButton: Story = {
     args: {},
 };
 
+export const WithCustomText: Story = {
+    args: {
+        backLinkText: 'navigate to ...',
+    },
+};
+
+export const WithCustomToLocationAndText: Story = {
+    args: {
+        toLocation: '/specified-location',
+        backLinkText: 'navigate to /specified-location',
+    },
+};
+
 export default meta;
