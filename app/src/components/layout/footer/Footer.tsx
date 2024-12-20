@@ -12,7 +12,7 @@ function Footer() {
                 <NHSFooter.ListItem
                     href={routes.PRIVACY_POLICY}
                     data-testid="privacy-link"
-                    rel="noopener"
+                    rel="opener"
                     target="_blank"
                     aria-label="Privacy notice - Opens in a new tab"
                 >
