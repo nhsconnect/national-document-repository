@@ -84,7 +84,21 @@ class FhirDocumentReference(BaseModel):
                             "display": self.snomed_code_practice_setting.display_name,
                         }
                     ]
-                }
+                },
             },
+            "extension": [
+                {
+                    "url": "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability",
+                    "valueCodeableConcept": {
+                        "coding": [
+                            {
+                                "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability",
+                                "code": "static",
+                                "display": "Static",
+                            }
+                        ]
+                    },
+                }
+            ],
         }
         return DocumentReference(**structure_json)
