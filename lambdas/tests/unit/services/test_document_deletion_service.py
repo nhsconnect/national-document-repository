@@ -2,6 +2,7 @@ from unittest.mock import call
 
 import pytest
 from enums.s3_lifecycle_tags import S3LifecycleTags
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_deletion_service import DocumentDeletionService
 from tests.unit.conftest import (
@@ -227,12 +228,14 @@ def test_send_sqs_message_to_remove_pointer(mocker, mock_deletion_service):
 
     expected_message_body = (
         '{{"nhs_number":"{}",'
-        '"snomed_code_doc_type":"16521000000101",'
-        '"snomed_code_category":"734163000",'
-        '"description":"",'
-        '"attachment":null,'
+        '"snomed_code_doc_type":{},'
+        '"snomed_code_category":{},'
         '"action":"delete"}}'
-    ).format(TEST_NHS_NUMBER)
+    ).format(
+        TEST_NHS_NUMBER,
+        SnomedCodes.LLOYD_GEORGE.value.model_dump_json(),
+        SnomedCodes.CARE_PLAN.value.model_dump_json(),
+    )
 
     mock_deletion_service.send_sqs_message_to_remove_pointer(TEST_NHS_NUMBER)
 
