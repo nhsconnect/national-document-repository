@@ -44,8 +44,6 @@ function RecordMenuCard({
                             setStage={setStage}
                         />
                     )}
-                    <br />
-                    <br />
                     {downloadActions.length > 0 && (
                         <SideMenuSubSection
                             actionLinks={downloadActions}
