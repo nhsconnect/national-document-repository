@@ -73,6 +73,20 @@ class FhirDocumentReference(BaseModel):
                         "code": "urn:nhs-ic:unstructured",
                         "display": "Unstructured document",
                     },
+                   "extension": [
+                        {
+                            "url": "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability",
+                            "valueCodeableConcept": {
+                                "coding": [
+                                    {
+                                        "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability",
+                                        "code": "static",
+                                        "display": "Static",
+                                    }
+                                ]
+                            },
+                        }
+                    ],
                 }
             ],
             "context": {
@@ -86,19 +100,5 @@ class FhirDocumentReference(BaseModel):
                     ]
                 },
             },
-            "extension": [
-                {
-                    "url": "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability",
-                    "valueCodeableConcept": {
-                        "coding": [
-                            {
-                                "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability",
-                                "code": "static",
-                                "display": "Static",
-                            }
-                        ]
-                    },
-                }
-            ],
         }
         return DocumentReference(**structure_json)
