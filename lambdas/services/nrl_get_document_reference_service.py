@@ -59,7 +59,7 @@ class NRLGetDocumentReferenceService:
             nhsNumber=document_reference.nhs_number,
             custodian=document_reference.current_gp_ods,
             attachment=document_details,
-        ).build_fhir_dict()
+        ).document_ref_dict()
         return fhir_document_reference
 
     def is_user_allowed_to_see_file(self, user_details, document_reference):

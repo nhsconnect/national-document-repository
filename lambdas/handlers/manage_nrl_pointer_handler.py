@@ -52,8 +52,7 @@ def lambda_handler(event, context):
                     document = FhirDocumentReference(
                         **nrl_verified_message,
                         custodian=nrl_api_service.end_user_ods_code,
-                    ).build_fhir_dict()
-
+                    ).document_ref_dict()
                     nrl_api_service.create_new_pointer(json.dumps(document))
                 case NrlActionTypes.DELETE:
                     nrl_api_service.delete_pointer(

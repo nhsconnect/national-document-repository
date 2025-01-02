@@ -1,6 +1,13 @@
-from typing import Optional
+from typing import List, Literal, Optional
 
 from enums.snomed_codes import SnomedCode, SnomedCodes
+from models.fhir.R4.base_models import (
+    CodeableConcept,
+    Coding,
+    Extension,
+    Period,
+    Reference,
+)
 from models.nrl_sqs_message import NrlAttachment
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -17,24 +24,24 @@ class FhirDocumentReference(BaseModel):
     )
     attachment: Optional[NrlAttachment] = NrlAttachment()
 
-    def build_fhir_dict(self):
-        snomed_url = "http://snomed.info/sct"
+    def document_ref_dict(self):
         fhir_base_url = "https://fhir.nhs.uk/Id"
-        structure_json = {
-            "status": "current",
-            "subject": {
+        snomed_url = "http://snomed.info/sct"
+
+        dooc = DocumentReference(
+            subject={
                 "identifier": {
                     "system": fhir_base_url + "/nhs-number",
                     "value": self.nhs_number,
                 }
             },
-            "custodian": {
+            custodian={
                 "identifier": {
                     "system": fhir_base_url + "/ods-organization-code",
                     "value": self.custodian,
-                }
+                },
             },
-            "type": {
+            type={
                 "coding": [
                     {
                         "system": snomed_url,
@@ -43,7 +50,14 @@ class FhirDocumentReference(BaseModel):
                     }
                 ]
             },
-            "category": [
+            content=[
+                {
+                    "attachment": self.attachment.model_dump(
+                        by_alias=True, exclude_none=True
+                    ),
+                }
+            ],
+            category=[
                 {
                     "coding": [
                         {
@@ -54,7 +68,7 @@ class FhirDocumentReference(BaseModel):
                     ]
                 }
             ],
-            "author": [
+            author=[
                 {
                     "identifier": {
                         "system": fhir_base_url + "/ods-organization-code",
@@ -62,20 +76,7 @@ class FhirDocumentReference(BaseModel):
                     }
                 }
             ],
-            "authenticator": {"identifier": {"value": self.custodian}},
-            "content": [
-                {
-                    "attachment": self.attachment.model_dump(
-                        by_alias=True, exclude_none=True, exclude_defaults=True
-                    ),
-                    "format": {
-                        "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode",
-                        "code": "urn:nhs-ic:unstructured",
-                        "display": "Unstructured document",
-                    },
-                }
-            ],
-            "context": {
+            context={
                 "practiceSetting": {
                     "coding": [
                         {
@@ -86,5 +87,78 @@ class FhirDocumentReference(BaseModel):
                     ]
                 }
             },
-        }
-        return structure_json
+        )
+        return dooc.model_dump(exclude_none=True)
+
+
+class NRLFormatCode(Coding):
+    system: Literal["https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode"] = (
+        "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode"
+    )
+    code: Literal["urn:nhs-ic:record-contact", "urn:nhs-ic:unstructured"] = (
+        "urn:nhs-ic:unstructured"
+    )
+    display: Literal["Contact details (HTTP Unsecured)", "Unstructured Document"] = (
+        "Unstructured document"
+    )
+
+
+class Attachment(BaseModel):
+    contentType: str = "application/pdf"
+    language: str = "en-UK"
+    url: Optional[str] = None
+    size: Optional[int] = None
+    hash: Optional[str] = None
+    title: Optional[str] = None
+    creation: Optional[str] = None
+
+
+class ContentStabilityExtensionCoding(Coding):
+    system: Literal[
+        "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability"
+    ] = "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability"
+    code: Literal["static", "dynamic"] = "static"
+    display: Literal["Static", "Dynamic"] = "Static"
+
+
+class ContentStabilityExtensionValueCodeableConcept(CodeableConcept):
+    coding: List[ContentStabilityExtensionCoding] = ContentStabilityExtensionCoding()
+
+
+class ContentStabilityExtension(Extension):
+    url: Literal[
+        "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability"
+    ] = "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability"
+    valueCodeableConcept: ContentStabilityExtensionValueCodeableConcept = (
+        ContentStabilityExtensionValueCodeableConcept()
+    )
+
+
+class DocumentReferenceContent(BaseModel):
+    attachment: Attachment
+    format: NRLFormatCode = NRLFormatCode()
+    extension: List[ContentStabilityExtension] = [ContentStabilityExtension()]
+
+
+class DocumentReferenceContext(BaseModel):
+    encounter: Optional[List[Reference]] = None
+    event: Optional[List[CodeableConcept]] = None
+    period: Optional[Period] = None
+    facilityType: Optional[CodeableConcept] = None
+    practiceSetting: CodeableConcept
+    sourcePatientInfo: Optional[Reference] = None
+    related: Optional[List[Reference]] = None
+
+
+class DocumentReference(BaseModel):
+    resourceType: Literal["DocumentReference"] = "DocumentReference"
+    status: Literal["current"] = "current"
+    type: Optional[CodeableConcept] = None
+    category: Optional[List[CodeableConcept]] = None
+    subject: Optional[Reference] = None
+    date: Optional[str] = None
+    author: Optional[List[Reference]] = None
+    authenticator: Optional[Reference] = None
+    custodian: Optional[Reference] = None
+    content: List[DocumentReferenceContent]
+    context: Optional[DocumentReferenceContext] = None
