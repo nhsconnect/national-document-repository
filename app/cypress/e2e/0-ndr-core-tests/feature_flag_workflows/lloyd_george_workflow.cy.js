@@ -28,7 +28,7 @@ describe('Feature flags - Lloyd George Workflow', () => {
                 });
                 cy.title().should(
                     'eq',
-                    'Verify patient details - Access and store digital patient documents',
+                    'Patient details - Access and store digital patient documents',
                 );
 
                 cy.get('#verify-submit').click();
