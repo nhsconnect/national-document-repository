@@ -1,10 +1,15 @@
 import os
+import uuid
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.supported_document_types import SupportedDocumentTypes
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.nrl_sqs_message import NrlSqsMessage
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
+from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import CleanFiles, NotDeleted
@@ -17,9 +22,11 @@ class UploadConfirmResultService:
     def __init__(self, nhs_number):
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
+        self.sqs_service = SQSService()
         self.s3_service = S3Service()
         self.nhs_number = nhs_number
         self.staging_bucket = os.environ["STAGING_STORE_BUCKET_NAME"]
+        self.nrl_queue_url = os.environ["NRL_SQS_URL"]
 
     def process_documents(self, documents: dict):
         lg_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
@@ -67,6 +74,9 @@ class UploadConfirmResultService:
                     lg_table_name,
                     SupportedDocumentTypes.LG.value,
                 )
+
+                if len(lg_document_references) == 1:
+                    self.send_message_to_nrl_queue()
 
         except ClientError as e:
             logger.error(f"Error with one of our services: {str(e)}")
@@ -161,3 +171,29 @@ class UploadConfirmResultService:
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultFilesNotClean
             )
+
+    def send_message_to_nrl_queue(self):
+
+        document_reference_id = (
+            self.document_service.get_available_lloyd_george_record_for_patient(
+                self.nhs_number
+            )[0].id
+        )
+        document_api_endpoint = (
+            os.environ.get("APIM_API_URL")
+            + "/DocumentReference/"
+            + document_reference_id
+        )
+        doc_details = Attachment(
+            url=document_api_endpoint,
+        )
+        nrl_sqs_message = NrlSqsMessage(
+            nhs_number=self.nhs_number,
+            action=NrlActionTypes.CREATE,
+            attachment=doc_details,
+        )
+        self.sqs_service.send_message_fifo(
+            queue_url=self.nrl_queue_url,
+            message_body=nrl_sqs_message,
+            group_id=f"nrl_sqs_{uuid.uuid4()}",
+        )

@@ -1,7 +1,8 @@
 import pytest
 from enums.snomed_codes import SnomedCodes
 from handlers.manage_nrl_pointer_handler import lambda_handler
-from models.nrl_sqs_message import NrlAttachment, NrlSqsMessage
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.nrl_sqs_message import NrlSqsMessage
 from utils.exceptions import NrlApiException
 
 
@@ -14,7 +15,7 @@ def mock_service(mocker):
 
 
 def build_test_sqs_message(action="create"):
-    doc_details = NrlAttachment(
+    doc_details = Attachment(
         url="https://example.org/my-doc.pdf",
     )
     sqs_message = NrlSqsMessage(
