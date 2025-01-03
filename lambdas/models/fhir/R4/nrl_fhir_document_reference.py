@@ -8,87 +8,8 @@ from models.fhir.R4.base_models import (
     Period,
     Reference,
 )
-from models.nrl_sqs_message import NrlAttachment
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
-
-
-class FhirDocumentReference(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-    nhs_number: str
-    custodian: str
-    snomed_code_doc_type: SnomedCode = SnomedCodes.LLOYD_GEORGE.value
-    snomed_code_category: SnomedCode = SnomedCodes.CARE_PLAN.value
-    snomed_code_practice_setting: SnomedCode = (
-        SnomedCodes.GENERAL_MEDICAL_PRACTICE.value
-    )
-    attachment: Optional[NrlAttachment] = NrlAttachment()
-
-    def document_ref_dict(self):
-        fhir_base_url = "https://fhir.nhs.uk/Id"
-        snomed_url = "http://snomed.info/sct"
-
-        dooc = DocumentReference(
-            subject={
-                "identifier": {
-                    "system": fhir_base_url + "/nhs-number",
-                    "value": self.nhs_number,
-                }
-            },
-            custodian={
-                "identifier": {
-                    "system": fhir_base_url + "/ods-organization-code",
-                    "value": self.custodian,
-                },
-            },
-            type={
-                "coding": [
-                    {
-                        "system": snomed_url,
-                        "code": self.snomed_code_doc_type.code,
-                        "display": self.snomed_code_doc_type.display_name,
-                    }
-                ]
-            },
-            content=[
-                {
-                    "attachment": self.attachment.model_dump(
-                        by_alias=True, exclude_none=True
-                    ),
-                }
-            ],
-            category=[
-                {
-                    "coding": [
-                        {
-                            "system": snomed_url,
-                            "code": self.snomed_code_category.code,
-                            "display": self.snomed_code_category.display_name,
-                        }
-                    ]
-                }
-            ],
-            author=[
-                {
-                    "identifier": {
-                        "system": fhir_base_url + "/ods-organization-code",
-                        "value": self.custodian,
-                    }
-                }
-            ],
-            context={
-                "practiceSetting": {
-                    "coding": [
-                        {
-                            "system": snomed_url,
-                            "code": self.snomed_code_practice_setting.code,
-                            "display": self.snomed_code_practice_setting.display_name,
-                        }
-                    ]
-                }
-            },
-        )
-        return dooc.model_dump(exclude_none=True)
 
 
 class NRLFormatCode(Coding):
@@ -162,3 +83,75 @@ class DocumentReference(BaseModel):
     custodian: Optional[Reference] = None
     content: List[DocumentReferenceContent]
     context: Optional[DocumentReferenceContext] = None
+
+
+class DocumentReferenceInfo(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel)
+    nhs_number: str
+    custodian: str
+    snomed_code_doc_type: SnomedCode = SnomedCodes.LLOYD_GEORGE.value
+    snomed_code_category: SnomedCode = SnomedCodes.CARE_PLAN.value
+    snomed_code_practice_setting: SnomedCode = (
+        SnomedCodes.GENERAL_MEDICAL_PRACTICE.value
+    )
+    attachment: Optional[Attachment] = Attachment()
+
+    def create_fhir_document_reference_object(self):
+        fhir_base_url = "https://fhir.nhs.uk/Id"
+        snomed_url = "http://snomed.info/sct"
+
+        fhir_document_ref = DocumentReference(
+            subject={
+                "identifier": {
+                    "system": fhir_base_url + "/nhs-number",
+                    "value": self.nhs_number,
+                }
+            },
+            custodian={
+                "identifier": {
+                    "system": fhir_base_url + "/ods-organization-code",
+                    "value": self.custodian,
+                },
+            },
+            type={
+                "coding": [
+                    {
+                        "system": snomed_url,
+                        "code": self.snomed_code_doc_type.code,
+                        "display": self.snomed_code_doc_type.display_name,
+                    }
+                ]
+            },
+            content=[{"attachment": self.attachment}],
+            category=[
+                {
+                    "coding": [
+                        {
+                            "system": snomed_url,
+                            "code": self.snomed_code_category.code,
+                            "display": self.snomed_code_category.display_name,
+                        }
+                    ]
+                }
+            ],
+            author=[
+                {
+                    "identifier": {
+                        "system": fhir_base_url + "/ods-organization-code",
+                        "value": self.custodian,
+                    }
+                }
+            ],
+            context={
+                "practiceSetting": {
+                    "coding": [
+                        {
+                            "system": snomed_url,
+                            "code": self.snomed_code_practice_setting.code,
+                            "display": self.snomed_code_practice_setting.display_name,
+                        }
+                    ]
+                }
+            },
+        )
+        return fhir_document_ref

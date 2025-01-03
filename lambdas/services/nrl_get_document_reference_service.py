@@ -4,8 +4,7 @@ import requests
 from enums.lambda_error import LambdaError
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from models.document_reference import DocumentReference
-from models.fhir.R4.nrl_fhir_document_reference import FhirDocumentReference
-from models.nrl_sqs_message import NrlAttachment
+from models.fhir.R4.nrl_fhir_document_reference import Attachment, DocumentReferenceInfo
 from requests.exceptions import HTTPError
 from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
@@ -50,16 +49,20 @@ class NRLGetDocumentReferenceService:
     def create_document_reference_fhir_response(
         self, document_reference: DocumentReference, presign_url: str
     ) -> dict:
-        document_details = NrlAttachment(
+        document_details = Attachment(
             url=presign_url,
             title=document_reference.file_name,
             creation=document_reference.created,
         )
-        fhir_document_reference = FhirDocumentReference(
-            nhsNumber=document_reference.nhs_number,
-            custodian=document_reference.current_gp_ods,
-            attachment=document_details,
-        ).document_ref_dict()
+        fhir_document_reference = (
+            DocumentReferenceInfo(
+                nhsNumber=document_reference.nhs_number,
+                custodian=document_reference.current_gp_ods,
+                attachment=document_details,
+            )
+            .create_fhir_document_reference_object()
+            .model_dump(exclude_none=True)
+        )
         return fhir_document_reference
 
     def is_user_allowed_to_see_file(self, user_details, document_reference):

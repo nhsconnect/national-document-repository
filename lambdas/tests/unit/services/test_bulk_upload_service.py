@@ -8,7 +8,8 @@ from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
-from models.nrl_sqs_message import NrlAttachment, NrlSqsMessage
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.nrl_sqs_message import NrlSqsMessage
 from models.pds_models import Patient
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
@@ -238,7 +239,7 @@ def test_handle_sqs_message_happy_path_single_file(
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
-    mock_nrl_attachment = NrlAttachment(
+    mock_nrl_attachment = Attachment(
         url=f"/DocumentReference/{TEST_DOCUMENT_REFERENCE.id}",
     )
     mock_nrl_message = NrlSqsMessage(

@@ -1,22 +1,9 @@
 from typing import Optional
 
 from enums.snomed_codes import SnomedCode, SnomedCodes
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from pydantic import AliasGenerator, BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
-
-
-class NrlAttachment(BaseModel):
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(serialization_alias=to_camel)
-    )
-
-    content_type: str = "application/pdf"
-    language: str = "en-UK"
-    url: str = ""
-    size: int = 0
-    hash: str = ""
-    title: str = ""
-    creation: str = ""
 
 
 class NrlSqsMessage(BaseModel):
@@ -32,5 +19,5 @@ class NrlSqsMessage(BaseModel):
         SnomedCodes.GENERAL_MEDICAL_PRACTICE.value
     )
     description: str = ""
-    attachment: Optional[NrlAttachment] = None
+    attachment: Optional[Attachment] = None
     action: str

@@ -68,15 +68,15 @@ def mock_fetch_user_info(patched_service, mocker):
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    "role_code, expected",
     [
         ("S8001:G8005:R8000", "R8000"),
         ("S8001:G8005:R8015", "R8015"),
         ("S8001:G8005:R8008", "R8008"),
     ],
 )
-def test_process_role_code_returns_correct_role(patched_service, input, expected):
-    assert patched_service.process_role_code(input) == expected
+def test_process_role_code_returns_correct_role(patched_service, role_code, expected):
+    assert patched_service.process_role_code(role_code) == expected
 
 
 def test_get_user_roles_and_ods_codes(patched_service):

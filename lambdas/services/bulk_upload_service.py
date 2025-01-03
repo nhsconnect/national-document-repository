@@ -8,8 +8,9 @@ from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.nhs_document_reference import NHSDocumentReference
-from models.nrl_sqs_message import NrlAttachment, NrlSqsMessage
+from models.nrl_sqs_message import NrlSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -279,7 +280,7 @@ class BulkUploadService:
                 + "/DocumentReference/"
                 + last_document_processed.id
             )
-            doc_details = NrlAttachment(
+            doc_details = Attachment(
                 url=document_api_endpoint,
             )
             nrl_sqs_message = NrlSqsMessage(
