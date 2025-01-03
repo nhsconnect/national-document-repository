@@ -95,8 +95,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     assertPatientInfo();
                     cy.getByTestId('pdf-card')
                         .should('include.text', 'Lloyd George record')
-                        .should('include.text', 'Last updated: 09 October 2023 at 15:41:38')
-                        .should('include.text', '12 files | File size: 502 KB | File format: PDF');
+                        .should('include.text', 'Last updated: 09 October 2023 at 15:41:38');
                     cy.getByTestId('pdf-viewer').should('be.visible');
 
                     // Act - open full screen view

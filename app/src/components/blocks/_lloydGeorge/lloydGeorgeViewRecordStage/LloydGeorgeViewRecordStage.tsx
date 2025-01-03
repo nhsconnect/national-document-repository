@@ -26,7 +26,7 @@ import {
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routes, routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
@@ -97,8 +97,6 @@ function LloydGeorgeViewRecordStage({
     const recordDetailsProps: RecordDetailsProps = {
         downloadStage,
         lastUpdated,
-        numberOfFiles,
-        totalFileSizeInBytes,
     };
 
     const pageHeader = 'Available records';
@@ -128,7 +126,10 @@ function LloydGeorgeViewRecordStage({
                     Exit full screen
                 </BackLink>
             ) : (
-                <BackButton />
+                <BackButton
+                    toLocation={routes.VERIFY_PATIENT}
+                    backLinkText="Go back to Patient details"
+                />
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
@@ -258,17 +259,9 @@ function LloydGeorgeViewRecordStage({
     );
 }
 
-type RecordDetailsProps = Pick<
-    Props,
-    'downloadStage' | 'lastUpdated' | 'numberOfFiles' | 'totalFileSizeInBytes'
->;
+type RecordDetailsProps = Pick<Props, 'downloadStage' | 'lastUpdated'>;
 
-const RecordDetails = ({
-    downloadStage,
-    lastUpdated,
-    numberOfFiles,
-    totalFileSizeInBytes,
-}: RecordDetailsProps) => {
+const RecordDetails = ({ downloadStage, lastUpdated }: RecordDetailsProps) => {
     switch (downloadStage) {
         case DOWNLOAD_STAGE.INITIAL:
         case DOWNLOAD_STAGE.PENDING:
@@ -277,8 +270,6 @@ const RecordDetails = ({
         case DOWNLOAD_STAGE.SUCCEEDED: {
             const detailsProps = {
                 lastUpdated,
-                numberOfFiles,
-                totalFileSizeInBytes,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         }
