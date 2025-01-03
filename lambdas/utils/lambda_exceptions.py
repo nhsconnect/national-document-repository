@@ -4,6 +4,7 @@ from enums.lambda_error import LambdaError
 class LambdaException(Exception):
     def __init__(self, status_code, error: LambdaError):
         self.status_code = status_code
+        self.error = error
         self.message = error.value["message"]
         self.err_code = error.value["err_code"]
 
@@ -77,4 +78,8 @@ class GenerateManifestZipException(LambdaException):
 
 
 class CloudFrontEdgeException(LambdaException):
+    pass
+
+
+class NRLGetDocumentReferenceException(LambdaException):
     pass

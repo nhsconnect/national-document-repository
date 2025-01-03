@@ -62,7 +62,7 @@ def test_lambda_handler_respond_with_400_when_file_unclean(
     actual = lambda_handler(valid_event, context)
 
     expected = ApiGatewayResponse(
-        400, json.dumps(LambdaError.MockError.value), "POST"
+        400, LambdaError.MockError.create_error_body(), "POST"
     ).create_api_gateway_response()
 
     assert actual == expected

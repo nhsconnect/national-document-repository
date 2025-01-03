@@ -15,6 +15,7 @@ from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import FileUploadInProgress, NoAvailableDocument
 from utils.lambda_exceptions import LGStitchServiceException
 from utils.lloyd_george_validator import LGInvalidFilesException
+from utils.utilities import format_cloudfront_url
 
 logger = LoggingService(__name__)
 
@@ -161,16 +162,7 @@ class LloydGeorgeStitchJobService:
             s3_bucket_name=self.lloyd_george_bucket_name,
             file_key=stitched_file_location,
         )
-        return self.format_cloudfront_url(presign_url_response, self.cloudfront_url)
-
-    def format_cloudfront_url(self, presign_url: str, cloudfront_domain: str) -> str:
-        url_parts = presign_url.split("/")
-        if len(url_parts) < 4:
-            raise ValueError("Invalid presigned URL format")
-
-        path_parts = url_parts[3:]
-        formatted_url = f"https://{cloudfront_domain}/{'/'.join(path_parts)}"
-        return formatted_url
+        return format_cloudfront_url(presign_url_response, self.cloudfront_url)
 
     def check_lloyd_george_record_for_patient(self, nhs_number) -> None:
         try:

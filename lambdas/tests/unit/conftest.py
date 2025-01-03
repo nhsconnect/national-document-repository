@@ -174,7 +174,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv("NRL_END_USER_ODS_CODE", "test_nrl_user_ods_ssm_key")
     monkeypatch.setenv("MNS_NOTIFICATION_QUEUE_URL", MOCK_MNS_SQS_QUEUE_ENV_NAME)
     monkeypatch.setenv("NRL_SQS_QUEUE_URL", NRL_SQS_URL)
-
+    monkeypatch.setenv("CLOUDFRONT_URL", "mock-cloudfront-url.com")
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
