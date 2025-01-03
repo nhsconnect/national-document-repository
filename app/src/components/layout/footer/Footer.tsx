@@ -16,7 +16,10 @@ function Footer() {
                     Privacy notice
                 </NHSFooter.ListItem>
             </NHSFooter.List>
-            <NHSFooter.Copyright>&copy; {'Crown copyright'}</NHSFooter.Copyright>
+            {/* TODO - PRMP-1348: Remove hardcoded styling below if no longer required */}
+            <NHSFooter.Copyright style={{ color: '#231f20' }}>
+                &copy; {'NHS England'}
+            </NHSFooter.Copyright>
         </NHSFooter>
     );
 }
