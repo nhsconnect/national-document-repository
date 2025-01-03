@@ -1,3 +1,4 @@
+from enums.lambda_error import LambdaError
 from services.dynamic_configuration_service import DynamicConfigurationService
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
 from utils.audit_logging_setup import LoggingService
@@ -23,11 +24,15 @@ logger = LoggingService(__name__)
     ]
 )
 def lambda_handler(event, context):
-    document_id = event["pathParameters"]["id"]
-    bearer_token = event["headers"]["Authorization"]
+    document_id = event.get("pathParameters", {}).get("id", None)
+    bearer_token = event.get("headers", {}).get("Authorization", None)
     configuration_service = DynamicConfigurationService()
     configuration_service.set_auth_ssm_prefix()
     try:
+        if not document_id or not bearer_token:
+            raise NRLGetDocumentReferenceException(
+                400, LambdaError.DocumentReferenceInvalidRequest
+            )
         get_document_service = NRLGetDocumentReferenceService()
         document_ref = get_document_service.handle_get_document_reference_request(
             document_id, bearer_token

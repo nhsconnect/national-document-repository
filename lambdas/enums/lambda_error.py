@@ -394,7 +394,7 @@ class LambdaError(Enum):
         "message": "Dynamo client error",
     }
     """
-       Errors for get document reference lambda 
+       Errors for fhir get document reference lambda 
     """
     DocumentReferenceNotFound = {
         "err_code": "NRL_DR_4041",
@@ -410,6 +410,11 @@ class LambdaError(Enum):
         "err_code": "NRL_DR_4011",
         "message": "User is unauthorised to view record",
         "fhir_coding": FhirIssueCoding.FORBIDDEN,
+    }
+    DocumentReferenceInvalidRequest = {
+        "err_code": "NRL_DR_4041",
+        "message": "Invalid request",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     """
         Edge Lambda Errors
