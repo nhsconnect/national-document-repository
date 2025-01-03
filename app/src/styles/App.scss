@@ -288,13 +288,9 @@ $hunit: '%';
             &-content {
                 padding: 24px;
 
-                ol {
-                    padding-left: 0;
-
-                    li {
-                        font-size: 1rem;
-                        list-style-type: none;
-                    }
+                a {
+                    display: inline-block;
+                    margin-bottom: 24px;
                 }
             }
         }
