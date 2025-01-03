@@ -43,7 +43,7 @@ class ContentStabilityExtensionCoding(Coding):
 
 
 class ContentStabilityExtensionValueCodeableConcept(CodeableConcept):
-    coding: List[ContentStabilityExtensionCoding] = ContentStabilityExtensionCoding()
+    coding: List[ContentStabilityExtensionCoding] = [ContentStabilityExtensionCoding()]
 
 
 class ContentStabilityExtension(Extension):

@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
@@ -153,7 +155,7 @@ def test_create_document_reference_fhir_response(patched_service):
     actual = patched_service.create_document_reference_fhir_response(
         create_test_doc_store_refs()[0], FAKE_URL
     )
-    assert actual["content"][0]["attachment"]["url"] == FAKE_URL
+    assert json.loads(actual)["content"][0]["attachment"]["url"] == FAKE_URL
 
 
 def test_user_allowed_to_see_file_happy_path(patched_service, mock_fetch_user_info):

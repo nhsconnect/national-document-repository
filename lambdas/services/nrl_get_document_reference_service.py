@@ -48,7 +48,7 @@ class NRLGetDocumentReferenceService:
 
     def create_document_reference_fhir_response(
         self, document_reference: DocumentReference, presign_url: str
-    ) -> dict:
+    ) -> str:
         document_details = Attachment(
             url=presign_url,
             title=document_reference.file_name,
@@ -61,7 +61,7 @@ class NRLGetDocumentReferenceService:
                 attachment=document_details,
             )
             .create_fhir_document_reference_object()
-            .model_dump(exclude_none=True)
+            .model_dump_json(exclude_none=True)
         )
         return fhir_document_reference
 
