@@ -8,7 +8,6 @@ on:
         required: true
         type: choice
         options:
-          - ndra
           - ndr-dev
           - ndr-test
           - pre-prod
