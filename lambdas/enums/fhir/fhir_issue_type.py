@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class FhirIssueCoding(Enum):
-    INVALID = ("Invalid", "Invalid")
+    INVALID = ("invalid", "Invalid")
     FORBIDDEN = ("forbidden", "Forbidden")
     NOT_FOUND = ("not-found", "Not Found")
     EXCEPTION = ("exception", "Exception")

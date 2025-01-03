@@ -26,7 +26,7 @@ class NRLFormatCode(Coding):
 
 class Attachment(BaseModel):
     contentType: str = "application/pdf"
-    language: str = "en-UK"
+    language: str = "en-GB"
     url: Optional[str] = None
     size: Optional[int] = None
     hash: Optional[str] = None
