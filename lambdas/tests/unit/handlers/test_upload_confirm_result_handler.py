@@ -6,7 +6,9 @@ from handlers.upload_confirm_result_handler import (
     lambda_handler,
     processing_event_details,
 )
+from models.document_reference import DocumentReference
 from tests.unit.conftest import TEST_NHS_NUMBER
+from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
 from tests.unit.helpers.data.upload_confirm_result import (
     MOCK_ARF_DOCUMENTS,
     MOCK_INVALID_BODY_EVENT,
@@ -36,6 +38,7 @@ def mock_upload_confirm_result_service(mocker, mock_upload_lambda_enabled):
         "handlers.upload_confirm_result_handler.UploadConfirmResultService"
     )
     mocker.patch.object(mocked_class, "process_documents")
+    mocker.patch.object(mocked_class, "document_service")
     mocked_instance = mocked_class.return_value
     yield mocked_instance
 
@@ -46,6 +49,16 @@ def mock_processing_event_details(mocker):
         "handlers.upload_confirm_result_handler.processing_event_details",
         return_value=(TEST_NHS_NUMBER, MOCK_ARF_DOCUMENTS),
     )
+
+
+@pytest.fixture
+def mock_lg_reference(mocker, mock_upload_confirm_result_service):
+    mocker.patch.object(
+        mock_upload_confirm_result_service.document_service,
+        "get_available_lloyd_george_record_for_patient",
+    ).return_value = [
+        DocumentReference.model_validate(MOCK_SEARCH_RESPONSE["Items"][0])
+    ]
 
 
 def test_upload_confirm_result_handler_success_lg(

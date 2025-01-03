@@ -1,18 +1,27 @@
 import pytest
 from botocore.exceptions import ClientError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.supported_document_types import SupportedDocumentTypes
 from enums.virus_scan_result import VirusScanResult
+from models.document_reference import DocumentReference
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.nrl_sqs_message import NrlSqsMessage
 from services.upload_confirm_result_service import UploadConfirmResultService
 from tests.unit.conftest import (
+    APIM_API_URL,
     MOCK_ARF_BUCKET,
     MOCK_ARF_TABLE_NAME,
     MOCK_LG_BUCKET,
     MOCK_LG_TABLE_NAME,
     MOCK_STAGING_STORE_BUCKET,
+    NRL_SQS_URL,
     TEST_FILE_KEY,
     TEST_NHS_NUMBER,
+    TEST_UUID,
     MockError,
 )
+from tests.unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA
+from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
 from tests.unit.helpers.data.test_documents import create_test_arf_doc_store_refs
 from tests.unit.helpers.data.upload_confirm_result import (
     MOCK_ARF_DOCUMENT_REFERENCES,
@@ -20,6 +29,7 @@ from tests.unit.helpers.data.upload_confirm_result import (
     MOCK_BOTH_DOC_TYPES,
     MOCK_LG_DOCUMENT_REFERENCES,
     MOCK_LG_DOCUMENTS,
+    MOCK_LG_SINGLE_DOCUMENT,
     MOCK_NO_DOC_TYPE,
 )
 from utils.lambda_exceptions import UploadConfirmResultException
@@ -37,7 +47,18 @@ def patched_service(set_env, mocker):
     mocker.patch.object(
         mock_document_service, "fetch_available_document_references_by_type"
     )
+    mocker.patch.object(service, "sqs_service")
     yield service
+
+
+@pytest.fixture
+def mock_lg_reference(patched_service, mocker):
+    mocker.patch.object(
+        patched_service.document_service,
+        "get_available_lloyd_george_record_for_patient",
+    ).return_value = [
+        DocumentReference.model_validate(MOCK_SEARCH_RESPONSE["Items"][0])
+    ]
 
 
 @pytest.fixture
@@ -89,6 +110,39 @@ def test_process_documents_with_lg_document_references(
     )
 
 
+def test_nrl_pointer_created_single_document_uploads(
+    patched_service,
+    mock_validate_number_of_documents,
+    mock_verify_virus_scan_result,
+    mock_uuid,
+    mock_lg_reference,
+):
+    mock_nrl_attachment = Attachment(
+        url=f"{APIM_API_URL}/DocumentReference/3d8683b9-1665-40d2-8499-6e8302d507ff",
+    )
+    mock_nrl_message = NrlSqsMessage(
+        nhs_number=TEST_STAGING_METADATA.nhs_number,
+        action=NrlActionTypes.CREATE,
+        attachment=mock_nrl_attachment,
+    )
+    patched_service.process_documents(MOCK_LG_SINGLE_DOCUMENT)
+
+    patched_service.sqs_service.send_message_fifo.assert_called_with(
+        queue_url=NRL_SQS_URL,
+        message_body=mock_nrl_message,
+        group_id=f"nrl_sqs_{TEST_UUID}",
+    )
+
+
+def test_message_is_not_sent_to_nrl_sqs_multiple_lg_documents(
+    patched_service,
+    mock_validate_number_of_documents,
+    mock_verify_virus_scan_result,
+):
+    patched_service.process_documents(MOCK_LG_DOCUMENTS)
+    patched_service.sqs_service.send_message_fifo.assert_not_called()
+
+
 def test_process_documents_with_arf_document_references(
     patched_service,
     mock_validate_number_of_documents,
@@ -105,12 +159,15 @@ def test_process_documents_with_arf_document_references(
         SupportedDocumentTypes.ARF.value,
     )
 
+    patched_service.sqs_service.send_message_fifo.assert_not_called()
+
 
 def test_process_documents_with_both_types_of_document_references(
     patched_service,
     mock_validate_number_of_documents,
     mock_move_files_and_update_dynamo,
     mock_verify_virus_scan_result,
+    mock_lg_reference,
 ):
     patched_service.process_documents(MOCK_BOTH_DOC_TYPES)
 
@@ -130,6 +187,7 @@ def test_process_documents_when_no_lg_or_arf_doc_type_in_documents_raises_except
 
     mock_validate_number_of_documents.assert_not_called()
     mock_move_files_and_update_dynamo.assert_not_called()
+    patched_service.sqs_service.send_message_fifo.assert_not_called()
 
 
 def test_process_documents_when_dynamo_throws_error(
@@ -141,6 +199,8 @@ def test_process_documents_when_dynamo_throws_error(
 
     with pytest.raises(UploadConfirmResultException):
         patched_service.process_documents(MOCK_ARF_DOCUMENTS)
+
+    patched_service.sqs_service.send_message_fifo.assert_not_called()
 
 
 def test_process_documents_raise_error_when_some_given_arf_files_are_not_clean(
@@ -162,6 +222,7 @@ def test_process_documents_raise_error_when_some_given_arf_files_are_not_clean(
     )
     mock_update_dynamo_table.assert_not_called()
     mock_move_files_and_update_dynamo.assert_not_called()
+    patched_service.sqs_service.send_message_fifo.assert_not_called()
 
 
 def test_process_documents_raise_error_when_some_given_lg_files_are_not_clean(
@@ -184,6 +245,7 @@ def test_process_documents_raise_error_when_some_given_lg_files_are_not_clean(
     )
     mock_update_dynamo_table.assert_not_called()
     mock_move_files_and_update_dynamo.assert_not_called()
+    patched_service.sqs_service.send_message_fifo.assert_not_called()
 
 
 def test_move_files_and_update_dynamo(
@@ -248,7 +310,8 @@ def test_update_dynamo_table(patched_service):
 
 def test_validate_number_of_documents_success(patched_service):
     patched_service.document_service.fetch_available_document_references_by_type.return_value = [
-        "doc1"
+        "doc1",
+        "doc2",
     ]
 
     patched_service.validate_number_of_documents(
@@ -262,6 +325,7 @@ def test_validate_number_of_documents_raises_exception(patched_service):
     patched_service.document_service.fetch_available_document_references_by_type.return_value = [
         "doc1",
         "doc2",
+        "doc3",
     ]
 
     with pytest.raises(UploadConfirmResultException):
@@ -307,6 +371,8 @@ def test_verify_virus_scan_result_raise_error_if_files_are_not_clean(patched_ser
             test_doc_type, test_document_references
         )
 
+    patched_service.sqs_service.send_message_fifo.assert_not_called()
+
 
 def test_verify_virus_scan_result_should_raise_error_if_newly_uploaded_files_has_some_infected_files(
     patched_service,
@@ -341,6 +407,8 @@ def test_verify_virus_scan_result_should_raise_error_if_newly_uploaded_files_has
         patched_service.verify_virus_scan_result(
             test_doc_type, test_document_references
         )
+
+    patched_service.sqs_service.send_message_fifo.assert_not_called()
 
 
 def test_verify_virus_scan_result_should_not_raise_error_if_all_files_are_clean(
