@@ -2,8 +2,9 @@ import os
 import uuid
 
 import requests
-from requests import HTTPError
+from enums.snomed_codes import SnomedCode
 from requests.adapters import HTTPAdapter
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NrlApiException
@@ -46,7 +47,7 @@ class NrlApiService:
             )
             response.raise_for_status()
             logger.info("Successfully created new pointer")
-        except HTTPError as e:
+        except (ConnectionError, Timeout, HTTPError) as e:
             logger.error(e.response.content)
             if e.response.status_code == 401 and retry_on_expired:
                 self.headers["Authorization"] = (
@@ -56,14 +57,16 @@ class NrlApiService:
             else:
                 raise NrlApiException("Error while creating new NRL Pointer")
 
-    def get_pointer(self, nhs_number, record_type=None, retry_on_expired: bool = True):
+    def get_pointer(
+        self, nhs_number, record_type: SnomedCode = None, retry_on_expired: bool = True
+    ):
         try:
             self.set_x_request_id()
             params = {
                 "subject:identifier": f"https://fhir.nhs.uk/Id/nhs-number|{nhs_number}"
             }
             if record_type:
-                params["type"] = f"http://snomed.info/sct|{record_type}"
+                params["type"] = f"http://snomed.info/sct|{record_type.code}"
             response = self.session.get(
                 url=self.endpoint, params=params, headers=self.headers
             )
@@ -79,7 +82,7 @@ class NrlApiService:
             else:
                 raise NrlApiException("Error while getting NRL Pointer")
 
-    def delete_pointer(self, nhs_number, record_type):
+    def delete_pointer(self, nhs_number, record_type: SnomedCode = None):
         search_results = self.get_pointer(nhs_number, record_type).get("entry", [])
         for entry in search_results:
             self.set_x_request_id()
