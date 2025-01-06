@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { routes } from '../../types/generic/routes';
 import { FieldValues, useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
-import { Button, Fieldset, Input } from 'nhsuk-react-components';
+import { Button, Fieldset, TextInput } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
 import { useNavigate } from 'react-router-dom';
@@ -112,7 +112,7 @@ function PatientSearchPage() {
                     <Fieldset.Legend headingLevel="h1" isPageHeading>
                         {pageTitle}
                     </Fieldset.Legend>
-                    <Input
+                    <TextInput
                         id="nhs-number-input"
                         data-testid="nhs-number-input"
                         label="Enter NHS number"

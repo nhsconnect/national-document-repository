@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
-import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
+import { Button, Fieldset, TextInput, Radios, Textarea } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import {
@@ -133,7 +133,7 @@ function FeedbackPage() {
                         us in developing this service.
                     </p>
 
-                    <Input
+                    <TextInput
                         label="Your name"
                         data-testid={FORM_FIELDS.RespondentName}
                         autoComplete="name"
@@ -141,7 +141,7 @@ function FeedbackPage() {
                         {...respondentNameProps}
                     />
 
-                    <Input
+                    <TextInput
                         label="Your email address"
                         hint="We’ll only use this to speak to you about your feedback"
                         data-testid={FORM_FIELDS.RespondentEmail}
