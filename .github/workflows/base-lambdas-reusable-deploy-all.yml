@@ -14,9 +14,14 @@ on:
         required: true
         type: 'string'
       sandbox:
-        description: 'Which Sandbox to push to'
+        description: 'Which Sandbox to push to?'
         required: true
         type: 'string'
+      is_sandbox:
+        description: 'Is this deploying to a sandbox?'
+        required: false
+        default: false
+        type: boolean
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -403,6 +408,7 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_mns_notification_lambda:
+    if: ${{ ! inputs.is_sandbox }}
     name: Deploy mns notification lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:

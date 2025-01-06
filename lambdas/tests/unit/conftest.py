@@ -176,7 +176,6 @@ def set_env(monkeypatch):
     monkeypatch.setenv("NRL_SQS_QUEUE_URL", NRL_SQS_URL)
 
 
-
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
     givenName=["Jane"],
     familyName="Smith",
