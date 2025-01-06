@@ -78,7 +78,7 @@ class NrlApiService:
                 url=self.endpoint, params=params, headers=self.headers
             )
             logger.info(
-                f"Get pointer request: URL: {self.endpoint}/{params}, "
+                f"Get pointer request: URL: {response.url}, "
                 "HTTP Verb: GET, "
                 f"ODS Code: {self.end_user_ods_code}, "
                 f"Datetime: {int(datetime.now().timestamp())}, "
