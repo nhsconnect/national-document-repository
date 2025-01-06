@@ -140,7 +140,7 @@ function FeedbackPage() {
                         </Hint>
                     </p>
 
-                    <Input
+                    <TextInput
                         label="Your name"
                         data-testid={FORM_FIELDS.RespondentName}
                         autoComplete="name"
@@ -148,7 +148,7 @@ function FeedbackPage() {
                         {...respondentNameProps}
                     />
 
-                    <Input
+                    <TextInput
                         label="Your email address"
                         hint="We’ll only use this to reply to your message"
                         data-testid={FORM_FIELDS.RespondentEmail}
