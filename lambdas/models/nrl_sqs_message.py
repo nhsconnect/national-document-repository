@@ -13,6 +13,10 @@ class NrlAttachment(BaseModel):
     content_type: str = "application/pdf"
     language: str = "en-UK"
     url: str = None
+    size: int = None
+    hash: str = None
+    title: str = None
+    creation: str = None
 
 
 class NrlSqsMessage(BaseModel):
@@ -27,6 +31,6 @@ class NrlSqsMessage(BaseModel):
     snomed_code_practice_setting: SnomedCode = (
         SnomedCodes.GENERAL_MEDICAL_PRACTICE.value
     )
-    description: str = ""
+    description: str = None
     attachment: Optional[NrlAttachment] = None
     action: str
