@@ -232,11 +232,10 @@ def setup_logging_for_local_script():
 
 if __name__ == "__main__":
     setup_logging_for_local_script()
+    BatchUpdate().main()
     print("Starting data collection process")
     data_collection_service = DataCollectionService()
     data_collection_service.collect_all_data_and_write_to_dynamodb()
     print("Starting to create statistical report")
     statistical_report_service = StatisticalReportService()
     statistical_report_service.make_weekly_summary_and_output_to_bucket()
-    print("Starting ods update")
-    BatchUpdate().main()

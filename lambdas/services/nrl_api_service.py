@@ -39,7 +39,7 @@ class NrlApiService:
             ssm_key_parameter, with_decryption=True
         )
 
-    def create_new_pointer(self, body, retry_on_expired: bool = True):
+    def create_new_pointer(self, body: dict, retry_on_expired: bool = True):
         try:
             self.set_x_request_id()
             response = self.session.post(

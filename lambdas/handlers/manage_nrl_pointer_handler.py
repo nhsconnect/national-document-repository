@@ -54,7 +54,7 @@ def lambda_handler(event, context):
                         custodian=nrl_api_service.end_user_ods_code,
                     ).create_fhir_document_reference_object()
                     nrl_api_service.create_new_pointer(
-                        document.model_dump_json(exclude_none=True)
+                        document.model_dump(exclude_none=True)
                     )
                 case NrlActionTypes.DELETE:
                     nrl_api_service.delete_pointer(
