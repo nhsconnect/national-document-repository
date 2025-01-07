@@ -16,7 +16,7 @@ def is_ods_code_active(gp_ods) -> bool:
     return len(gp_ods or "") == 6
 
 
-def extract_ods_role_code_from_role_codes_string(role_codes) -> str:
+def extract_ods_role_code_with_r_prefix_from_role_codes_string(role_codes) -> str:
     for role_code in role_codes.split(":"):
         if role_code.startswith("R"):
             return role_code

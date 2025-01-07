@@ -11,7 +11,7 @@ from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.constants.ssm import GP_ADMIN_USER_ROLE_CODES, GP_CLINICAL_USER_ROLE_CODE
 from utils.lambda_exceptions import NRLGetDocumentReferenceException
-from utils.ods_utils import extract_ods_role_code_from_role_codes_string
+from utils.ods_utils import extract_ods_role_code_with_r_prefix_from_role_codes_string
 from utils.request_context import request_context
 from utils.utilities import format_cloudfront_url, get_pds_service
 
@@ -60,7 +60,7 @@ class NRLGetDocumentReferenceService:
             )
 
     def fetch_user_info(self, bearer_token) -> dict:
-        logger.info(f"Fetching user info with bearer token: {bearer_token}")
+        logger.info(f"Fetching user info with bearer token: {bearer_token[-4:]}")
         request_url = self.ssm_service.get_ssm_parameter(
             self.ssm_prefix + "OIDC_USER_INFO_URL"
         )
@@ -101,7 +101,9 @@ class NRLGetDocumentReferenceService:
 
         for role in nrbac_roles:
             ods_code: str = role["org_code"]
-            role_code = extract_ods_role_code_from_role_codes_string(role["role_code"])
+            role_code = extract_ods_role_code_with_r_prefix_from_role_codes_string(
+                role["role_code"]
+            )
             ods_codes_and_roles.setdefault(ods_code, []).append(role_code)
         return ods_codes_and_roles
 

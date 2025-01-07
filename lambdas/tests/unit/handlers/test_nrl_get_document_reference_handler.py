@@ -54,7 +54,18 @@ def test_lambda_handler_missing_auth(set_env, mock_service, event, context):
     mock_service.handle_get_document_reference_request.assert_not_called()
 
 
-def test_lambda_handler_error(set_env, mock_service, context):
+@pytest.mark.parametrize(
+    "error_status_code, lambda_error",
+    [
+        ("404", LambdaError.DocumentReferenceNotFound),
+        ("403", LambdaError.DocumentReferenceUnauthorised),
+        ("403", LambdaError.DocumentReferenceInvalidRequest),
+        ("400", LambdaError.DocumentReferenceGeneralError),
+    ],
+)
+def test_lambda_handler_service_errors(
+    set_env, mock_service, context, error_status_code, lambda_error
+):
     expected_exception = {
         "resourceType": "OperationOutcome",
         "issue": [
@@ -65,19 +76,19 @@ def test_lambda_handler_error(set_env, mock_service, context):
                     "coding": [
                         {
                             "system": "http://hl7.org/fhir/issue-type",
-                            "code": "forbidden",
-                            "display": "Forbidden",
+                            "code": lambda_error.value.get("fhir_coding").code(),
+                            "display": lambda_error.value.get("fhir_coding").display(),
                         }
                     ],
                 },
-                "diagnostics": "Client error",
+                "diagnostics": lambda_error.value.get("message"),
             }
         ],
     }
 
     mock_service.handle_get_document_reference_request.side_effect = (
-        NRLGetDocumentReferenceException(400, LambdaError.MockError)
+        NRLGetDocumentReferenceException(error_status_code, lambda_error)
     )
     response = lambda_handler(MOCK_VALID_EVENT, context)
-    assert response["statusCode"] == 400
+    assert response["statusCode"] == error_status_code
     assert json.loads(response["body"]) == expected_exception

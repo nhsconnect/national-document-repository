@@ -1,7 +1,7 @@
 import pytest
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from utils.ods_utils import (
-    extract_ods_role_code_from_role_codes_string,
+    extract_ods_role_code_with_r_prefix_from_role_codes_string,
     is_ods_code_active,
 )
 
@@ -31,4 +31,7 @@ def test_is_ods_code_active(ods_code, expected):
     ],
 )
 def test_process_role_code_returns_correct_role(role_code, expected):
-    assert extract_ods_role_code_from_role_codes_string(role_code) == expected
+    assert (
+        extract_ods_role_code_with_r_prefix_from_role_codes_string(role_code)
+        == expected
+    )
