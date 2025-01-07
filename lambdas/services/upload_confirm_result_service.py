@@ -76,7 +76,12 @@ class UploadConfirmResultService:
                 )
 
                 if len(lg_document_references) == 1:
-                    self.send_message_to_nrl_queue()
+                    logger.info("Sending message to NRL queue.")
+                    self.send_message_to_nrl_queue(lg_document_references[0])
+                else:
+                    logger.info(
+                        "Did not create NRL pointer, more that one document uploaded."
+                    )
 
         except ClientError as e:
             logger.error(f"Error with one of our services: {str(e)}")
@@ -172,17 +177,10 @@ class UploadConfirmResultService:
                 400, LambdaError.UploadConfirmResultFilesNotClean
             )
 
-    def send_message_to_nrl_queue(self):
+    def send_message_to_nrl_queue(self, document_reference):
 
-        document_reference_id = (
-            self.document_service.get_available_lloyd_george_record_for_patient(
-                self.nhs_number
-            )[0].id
-        )
         document_api_endpoint = (
-            os.environ.get("APIM_API_URL")
-            + "/DocumentReference/"
-            + document_reference_id
+            os.environ.get("APIM_API_URL") + "/DocumentReference/" + document_reference
         )
         doc_details = Attachment(
             url=document_api_endpoint,
@@ -194,6 +192,7 @@ class UploadConfirmResultService:
         )
         self.sqs_service.send_message_fifo(
             queue_url=self.nrl_queue_url,
-            message_body=nrl_sqs_message,
+            message_body=nrl_sqs_message.model_dump_json(exclude_none=True),
             group_id=f"nrl_sqs_{uuid.uuid4()}",
         )
+        logger.info("Message sent to NRL queue.")

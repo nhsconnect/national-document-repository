@@ -118,7 +118,7 @@ def test_nrl_pointer_created_single_document_uploads(
     mock_lg_reference,
 ):
     mock_nrl_attachment = Attachment(
-        url=f"{APIM_API_URL}/DocumentReference/3d8683b9-1665-40d2-8499-6e8302d507ff",
+        url=f"{APIM_API_URL}/DocumentReference/test_file_key",
     )
     mock_nrl_message = NrlSqsMessage(
         nhs_number=TEST_STAGING_METADATA.nhs_number,
@@ -129,7 +129,7 @@ def test_nrl_pointer_created_single_document_uploads(
 
     patched_service.sqs_service.send_message_fifo.assert_called_with(
         queue_url=NRL_SQS_URL,
-        message_body=mock_nrl_message,
+        message_body=mock_nrl_message.model_dump_json(exclude_none=True),
         group_id=f"nrl_sqs_{TEST_UUID}",
     )
 
