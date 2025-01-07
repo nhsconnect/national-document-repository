@@ -12,11 +12,11 @@ class NrlAttachment(BaseModel):
     )
     content_type: str = "application/pdf"
     language: str = "en-UK"
-    url: str = None
-    size: int = None
-    hash: str = None
-    title: str = None
-    creation: str = None
+    url: str | None = None
+    size: int | None = None
+    hash: str | None = None
+    title: str | None = None
+    creation: str | None = None
 
 
 class NrlSqsMessage(BaseModel):
