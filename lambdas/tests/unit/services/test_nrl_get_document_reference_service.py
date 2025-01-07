@@ -51,6 +51,92 @@ MOCK_USER_INFO = {
     "sub": "500000000000",
 }
 
+MOCK_FHIR_DOCUMENT = {
+    "resourceType": "DocumentReference",
+    "status": "current",
+    "type": {
+        "coding": [
+            {
+                "system": "http://snomed.info/sct",
+                "code": "16521000000101",
+                "display": "Lloyd George record folder",
+            }
+        ]
+    },
+    "category": [
+        {
+            "coding": [
+                {
+                    "system": "http://snomed.info/sct",
+                    "code": "734163000",
+                    "display": "Care plan",
+                }
+            ]
+        }
+    ],
+    "subject": {
+        "identifier": {
+            "system": "https://fhir.nhs.uk/Id/nhs-number",
+            "value": "9000000009",
+        }
+    },
+    "author": [
+        {
+            "identifier": {
+                "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                "value": "Y12345",
+            }
+        }
+    ],
+    "custodian": {
+        "identifier": {
+            "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+            "value": "Y12345",
+        }
+    },
+    "content": [
+        {
+            "attachment": {
+                "contentType": "application/pdf",
+                "language": "en-GB",
+                "url": "https://fake-url.com",
+                "title": "document.csv",
+                "creation": "2024-01-01T12:00:00.000Z",
+            },
+            "format": {
+                "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode",
+                "code": "urn:nhs-ic:unstructured",
+                "display": "Unstructured document",
+            },
+            "extension": [
+                {
+                    "valueCodeableConcept": {
+                        "coding": [
+                            {
+                                "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability",
+                                "code": "static",
+                                "display": "Static",
+                            }
+                        ]
+                    },
+                    "url": "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability",
+                }
+            ],
+        }
+    ],
+    "context": {
+        "practiceSetting": {
+            "coding": [
+                {
+                    "system": "http://snomed.info/sct",
+                    "code": "1060971000000108",
+                    "display": "General practice service",
+                }
+            ]
+        }
+    },
+}
+
 
 @pytest.fixture
 def patched_service(mocker, set_env, context):
@@ -144,10 +230,13 @@ def test_handle_get_document_reference_request_when_user_is_not_allowed_access(
 
 
 def test_create_document_reference_fhir_response(patched_service):
+    expected = MOCK_FHIR_DOCUMENT
     actual = patched_service.create_document_reference_fhir_response(
         create_test_doc_store_refs()[0], FAKE_URL
     )
+
     assert json.loads(actual)["content"][0]["attachment"]["url"] == FAKE_URL
+    assert json.loads(actual) == expected
 
 
 def test_user_allowed_to_see_file_happy_path(patched_service, mock_fetch_user_info):
