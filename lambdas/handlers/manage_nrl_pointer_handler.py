@@ -54,17 +54,16 @@ def lambda_handler(event, context):
                         **nrl_verified_message,
                         custodian=nrl_api_service.end_user_ods_code,
                     ).create_fhir_document_reference_object()
-                    nrl_api_service.create_new_pointer(
-                        document.model_dump_json(exclude_none=True)
-                    )
-
                     logger.info(
-                        f"Create pointer request: Body: {json.loads(document)}, "
+                        f"Create pointer request: Body: {document.model_dump(exclude_none=True)}, "
                         f"RequestURL: {nrl_api_service.endpoint}, "
                         "HTTP Verb: POST, "
                         f"NHS Number: {nrl_message.nhs_number}, "
                         f"ODS Code: {nrl_api_service.end_user_ods_code}, "
                         f"Datetime: {int(datetime.now().timestamp())} "
+                    )
+                    nrl_api_service.create_new_pointer(
+                        document.model_dump(exclude_none=True)
                     )
 
                 case NrlActionTypes.DELETE:
