@@ -1,9 +1,15 @@
 import json
 
 import pytest
+from enums.death_notification_status import DeathNotificationStatus
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
-from tests.unit.conftest import FAKE_URL, TEST_CURRENT_GP_ODS, TEST_UUID
+from tests.unit.conftest import (
+    EXPECTED_PARSED_PATIENT_BASE_CASE,
+    FAKE_URL,
+    TEST_CURRENT_GP_ODS,
+    TEST_UUID,
+)
 from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
 from tests.unit.helpers.mock_response import MockResponse
 from utils.constants.ssm import GP_ADMIN_USER_ROLE_CODES, GP_CLINICAL_USER_ROLE_CODE
@@ -63,22 +69,8 @@ def mock_fetch_user_info(patched_service, mocker):
     service = patched_service
     mocker.patch.object(service, "get_user_roles_and_ods_codes")
     mocker.patch.object(service, "fetch_user_info")
-    mocker.patch.object(service, "get_patient_current_gp_ods")
-    mocker.patch.object(service, "patient_is_inactive")
     mocker.patch.object(service, "get_ndr_accepted_role_codes")
     yield service
-
-
-@pytest.mark.parametrize(
-    "role_code, expected",
-    [
-        ("S8001:G8005:R8000", "R8000"),
-        ("S8001:G8005:R8015", "R8015"),
-        ("S8001:G8005:R8008", "R8008"),
-    ],
-)
-def test_process_role_code_returns_correct_role(patched_service, role_code, expected):
-    assert patched_service.process_role_code(role_code) == expected
 
 
 def test_get_user_roles_and_ods_codes(patched_service):
@@ -163,11 +155,12 @@ def test_user_allowed_to_see_file_happy_path(patched_service, mock_fetch_user_in
         "TEST_ODS": ["R8000", "R3002", "R8003"],
         "Y12345": ["R8000", "R1234"],
     }
+    mocked_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE
 
     patched_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
-    patched_service.get_patient_current_gp_ods.return_value = TEST_CURRENT_GP_ODS
-    patched_service.patient_is_inactive.return_value = False
-
+    patched_service.pds_service.fetch_patient_details.return_value = (
+        mocked_patient_details
+    )
     assert (
         patched_service.is_user_allowed_to_see_file(
             TEST_UUID, create_test_doc_store_refs()[0]
@@ -176,15 +169,18 @@ def test_user_allowed_to_see_file_happy_path(patched_service, mock_fetch_user_in
     )
 
 
-def test_user_allowed_to_see_file_returns_false(patched_service, mock_fetch_user_info):
+def test_user_allowed_to_see_file_returns_false_based_on_role(
+    patched_service, mock_fetch_user_info
+):
     patched_service.get_user_roles_and_ods_codes.return_value = {
         "TEST_ODS": ["R8001", "R3002", "R8003"],
         "Y12345": ["R8001", "R1234"],
     }
-
+    mocked_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE
     patched_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
-    patched_service.get_patient_current_gp_ods.return_value = TEST_CURRENT_GP_ODS
-    patched_service.patient_is_inactive.return_value = False
+    patched_service.pds_service.fetch_patient_details.return_value = (
+        mocked_patient_details
+    )
 
     assert (
         patched_service.is_user_allowed_to_see_file(
@@ -202,11 +198,19 @@ def test_user_allowed_to_see_file_inactive_patient(
         "Y12345": ["R8000", "R1234"],
     }
 
-    patched_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
-    patched_service.get_patient_current_gp_ods.return_value = (
-        PatientOdsInactiveStatus.DECEASED
+    mocked_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(
+        update={
+            "general_practice_ods": PatientOdsInactiveStatus.DECEASED,
+            "death_notification_status": DeathNotificationStatus.FORMAL,
+            "deceased": True,
+            "active": False,
+        }
     )
-    patched_service.patient_is_inactive.return_value = True
+
+    patched_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
+    patched_service.pds_service.fetch_patient_details.return_value = (
+        mocked_patient_details
+    )
 
     assert (
         patched_service.is_user_allowed_to_see_file(
@@ -252,18 +256,6 @@ def test_get_ndr_accepted_role_codes(patched_service, mocker):
         parameters_keys=parameters
     )
     assert actual == ["R1111", "R1112", "R1113", "R2111", "R2112", "R2113"]
-
-
-@pytest.mark.parametrize(
-    "input_gp_ods_code, expected",
-    [
-        ("REST", True),
-        ("Y12345", False),
-    ],
-)
-def test_patient_is_inactive(patched_service, input_gp_ods_code, expected):
-    actual = patched_service.patient_is_inactive(input_gp_ods_code)
-    assert actual is expected
 
 
 def test_create_document_presigned_url(patched_service, mocker):

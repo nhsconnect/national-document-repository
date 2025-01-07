@@ -2,7 +2,6 @@ import importlib
 import logging
 import os.path
 import sys
-import time
 from typing import Dict
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -113,7 +112,6 @@ class BatchUpdate:
         self.save_progress()
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
-        time.sleep(0.2)  # buffer to avoid over stretching PDS API
         self.logger.debug("Getting the latest ODS code from PDS...")
 
         try:
@@ -234,10 +232,11 @@ def setup_logging_for_local_script():
 
 if __name__ == "__main__":
     setup_logging_for_local_script()
-    BatchUpdate().main()
     print("Starting data collection process")
     data_collection_service = DataCollectionService()
     data_collection_service.collect_all_data_and_write_to_dynamodb()
     print("Starting to create statistical report")
     statistical_report_service = StatisticalReportService()
     statistical_report_service.make_weekly_summary_and_output_to_bucket()
+    print("Starting ods update")
+    BatchUpdate().main()
