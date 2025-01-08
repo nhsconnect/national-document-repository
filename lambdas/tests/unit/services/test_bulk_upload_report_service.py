@@ -21,7 +21,7 @@ from tests.unit.helpers.data.bulk_upload.dynamo_responses import (
     TEST_UPLOADER_ODS_2,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import readfile
-from tests.unit.helpers.data.dynamo_scan_response import (
+from tests.unit.helpers.data.dynamo.dynamo_scan_response import (
     MOCK_EMPTY_RESPONSE,
     UNEXPECTED_RESPONSE,
 )
