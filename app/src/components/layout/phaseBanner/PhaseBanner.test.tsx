@@ -20,7 +20,7 @@ describe('PhaseBanner', () => {
         it('renders PhaseBanner with content', () => {
             renderComponent();
 
-            expect(screen.getByText('New Service')).toBeInTheDocument();
+            expect(screen.getByText('New service')).toBeInTheDocument();
 
             expect(screen.getByText(/Your/i)).toBeInTheDocument();
             expect(screen.getByText(/feedback/i)).toBeInTheDocument();

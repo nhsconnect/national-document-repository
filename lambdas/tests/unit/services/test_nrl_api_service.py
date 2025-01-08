@@ -1,4 +1,5 @@
 import pytest
+from enums.snomed_codes import SnomedCodes
 from requests import Response
 from services.nrl_api_service import NrlApiService
 from tests.unit.conftest import FAKE_URL, TEST_NHS_NUMBER
@@ -43,12 +44,12 @@ def test_get_end_user_ods_code(nrl_service):
 
 
 def test_get_pointer_with_record_type(mocker, nrl_service):
-    mock_type = 11111111
+    mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
 
     mock_params = {
         "subject:identifier": f"https://fhir.nhs.uk/Id/nhs-number|{TEST_NHS_NUMBER}",
-        "type": f"http://snomed.info/sct|{mock_type}",
+        "type": f"http://snomed.info/sct|{mock_type.code}",
     }
     mock_headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -64,11 +65,11 @@ def test_get_pointer_with_record_type(mocker, nrl_service):
 
 
 def test_get_pointer_with_record_type_no_retry(mocker, nrl_service):
-    mock_type = 11111111
+    mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
     mock_params = {
         "subject:identifier": f"https://fhir.nhs.uk/Id/nhs-number|{TEST_NHS_NUMBER}",
-        "type": f"http://snomed.info/sct|{mock_type}",
+        "type": f"http://snomed.info/sct|{mock_type.code}",
     }
     mock_headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -90,11 +91,11 @@ def test_get_pointer_with_record_type_no_retry(mocker, nrl_service):
 
 
 def test_get_pointer_with_record_type_with_retry(mocker, nrl_service):
-    mock_type = 11111111
+    mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
     mock_params = {
         "subject:identifier": f"https://fhir.nhs.uk/Id/nhs-number|{TEST_NHS_NUMBER}",
-        "type": f"http://snomed.info/sct|{mock_type}",
+        "type": f"http://snomed.info/sct|{mock_type.code}",
     }
     mock_headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -120,7 +121,7 @@ def test_get_pointer_raise_error(nrl_service):
     response.status_code = 400
     response._content = b"{}"
 
-    mock_type = 11111111
+    mock_type = SnomedCodes.LLOYD_GEORGE.value
 
     nrl_service.session.get.return_value = response
     pytest.raises(NrlApiException, nrl_service.get_pointer, TEST_NHS_NUMBER, mock_type)
@@ -129,7 +130,7 @@ def test_get_pointer_raise_error(nrl_service):
 
 
 def test_delete_pointer_with_record_type_no_record(mocker, nrl_service):
-    mock_type = 11111111
+    mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
 
     nrl_response = {
@@ -145,7 +146,7 @@ def test_delete_pointer_with_record_type_no_record(mocker, nrl_service):
 
 
 def test_delete_pointer_with_record_type_one_record(mocker, nrl_service):
-    mock_type = 11111111
+    mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
     mock_pointer_id = "ODSCODE-1111bfb1-1111-2222-3333-4444555c666f"
     mock_headers = {
@@ -176,7 +177,7 @@ def test_delete_pointer_with_record_type_one_record(mocker, nrl_service):
 
 
 def test_delete_pointer_with_record_type_more_than_one_record(mocker, nrl_service):
-    mock_type = 11111111
+    mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
     mock_pointer_id = "ODSCODE-1111bfb1-1111-2222-3333-4444555c666"
 
@@ -209,7 +210,7 @@ def test_delete_pointer_not_raise_error(mocker, nrl_service):
     response = Response()
     response.status_code = 400
     response._content = b"{}"
-    mock_type = 11111111
+    mock_type = SnomedCodes.LLOYD_GEORGE.value
     nrl_response = {
         "resourceType": "Bundle",
         "type": "searchset",

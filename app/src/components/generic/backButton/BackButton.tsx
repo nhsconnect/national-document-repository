@@ -3,17 +3,24 @@ import React from 'react';
 import type { MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const BackButton = () => {
+interface BackButtonProps {
+    toLocation?: string;
+    backLinkText?: string;
+}
+
+const BackButton = ({ toLocation, backLinkText = 'Go back' }: BackButtonProps) => {
     const navigate = useNavigate();
 
     const onBack = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
-        navigate(-1);
+
+        if (toLocation) navigate(toLocation);
+        else navigate(-1);
     };
 
     return (
         <BackLink onClick={onBack} href="#">
-            Go back
+            {backLinkText}
         </BackLink>
     );
 };

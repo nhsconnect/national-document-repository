@@ -32,4 +32,30 @@ describe('BackButton', () => {
             expect(mockUseNavigate).toHaveBeenCalledWith(-1);
         });
     });
+
+    it('navigates to specified location when the "toLocation" property is defined' , async () => {
+
+        render(<BackButton toLocation="/specified-location" />);
+        userEvent.click( screen.getByText('Go back'));
+
+        await waitFor(() => {
+            expect(mockUseNavigate).toHaveBeenCalledWith('/specified-location');
+        });
+
+    });
+
+    it('displays default back link text when "backLinkText" is not provided', async () => {
+
+        render(<BackButton toLocation="/specified-location" />);
+        expect(screen.getByText('Go back')).toBeInTheDocument(); 
+
+    });
+
+    it('displays custom back link text when "backLinkText" is defined', async () => {
+
+        render(<BackButton backLinkText="navigate to ..." />);
+        expect(screen.getByText('navigate to ...')).toBeInTheDocument();
+
+    });
+
 });

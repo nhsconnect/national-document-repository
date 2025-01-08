@@ -331,7 +331,7 @@ def test_validate_name_with_wrong_first_name(mocker, mock_pds_patient):
         validate_patient_name_using_full_name_history(
             lg_file_patient_name, mock_pds_patient
         )
-    assert mock_validate_name.call_count == 2
+    assert mock_validate_name.call_count == 3
 
 
 def test_validate_name_with_wrong_family_name(mocker, mock_pds_patient):
@@ -344,7 +344,7 @@ def test_validate_name_with_wrong_family_name(mocker, mock_pds_patient):
         validate_patient_name_using_full_name_history(
             lg_file_patient_name, mock_pds_patient
         )
-    assert mock_validate_name.call_count == 2
+    assert mock_validate_name.call_count == 3
 
 
 def test_validate_name_with_historical_name(mocker, mock_pds_patient):
