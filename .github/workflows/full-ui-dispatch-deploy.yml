@@ -75,15 +75,17 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - uses: dkershner6/aws-ssm-getparameters-action@v2
-        with:
-          parameterPairs: '/ndr/${{ github.event.client_payload.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT, 
-            /ndr/${{ github.event.client_payload.sandbox }}/container_port = CONTAINER_PORT'
-          withDecryption: 'true' # defaults to true
+      - name: Get SSM parameters from SSM
+        id: ssm-parameters
+        run: |
+          doc_store_api_endpoint=$(echo aws ssm get-parameter --name \"/ndr/$${{ github.event.client_payload.sandbox }}/api_endpoint\" --with-decryption)
+          echo "DOC_STORE_API_ENDPOINT=$doc_store_api_endpoint" >> $GITHUB_OUTPUT
+          container_port=$(echo aws ssm get-parameter --name \"ndr/${{ github.event.client_payload.sandbox }}/container_port\" --with-decryption)
+          echo "CONTAINER_PORT=$container_port" >> $GITHUB_OUTPUT
 
       - name: Configure React environment vars
         env:
-          ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
+          ENDPOINT_DOC_STORE_API: ${{ steps.ssm-parameters.outputs.DOC_STORE_API_ENDPOINT }}
           AWS_REGION: ${{ vars.AWS_REGION }}
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: ${{ github.event.client_payload.environment }}
@@ -98,9 +100,8 @@ jobs:
           ECR_REPOSITORY: ndr-${{ github.event.client_payload.sandbox }}-app
           IMAGE_TAG: latest
           IMAGE_TAG_SHA: ${{ github.sha }}
-          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          docker build --build-arg="CONTAINER_PORT=$CONTAINER_PORT" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
+          docker build --build-arg="CONTAINER_PORT=${{ steps.ssm-parameters.outputs.CONTAINER_PORT }}" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
