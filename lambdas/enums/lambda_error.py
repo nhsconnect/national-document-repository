@@ -412,7 +412,7 @@ class LambdaError(Enum):
         "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
     DocumentReferenceInvalidRequest = {
-        "err_code": "NRL_DR_4041",
+        "err_code": "NRL_DR_4001",
         "message": "Invalid request",
         "fhir_coding": FhirIssueCoding.INVALID,
     }
