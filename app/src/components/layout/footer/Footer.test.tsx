@@ -8,6 +8,10 @@ describe('Footer', () => {
             render(<Footer />);
             expect(screen.getByTestId('privacy-link')).toBeInTheDocument();
         });
+        it('renders service updates link', () => {
+            render(<Footer />);
+            expect(screen.getByTestId('service-updates-link')).toBeInTheDocument();
+        });
     });
 
     describe('Navigation', () => {
