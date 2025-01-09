@@ -6,6 +6,7 @@ import pydantic
 from botocore.exceptions import ClientError
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
@@ -278,6 +279,8 @@ class BulkUploadService:
             document_api_endpoint = (
                 os.environ.get("APIM_API_URL", "")
                 + "/DocumentReference/"
+                + SnomedCodes.LLOYD_GEORGE.value.code
+                + "~"
                 + last_document_processed.id
             )
             doc_details = Attachment(
