@@ -145,7 +145,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     <li>The patient details must match the record you are uploading</li>
                     <li>The patient record must be in a PDF file or multiple PDFs</li>
                     <li>Your PDF file(s) should be named in this format:</li>
-                    <p style={{ fontWeight: 600, margin: 20, marginRight: 0 }}>
+                    <p style>
                         [PDFnumber]_Lloyd_George_Record_[Patient Name]_[NHS Number]_[D.O.B].PDF
                     </p>
                 </ul>
