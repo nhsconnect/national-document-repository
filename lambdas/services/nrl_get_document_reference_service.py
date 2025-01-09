@@ -2,6 +2,7 @@ import os
 
 import requests
 from enums.lambda_error import LambdaError
+from enums.snomed_codes import SnomedCodes
 from models.document_reference import DocumentReference
 from models.fhir.R4.nrl_fhir_document_reference import Attachment, DocumentReferenceInfo
 from requests.exceptions import HTTPError
@@ -20,7 +21,9 @@ logger = LoggingService(__name__)
 
 class NRLGetDocumentReferenceService:
     def __init__(self):
-        self.table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
+        self.tables = {
+            SnomedCodes.LLOYD_GEORGE.value.code: os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
+        }
         self.ssm_prefix = getattr(request_context, "auth_ssm_prefix", "")
         get_document_presign_url_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
         self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
@@ -31,8 +34,15 @@ class NRLGetDocumentReferenceService:
         self.pds_service = get_pds_service()
         self.document_service = DocumentService()
 
-    def handle_get_document_reference_request(self, document_id, bearer_token):
-        document_reference = self.get_document_references(document_id)
+    def handle_get_document_reference_request(
+        self, snomed_code, document_id, bearer_token
+    ):
+        table = self.tables.get(snomed_code, None)
+        if not table:
+            raise NRLGetDocumentReferenceException(
+                400, LambdaError.DocumentReferenceInvalidRequest
+            )
+        document_reference = self.get_document_references(document_id, table)
         user_details = self.fetch_user_info(bearer_token)
 
         if not self.is_user_allowed_to_see_file(user_details, document_reference):
@@ -46,9 +56,9 @@ class NRLGetDocumentReferenceService:
         )
         return response
 
-    def get_document_references(self, document_id: str) -> DocumentReference:
+    def get_document_references(self, document_id: str, table) -> DocumentReference:
         documents = self.document_service.fetch_documents_from_table(
-            table=self.table,
+            table=table,
             search_condition=document_id,
             search_key="ID",
         )

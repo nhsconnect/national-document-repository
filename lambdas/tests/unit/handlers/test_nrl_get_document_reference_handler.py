@@ -2,7 +2,11 @@ import json
 
 import pytest
 from enums.lambda_error import LambdaError
-from handlers.nrl_get_document_reference_handler import lambda_handler
+from enums.snomed_codes import SnomedCodes
+from handlers.nrl_get_document_reference_handler import (
+    get_id_and_snomed_from_path_parameters,
+    lambda_handler,
+)
 from tests.unit.conftest import TEST_UUID
 from utils.lambda_exceptions import NRLGetDocumentReferenceException
 
@@ -11,7 +15,7 @@ MOCK_VALID_EVENT = {
     "headers": {
         "Authorization": f"Bearer {TEST_UUID}",
     },
-    "pathParameters": {"id": TEST_UUID},
+    "pathParameters": {"id": f"{SnomedCodes}~{TEST_UUID}"},
     "body": None,
 }
 
@@ -49,7 +53,9 @@ def test_lambda_handler_empty_event(set_env, mock_service, event, context):
 
 
 def test_lambda_handler_missing_auth(set_env, mock_service, event, context):
-    response = lambda_handler({"pathParameters": {"id": TEST_UUID}}, context)
+    response = lambda_handler(
+        {"pathParameters": {"id": f"{SnomedCodes.LLOYD_GEORGE}~{TEST_UUID}"}}, context
+    )
     assert response["statusCode"] == 400
     mock_service.handle_get_document_reference_request.assert_not_called()
 
@@ -92,3 +98,18 @@ def test_lambda_handler_service_errors(
     response = lambda_handler(MOCK_VALID_EVENT, context)
     assert response["statusCode"] == error_status_code
     assert json.loads(response["body"]) == expected_exception
+
+
+def test_get_id_and_snomed_from_path(event, context):
+    path_parameter = f"16521000000101~{TEST_UUID}"
+
+    id, snomed = get_id_and_snomed_from_path_parameters(path_parameter)
+    assert id == TEST_UUID
+    assert snomed == "16521000000101"
+
+
+def test_get_id_and_snomed_from_path_parameters_no_tilde_present(event, context):
+
+    id, snomed = get_id_and_snomed_from_path_parameters("notildePresent ")
+    assert id is None
+    assert snomed is None

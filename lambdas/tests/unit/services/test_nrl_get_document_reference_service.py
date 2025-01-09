@@ -3,10 +3,12 @@ import json
 import pytest
 from enums.death_notification_status import DeathNotificationStatus
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from enums.snomed_codes import SnomedCodes
 from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
 from tests.unit.conftest import (
     EXPECTED_PARSED_PATIENT_BASE_CASE,
     FAKE_URL,
+    MOCK_LG_TABLE_NAME,
     TEST_CURRENT_GP_ODS,
     TEST_UUID,
 )
@@ -171,12 +173,12 @@ def test_get_document_reference_service(patched_service):
     )
 
     actual = patched_service.get_document_references(
-        "3d8683b9-1665-40d2-8499-6e8302d507ff"
+        "3d8683b9-1665-40d2-8499-6e8302d507ff", MOCK_LG_TABLE_NAME
     )
     assert actual == create_test_doc_store_refs()[0]
 
 
-def test_handle_get_document_reference_request(patched_service, mocker):
+def test_handle_get_document_reference_request(patched_service, mocker, set_env):
     expected = "test_response"
     mock_document_ref = create_test_doc_store_refs()[0]
     mocker.patch.object(
@@ -196,7 +198,7 @@ def test_handle_get_document_reference_request(patched_service, mocker):
     )
 
     actual = patched_service.handle_get_document_reference_request(
-        "test-id", "bearer token_test"
+        SnomedCodes.LLOYD_GEORGE.value.code, "test-id", "bearer token_test"
     )
 
     assert expected == actual
@@ -223,10 +225,20 @@ def test_handle_get_document_reference_request_when_user_is_not_allowed_access(
 
     with pytest.raises(NRLGetDocumentReferenceException):
         patched_service.handle_get_document_reference_request(
-            "test-id", "bearer token_test"
+            SnomedCodes.LLOYD_GEORGE, "test-id", "bearer token_test"
         )
 
     patched_service.create_document_reference_fhir_response.assert_not_called()
+
+
+def test_get_document_reference_request_no_table_associated_to_snomed_code_throws_exception(
+    patched_service,
+):
+
+    with pytest.raises(NRLGetDocumentReferenceException):
+        patched_service.handle_get_document_reference_request(
+            "12345678", "test-id", "bearer token_test"
+        )
 
 
 def test_create_document_reference_fhir_response(patched_service):

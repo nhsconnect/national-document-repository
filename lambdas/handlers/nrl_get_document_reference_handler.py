@@ -24,18 +24,23 @@ logger = LoggingService(__name__)
     ]
 )
 def lambda_handler(event, context):
-    document_id = event.get("pathParameters", {}).get("id", None)
+    path_params = event.get("pathParameters", {}).get("id", None)
+    if not path_params:
+        raise NRLGetDocumentReferenceException(
+            400, LambdaError.DocumentReferenceInvalidRequest
+        )
+    document_id, snomed_code = get_id_and_snomed_from_path_parameters(path_params)
     bearer_token = event.get("headers", {}).get("Authorization", None)
     configuration_service = DynamicConfigurationService()
     configuration_service.set_auth_ssm_prefix()
     try:
-        if not document_id or not bearer_token:
+        if not document_id or not bearer_token or not snomed_code:
             raise NRLGetDocumentReferenceException(
                 400, LambdaError.DocumentReferenceInvalidRequest
             )
         get_document_service = NRLGetDocumentReferenceService()
         document_ref = get_document_service.handle_get_document_reference_request(
-            document_id, bearer_token
+            snomed_code, document_id, bearer_token
         )
 
         return ApiGatewayResponse(
@@ -49,3 +54,11 @@ def lambda_handler(event, context):
             ),
             methods="GET",
         ).create_api_gateway_response()
+
+
+def get_id_and_snomed_from_path_parameters(path_parameters):
+    params = path_parameters.split("~")
+    if len(params) == 2:
+        return params[1], params[0]
+    else:
+        return None, None
