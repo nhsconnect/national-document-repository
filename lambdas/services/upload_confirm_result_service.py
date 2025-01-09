@@ -4,6 +4,7 @@ import uuid
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.nrl_sqs_upload import NrlActionTypes
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.nrl_sqs_message import NrlSqsMessage
@@ -80,7 +81,7 @@ class UploadConfirmResultService:
                     self.send_message_to_nrl_queue(lg_document_references[0])
                 else:
                     logger.info(
-                        "Did not create NRL pointer, more that one document uploaded."
+                        "Did not create NRL pointer, more than one document uploaded."
                     )
 
         except ClientError as e:
@@ -180,7 +181,11 @@ class UploadConfirmResultService:
     def send_message_to_nrl_queue(self, document_reference):
 
         document_api_endpoint = (
-            os.environ.get("APIM_API_URL") + "/DocumentReference/" + document_reference
+            os.environ.get("APIM_API_URL")
+            + "/DocumentReference/"
+            + SnomedCodes.LLOYD_GEORGE.value.code
+            + "~"
+            + document_reference
         )
         doc_details = Attachment(
             url=document_api_endpoint,

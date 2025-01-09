@@ -1,6 +1,7 @@
 import pytest
 from botocore.exceptions import ClientError
 from enums.nrl_sqs_upload import NrlActionTypes
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from enums.virus_scan_result import VirusScanResult
 from models.document_reference import DocumentReference
@@ -118,7 +119,7 @@ def test_nrl_pointer_created_single_document_uploads(
     mock_lg_reference,
 ):
     mock_nrl_attachment = Attachment(
-        url=f"{APIM_API_URL}/DocumentReference/test_file_key",
+        url=f"{APIM_API_URL}/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~test_file_key",
     )
     mock_nrl_message = NrlSqsMessage(
         nhs_number=TEST_STAGING_METADATA.nhs_number,

@@ -110,7 +110,7 @@ MOCK_PRESIGNED_URL_ROLE_ARN_VALUE = "arn:aws:iam::test123"
 
 STITCH_METADATA_DYNAMODB_NAME_VALUE = "test_stitch_metadata"
 NRL_SQS_URL = "https://sqs.us-east-1.amazonaws.com/177715257436/MyQueue"
-APIM_API_URL = "https://apim.api.service.uk"
+APIM_API_URL = "dr://apim.api.service.uk"
 
 
 @pytest.fixture
