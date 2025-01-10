@@ -179,6 +179,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv("APIM_API_URL", APIM_API_URL)
     monkeypatch.setenv("CLOUDFRONT_URL", "mock-cloudfront-url.com")
 
+
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
     givenName=["Jane"],
     familyName="Smith",
