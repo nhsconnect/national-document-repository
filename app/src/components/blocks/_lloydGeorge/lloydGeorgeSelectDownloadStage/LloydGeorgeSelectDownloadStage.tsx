@@ -85,6 +85,10 @@ function LloydGeorgeSelectDownloadStage({
     useEffect(() => {
         const onPageLoad = async () => {
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING);
+            if (!nhsNumber) {
+                navigate(routes.SEARCH_PATIENT);
+                return;
+            }
             try {
                 // This check is in place for when we navigate directly to a full download,
                 // in that instance we do not need to get a list of selectable files as we will download all files

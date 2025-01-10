@@ -6,6 +6,7 @@ from enum import Enum
 from unittest import mock
 
 import pytest
+from botocore.exceptions import ClientError
 from models.document_reference import DocumentReference
 from models.pds_models import Patient, PatientDetails
 from pydantic import ValidationError
@@ -178,7 +179,6 @@ def set_env(monkeypatch):
     monkeypatch.setenv("APIM_API_URL", APIM_API_URL)
     monkeypatch.setenv("CLOUDFRONT_URL", "mock-cloudfront-url.com")
 
-
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
     givenName=["Jane"],
     familyName="Smith",
@@ -293,6 +293,11 @@ class MockError(Enum):
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
+
+
+MOCK_CLIENT_ERROR = ClientError(
+    {"Error": {"Code": 500, "Message": "Test error message"}}, "Query"
+)
 
 
 @pytest.fixture

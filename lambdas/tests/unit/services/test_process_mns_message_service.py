@@ -14,7 +14,7 @@ from tests.unit.handlers.test_mns_notification_handler import (
     MOCK_INFORMAL_DEATH_MESSAGE_BODY,
     MOCK_REMOVED_DEATH_MESSAGE_BODY,
 )
-from tests.unit.helpers.data.dynamo_responses import (
+from tests.unit.helpers.data.dynamo.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
