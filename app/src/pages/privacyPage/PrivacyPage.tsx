@@ -91,7 +91,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-                <h1>Our permission to process and store patient data</h1>
+                <h2>Our permission to process and store patient data</h2>
                 <p>
                     This service has legal permission to process and store patient data through the
                     <strong> National Data Processing Deed</strong>.
@@ -137,7 +137,7 @@ function PrivacyPage() {
             </section>
 
             <section>
-                <h1>Contact us</h1>
+                <h2>Contact us</h2>
                 <p>
                     If you have any questions about the National Data Processing Deed, or our
                     privacy policy, you can contact the team on{' '}
