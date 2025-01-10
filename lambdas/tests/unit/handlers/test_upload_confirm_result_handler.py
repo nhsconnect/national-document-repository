@@ -8,7 +8,7 @@ from handlers.upload_confirm_result_handler import (
 )
 from models.document_reference import DocumentReference
 from tests.unit.conftest import TEST_NHS_NUMBER
-from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
+from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
 from tests.unit.helpers.data.upload_confirm_result import (
     MOCK_ARF_DOCUMENTS,
     MOCK_INVALID_BODY_EVENT,

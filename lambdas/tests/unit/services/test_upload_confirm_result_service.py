@@ -22,7 +22,7 @@ from tests.unit.conftest import (
     MockError,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA
-from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
+from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
 from tests.unit.helpers.data.test_documents import create_test_arf_doc_store_refs
 from tests.unit.helpers.data.upload_confirm_result import (
     MOCK_ARF_DOCUMENT_REFERENCES,
