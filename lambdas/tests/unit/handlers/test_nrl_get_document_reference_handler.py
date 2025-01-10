@@ -56,7 +56,13 @@ def test_lambda_handler_missing_auth(set_env, mock_service, event, context):
     response = lambda_handler(
         {"pathParameters": {"id": f"{SnomedCodes.LLOYD_GEORGE}~{TEST_UUID}"}}, context
     )
-    assert response["statusCode"] == 400
+    assert response["statusCode"] == 401
+    mock_service.handle_get_document_reference_request.assert_not_called()
+
+
+def test_lambda_handler_id_malformed(set_env, mock_service, event, context):
+    response = lambda_handler({"pathParameters": {"id": f"~{TEST_UUID}"}}, context)
+    assert response["statusCode"] == 404
     mock_service.handle_get_document_reference_request.assert_not_called()
 
 

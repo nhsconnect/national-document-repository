@@ -40,7 +40,7 @@ class NRLGetDocumentReferenceService:
         table = self.tables.get(snomed_code, None)
         if not table:
             raise NRLGetDocumentReferenceException(
-                400, LambdaError.DocumentReferenceInvalidRequest
+                404, LambdaError.DocumentReferenceNotFound
             )
         document_reference = self.get_document_references(document_id, table)
         user_details = self.fetch_user_info(bearer_token)
@@ -88,13 +88,19 @@ class NRLGetDocumentReferenceService:
                 400, LambdaError.DocumentReferenceGeneralError
             )
 
-    def is_user_allowed_to_see_file(self, user_details, document_reference):
+    def is_user_allowed_to_see_file(
+        self, user_details: dict, document_reference: DocumentReference
+    ) -> bool:
         user_ods_codes_and_roles = self.get_user_roles_and_ods_codes(user_details)
         patient_details = self.pds_service.fetch_patient_details(
             document_reference.nhs_number
         )
 
         patient_current_gp_ods_code = patient_details.general_practice_ods
+        logger.info(
+            f"Comparing PDS ODS code against ODS code held in table, "
+            f"ODS codes match: {patient_current_gp_ods_code == document_reference.current_gp_ods}"
+        )
         if not patient_details.active:
             return False
 

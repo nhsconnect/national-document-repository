@@ -36,10 +36,16 @@ def lambda_handler(event, context):
         configuration_service = DynamicConfigurationService()
         configuration_service.set_auth_ssm_prefix()
 
-        if not document_id or not bearer_token or not snomed_code:
+        if not document_id or not snomed_code:
             raise NRLGetDocumentReferenceException(
-                400, LambdaError.DocumentReferenceInvalidRequest
+                404, LambdaError.DocumentReferenceInvalidRequest
             )
+
+        if not bearer_token:
+            raise NRLGetDocumentReferenceException(
+                401, LambdaError.DocumentReferenceInvalidRequest
+            )
+
         get_document_service = NRLGetDocumentReferenceService()
         document_ref = get_document_service.handle_get_document_reference_request(
             snomed_code, document_id, bearer_token
