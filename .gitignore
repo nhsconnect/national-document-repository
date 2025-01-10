@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# ignore install pdf.js temp files
+local_pdfjs/
+temp_pdfjs/
+
 # Distribution / packaging
 .Python
 build/
