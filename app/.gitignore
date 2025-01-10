@@ -5,9 +5,6 @@
 /.pnp
 .pnp.js
 
-# keep added pdf.js 
-!public/pdfjs/build/
-
 # testing
 /coverage
 /cypress/results
