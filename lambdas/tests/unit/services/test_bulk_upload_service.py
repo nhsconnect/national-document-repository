@@ -16,6 +16,7 @@ from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repos
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (
+    APIM_API_URL,
     MOCK_LG_BUCKET,
     MOCK_STAGING_STORE_BUCKET,
     NRL_SQS_URL,
@@ -47,7 +48,6 @@ from tests.unit.utils.test_unicode_utils import (
     NAME_WITH_ACCENT_NFC_FORM,
     NAME_WITH_ACCENT_NFD_FORM,
 )
-from unit.conftest import APIM_API_URL
 from utils.exceptions import (
     BulkUploadException,
     DocumentInfectedException,
