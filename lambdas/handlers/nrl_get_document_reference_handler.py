@@ -38,7 +38,7 @@ def lambda_handler(event, context):
 
         if not document_id or not snomed_code:
             raise NRLGetDocumentReferenceException(
-                404, LambdaError.DocumentReferenceInvalidRequest
+                404, LambdaError.DocumentReferenceNotFound
             )
 
         if not bearer_token:
