@@ -3,7 +3,7 @@ from enum import Enum
 
 import pytest
 from handlers.document_reference_search_handler import lambda_handler
-from tests.unit.helpers.data.dynamo_responses import EXPECTED_RESPONSE
+from tests.unit.helpers.data.dynamo.dynamo_responses import EXPECTED_RESPONSE
 from utils.lambda_exceptions import DocumentRefSearchException
 from utils.lambda_response import ApiGatewayResponse
 

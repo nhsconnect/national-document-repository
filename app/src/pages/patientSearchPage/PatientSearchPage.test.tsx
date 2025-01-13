@@ -348,6 +348,18 @@ describe('PatientSearchPage', () => {
                 });
             },
         );
+
+        it('a defined width class is applied to the NHS number input field', async () => {
+
+            const definedWidthClass = 'nhsuk-input--width-10';
+
+            renderPatientSearchPage();
+
+            const input = screen.getByTestId('nhs-number-input');
+            expect(input).toHaveClass(definedWidthClass);
+
+        });
+
     });
 });
 

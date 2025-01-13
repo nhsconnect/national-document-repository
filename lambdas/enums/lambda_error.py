@@ -235,6 +235,14 @@ class LambdaError(Enum):
     """
        Errors for DocumentDeletionServiceException
     """
+    DocDelInvalidStreamEvent = {
+        "err_code": "DDS_4001",
+        "message": "Failed to delete document object",
+    }
+    DocDelObjectFailure = {
+        "err_code": "DDS_4002",
+        "message": "Failed to delete document object",
+    }
     DocDelClient = {
         "err_code": "DDS_5001",
         "message": "Failed to delete documents",
@@ -494,6 +502,10 @@ class LambdaError(Enum):
     IncompleteRecordError = {
         "err_code": "LGL_400",
         "message": "Incomplete record, Failed to create document manifest",
+    }
+    DynamoInvalidStreamEvent = {
+        "err_code": "DBS_4001",
+        "message": "Failed to parse DynamoDb event stream",
     }
 
     MockError = {

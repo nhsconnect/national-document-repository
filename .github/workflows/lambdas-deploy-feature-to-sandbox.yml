@@ -72,6 +72,7 @@ jobs:
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
+      is_sandbox: true
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
