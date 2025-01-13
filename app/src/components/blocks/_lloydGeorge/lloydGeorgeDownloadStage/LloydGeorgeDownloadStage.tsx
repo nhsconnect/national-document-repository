@@ -193,7 +193,7 @@ function LloydGeorgeDownloadStage({
                                     navigate(routes.LLOYD_GEORGE);
                                 }}
                             >
-                                Cancel
+                                Cancel and return to patient record
                             </Link>
                         </div>
                     </div>
