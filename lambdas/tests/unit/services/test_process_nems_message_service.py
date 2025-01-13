@@ -431,19 +431,19 @@ def test_validate_nems_details_throws_OrganisationNotFoundException(mock_service
 
 
 def test_update_lg_table_when_fetch_raise_client_error(mock_service):
-    mock_service.document_service.fetch_documents_from_table.side_effect = ClientError(
+    mock_service.document_service.fetch_documents_from_table_with_nhs_number.side_effect = ClientError(
         {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
     )
 
     with pytest.raises(ClientError):
         mock_service.update_LG_table_with_current_GP("test_number", "test_ods")
 
-    mock_service.document_service.fetch_documents_from_table.assert_called_once()
+    mock_service.document_service.fetch_documents_from_table_with_nhs_number.assert_called_once()
     mock_service.document_service.update_documents.assert_not_called()
 
 
 def test_update_lg_table_when_update_raise_client_error(mock_service):
-    mock_service.document_service.fetch_documents_from_table.return_value = {
+    mock_service.document_service.fetch_documents_from_table_with_nhs_number.return_value = {
         "Doc": "test_doc"
     }
     mock_service.document_service.update_documents.side_effect = ClientError(
@@ -453,25 +453,27 @@ def test_update_lg_table_when_update_raise_client_error(mock_service):
     with pytest.raises(ClientError):
         mock_service.update_LG_table_with_current_GP("test_number", "test_ods")
 
-    mock_service.document_service.fetch_documents_from_table.assert_called_once()
+    mock_service.document_service.fetch_documents_from_table_with_nhs_number.assert_called_once()
     mock_service.document_service.update_documents.assert_called_once()
 
 
 def test_update_lg_table_happy_path(mock_service):
-    mock_service.document_service.fetch_documents_from_table.return_value = {
+    mock_service.document_service.fetch_documents_from_table_with_nhs_number.return_value = {
         "Doc": "test_doc"
     }
 
     mock_service.update_LG_table_with_current_GP("test_number", "test_ods")
 
-    mock_service.document_service.fetch_documents_from_table.assert_called_once()
+    mock_service.document_service.fetch_documents_from_table_with_nhs_number.assert_called_once()
     mock_service.document_service.update_documents.assert_called_once()
 
 
 def test_update_lg_table_no_documents(mock_service):
-    mock_service.document_service.fetch_documents_from_table.return_value = []
+    mock_service.document_service.fetch_documents_from_table_with_nhs_number.return_value = (
+        []
+    )
 
     mock_service.update_LG_table_with_current_GP("test_number", "test_ods")
 
-    mock_service.document_service.fetch_documents_from_table.assert_called_once()
+    mock_service.document_service.fetch_documents_from_table_with_nhs_number.assert_called_once()
     mock_service.document_service.update_documents.assert_not_called()
