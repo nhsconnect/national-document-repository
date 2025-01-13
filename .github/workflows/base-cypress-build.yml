@@ -22,6 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          repository: 'nhsconnect/national-document-repository'
           ref: ${{ github.event.inputs.build_branch }}
 
       - name: Cypress install

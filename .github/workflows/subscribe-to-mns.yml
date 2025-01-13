@@ -3,28 +3,59 @@ name: Subscribe to MNS
 on:
   workflow_dispatch:
     inputs:
-      build_branch:
-        required: true
-        type: string
-      environment:
-        required: true
-        type: string
       sandbox:
+        description: Which sandbox would you like to run against?
+        required: true
+        type: choice
+        options:
+          - ndr-dev
+          - ndr-test
+          - pre-prod
+          - prod
+      environment:
+        description: Which environment settings to use?
         required: true
         type: string
+        default: development
+
 permissions:
-  pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
+
+env:
+  SANDBOX: ${{ inputs.sandbox }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  URL: ${{ vars.MNS_SUBSCRIPTION_URL }}
+
 jobs:
-  placeholder:
+  Subscribe_to_MNS:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    defaults:
-      run:
-        working-directory: lambdas
     steps:
-      - name: Placeholder
-        run: |
-          echo "Running placeholder job on ${inputs.sandbox}"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
 
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install boto3 requests pyjwt cryptography
+          echo "Installed requirements"
+
+      - name: Run script
+        working-directory: ./lambdas
+        run: |
+          python3 -m scripts.mns_subscription
+          echo "Subscription complete"

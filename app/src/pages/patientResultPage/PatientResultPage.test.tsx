@@ -19,6 +19,10 @@ jest.mock('../../helpers/hooks/usePatient');
 const mockedUseRole = useRole as jest.Mock;
 const mockedUsePatient = usePatient as jest.Mock;
 
+const PAGE_HEADER_TEXT = 'Patient details'
+const PAGE_TEXT = "This page displays the current data recorded in the Patient Demographic Service for this patient."
+const CONFIRM_BUTTON_TEXT = 'Confirm patient details and continue' 
+
 describe('PatientResultPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -32,7 +36,7 @@ describe('PatientResultPage', () => {
         it('displays component', () => {
             render(<PatientResultPage />);
 
-            expect(screen.getByText('Verify patient details')).toBeInTheDocument();
+            expect(screen.getByText(PAGE_HEADER_TEXT)).toBeInTheDocument();
         });
 
         it.each(authorisedRoles)(
@@ -47,23 +51,13 @@ describe('PatientResultPage', () => {
                 render(<PatientResultPage />);
 
                 expect(
-                    screen.getByRole('heading', { name: 'Verify patient details' }),
+                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
                 ).toBeInTheDocument();
                 expect(screen.getByText(familyName)).toBeInTheDocument();
                 expect(
-                    screen.getByRole('button', { name: 'Accept details are correct' }),
+                    screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }),
                 ).toBeInTheDocument();
-                expect(screen.getByText(/If patient details are incorrect/)).toBeInTheDocument();
 
-                const nationalServiceDeskLink = screen.getByRole('link', {
-                    name: /National Service Desk/,
-                });
-
-                expect(nationalServiceDeskLink).toHaveAttribute(
-                    'href',
-                    'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
-                );
-                expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
             },
         );
 
@@ -79,11 +73,11 @@ describe('PatientResultPage', () => {
                 render(<PatientResultPage />);
 
                 expect(
-                    screen.getByRole('heading', { name: 'Verify patient details' }),
+                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
                 ).toBeInTheDocument();
                 expect(
                     screen.getByText(
-                        'Check these patient details match the records or attachments you plan to use',
+                       PAGE_TEXT ,
                     ),
                 ).toBeInTheDocument();
             },
@@ -100,7 +94,7 @@ describe('PatientResultPage', () => {
             render(<PatientResultPage />);
 
             expect(
-                screen.getByRole('heading', { name: 'Verify patient details' }),
+                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
             ).toBeInTheDocument();
 
             expect(screen.queryByText('Select patient status')).not.toBeInTheDocument();
@@ -110,7 +104,7 @@ describe('PatientResultPage', () => {
             ).not.toBeInTheDocument();
             expect(
                 screen.queryByText(
-                    'Check these patient details match the records or attachments you plan to use',
+                   PAGE_TEXT, 
                 ),
             ).not.toBeInTheDocument();
         });
@@ -127,7 +121,7 @@ describe('PatientResultPage', () => {
                 act(() => {
                     userEvent.click(
                         screen.getByRole('button', {
-                            name: 'Accept details are correct',
+                            name: CONFIRM_BUTTON_TEXT,
                         }),
                     );
                 });
@@ -148,7 +142,7 @@ describe('PatientResultPage', () => {
             render(<PatientResultPage />);
 
             expect(
-                screen.getByRole('heading', { name: 'Verify patient details' }),
+                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
             ).toBeInTheDocument();
             expect(
                 screen.getByText('The NHS number for this patient has changed.'),
@@ -167,7 +161,7 @@ describe('PatientResultPage', () => {
             render(<PatientResultPage />);
 
             expect(
-                screen.getByRole('heading', { name: 'Verify patient details' }),
+                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
             ).toBeInTheDocument();
             expect(
                 screen.getByText(
@@ -190,7 +184,7 @@ describe('PatientResultPage', () => {
                 render(<PatientResultPage />);
 
                 expect(
-                    screen.getByRole('heading', { name: 'Verify patient details' }),
+                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
                 ).toBeInTheDocument();
 
                 const results = await runAxeTest(document.body);
@@ -237,7 +231,7 @@ describe('PatientResultPage', () => {
                 act(() => {
                     userEvent.click(
                         screen.getByRole('button', {
-                            name: 'Accept details are correct',
+                            name: CONFIRM_BUTTON_TEXT,
                         }),
                     );
                 });
@@ -259,7 +253,7 @@ describe('PatientResultPage', () => {
 
                 act(() => {
                     userEvent.click(
-                        screen.getByRole('button', { name: 'Accept details are correct' }),
+                        screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }),
                     );
                 });
 
@@ -275,7 +269,7 @@ describe('PatientResultPage', () => {
 
             render(<PatientResultPage />);
 
-            userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+            userEvent.click(screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_OVERVIEW);

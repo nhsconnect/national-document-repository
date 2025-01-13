@@ -61,13 +61,9 @@ const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps)
     return (
         <>
             <h2 className="nhsuk-heading-m">{heading}</h2>
-            <ol>
-                {actionLinks.map((link) => (
-                    <li key={link.key}>
-                        <LinkItem link={link} setStage={setStage} />
-                    </li>
-                ))}
-            </ol>
+            {actionLinks.map((link) => (
+                <LinkItem key={link.key} link={link} setStage={setStage} />
+            ))}
         </>
     );
 };

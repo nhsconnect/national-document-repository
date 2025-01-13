@@ -6,6 +6,7 @@ from enum import Enum
 from unittest import mock
 
 import pytest
+from botocore.exceptions import ClientError
 from models.document_reference import DocumentReference
 from models.pds_models import Patient, PatientDetails
 from pydantic import ValidationError
@@ -32,6 +33,7 @@ MOCK_METADATA_NRL_SQS_URL_ENV_NAME = "NRL_SQS_URL"
 MOCK_LG_STAGING_STORE_BUCKET_ENV_NAME = "STAGING_STORE_BUCKET_NAME"
 MOCK_LG_METADATA_SQS_QUEUE_ENV_NAME = "METADATA_SQS_QUEUE_URL"
 MOCK_LG_INVALID_SQS_QUEUE_ENV_NAME = "INVALID_SQS_QUEUE_URL"
+MOCK_MNS_SQS_QUEUE_ENV_NAME = "MNS_SQS_QUEUE_URL"
 MOCK_LG_BULK_UPLOAD_DYNAMO_ENV_NAME = "BULK_UPLOAD_DYNAMODB_NAME"
 
 MOCK_AUTH_DYNAMODB_NAME = "AUTH_DYNAMODB_NAME"
@@ -171,6 +173,7 @@ def set_env(monkeypatch):
     )
     monkeypatch.setenv("NRL_API_ENDPOINT", FAKE_URL)
     monkeypatch.setenv("NRL_END_USER_ODS_CODE", "test_nrl_user_ods_ssm_key")
+    monkeypatch.setenv("MNS_NOTIFICATION_QUEUE_URL", MOCK_MNS_SQS_QUEUE_ENV_NAME)
     monkeypatch.setenv("NRL_SQS_QUEUE_URL", NRL_SQS_URL)
 
 
@@ -288,6 +291,11 @@ class MockError(Enum):
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
+
+
+MOCK_CLIENT_ERROR = ClientError(
+    {"Error": {"Code": 500, "Message": "Test error message"}}, "Query"
+)
 
 
 @pytest.fixture
