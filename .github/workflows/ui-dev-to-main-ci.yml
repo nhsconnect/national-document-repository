@@ -12,6 +12,10 @@ on:
       - main
     paths:
       - 'app/**'
+  workflow_call:
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 permissions:
   pull-requests: write
