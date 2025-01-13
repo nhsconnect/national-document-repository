@@ -31,6 +31,7 @@ def test_create_new_pointer(nrl_service):
 def test_create_new_pointer_raise_error(nrl_service):
     mock_body = {"test": "tests"}
     response = Response()
+    response._content = b"{}"
     response.status_code = 400
     nrl_service.session.post.return_value = response
     pytest.raises(NrlApiException, nrl_service.create_new_pointer, mock_body)
