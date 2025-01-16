@@ -5,7 +5,6 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import LloydGeorgeSelectSearchResults, { Props } from './LloydGeorgeSelectSearchResults';
 import userEvent from '@testing-library/user-event';
-import { routes } from '../../../../types/generic/routes';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
@@ -55,6 +54,20 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
             expect(screen.getByTestId('download-selected-files-btn')).toBeInTheDocument();
             expect(screen.getByTestId('toggle-selection-btn')).toBeInTheDocument();
+        });
+
+        it('renders the correct table headers', () => {
+            renderComponent({ selectedDocuments: mockSelectedDocuments });
+
+            const headers = screen.getAllByRole('columnheader');
+            const expectedHeaders = ['Selected', 'Filename', 'Upload date', 'File size'];
+
+            expectedHeaders.forEach((headerText, index) => {
+                expect(headers[index]).toHaveTextContent(headerText);
+            });
+
+            const filesTable = screen.getByTestId('available-files-table-title');
+            expect(filesTable).toHaveTextContent(/bytes|KB|MB|GB/);
         });
 
         it('shows error box when download selected files button is clicked but no files selected', async () => {
