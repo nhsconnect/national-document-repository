@@ -22,15 +22,6 @@ function Footer() {
                     Help and Guidance
                 </NHSFooter.ListItem>
                 <NHSFooter.ListItem
-                    href={serviceUpdatesLink}
-                    data-testid="service-updates-link"
-                    rel="noopener"
-                    target="_blank"
-                    aria-label="Service updates - Opens in a new tab"
-                >
-                    Service updates
-                </NHSFooter.ListItem>
-                <NHSFooter.ListItem
                     href={routes.PRIVACY_POLICY}
                     data-testid="privacy-link"
                     rel="opener"
