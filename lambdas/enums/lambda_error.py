@@ -410,19 +410,25 @@ class LambdaError(Enum):
         "fhir_coding": FhirIssueCoding.NOT_FOUND,
     }
     DocumentReferenceGeneralError = {
-        "err_code": "NRL_DR_4031",
+        "err_code": "NRL_DR_4002",
         "message": "An error occurred while fetching the document",
         "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
     DocumentReferenceUnauthorised = {
         "err_code": "NRL_DR_4011",
-        "message": "User is unauthorised to view record",
-        "fhir_coding": FhirIssueCoding.FORBIDDEN,
+        "message": "The user was not able to be authenticated",
+        "fhir_coding": FhirIssueCoding.UNKNOWN,
     }
     DocumentReferenceInvalidRequest = {
         "err_code": "NRL_DR_4001",
         "message": "Invalid request",
         "fhir_coding": FhirIssueCoding.INVALID,
+    }
+
+    DocumentReferenceForbidden = {
+        "err_code": "NRL_DR_4031",
+        "message": "User is unauthorised to view record",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
     """
         Edge Lambda Errors

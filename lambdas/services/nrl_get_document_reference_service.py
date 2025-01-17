@@ -47,7 +47,7 @@ class NRLGetDocumentReferenceService:
 
         if not self.is_user_allowed_to_see_file(user_details, document_reference):
             raise NRLGetDocumentReferenceException(
-                403, LambdaError.DocumentReferenceUnauthorised
+                403, LambdaError.DocumentReferenceForbidden
             )
 
         presign_url = self.create_document_presigned_url(document_reference)

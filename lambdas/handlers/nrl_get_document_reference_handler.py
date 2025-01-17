@@ -43,7 +43,7 @@ def lambda_handler(event, context):
 
         if not bearer_token:
             raise NRLGetDocumentReferenceException(
-                401, LambdaError.DocumentReferenceInvalidRequest
+                401, LambdaError.DocumentReferenceUnauthorised
             )
 
         get_document_service = NRLGetDocumentReferenceService()

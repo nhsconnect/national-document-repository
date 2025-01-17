@@ -6,6 +6,7 @@ class FhirIssueCoding(Enum):
     FORBIDDEN = ("forbidden", "Forbidden")
     NOT_FOUND = ("not-found", "Not Found")
     EXCEPTION = ("exception", "Exception")
+    UNKNOWN = ("unknown", "Unknown User")
 
     def code(self):
         return self.value[0]
