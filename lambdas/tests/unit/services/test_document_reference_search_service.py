@@ -12,18 +12,22 @@ MOCK_DOCUMENT_REFERENCE = [
     DocumentReference.model_validate(MOCK_SEARCH_RESPONSE["Items"][0])
 ]
 
+MOCK_FILE_SIZE = 24000
+
 EXPECTED_RESPONSE = {
     "created": "2024-01-01T12:00:00.000Z",
     "fileName": "document.csv",
     "virusScannerResult": "Clean",
     "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
+    "fileSize": MOCK_FILE_SIZE,
 }
 
 
 @pytest.fixture
 def patched_service(mocker, set_env):
     service = DocumentReferenceSearchService()
-    mocker.patch.object(service, "s3_service")
+    mock_s3_service = mocker.patch.object(service, "s3_service")
+    mocker.patch.object(mock_s3_service, "get_file_size", return_value=MOCK_FILE_SIZE)
     mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(service, "fetch_documents_from_table_with_nhs_number")
     mocker.patch.object(service, "is_upload_in_process", return_value=False)
