@@ -1,4 +1,3 @@
-import React from 'react';
 import './styles/App.scss';
 import PatientDetailsProvider from './providers/patientProvider/PatientProvider';
 import SessionProvider from './providers/sessionProvider/SessionProvider';

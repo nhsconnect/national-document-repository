@@ -11,7 +11,7 @@ export type Props = {
     detailsElement: ReactNode;
     isFullScreen: boolean;
     refreshRecord: () => void;
-    cloudFrontUrl: string;
+    pdfObjectUrl: string;
     resetDocStage: () => void;
     recordLinks?: Array<LGRecordActionLink>;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -23,7 +23,7 @@ function RecordCard({
     fullScreenHandler,
     detailsElement,
     isFullScreen,
-    cloudFrontUrl,
+    pdfObjectUrl,
     refreshRecord,
     resetDocStage,
     recordLinks = [],
@@ -44,7 +44,7 @@ function RecordCard({
     }, [refreshRecord, resetDocStage]);
 
     const Record = () => {
-        return cloudFrontUrl ? <PdfViewer fileUrl={cloudFrontUrl} /> : null;
+        return pdfObjectUrl ? <PdfViewer fileUrl={pdfObjectUrl} /> : null;
     };
 
     const RecordLayout = ({ children }: { children: ReactNode }) => {
@@ -62,7 +62,7 @@ function RecordCard({
                         data-testid="pdf-card"
                         className="lloydgeorge_record-stage_pdf-content"
                     >
-                        {cloudFrontUrl && (
+                        {pdfObjectUrl && (
                             <button
                                 className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
                                 data-testid="full-screen-btn"
@@ -87,12 +87,6 @@ function RecordCard({
                             setStage={setStage}
                             showMenu={showMenu}
                         />
-                        {cloudFrontUrl && (
-                            <p data-testid="find-in-pdf-text">
-                                To search within this record use <strong>Control</strong> and{' '}
-                                <strong>F</strong>
-                            </p>
-                        )}
                     </Card.Content>
                     <div>{children}</div>
                 </Card>
