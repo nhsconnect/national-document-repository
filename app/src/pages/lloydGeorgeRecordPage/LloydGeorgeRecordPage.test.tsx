@@ -32,6 +32,8 @@ const mockNavigate = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
 const mockUseRole = useRole as jest.Mock;
 
+const EMBEDDED_PDF_VIEWER_TITLE = 'Embedded PDF Viewer';
+
 jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'),
     Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
@@ -189,7 +191,7 @@ describe('LloydGeorgeRecordPage', () => {
         await renderPage(history);
 
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
@@ -206,7 +208,7 @@ describe('LloydGeorgeRecordPage', () => {
             await renderPage(history);
 
             await waitFor(() => {
-                expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+                expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
             });
 
             const results = await runAxeTest(document.body);
