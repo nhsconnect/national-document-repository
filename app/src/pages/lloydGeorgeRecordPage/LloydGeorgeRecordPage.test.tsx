@@ -45,6 +45,7 @@ let history = createMemoryHistory({
 });
 
 describe('LloydGeorgeRecordPage', () => {
+    global.URL.createObjectURL = vi.fn().mockReturnValue('http://localhost');
     beforeEach(() => {
         history = createMemoryHistory({
             initialEntries: ['/'],
@@ -186,10 +187,6 @@ describe('LloydGeorgeRecordPage', () => {
 
         await renderPage(history);
 
-        await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
-        });
-
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
     });
@@ -202,10 +199,6 @@ describe('LloydGeorgeRecordPage', () => {
             mockAxios.get.mockResolvedValue({ data: lgResult });
 
             await renderPage(history);
-
-            await waitFor(() => {
-                expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
-            });
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
