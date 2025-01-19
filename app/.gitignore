@@ -5,6 +5,14 @@
 /.pnp
 .pnp.js
 
+# ignore setup_pdf.js temp files
+local_pdfjs/
+temp_pdfjs/
+
+# keep public/pdfjs/build/
+!public/pdfjs/build/
+!public/pdfjs/build/**
+
 # testing
 /coverage
 /cypress/results
