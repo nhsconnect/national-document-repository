@@ -14577,7 +14577,8 @@ initCom(PDFViewerApplication);
       }
       const fileOrigin = new URL(file, window.location.href).origin;
       if (fileOrigin !== viewerOrigin) {
-        throw new Error("file origin does not match viewer's");
+        // throw new Error("file origin does not match viewer's");
+        return;
       }
     } catch (ex) {
       PDFViewerApplication._documentError("pdfjs-loading-error", {
