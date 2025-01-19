@@ -23,7 +23,7 @@ export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     stage: LG_RECORD_STAGE;
     refreshRecord: () => void;
-    cloudFrontUrl: string;
+    pdfObjectUrl: string;
     showMenu: boolean;
     resetDocState: () => void;
 };
@@ -33,7 +33,7 @@ function LloydGeorgeViewRecordStage({
     lastUpdated,
     setStage,
     refreshRecord,
-    cloudFrontUrl,
+    pdfObjectUrl,
     showMenu,
     resetDocState,
 }: Props) {
@@ -143,7 +143,7 @@ function LloydGeorgeViewRecordStage({
                                 detailsElement={<RecordDetails {...recordDetailsProps} />}
                                 isFullScreen={session.isFullscreen!}
                                 refreshRecord={refreshRecord}
-                                cloudFrontUrl={cloudFrontUrl}
+                                pdfObjectUrl={pdfObjectUrl}
                                 resetDocStage={resetDocState}
                                 recordLinks={recordLinksToShow}
                                 setStage={setStage}
@@ -158,7 +158,7 @@ function LloydGeorgeViewRecordStage({
                         detailsElement={<RecordDetails {...recordDetailsProps} />}
                         isFullScreen={session.isFullscreen!}
                         refreshRecord={refreshRecord}
-                        cloudFrontUrl={cloudFrontUrl}
+                        pdfObjectUrl={pdfObjectUrl}
                         resetDocStage={resetDocState}
                     />
                 )}
