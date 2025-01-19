@@ -765,6 +765,11 @@ $hunit: '%';
 
 // Helper
 
+#pdf-viewer {
+    height: 600px;
+    width: 100%;
+}
+
 @-moz-document url-prefix() {
     #pdf-viewer {
         margin-top: 6px;

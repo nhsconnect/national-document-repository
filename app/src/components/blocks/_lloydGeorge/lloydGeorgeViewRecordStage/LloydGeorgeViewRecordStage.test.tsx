@@ -41,6 +41,8 @@ const mockedIsBSOL = useIsBSOL as jest.Mock;
 const mockSetStage = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
 
+const EMBEDDED_PDF_VIEWER_TITLE = 'Embedded PDF Viewer';
+
 describe('LloydGeorgeViewRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -55,7 +57,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
@@ -101,7 +103,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
 
         act(() => {
@@ -119,7 +121,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     it("returns to previous view when 'Go back' link clicked during full screen", async () => {
         renderComponent();
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
 
         act(() => {
@@ -396,7 +398,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         it('pass accessibility checks when displaying LG record', async () => {
             renderComponent();
 
-            expect(await screen.findByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(await screen.findByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();

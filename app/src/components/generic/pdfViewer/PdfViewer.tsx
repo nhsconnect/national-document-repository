@@ -1,16 +1,21 @@
-import { useEffect } from 'react';
+import React from 'react';
 
-type Props = { fileUrl: String };
+type Props = { fileUrl: string };
 
 const PdfViewer = ({ fileUrl }: Props) => {
-    useEffect(() => {
-        const pdfObject = require('pdfobject');
-        pdfObject.embed(fileUrl + '#toolbar', '#pdf-viewer');
-    }, [fileUrl]);
-
     if (!fileUrl) return null;
     return (
-        <div id="pdf-viewer" data-testid="pdf-viewer" tabIndex={0} style={{ height: 800 }}></div>
+        <div>
+            <iframe
+                id="pdf-viewer"
+                data-testid="pdf-viewer"
+                tabIndex={0}
+                src={`/pdfjs/build/generic/web/viewer.html?file=${encodeURIComponent(fileUrl)}`}
+                title="Embedded PDF Viewer"
+                aria-label="PDF Viewer"
+                loading="lazy"
+            />
+        </div>
     );
 };
 

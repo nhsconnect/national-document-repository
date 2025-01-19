@@ -1,0 +1,31 @@
+
+#downloadButton,
+#viewOutline,
+#viewThumbnail,
+#viewAttachments,
+#viewLayers,
+#editorHighlight, 
+#editorFreeText,
+#editorInk,
+#editorStamp,
+#secondaryOpenFile,
+#scrollPage,
+#secondaryDownload,
+#presentationMode,
+#viewBookmark,
+#viewBookmarkSeparator,
+#scrollHorizontal,
+#spreadModeButtons,
+#cursorToolButtons,
+#scrollModeButtons,
+#documentProperties
+ {
+    display: none;
+    visibility: hidden;
+}
+
+.horizontalToolbarSeparator
+ {
+    display: none;
+}
+
