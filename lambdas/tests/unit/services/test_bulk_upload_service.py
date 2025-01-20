@@ -5,6 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
@@ -241,7 +242,7 @@ def test_handle_sqs_message_happy_path_single_file(
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_nrl_attachment = Attachment(
-        url=f"{APIM_API_URL}/DocumentReference/{TEST_DOCUMENT_REFERENCE.id}",
+        url=f"{APIM_API_URL}/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{TEST_DOCUMENT_REFERENCE.id}",
     )
     mock_nrl_message = NrlSqsMessage(
         nhs_number=TEST_STAGING_METADATA.nhs_number,
