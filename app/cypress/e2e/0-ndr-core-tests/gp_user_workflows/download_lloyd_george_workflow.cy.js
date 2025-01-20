@@ -10,8 +10,7 @@ const downloadPageTitle =
     'Download the Lloyd George record for this patient - Access and store digital patient documents';
 const downloadingPageTitle = 'Downloading documents - Access and store digital patient documents';
 const downloadCompletePageTitle = 'Download complete - Access and store digital patient documents';
-const verifyPatientPageTitle =
-    'Patient details - Access and store digital patient documents';
+const verifyPatientPageTitle = 'Patient details - Access and store digital patient documents';
 const lloydGeorgeRecordPageTitle = 'Available records - Access and store digital patient documents';
 const testFiles = [
     {

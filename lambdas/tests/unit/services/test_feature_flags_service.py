@@ -1,7 +1,8 @@
 import pytest
 import requests_mock
+from enums.lambda_error import LambdaError
 from services.feature_flags_service import FeatureFlagService
-from utils.lambda_exceptions import FeatureFlagsException
+from utils.lambda_exceptions import FeatureFlagsException, LambdaException
 
 test_url = (
     "http://localhost:2772/applications/A1234/environments/B1234/configurations/C1234"
@@ -52,16 +53,12 @@ def test_request_app_config_data_invalid_json_raises_exception(
     invalid_json = "invalid:"
     mock_requests.get(test_url, text=invalid_json, status_code=500)
 
-    expected = {
-        "status_code": 500,
-        "message": "Failed to parse feature flag/s from AppConfig response",
-        "err_code": "FFL_5001",
-    }
+    expected = LambdaException(500, LambdaError.FeatureFlagParseError)
 
     with pytest.raises(FeatureFlagsException) as e:
         mock_feature_flag_service.request_app_config_data(test_url)
 
-    assert e.value.__dict__ == expected
+    assert e.value.__dict__ == expected.__dict__
 
 
 def test_request_app_config_data_400_raises_not_found_exception(
@@ -69,11 +66,7 @@ def test_request_app_config_data_400_raises_not_found_exception(
 ):
     mock_requests.get(test_url, json=err_response, status_code=400)
 
-    expected = {
-        "status_code": 404,
-        "message": "Feature flag/s may not exist in AppConfig profile",
-        "err_code": "FFL_4001",
-    }
+    expected = LambdaException(404, LambdaError.FeatureFlagNotFound).__dict__
 
     with pytest.raises(FeatureFlagsException) as e:
         mock_feature_flag_service.request_app_config_data(test_url)
@@ -86,11 +79,7 @@ def test_request_app_config_data_catch_all_raises_failure_exception(
 ):
     mock_requests.get(test_url, json=err_response, status_code=500)
 
-    expected = {
-        "status_code": 500,
-        "message": "Failed to retrieve feature flag/s from AppConfig profile",
-        "err_code": "FFL_5002",
-    }
+    expected = LambdaException(500, LambdaError.FeatureFlagFailure).__dict__
 
     with pytest.raises(FeatureFlagsException) as e:
         mock_feature_flag_service.request_app_config_data(test_url)
@@ -131,12 +120,7 @@ def test_get_feature_flags_invalid_raises_exception(
     mock_feature_flag_service.request_app_config_data.return_value = (
         success_200_all_response
     )
-
-    expected = {
-        "status_code": 500,
-        "message": "Failed to parse feature flag/s from AppConfig response",
-        "err_code": "FFL_5001",
-    }
+    expected = LambdaException(500, LambdaError.FeatureFlagParseError).__dict__
 
     with pytest.raises(FeatureFlagsException) as e:
         mock_feature_flag_service.get_feature_flags()
@@ -165,11 +149,7 @@ def test_get_feature_flags_by_flag_no_flag_raises_exception(
     mock_requests.get(test_url, json=empty_response, status_code=200)
     mock_feature_flag_service.request_app_config_data.return_value = empty_response
 
-    expected = {
-        "status_code": 500,
-        "message": "Failed to parse feature flag/s from AppConfig response",
-        "err_code": "FFL_5001",
-    }
+    expected = LambdaException(500, LambdaError.FeatureFlagParseError).__dict__
 
     with pytest.raises(FeatureFlagsException) as e:
         mock_feature_flag_service.get_feature_flags_by_flag("testFeature1")
@@ -183,11 +163,7 @@ def test_get_feature_flags_by_flag_invalid_raises_exception(
     mock_requests.get(test_url, json=err_response, status_code=200)
     mock_feature_flag_service.request_app_config_data.return_value = err_response
 
-    expected = {
-        "status_code": 500,
-        "message": "Failed to parse feature flag/s from AppConfig response",
-        "err_code": "FFL_5001",
-    }
+    expected = LambdaException(500, LambdaError.FeatureFlagParseError).__dict__
 
     with pytest.raises(FeatureFlagsException) as e:
         mock_feature_flag_service.get_feature_flags_by_flag("testFeature1")
