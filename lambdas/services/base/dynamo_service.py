@@ -48,9 +48,11 @@ class DynamoDBService:
             table = self.get_table(table_name)
 
             query_params = {
-                "IndexName": index_name,
                 "KeyConditionExpression": Key(search_key).eq(search_condition),
             }
+
+            if index_name:
+                query_params["IndexName"] = index_name
 
             if requested_fields:
                 projection_expression = ",".join(requested_fields)

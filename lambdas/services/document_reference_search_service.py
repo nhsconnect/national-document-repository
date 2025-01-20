@@ -34,7 +34,7 @@ class DocumentReferenceSearchService(DocumentService):
                 logger.info(f"Searching for results in {table_name}")
 
                 documents: list[DocumentReference] = (
-                    self.fetch_documents_from_table_with_filter(
+                    self.fetch_documents_from_table_with_nhs_number(
                         nhs_number,
                         table_name,
                         query_filter=delete_filter_expression,
@@ -49,10 +49,21 @@ class DocumentReferenceSearchService(DocumentService):
                         423, LambdaError.UploadInProgressError
                     )
                 results.extend(
-                    document.model_dump(
-                        include={"file_name", "created", "virus_scanner_result", "id"},
-                        by_alias=True,
-                    )
+                    {
+                        **document.model_dump(
+                            include={
+                                "file_name",
+                                "created",
+                                "virus_scanner_result",
+                                "id",
+                            },
+                            by_alias=True,
+                        ),
+                        "fileSize": self.s3_service.get_file_size(
+                            s3_bucket_name=document.get_file_bucket(),
+                            object_key=document.get_file_key(),
+                        ),
+                    }
                     for document in documents
                 )
             return results

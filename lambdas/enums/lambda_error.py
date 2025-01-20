@@ -1,25 +1,28 @@
 from enum import Enum
 from typing import Optional
 
+from enums.fhir.fhir_issue_type import FhirIssueCoding
 from utils.error_response import ErrorResponse
 from utils.request_context import request_context
 
 
 class LambdaError(Enum):
-    def create_error_body(self, params: Optional[dict] = None) -> str:
+    def create_error_response(self, params: Optional[dict] = None) -> ErrorResponse:
         err_code = self.value["err_code"]
         message = self.value["message"]
         if "%" in message and params:
             message = message % params
-
         interaction_id = getattr(request_context, "request_id", None)
         error_response = ErrorResponse(
             err_code=err_code, message=message, interaction_id=interaction_id
         )
-        return error_response.create()
+        return error_response
 
     def to_str(self) -> str:
         return f"[{self.value['err_code']}] {self.value['message']}"
+
+    def create_error_body(self, params: Optional[dict] = None) -> str:
+        return self.create_error_response(params).create()
 
     """
     Errors for SearchPatientException
@@ -232,6 +235,14 @@ class LambdaError(Enum):
     """
        Errors for DocumentDeletionServiceException
     """
+    DocDelInvalidStreamEvent = {
+        "err_code": "DDS_4001",
+        "message": "Failed to delete document object",
+    }
+    DocDelObjectFailure = {
+        "err_code": "DDS_4002",
+        "message": "Failed to delete document object",
+    }
     DocDelClient = {
         "err_code": "DDS_5001",
         "message": "Failed to delete documents",
@@ -390,7 +401,35 @@ class LambdaError(Enum):
         "err_code": "US_5001",
         "message": "Dynamo client error",
     }
+    """
+       Errors for fhir get document reference lambda 
+    """
+    DocumentReferenceNotFound = {
+        "err_code": "NRL_DR_4041",
+        "message": "Document reference not found",
+        "fhir_coding": FhirIssueCoding.NOT_FOUND,
+    }
+    DocumentReferenceGeneralError = {
+        "err_code": "NRL_DR_4002",
+        "message": "An error occurred while fetching the document",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
+    }
+    DocumentReferenceUnauthorised = {
+        "err_code": "NRL_DR_4011",
+        "message": "The user was not able to be authenticated",
+        "fhir_coding": FhirIssueCoding.UNKNOWN,
+    }
+    DocumentReferenceInvalidRequest = {
+        "err_code": "NRL_DR_4001",
+        "message": "Invalid request",
+        "fhir_coding": FhirIssueCoding.INVALID,
+    }
 
+    DocumentReferenceForbidden = {
+        "err_code": "NRL_DR_4031",
+        "message": "User is unauthorised to view record",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
+    }
     """
         Edge Lambda Errors
     """
@@ -470,11 +509,16 @@ class LambdaError(Enum):
         "err_code": "LGL_400",
         "message": "Incomplete record, Failed to create document manifest",
     }
+    DynamoInvalidStreamEvent = {
+        "err_code": "DBS_4001",
+        "message": "Failed to parse DynamoDb event stream",
+    }
 
     MockError = {
         "message": "Client error",
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
 
     """

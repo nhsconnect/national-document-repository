@@ -73,6 +73,7 @@ describe('GP Workflow: Upload Lloyd George record', () => {
                     'You can upload full or part of a patient record',
                 );
                 cy.getByTestId('upload-patient-record-button').should('exist');
+                cy.contains('Control and F').should('not exist');
                 cy.getByTestId('upload-patient-record-button').click();
                 uploadedFilePathNames.forEach((file) => {
                     cy.getByTestId('button-input').selectFile(file, { force: true });

@@ -38,10 +38,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
 
       - name: Download the build folder
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build
           path: ./app/build

@@ -95,6 +95,10 @@ function LloydGeorgeDownloadStage({
         const onPageLoad = async () => {
             progressTimer.stop();
             window.clearInterval(intervalTimer);
+            if (!nhsNumber) {
+                navigate(routes.SEARCH_PATIENT);
+                return;
+            }
             try {
                 const preSignedUrl = await getPresignedUrlForZip({
                     baseUrl,
@@ -189,7 +193,7 @@ function LloydGeorgeDownloadStage({
                                     navigate(routes.LLOYD_GEORGE);
                                 }}
                             >
-                                Cancel
+                                Cancel and return to patient record
                             </Link>
                         </div>
                     </div>
