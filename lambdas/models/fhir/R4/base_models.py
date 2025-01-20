@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class Coding(BaseModel):
-    system: Optional[str] = "https://hl7.org/fhir/issue-type"
+    system: Optional[str] = "http://hl7.org/fhir/issue-type"
     code: Optional[str] = None
     display: Optional[str] = None
 
