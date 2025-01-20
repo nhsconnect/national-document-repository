@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 
 import pytest
 from enums.lambda_error import LambdaError
@@ -18,6 +19,9 @@ MOCK_VALID_EVENT = {
     "pathParameters": {"id": f"{SnomedCodes}~{TEST_UUID}"},
     "body": None,
 }
+
+MOCK_INVALID_EVENT_ID_MALFORMED = deepcopy(MOCK_VALID_EVENT)
+MOCK_INVALID_EVENT_ID_MALFORMED["pathParameters"]["id"] = f"~{TEST_UUID}"
 
 
 @pytest.fixture
@@ -61,7 +65,7 @@ def test_lambda_handler_missing_auth(set_env, mock_service, event, context):
 
 
 def test_lambda_handler_id_malformed(set_env, mock_service, event, context):
-    response = lambda_handler({"pathParameters": {"id": f"~{TEST_UUID}"}}, context)
+    response = lambda_handler(MOCK_INVALID_EVENT_ID_MALFORMED, context)
     assert response["statusCode"] == 404
     mock_service.handle_get_document_reference_request.assert_not_called()
 

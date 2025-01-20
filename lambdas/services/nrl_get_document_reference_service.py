@@ -98,7 +98,7 @@ class NRLGetDocumentReferenceService:
 
         patient_current_gp_ods_code = patient_details.general_practice_ods
 
-        if not patient_current_gp_ods_code == document_reference.current_gp_ods:
+        if patient_current_gp_ods_code != document_reference.current_gp_ods:
             logger.warning("ODS code held in database does not match PDS response.")
 
         if not patient_details.active:

@@ -2,6 +2,7 @@ import importlib
 import logging
 import os.path
 import sys
+import time
 from typing import Dict
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -112,6 +113,7 @@ class BatchUpdate:
         self.save_progress()
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
+        time.sleep(0.2)
         self.logger.debug("Getting the latest ODS code from PDS...")
 
         try:
