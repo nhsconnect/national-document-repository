@@ -3,4 +3,5 @@ export type SearchResult = {
     created: string;
     virusScannerResult: string;
     ID: string;
+    fileSize: number;
 };
