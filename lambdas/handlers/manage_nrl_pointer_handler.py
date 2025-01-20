@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from enums.nrl_sqs_upload import NrlActionTypes
-from models.nrl_fhir_document_reference import FhirDocumentReference
+from models.fhir.R4.nrl_fhir_document_reference import DocumentReferenceInfo
 from models.nrl_sqs_message import NrlSqsMessage
 from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService
@@ -50,13 +50,12 @@ def lambda_handler(event, context):
             )
             match nrl_message.action:
                 case NrlActionTypes.CREATE:
-                    document = (
-                        FhirDocumentReference(
-                            **nrl_verified_message,
-                            custodian=nrl_api_service.end_user_ods_code,
-                        )
-                        .build_fhir_dict()
-                        .json()
+                    document = DocumentReferenceInfo(
+                        **nrl_verified_message,
+                        custodian=nrl_api_service.end_user_ods_code,
+                    ).create_fhir_document_reference_object()
+                    nrl_api_service.create_new_pointer(
+                        document.model_dump(exclude_none=True)
                     )
 
                     logger.info(
@@ -67,7 +66,6 @@ def lambda_handler(event, context):
                         f"ODS Code: {nrl_api_service.end_user_ods_code}, "
                         f"Datetime: {int(datetime.now().timestamp())} "
                     )
-                    nrl_api_service.create_new_pointer(json.loads(document))
 
                 case NrlActionTypes.DELETE:
                     nrl_api_service.delete_pointer(
