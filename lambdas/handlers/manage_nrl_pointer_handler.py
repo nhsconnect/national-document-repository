@@ -66,7 +66,6 @@ def lambda_handler(event, context):
                         f"ODS Code: {nrl_api_service.end_user_ods_code}, "
                         f"Datetime: {int(datetime.now().timestamp())} "
                     )
-                    nrl_api_service.create_new_pointer(json.loads(document))
 
                 case NrlActionTypes.DELETE:
                     nrl_api_service.delete_pointer(
