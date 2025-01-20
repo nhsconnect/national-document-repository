@@ -113,7 +113,7 @@ class BatchUpdate:
         self.save_progress()
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
-        time.sleep(0.2)  # buffer to avoid over stretching PDS API
+        time.sleep(0.2)
         self.logger.debug("Getting the latest ODS code from PDS...")
 
         try:

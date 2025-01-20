@@ -69,3 +69,13 @@ def flatten(nested_list: list[list]) -> list:
 def generate_date_folder_name(date: str) -> str:
     date_obj = datetime.strptime(date, "%Y%m%d")
     return date_obj.strftime("%Y-%m-%d")
+
+
+def format_cloudfront_url(presign_url: str, cloudfront_domain: str) -> str:
+    url_parts = presign_url.split("/")
+    if len(url_parts) < 4:
+        raise ValueError("Invalid presigned URL format")
+
+    path_parts = url_parts[3:]
+    formatted_url = f"https://{cloudfront_domain}/{'/'.join(path_parts)}"
+    return formatted_url
