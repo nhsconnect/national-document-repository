@@ -253,6 +253,19 @@ def test_get_current_family_name_and_given_name_return_the_first_usual_name_if_a
     assert actual == expected_given_name
 
 
+def test_get_current_family_name_and_given_name_return_the_first_most_recent_name():
+    name_1 = build_test_name(use="temp", start="1990-01-01", end=None, given=["Jones"])
+    name_2 = build_test_name(use="usual", start=None, end=None, given=["Jane"])
+    name_3 = build_test_name(use="usual", start=None, end=None, given=["Bob"])
+
+    test_patient = build_test_patient_with_names([name_1, name_2, name_3])
+
+    expected_given_name = ["Jones"]
+    actual = test_patient.get_patient_details(test_patient.id).given_name
+
+    assert actual == expected_given_name
+
+
 def test_get_current_family_name_and_given_name_logs_a_warning_if_no_current_name_or_usual_name_found(
     caplog,
 ):
@@ -330,7 +343,7 @@ def test_name_is_currently_in_use_return_false_for_nickname_or_old_name():
 
 
 @freeze_time("2024-01-01")
-def test_get_most_recent_name_return_the_name_with_most_recent_start_date():
+def test_get_names_by_start_date_return_ordered_list_by_start_date():
     name_1 = build_test_name(start="1990-01-01", end=None, given=["Jane"])
     name_2 = build_test_name(start="2010-02-14", end=None, given=["Jones"])
     name_3 = build_test_name(start="2000-03-25", end=None, given=["Bob"])
@@ -341,13 +354,22 @@ def test_get_most_recent_name_return_the_name_with_most_recent_start_date():
         use="nickname", start="2023-01-01", end=None, given=["Janie"]
     )
     future_name = build_test_name(start="2047-01-01", end=None, given=["Neo Jane"])
+    name_no_date = build_test_name(start=None, end=None, given=["Jane"])
 
     test_patient = build_test_patient_with_names(
-        [name_1, name_2, name_3, expired_name, nickname, future_name]
+        [name_1, name_2, name_3, expired_name, nickname, future_name, name_no_date]
     )
 
-    expected = name_2
-    actual = test_patient.get_most_recent_name()
+    expected = [
+        future_name,
+        nickname,
+        expired_name,
+        name_2,
+        name_3,
+        name_1,
+        name_no_date,
+    ]
+    actual = test_patient.get_names_by_start_date()
 
     assert actual == expected
 
@@ -356,7 +378,7 @@ def test_get_most_recent_name_return_the_name_with_most_recent_start_date():
 def test_get_most_recent_name_return_none_if_no_active_name_found():
     test_patient = build_test_patient_with_names([])
 
-    assert test_patient.get_most_recent_name() is None
+    assert test_patient.get_names_by_start_date() is None
 
 
 def test_get_death_notification_status_return_the_death_notification_status():

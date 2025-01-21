@@ -4,9 +4,9 @@ import re
 
 import pydantic
 import requests
-from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from enums.supported_document_types import SupportedDocumentTypes
+from enums.validation_score import ValidationResult, ValidationScore
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
 from requests import HTTPError
@@ -18,11 +18,7 @@ from utils.exceptions import (
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
 )
-from utils.unicode_utils import (
-    REGEX_PATIENT_NAME_PATTERN,
-    name_ends_with,
-    name_starts_with,
-)
+from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, name_contains_in
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -144,60 +140,87 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
 
 def validate_filename_with_patient_details(
     file_name_list: list[str], patient_details: Patient
-):
+) -> (ValidationScore, bool, bool):
     try:
         file_name_info = extract_info_from_filename(file_name_list[0])
         file_patient_name = file_name_info["patient_name"]
         file_date_of_birth = file_name_info["date_of_birth"]
-        validate_patient_date_of_birth(file_date_of_birth, patient_details)
-        is_name_validation_based_on_historic_name = (
-            validate_patient_name_using_full_name_history(
-                file_patient_name, patient_details
-            )
+        name_validation_score, historical_match = calculate_validation_score(
+            file_patient_name, patient_details
         )
-        return is_name_validation_based_on_historic_name
-    except (ClientError, ValueError) as e:
+        if name_validation_score == ValidationScore.NO_MATCH:
+            raise LGInvalidFilesException("Patient name does not match our records")
+        is_dob_valid = validate_patient_date_of_birth(
+            file_date_of_birth, patient_details
+        )
+        if not is_dob_valid and name_validation_score == ValidationScore.PARTIAL_MATCH:
+            raise LGInvalidFilesException("Patient name does not match our records 1/3")
+        return name_validation_score, is_dob_valid, historical_match
+
+    except (ValueError, KeyError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
 
 
-def validate_patient_name(
-    file_patient_name: str, first_name_in_pds: str, family_name_in_pds: str
-):
-    logger.info("Verifying patient name against the record in PDS...")
-
-    first_name_matches = name_starts_with(file_patient_name, first_name_in_pds)
-    family_name_matches = name_ends_with(file_patient_name, family_name_in_pds)
-
-    if not (first_name_matches and family_name_matches):
-        return False
-    return True
-
-
-def validate_patient_name_using_full_name_history(
-    file_patient_name: str, pds_patient_details: Patient
-):
-    usual_family_name_in_pds, usual_first_name_in_pds = (
-        pds_patient_details.get_current_family_name_and_given_name()
-    )
-
-    if validate_patient_name(
-        file_patient_name, usual_first_name_in_pds[0], usual_family_name_in_pds
-    ):
-        return False
+def calculate_validation_score(
+    file_patient_name: str, patient_details: Patient
+) -> (ValidationScore, bool):
+    matched_on_given_name = set()
+    matched_on_family_name = set()
+    historical_match = False
+    ordered_names = patient_details.get_names_by_start_date()
+    for index, name in enumerate(ordered_names):
+        first_name_in_pds = name.given
+        family_name_in_pds = name.family
+        result = validate_patient_name(
+            file_patient_name, first_name_in_pds, family_name_in_pds
+        )
+        if result.score == ValidationScore.FULL_MATCH:
+            historical_match = index != 0
+            return result.score, historical_match
+        elif result.score == ValidationScore.PARTIAL_MATCH:
+            historical_match = index != 0
+            matched_on_given_name.update(result.given_name_match)
+            matched_on_family_name.update(result.family_name_match)
     logger.info(
-        "Failed to validate patient name using usual name, trying to validate using name history"
+        "Failed to find full match on patient name, trying to validate using name history"
     )
+    if matched_on_given_name and matched_on_family_name:
+        return ValidationScore.MIXED_FULL_MATCH, historical_match
+    elif matched_on_given_name or matched_on_family_name:
+        return ValidationScore.PARTIAL_MATCH, historical_match
+    return ValidationScore.NO_MATCH, False
 
-    for name in pds_patient_details.name:
-        historic_first_name_in_pds: str = name.given[0]
-        historic_family_name_in_pds = name.family
-        if validate_patient_name(
-            file_patient_name, historic_first_name_in_pds, historic_family_name_in_pds
-        ):
-            return True
 
-    raise LGInvalidFilesException("Patient name does not match our records")
+def validate_patient_name(
+    file_patient_name: str, first_name_in_pds: list[str], family_name_in_pds: str
+) -> ValidationResult:
+    logger.info("Verifying patient name against the record in PDS...")
+    given_name_matches = [
+        first_name
+        for first_name in first_name_in_pds
+        if name_contains_in(file_patient_name, first_name)
+    ]
+    family_name_matches = name_contains_in(file_patient_name, family_name_in_pds)
+
+    if given_name_matches and family_name_matches:
+        return ValidationResult(
+            score=ValidationScore.FULL_MATCH,
+            given_name_match=given_name_matches,
+            family_name_match=family_name_in_pds,
+        )
+    elif given_name_matches:
+        return ValidationResult(
+            score=ValidationScore.PARTIAL_MATCH,
+            given_name_match=given_name_matches,
+        )
+    elif family_name_matches:
+        return ValidationResult(
+            score=ValidationScore.PARTIAL_MATCH, family_name_match=family_name_in_pds
+        )
+    return ValidationResult(
+        score=ValidationScore.NO_MATCH,
+    )
 
 
 def validate_patient_date_of_birth(file_date_of_birth, pds_patient_details):

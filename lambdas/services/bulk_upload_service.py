@@ -8,6 +8,7 @@ from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
+from enums.validation_score import ValidationScore
 from enums.virus_scan_result import VirusScanResult
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.nhs_document_reference import NHSDocumentReference
@@ -133,12 +134,33 @@ class BulkUploadService:
             patient_ods_code = (
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
-            is_name_validation_based_on_historic_name = (
-                validate_filename_with_patient_details(file_names, pds_patient_details)
-            )
+            (
+                name_validation_score,
+                is_dob_valid,
+                is_name_validation_based_on_historic_name,
+            ) = validate_filename_with_patient_details(file_names, pds_patient_details)
             if is_name_validation_based_on_historic_name:
                 accepted_reason = self.concatenate_acceptance_reason(
                     accepted_reason, "Patient matched on historical name"
+                )
+            validation_messages = {
+                ValidationScore.PARTIAL_MATCH: {
+                    True: "Patient matched on partial match 2/3",
+                    False: "",
+                },
+                ValidationScore.MIXED_FULL_MATCH: {
+                    True: "Patient matched on mixed match 3/3",
+                    False: "Patient matched on mixed match 2/3",
+                },
+                ValidationScore.FULL_MATCH: {
+                    True: "Patient matched on full match 3/3",
+                    False: "Patient matched on full match 2/3",
+                },
+            }
+            if name_validation_score in validation_messages:
+                message = validation_messages[name_validation_score][is_dob_valid]
+                accepted_reason = self.concatenate_acceptance_reason(
+                    accepted_reason, message
                 )
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")

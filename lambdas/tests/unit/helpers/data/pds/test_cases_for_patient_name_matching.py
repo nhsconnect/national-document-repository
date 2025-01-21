@@ -18,9 +18,9 @@ TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME = {
         "Jane Bob Smith Anderson",
         "Jane Smith Anderson",
         "Jane B Smith Anderson",
+        "Bob Smith Anderson",
     ],
     "reject": [
-        "Bob Smith Anderson",
         "Jane Smith",
         "Jane Anderson",
         "Jane Anderson Smith",
