@@ -333,8 +333,7 @@ def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
     )
     mock_validate_name.return_value = ValidationResult(
         score=ValidationScore.FULL_MATCH,
-        given_name_match=["Jane"],
-        family_name_match="Smith",
+        name_match=["Jane", "Smith"],
     )
     actual_score, actual_is_name_validation_based_on_historic_name = (
         calculate_validation_score(lg_file_patient_name, mock_pds_patient)
@@ -355,8 +354,7 @@ def test_validate_name_with_wrong_first_name(mocker, mock_pds_patient):
     )
     assert actual_response == ValidationResult(
         score=ValidationScore.PARTIAL_MATCH,
-        given_name_match=[],
-        family_name_match="Smith",
+        name_match=["Smith"],
     )
 
 
@@ -369,8 +367,7 @@ def test_validate_name_with_wrong_family_name(mocker, mock_pds_patient):
     )
     assert actual_response == ValidationResult(
         score=ValidationScore.PARTIAL_MATCH,
-        given_name_match=["Jane"],
-        family_name_match="",
+        name_match=["Jane"],
     )
 
 
@@ -820,8 +817,7 @@ def test_validate_patient_name_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith",
+                name_match=["Jane", "Smith"],
             ),
         ),
         (
@@ -830,8 +826,7 @@ def test_validate_patient_name_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith Anderson",
+                name_match=["Jane", "Smith Anderson"],
             ),
         ),
         (
@@ -840,8 +835,7 @@ def test_validate_patient_name_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith Anderson",
+                name_match=["Jane", "Smith Anderson"],
             ),
         ),
         (
@@ -850,8 +844,7 @@ def test_validate_patient_name_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith Anderson",
+                name_match=["Jane", "Smith Anderson"],
             ),
         ),
         (
@@ -860,8 +853,7 @@ def test_validate_patient_name_return_false(
             "Smith-Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith-Anderson",
+                name_match=["Jane", "Smith-Anderson"],
             ),
         ),
         (
@@ -870,8 +862,7 @@ def test_validate_patient_name_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane Bob"],
-                family_name_match="Smith Anderson",
+                name_match=["Jane Bob", "Smith Anderson"],
             ),
         ),
         (
@@ -880,8 +871,7 @@ def test_validate_patient_name_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane Bob"],
-                family_name_match="Smith",
+                name_match=["Jane Bob", "Smith"],
             ),
         ),
     ],
@@ -906,7 +896,7 @@ def test_validate_patient_name_return_true(
         ("Jane Smith-Moody", ValidationScore.FULL_MATCH),
         ("Jane Bob Smith Moody", ValidationScore.FULL_MATCH),
         ("Jane Bob Smith", ValidationScore.FULL_MATCH),
-        ("Bob Smith", ValidationScore.PARTIAL_MATCH),
+        ("Bob Smith", ValidationScore.MIXED_FULL_MATCH),
         ("Bob Jane", ValidationScore.FULL_MATCH),
         ("Alastor Moody", ValidationScore.NO_MATCH),
         ("Jones Bob", ValidationScore.MIXED_FULL_MATCH),

@@ -165,8 +165,7 @@ def validate_filename_with_patient_details(
 def calculate_validation_score(
     file_patient_name: str, patient_details: Patient
 ) -> (ValidationScore, bool):
-    matched_on_given_name = set()
-    matched_on_family_name = set()
+    matched_on = set()
     historical_match = False
     ordered_names = patient_details.get_names_by_start_date()
     for index, name in enumerate(ordered_names):
@@ -180,14 +179,13 @@ def calculate_validation_score(
             return result.score, historical_match
         elif result.score == ValidationScore.PARTIAL_MATCH:
             historical_match = index != 0
-            matched_on_given_name.update(result.given_name_match)
-            matched_on_family_name.update(result.family_name_match)
+            matched_on.update(result.name_match)
     logger.info(
         "Failed to find full match on patient name, trying to validate using name history"
     )
-    if matched_on_given_name and matched_on_family_name:
+    if len(matched_on) > 1:
         return ValidationScore.MIXED_FULL_MATCH, historical_match
-    elif matched_on_given_name or matched_on_family_name:
+    elif len(matched_on) == 1:
         return ValidationScore.PARTIAL_MATCH, historical_match
     return ValidationScore.NO_MATCH, False
 
@@ -196,27 +194,23 @@ def validate_patient_name(
     file_patient_name: str, first_name_in_pds: list[str], family_name_in_pds: str
 ) -> ValidationResult:
     logger.info("Verifying patient name against the record in PDS...")
-    given_name_matches = [
+    name_match = [
         first_name
         for first_name in first_name_in_pds
         if name_contains_in(file_patient_name, first_name)
     ]
-    family_name_matches = name_contains_in(file_patient_name, family_name_in_pds)
+    if name_contains_in(file_patient_name, family_name_in_pds):
+        name_match.append(family_name_in_pds)
 
-    if given_name_matches and family_name_matches:
+    if len(name_match) > 1:
         return ValidationResult(
             score=ValidationScore.FULL_MATCH,
-            given_name_match=given_name_matches,
-            family_name_match=family_name_in_pds,
+            name_match=name_match,
         )
-    elif given_name_matches:
+    elif len(name_match) == 1:
         return ValidationResult(
             score=ValidationScore.PARTIAL_MATCH,
-            given_name_match=given_name_matches,
-        )
-    elif family_name_matches:
-        return ValidationResult(
-            score=ValidationScore.PARTIAL_MATCH, family_name_match=family_name_in_pds
+            name_match=name_match,
         )
     return ValidationResult(
         score=ValidationScore.NO_MATCH,

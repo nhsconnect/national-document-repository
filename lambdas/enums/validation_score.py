@@ -11,6 +11,5 @@ class ValidationScore(Enum):
 
 
 class ValidationResult(BaseModel):
-    given_name_match: list[str] = []
-    family_name_match: str = ""
+    name_match: list[str] = []
     score: ValidationScore = ValidationScore.NO_MATCH
