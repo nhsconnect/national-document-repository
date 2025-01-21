@@ -17,9 +17,9 @@ function Footer() {
                     data-testid="help-and-guidance-link"
                     rel="noopener"
                     target="_blank"
-                    aria-label="Help and Guidance - Opens in a new tab"
+                    aria-label="Help and guidance - Opens in a new tab"
                 >
-                    Help and Guidance
+                    Help and guidance
                 </NHSFooter.ListItem>
                 <NHSFooter.ListItem
                     href={routes.PRIVACY_POLICY}
