@@ -10,6 +10,7 @@ describe('GP Workflow: View Lloyd George record', () => {
     const assertEmptyLloydGeorgeCard = () => {
         cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
         cy.getByTestId('pdf-card').should('include.text', 'No documents are available');
+        cy.getByTestId('pdf-card').contains('Control and F').should('not.exist');
     };
 
     const assertFailedLloydGeorgeLoad = () => {
