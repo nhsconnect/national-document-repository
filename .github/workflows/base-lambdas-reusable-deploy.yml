@@ -87,8 +87,9 @@ jobs:
 
       - name: Upload Lambda Function zip to ${{ inputs.lambda_aws_name }}
         run: |
+          sleep 3
           export AWS_RETRY_MODE=standard
-          export AWS_MAX_ATTEMPTS=3
+          export AWS_MAX_ATTEMPTS=5
           aws lambda update-function-code \
           --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
           --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
