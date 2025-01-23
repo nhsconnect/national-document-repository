@@ -1,5 +1,6 @@
 import re
 import sys
+import time
 
 import boto3
 
@@ -27,6 +28,7 @@ class LambdaLayerUpdate:
         self.extract_default_layer_arns()
         self.extract_updated_layer_arns()
         self.update_lambda()
+        self.propagate_lambda_update()
 
     def extract_default_layer_arns(self):
         response = self.client.get_function(FunctionName=self.function_name_aws)
@@ -62,6 +64,22 @@ class LambdaLayerUpdate:
             FunctionName=self.function_name_aws,
             Layers=list(self.updated_lambda_arns.values()),
         )
+
+    def propagate_lambda_update(self):
+        retry_count = 3
+        for i in range(retry_count):
+            time.sleep(3)
+            print(f"Propagating lambda layer update attempt {i}...")
+            response = self.client.client.get_function_configuration(
+                FunctionName=self.function_name_aws
+            )
+            if (
+                response["State"] == "Active"
+                and response["LastUpdateStatus "] == "Successful"
+            ):
+                break
+
+            print("Lambda state is not ready, retrying...")
 
 
 if __name__ == "__main__":
