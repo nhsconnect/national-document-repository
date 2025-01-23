@@ -89,4 +89,5 @@ jobs:
         run: |
           aws lambda update-function-code \
           --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
-          --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
+          --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip \
+          --region ${{ vars.AWS_REGION }}

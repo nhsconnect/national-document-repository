@@ -76,11 +76,11 @@ jobs:
           make lambda_name=${{ inputs.lambda_handler_name}} edge_zip
 
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
-        uses: appleboy/lambda-action@master
-        with:
-          aws_region: 'us-east-1'
-          function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
-          zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
+        run: |
+          aws lambda update-function-code \
+          --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
+          --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip \
+          --region 'us-east-1'
 
       - name: Get CloudFront Distribution ID
         id: cloudfront

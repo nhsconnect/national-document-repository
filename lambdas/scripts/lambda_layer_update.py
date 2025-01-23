@@ -73,7 +73,6 @@ class LambdaLayerUpdate:
             response = self.client.get_function_configuration(
                 FunctionName=self.function_name_aws
             )
-            print(response)
             if (
                 response["State"] == "Active"
                 and response["LastUpdateStatus"] == "Successful"
