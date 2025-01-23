@@ -70,7 +70,7 @@ class LambdaLayerUpdate:
         for i in range(retry_count):
             time.sleep(3)
             print(f"Propagating lambda layer update attempt {i}...")
-            response = self.client.client.get_function_configuration(
+            response = self.client.get_function_configuration(
                 FunctionName=self.function_name_aws
             )
             if (
