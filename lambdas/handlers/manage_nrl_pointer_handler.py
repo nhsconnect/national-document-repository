@@ -56,7 +56,7 @@ def lambda_handler(event, context):
                     ).create_fhir_document_reference_object()
 
                     logger.info(
-                        f"Create pointer request: Body: {document.model_dump(exclude_none=True)}, "
+                        f"Create pointer request: Body: {document.model_dump_json(exclude_none=True)}, "
                         f"RequestURL: {nrl_api_service.endpoint}, "
                         "HTTP Verb: POST, "
                         f"NHS Number: {nrl_message.nhs_number}, "
