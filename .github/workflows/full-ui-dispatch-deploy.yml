@@ -70,6 +70,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
 
       - name: Login to Amazon ECR
         id: login-ecr

@@ -85,9 +85,8 @@ jobs:
         run: |
           make lambda_name=${{ inputs.lambda_handler_name }} zip
 
-      - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
-        uses: appleboy/lambda-action@master
-        with:
-          aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
-          zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
+      - name: Upload Lambda Function zip to ${{ inputs.lambda_aws_name }}
+        run: |
+          aws lambda update-function-code \
+          --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
+          --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
