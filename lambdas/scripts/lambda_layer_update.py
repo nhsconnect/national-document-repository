@@ -75,7 +75,7 @@ class LambdaLayerUpdate:
             )
             if (
                 response["State"] == "Active"
-                and response["LastUpdateStatus "] == "Successful"
+                and response["LastUpdateStatus"] == "Successful"
             ):
                 break
 
