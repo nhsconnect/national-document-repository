@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
 import { Header } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router-dom';
