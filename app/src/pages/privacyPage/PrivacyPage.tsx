@@ -94,7 +94,7 @@ function PrivacyPage() {
                 <h2>Our permission to process and store patient data</h2>
                 <p>
                     This service has legal permission to process and store patient data through the
-                    <strong> National Data Processing Deed</strong>.
+                    <strong>National Data Processing Deed</strong>.
                 </p>
                 <p>The National Data Processing Deed enables NHS England to: </p>
                 <ul>
