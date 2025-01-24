@@ -15,7 +15,7 @@ export type Props = {
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }: Props) {
+function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }: Readonly<Props>) {
     const navigate = useNavigate();
     const role = useRole();
 
