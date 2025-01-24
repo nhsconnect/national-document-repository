@@ -21,7 +21,11 @@ export type Props = {
     ) => void;
 };
 
-function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocuments }: Props) {
+function LloydGeorgeUploadStage({
+    documents,
+    uploadSession,
+    uploadAndScanDocuments,
+}: Readonly<Props>) {
     const hasFailedUploads = documents.some(
         (d) =>
             !!d.attempts &&

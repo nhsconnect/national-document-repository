@@ -8,7 +8,7 @@ type Props = {
     restartUpload: () => void;
 };
 
-function LloydGeorgeUploadFailedStage({ restartUpload }: Props) {
+function LloydGeorgeUploadFailedStage({ restartUpload }: Readonly<Props>) {
     const navigate = useNavigate();
 
     return (

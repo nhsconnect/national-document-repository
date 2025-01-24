@@ -14,7 +14,7 @@ interface Props {
     restartUpload: () => void;
 }
 
-function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
+function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Readonly<Props>) {
     const navigate = useNavigate();
 
     const infectedUploads = documents.filter((document) => {

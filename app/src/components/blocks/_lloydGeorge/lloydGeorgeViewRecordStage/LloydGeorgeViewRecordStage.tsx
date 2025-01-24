@@ -54,7 +54,7 @@ function LloydGeorgeViewRecordStage({
     cloudFrontUrl,
     showMenu,
     resetDocState,
-}: Props) {
+}: Readonly<Props>) {
     const navigate = useNavigate();
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
