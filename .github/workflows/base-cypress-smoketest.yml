@@ -31,7 +31,7 @@ permissions:
 
 jobs:
   cypress-run-chrome:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
@@ -85,7 +85,7 @@ jobs:
 
   cypress-run-firefox:
     needs: ['cypress-run-chrome']
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
@@ -127,7 +127,7 @@ jobs:
 
   cypress-run-edge:
     needs: ['cypress-run-firefox']
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
