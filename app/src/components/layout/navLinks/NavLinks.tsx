@@ -8,19 +8,10 @@ import { useSessionContext } from '../../../providers/sessionProvider/SessionPro
 const NavLinks = () => {
     const navigate = useNavigate();
     const [session] = useSessionContext();
-    const [width, setWidth] = useState<number>(window.innerWidth);
     const nav = (e: ReactEvent<HTMLAnchorElement, MouseEvent>, link: string) => {
         e.preventDefault();
         navigate(link);
     };
-
-    useEffect(() => {
-        const handleResizeWindow = () => setWidth(window.innerWidth);
-        window.addEventListener('resize', handleResizeWindow);
-        return () => {
-            window.removeEventListener('resize', handleResizeWindow);
-        };
-    }, []);
 
     const appLinks = [
         { href: routes.START, label: 'Home', id: 'home-btn' },
