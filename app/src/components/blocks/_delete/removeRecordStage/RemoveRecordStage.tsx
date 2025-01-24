@@ -31,7 +31,12 @@ export type Props = {
     resetDocState: () => void;
 };
 
-function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetDocState }: Props) {
+function RemoveRecordStage({
+    numberOfFiles,
+    recordType,
+    setDownloadStage,
+    resetDocState,
+}: Readonly<Props>) {
     useTitle({ pageTitle: 'Remove record' });
     const patientDetails = usePatient();
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.PENDING);
