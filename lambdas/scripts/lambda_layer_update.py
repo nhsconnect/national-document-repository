@@ -77,9 +77,11 @@ class LambdaLayerUpdate:
                 response["State"] == "Active"
                 and response["LastUpdateStatus"] == "Successful"
             ):
-                break
+                return
 
             print("Lambda state is not ready, retrying...")
+
+        print("Exceeded retries. Failed to verify Lambda state.")
 
 
 if __name__ == "__main__":

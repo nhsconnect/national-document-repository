@@ -50,11 +50,13 @@ jobs:
           
       - name: Get SSM parameters from SSM
         id: ssm-parameters
-        run: |
-          doc_store_api_endpoint=$(echo aws ssm get-parameter --name \"/ndr/${{ inputs.sandbox }}/api_endpoint\" --with-decryption)
-          echo "DOC_STORE_API_ENDPOINT=$doc_store_api_endpoint" >> $GITHUB_OUTPUT
-          container_port=$(echo aws ssm get-parameter --name \"ndr/${{ inputs.sandbox }}/container_port\" --with-decryption)
-          echo "CONTAINER_PORT=$container_port" >> $GITHUB_OUTPUT
+        run: | 
+          doc_store_api_endpoint=$(aws ssm get-parameter --name "/ndr/${{ inputs.sandbox }}/api_endpoint" --with-decryption --query "Parameter.Value" --output text)
+          echo "::add-mask::$doc_store_api_endpoint"
+          echo "ENDPOINT_DOC_STORE_API=$doc_store_api_endpoint" >> $GITHUB_ENV
+          container_port=$(aws ssm get-parameter --name "/ndr/${{ inputs.sandbox }}/container_port" --with-decryption --query "Parameter.Value" --output text)
+          echo "::add-mask::$container_port"
+          echo "CONTAINER_PORT=$container_port" >> $GITHUB_ENV
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -62,7 +64,6 @@ jobs:
 
       - name: Configure React environment vars
         env:
-          ENDPOINT_DOC_STORE_API: ${{ steps.ssm-parameters.outputs.DOC_STORE_API_ENDPOINT }}
           AWS_REGION: ${{ vars.AWS_REGION }}
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: ${{ inputs.environment }}
@@ -77,8 +78,9 @@ jobs:
           ECR_REPOSITORY: ndr-${{ inputs.sandbox }}-app
           IMAGE_TAG: latest
           IMAGE_TAG_SHA: ${{ github.sha }}
+          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          docker build --build-arg="CONTAINER_PORT=${{ steps.ssm-parameters.outputs.CONTAINER_PORT }}" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
+          docker build --build-arg="CONTAINER_PORT=$CONTAINER_PORT" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
@@ -89,7 +91,7 @@ jobs:
         id: download-task
         run: |
           aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-task-app-cluster --query taskDefinition > task-definition.json
-          echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
+          echo "revision=$(cat task-definition.json | jq .revision)" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
