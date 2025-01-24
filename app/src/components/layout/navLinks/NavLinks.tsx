@@ -23,55 +23,28 @@ const NavLinks = () => {
     }, []);
 
     const appLinks = [
+        { href: routes.START, label: 'Home', id: 'home-btn' },
         { href: routes.SEARCH_PATIENT, label: 'Search for a patient', id: 'search-btn' },
         { href: routes.LOGOUT, label: 'Sign out', id: 'logout-btn' },
     ];
 
     return session.isLoggedIn ? (
-        <Header.Nav className="navlinks">
-            <Header.NavItem
-                tabIndex={0}
-                href="#"
-                className="navlinks_item clickable"
-                role="link"
-                onClick={(e) => nav(e, routes.START)}
-            >
-                Home
-            </Header.NavItem>
-            {width <= 990 ? (
-                <>
-                    {appLinks.map((l) => (
-                        <Header.NavItem
-                            tabIndex={0}
-                            href="#"
-                            className="navlinks_item navlinks_item--mobile clickable"
-                            key={l.href}
-                            role="link"
-                            data-testid={l.id}
-                            onClick={(e) => nav(e, l.href)}
-                        >
-                            {l.label}
-                        </Header.NavItem>
-                    ))}
-                </>
-            ) : (
-                <div className="navlinks_wrapper">
-                    {appLinks.map((l) => (
-                        <Header.NavItem
-                            tabIndex={0}
-                            href="#"
-                            className="navlinks_item navlinks_item--desktop clickable"
-                            key={l.href}
-                            role="link"
-                            data-testid={l.id}
-                            onClick={(e) => nav(e, l.href)}
-                        >
-                            {l.label}
-                        </Header.NavItem>
-                    ))}
-                </div>
-            )}
-        </Header.Nav>
+        <Header>
+            <Header.Nav className="">
+                {appLinks.map((l) => (
+                    <Header.NavItem
+                        tabIndex={0}
+                        href="#"
+                        key={l.href}
+                        role="link"
+                        data-testid={l.id}
+                        onClick={(e) => nav(e, l.href)}
+                    >
+                        {l.label}
+                    </Header.NavItem>
+                ))}
+            </Header.Nav>
+        </Header>
     ) : null;
 };
 
