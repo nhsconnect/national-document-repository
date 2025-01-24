@@ -8,7 +8,7 @@ export type ToggleProps = {
     onChange: () => void;
 };
 
-function TestToggle({ id, checked, onChange, label }: ToggleProps) {
+function TestToggle({ id, checked, onChange, label }: Readonly<ToggleProps>) {
     return (
         <div
             style={{
