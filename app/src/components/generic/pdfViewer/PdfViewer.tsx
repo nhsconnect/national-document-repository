@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-type Props = { fileUrl: String };
+type Props = { fileUrl: string };
 
 const PdfViewer = ({ fileUrl }: Props) => {
     useEffect(() => {
