@@ -13,7 +13,7 @@ export type Props = {
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
-function DeleteResultStage({ numberOfFiles, setDownloadStage }: Props) {
+function DeleteResultStage({ numberOfFiles, setDownloadStage }: Readonly<Props>) {
     const navigate = useNavigate();
     const role = useRole();
 

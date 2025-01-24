@@ -198,7 +198,7 @@ function DeleteSubmitStage({
     setDownloadStage,
     recordType,
     resetDocState,
-}: Props) {
+}: Readonly<Props>) {
     useTitle({ pageTitle: 'Delete files' });
 
     return (
