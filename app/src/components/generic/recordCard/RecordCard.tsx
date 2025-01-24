@@ -22,7 +22,7 @@ function RecordCard({
     cloudFrontUrl,
     refreshRecord,
     resetDocStage,
-}: Props) {
+}: Readonly<Props>) {
     const role = useRole();
     const userIsGpClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
     const mounted = useRef(false);
