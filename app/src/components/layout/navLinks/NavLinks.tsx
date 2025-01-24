@@ -29,22 +29,20 @@ const NavLinks = () => {
     ];
 
     return session.isLoggedIn ? (
-        <Header>
-            <Header.Nav className="">
-                {appLinks.map((l) => (
-                    <Header.NavItem
-                        tabIndex={0}
-                        href="#"
-                        key={l.href}
-                        role="link"
-                        data-testid={l.id}
-                        onClick={(e) => nav(e, l.href)}
-                    >
-                        {l.label}
-                    </Header.NavItem>
-                ))}
-            </Header.Nav>
-        </Header>
+        <Header.Nav className="">
+            {appLinks.map((l) => (
+                <Header.NavItem
+                    tabIndex={0}
+                    href="#"
+                    key={l.href}
+                    role="link"
+                    data-testid={l.id}
+                    onClick={(e) => nav(e, l.href)}
+                >
+                    {l.label}
+                </Header.NavItem>
+            ))}
+        </Header.Nav>
     ) : null;
 };
 
