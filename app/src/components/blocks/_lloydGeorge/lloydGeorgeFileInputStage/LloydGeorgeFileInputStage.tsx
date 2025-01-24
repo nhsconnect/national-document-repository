@@ -29,7 +29,7 @@ export type Props = {
     submitDocuments: () => Promise<void>;
 };
 
-function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }: Props) {
+function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }: Readonly<Props>) {
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);

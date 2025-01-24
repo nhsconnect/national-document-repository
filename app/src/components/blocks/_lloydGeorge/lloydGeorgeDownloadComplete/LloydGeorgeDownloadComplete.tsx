@@ -23,7 +23,7 @@ function LloydGeorgeDownloadComplete({
     selectedDocuments,
     searchResults,
     setDownloadStage,
-}: Props) {
+}: Readonly<Props>) {
     const navigate = useNavigate();
 
     const selectedFilesDownload = !!selectedDocuments?.length;

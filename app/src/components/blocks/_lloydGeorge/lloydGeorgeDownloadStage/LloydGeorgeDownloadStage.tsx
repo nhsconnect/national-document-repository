@@ -31,7 +31,7 @@ function LloydGeorgeDownloadStage({
     deleteAfterDownload = false,
     selectedDocuments,
     numberOfFiles,
-}: Props) {
+}: Readonly<Props>) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
