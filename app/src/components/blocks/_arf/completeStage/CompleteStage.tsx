@@ -7,7 +7,7 @@ interface Props {
     documents: Array<UploadDocument>;
 }
 
-function CompleteStage({ documents }: Props) {
+function CompleteStage({ documents }: Readonly<Props>) {
     const navigate = useNavigate();
 
     return (
