@@ -12,7 +12,7 @@ interface Props {
     documents: Array<UploadDocument>;
 }
 
-function UploadingStage({ documents }: Props) {
+function UploadingStage({ documents }: Readonly<Props>) {
     const pageHeader = 'Your documents are uploading';
     useTitle({ pageTitle: 'Uploading documents' });
 
