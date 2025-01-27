@@ -1,4 +1,6 @@
+from enums.feature_flags import FeatureFlags
 from services.bulk_upload_service import BulkUploadService
+from services.feature_flags_service import FeatureFlagService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
@@ -14,6 +16,16 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, _context):
     logger.info("Received event. Starting bulk upload process")
+    feature_flag_service = FeatureFlagService()
+    validation_strict_mode_flag_object = feature_flag_service.get_feature_flags_by_flag(
+        FeatureFlags.LLOYD_GEORGE_VALIDATION_STRICT_MODE.value
+    )
+    validation_strict_mode = validation_strict_mode_flag_object[
+        FeatureFlags.LLOYD_GEORGE_VALIDATION_STRICT_MODE.value
+    ]
+
+    if validation_strict_mode:
+        logger.info("Lloyd George validation strict mose is enabled")
 
     if "Records" not in event or len(event["Records"]) < 1:
         http_status_code = 400
@@ -25,7 +37,7 @@ def lambda_handler(event, _context):
             status_code=http_status_code, body=response_body, methods="GET"
         ).create_api_gateway_response()
 
-    bulk_upload_service = BulkUploadService()
+    bulk_upload_service = BulkUploadService(strict_mode=validation_strict_mode)
 
     try:
         bulk_upload_service.process_message_queue(event["Records"])

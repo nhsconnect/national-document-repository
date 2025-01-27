@@ -117,12 +117,8 @@ class Patient(BaseModel):
                 return entry
 
     def get_names_by_start_date(self) -> [Name]:
-        active_names = [name for name in self.name]
-        if not active_names:
-            return None
-
         sorted_by_start_date_desc = sorted(
-            active_names,
+            self.name,
             key=lambda name: (
                 (1, name.period.start, name.use.lower() == "usual")
                 if name.period and name.period.start is not None

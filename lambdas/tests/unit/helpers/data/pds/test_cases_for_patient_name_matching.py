@@ -27,6 +27,13 @@ TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME = {
     ],
 }
 
+TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_STRICT = copy.deepcopy(
+    TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME
+)
+TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_STRICT["reject"].append(
+    TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_STRICT["accept"].pop(3)
+)
+
 TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN = {
     "pds_name": {"family": "Smith-Anderson", "given": ["Jane"]},
     "accept": ["Jane Smith-Anderson"],

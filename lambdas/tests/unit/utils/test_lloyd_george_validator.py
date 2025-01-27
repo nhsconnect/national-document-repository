@@ -23,6 +23,7 @@ from tests.unit.helpers.data.pds.test_cases_for_patient_name_matching import (
     TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN,
     TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME,
     TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME,
+    TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_STRICT,
     TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME,
     load_test_cases,
 )
@@ -46,12 +47,14 @@ from utils.lloyd_george_validator import (
     getting_patient_info_from_pds,
     parse_pds_response,
     validate_file_name,
-    validate_filename_with_patient_details,
+    validate_filename_with_patient_details_lenient,
+    validate_filename_with_patient_details_strict,
     validate_lg_file_names,
     validate_lg_file_type,
     validate_lg_files,
     validate_patient_date_of_birth,
-    validate_patient_name,
+    validate_patient_name_lenient,
+    validate_patient_name_using_full_name_history,
 )
 
 
@@ -256,7 +259,10 @@ def test_validate_nhs_id_with_pds_service(mock_pds_patient):
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_filename_with_patient_details(lg_file_list, mock_pds_patient)
+        validate_filename_with_patient_details_lenient(lg_file_list, mock_pds_patient)
+
+    with expect_not_to_raise(LGInvalidFilesException):
+        validate_filename_with_patient_details_strict(lg_file_list, mock_pds_patient)
 
 
 def test_mismatch_nhs_id(mocker):
@@ -269,33 +275,42 @@ def test_mismatch_nhs_id(mocker):
     mocker.patch(
         "utils.lloyd_george_validator.check_for_number_of_files_match_expected"
     )
-    mocker.patch("utils.lloyd_george_validator.validate_file_name")
 
     with pytest.raises(LGInvalidFilesException):
         validate_lg_file_names(lg_file_list, "9000000009")
 
 
-def test_mismatch_name_with_pds_service(mock_pds_patient):
+def test_mismatch_name_with_pds_service_strict(mock_pds_patient):
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jake Plain Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jake Plain Smith]_[9000000009]_[22-10-2010].pdf",
     ]
 
     with pytest.raises(LGInvalidFilesException):
-        validate_filename_with_patient_details(lg_file_list, mock_pds_patient)
+        validate_filename_with_patient_details_strict(lg_file_list, mock_pds_patient)
 
 
-def test_validate_name_with_correct_name(mocker, mock_pds_patient):
+def test_mismatch_name_with_pds_service_lenient(mock_pds_patient):
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jake Plain Moody]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jake Plain Moody]_[9000000009]_[22-10-2010].pdf",
+    ]
+
+    with pytest.raises(LGInvalidFilesException):
+        validate_filename_with_patient_details_lenient(lg_file_list, mock_pds_patient)
+
+
+def test_validate_name_with_correct_name_lenient(mocker, mock_pds_patient):
     lg_file_patient_name = "Jane Smith"
     mock_validate_name = mocker.patch(
-        "utils.lloyd_george_validator.validate_patient_name"
+        "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
     mock_validate_name.return_value = ValidationResult(
         score=ValidationScore.FULL_MATCH,
         given_name_match=["Jane"],
         family_name_match="Smith",
     )
-    actual_score, actual_is_name_validation_based_on_historic_name = (
+    actual_score, actual_is_name_validation_based_on_historic_name, result_message = (
         calculate_validation_score(lg_file_patient_name, mock_pds_patient)
     )
 
@@ -304,10 +319,52 @@ def test_validate_name_with_correct_name(mocker, mock_pds_patient):
     assert actual_score == ValidationScore.FULL_MATCH
 
 
-def test_validate_name_with_additional_middle_name_in_file_mismatching_pds(mocker):
+def test_validate_name_with_correct_name_strict(mocker, mock_pds_patient):
+    lg_file_patient_name = "Jane Smith"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name_strict"
+    )
+    with expect_not_to_raise(LGInvalidFilesException):
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient
+        )
+    assert mock_validate_name.call_count == 1
+
+
+def test_validate_name_with_file_missing_middle_name(mocker):
+    lg_file_patient_name = "Jane Smith"
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name_strict"
+    )
+    with expect_not_to_raise(LGInvalidFilesException):
+        validate_patient_name_using_full_name_history(lg_file_patient_name, patient)
+
+    assert mock_validate_name.call_count == 1
+
+
+def test_validate_name_with_additional_middle_name_in_file_mismatching_pds_strict(
+    mocker,
+):
     lg_file_patient_name = "Jane David Smith"
     mock_validate_name = mocker.patch(
-        "utils.lloyd_george_validator.validate_patient_name"
+        "utils.lloyd_george_validator.validate_patient_name_strict"
+    )
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    with expect_not_to_raise(LGInvalidFilesException):
+        actual_is_name_validation_based_on_historic_name = (
+            validate_patient_name_using_full_name_history(lg_file_patient_name, patient)
+        )
+    assert mock_validate_name.call_count == 1
+    assert actual_is_name_validation_based_on_historic_name is False
+
+
+def test_validate_name_with_additional_middle_name_in_file_mismatching_pds_lenient(
+    mocker,
+):
+    lg_file_patient_name = "Jane David Smith"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
     mock_validate_name.return_value = ValidationResult(
@@ -315,7 +372,7 @@ def test_validate_name_with_additional_middle_name_in_file_mismatching_pds(mocke
         given_name_match=["Jane"],
         family_name_match="Smith",
     )
-    actual_score, actual_is_name_validation_based_on_historic_name = (
+    actual_score, actual_is_name_validation_based_on_historic_name, result_message = (
         calculate_validation_score(lg_file_patient_name, patient)
     )
 
@@ -324,18 +381,37 @@ def test_validate_name_with_additional_middle_name_in_file_mismatching_pds(mocke
     assert actual_score == ValidationScore.FULL_MATCH
 
 
+def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds_strict(
+    mock_pds_patient, mocker
+):
+    lg_file_patient_name = "Jane David Smith"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name_strict"
+    )
+
+    actual_is_name_validation_based_on_historic_name = (
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient
+        )
+    )
+
+    assert mock_validate_name.call_count == 1
+    assert actual_is_name_validation_based_on_historic_name is False
+
+
 def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
     mock_pds_patient, mocker
 ):
     lg_file_patient_name = "Jane David Smith"
     mock_validate_name = mocker.patch(
-        "utils.lloyd_george_validator.validate_patient_name"
+        "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
     mock_validate_name.return_value = ValidationResult(
         score=ValidationScore.FULL_MATCH,
-        name_match=["Jane", "Smith"],
+        given_name_match=["Jane"],
+        family_name_match="Smith",
     )
-    actual_score, actual_is_name_validation_based_on_historic_name = (
+    actual_score, actual_is_name_validation_based_on_historic_name, result_message = (
         calculate_validation_score(lg_file_patient_name, mock_pds_patient)
     )
 
@@ -344,37 +420,80 @@ def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
     assert actual_score == ValidationScore.FULL_MATCH
 
 
-def test_validate_name_with_wrong_first_name(mocker, mock_pds_patient):
+def test_validate_name_with_wrong_first_name_strict(mocker, mock_pds_patient):
+    lg_file_patient_name = "John Smith"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name_strict"
+    )
+    mock_validate_name.return_value = False
+    with pytest.raises(LGInvalidFilesException):
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient
+        )
+    assert mock_validate_name.call_count == 3
+
+
+def test_validate_name_with_wrong_first_name_lenient(mock_pds_patient):
     lg_file_patient_name = "John Smith"
 
-    actual_response = validate_patient_name(
+    actual_response = validate_patient_name_lenient(
         lg_file_patient_name,
         mock_pds_patient.name[0].given,
         mock_pds_patient.name[0].family,
     )
     assert actual_response == ValidationResult(
         score=ValidationScore.PARTIAL_MATCH,
-        name_match=["Smith"],
+        family_name_match="Smith",
     )
 
 
-def test_validate_name_with_wrong_family_name(mocker, mock_pds_patient):
+def test_validate_name_with_wrong_family_name_strict(mocker, mock_pds_patient):
+    lg_file_patient_name = "John Johnson"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name_strict"
+    )
+    mock_validate_name.return_value = False
+    with pytest.raises(LGInvalidFilesException):
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient
+        )
+    assert mock_validate_name.call_count == 3
+
+
+def test_validate_name_with_wrong_family_name_lenient(mock_pds_patient):
     lg_file_patient_name = "Jane Johnson"
-    actual_response = validate_patient_name(
+    actual_response = validate_patient_name_lenient(
         lg_file_patient_name,
         mock_pds_patient.name[0].given,
         mock_pds_patient.name[0].family,
     )
     assert actual_response == ValidationResult(
         score=ValidationScore.PARTIAL_MATCH,
-        name_match=["Jane"],
+        given_name_match=["Jane"],
     )
 
 
-def test_validate_name_with_historical_name(mocker, mock_pds_patient):
+def test_validate_name_with_historical_name_strict(mocker, mock_pds_patient):
     lg_file_patient_name = "Jim Stevens"
     mock_validate_name = mocker.patch(
-        "utils.lloyd_george_validator.validate_patient_name"
+        "utils.lloyd_george_validator.validate_patient_name_strict"
+    )
+    mock_validate_name.side_effect = [False, True]
+    with expect_not_to_raise(LGInvalidFilesException):
+        actual_is_name_validation_based_on_historic_name = (
+            validate_patient_name_using_full_name_history(
+                lg_file_patient_name, mock_pds_patient
+            )
+        )
+
+    assert mock_validate_name.call_count == 2
+    assert actual_is_name_validation_based_on_historic_name is True
+
+
+def test_validate_name_with_historical_name_lenient(mocker, mock_pds_patient):
+    lg_file_patient_name = "Jim Stevens"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
     mock_validate_name.side_effect = [
         ValidationResult(
@@ -384,22 +503,38 @@ def test_validate_name_with_historical_name(mocker, mock_pds_patient):
             score=ValidationScore.FULL_MATCH,
         ),
     ]
-    actual_score, actual_is_validate_on_historic = calculate_validation_score(
-        lg_file_patient_name, mock_pds_patient
+    actual_score, actual_is_validate_on_historic, result_message = (
+        calculate_validation_score(lg_file_patient_name, mock_pds_patient)
     )
     assert actual_score == ValidationScore.FULL_MATCH
     assert mock_validate_name.call_count == 2
     assert actual_is_validate_on_historic is True
 
 
-def test_validate_name_without_given_name(mocker, mock_pds_patient):
+def test_validate_name_without_given_name_strict(mocker, mock_pds_patient):
     lg_file_patient_name = "Jane Smith"
     mock_pds_patient.name[0].given = [""]
     mock_validate_name = mocker.patch(
-        "utils.lloyd_george_validator.validate_patient_name"
+        "utils.lloyd_george_validator.validate_patient_name_strict"
     )
-    actual_score, actual_is_validate_on_historic = calculate_validation_score(
-        lg_file_patient_name, mock_pds_patient
+
+    with expect_not_to_raise(LGInvalidFilesException):
+        actual_is_validate_on_historic = validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient
+        )
+
+    assert actual_is_validate_on_historic is False
+    assert mock_validate_name.call_count == 1
+
+
+def test_validate_name_without_given_name_lenient(mocker, mock_pds_patient):
+    lg_file_patient_name = "Jane Smith"
+    mock_pds_patient.name[0].given = [""]
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name_lenient"
+    )
+    actual_score, actual_is_validate_on_historic, result_message = (
+        calculate_validation_score(lg_file_patient_name, mock_pds_patient)
     )
     assert actual_score == ValidationScore.NO_MATCH
     assert actual_is_validate_on_historic is False
@@ -408,15 +543,39 @@ def test_validate_name_without_given_name(mocker, mock_pds_patient):
 
 @pytest.mark.parametrize(
     ["patient_details", "patient_name_in_file_name", "should_accept_name"],
-    load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME),
+    load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_STRICT),
 )
-def test_validate_patient_name_with_two_words_family_name(
+def test_validate_patient_name_with_two_words_family_name_strict(
     patient_details: Patient,
     patient_name_in_file_name: str,
     should_accept_name: bool,
 ):
-    actual_score, actual_is_validate_on_historic = calculate_validation_score(
-        patient_name_in_file_name, patient_details
+    if should_accept_name:
+        with expect_not_to_raise(LGInvalidFilesException):
+            actual_is_validate_on_historic = (
+                validate_patient_name_using_full_name_history(
+                    patient_name_in_file_name, patient_details
+                )
+            )
+            assert actual_is_validate_on_historic is False
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
+    load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME),
+)
+def test_validate_patient_name_with_two_words_family_name_lenient(
+    patient_details: Patient,
+    patient_name_in_file_name: str,
+    should_accept_name: bool,
+):
+    actual_score, actual_is_validate_on_historic, result_message = (
+        calculate_validation_score(patient_name_in_file_name, patient_details)
     )
     if should_accept_name:
         assert actual_is_validate_on_historic is False
@@ -430,13 +589,37 @@ def test_validate_patient_name_with_two_words_family_name(
     ["patient_details", "patient_name_in_file_name", "should_accept_name"],
     load_test_cases(TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN),
 )
-def test_validate_patient_name_with_family_name_with_hyphen(
+def test_validate_patient_name_with_family_name_with_hyphen_strict(
     patient_details: Patient,
     patient_name_in_file_name: str,
     should_accept_name: bool,
 ):
-    actual_score, actual_is_validate_on_historic = calculate_validation_score(
-        patient_name_in_file_name, patient_details
+    if should_accept_name:
+        with expect_not_to_raise(LGInvalidFilesException):
+            actual_is_validate_on_historic = (
+                validate_patient_name_using_full_name_history(
+                    patient_name_in_file_name, patient_details
+                )
+            )
+            assert actual_is_validate_on_historic is False
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
+    load_test_cases(TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN),
+)
+def test_validate_patient_name_with_family_name_with_hyphen_lenient(
+    patient_details: Patient,
+    patient_name_in_file_name: str,
+    should_accept_name: bool,
+):
+    actual_score, actual_is_validate_on_historic, result_message = (
+        calculate_validation_score(patient_name_in_file_name, patient_details)
     )
     if should_accept_name:
         assert actual_is_validate_on_historic is False
@@ -450,13 +633,34 @@ def test_validate_patient_name_with_family_name_with_hyphen(
     ["patient_details", "patient_name_in_file_name", "should_accept_name"],
     load_test_cases(TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME),
 )
-def test_validate_patient_name_with_two_words_given_name(
+def test_validate_patient_name_with_two_words_given_name_strict(
     patient_details: Patient,
     patient_name_in_file_name: str,
     should_accept_name: bool,
 ):
-    actual_score, actual_is_validate_on_historic = calculate_validation_score(
-        patient_name_in_file_name, patient_details
+    if should_accept_name:
+        with expect_not_to_raise(LGInvalidFilesException):
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
+    load_test_cases(TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME),
+)
+def test_validate_patient_name_with_two_words_given_name_lenient(
+    patient_details: Patient,
+    patient_name_in_file_name: str,
+    should_accept_name: bool,
+):
+    actual_score, actual_is_validate_on_historic, result_message = (
+        calculate_validation_score(patient_name_in_file_name, patient_details)
     )
     if should_accept_name:
         assert actual_is_validate_on_historic is False
@@ -470,13 +674,34 @@ def test_validate_patient_name_with_two_words_given_name(
     ["patient_details", "patient_name_in_file_name", "should_accept_name"],
     load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME),
 )
-def test_validate_patient_name_with_two_words_family_name_and_given_name(
+def test_validate_patient_name_with_two_words_family_name_and_given_name_strict(
     patient_details: Patient,
     patient_name_in_file_name: str,
     should_accept_name: bool,
 ):
-    actual_score, actual_is_validate_on_historic = calculate_validation_score(
-        patient_name_in_file_name, patient_details
+    if should_accept_name:
+        with expect_not_to_raise(LGInvalidFilesException):
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
+    load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME),
+)
+def test_validate_patient_name_with_two_words_family_name_and_given_name_lenient(
+    patient_details: Patient,
+    patient_name_in_file_name: str,
+    should_accept_name: bool,
+):
+    actual_score, actual_is_validate_on_historic, result_message = (
+        calculate_validation_score(patient_name_in_file_name, patient_details)
     )
     if should_accept_name:
         assert actual_is_validate_on_historic is False
@@ -494,17 +719,19 @@ def test_missing_middle_name_names_with_pds_service():
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
 
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_filename_with_patient_details(lg_file_list, patient)
+        validate_filename_with_patient_details_lenient(lg_file_list, patient)
+        validate_filename_with_patient_details_strict(lg_file_list, patient)
 
 
-def test_mismatch_dob_with_pds_service(mock_pds_patient):
+def test_mismatch_dob_and_name_with_pds_service(mock_pds_patient):
     lg_file_list = [
-        "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[14-01-2000].pdf",
-        "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[14-01-2000].pdf",
+        "1of2_Lloyd_George_Record_[Jake Plain Smith]_[9000000009]_[14-01-2000].pdf",
+        "2of2_Lloyd_George_Record_[Jake Plain Smith]_[9000000009]_[14-01-2000].pdf",
     ]
 
     with pytest.raises(LGInvalidFilesException):
-        validate_filename_with_patient_details(lg_file_list, mock_pds_patient)
+        validate_filename_with_patient_details_lenient(lg_file_list, mock_pds_patient)
+        validate_filename_with_patient_details_strict(lg_file_list, mock_pds_patient)
 
 
 def test_validate_date_of_birth_when_mismatch_dob_with_pds_service(
@@ -512,21 +739,22 @@ def test_validate_date_of_birth_when_mismatch_dob_with_pds_service(
 ):
     file_date_of_birth = "14-01-2000"
 
-    with pytest.raises(LGInvalidFilesException):
-        validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient)
+    actual = validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient)
+
+    assert actual is False
 
 
 def test_validate_date_of_birth_valid_with_pds_service(mock_pds_patient):
     file_date_of_birth = "22-10-2010"
-    with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient)
+    actual = validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient)
+    assert actual is True
 
 
 def test_validate_date_of_birth_none_with_pds_service(mock_pds_patient):
     file_date_of_birth = "22-10-2010"
     mock_pds_patient.birth_date = None
-    with pytest.raises(LGInvalidFilesException):
-        validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient)
+    actual = validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient)
+    assert actual is False
 
 
 def test_patient_not_found_with_pds_service(mock_pds_call):
@@ -802,7 +1030,7 @@ def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
 def test_validate_patient_name_return_false(
     file_patient_name, first_name_from_pds, family_name_from_pds, result
 ):
-    actual = validate_patient_name(
+    actual = validate_patient_name_lenient(
         file_patient_name, first_name_from_pds, family_name_from_pds
     )
     assert actual.score == result
@@ -817,16 +1045,18 @@ def test_validate_patient_name_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                name_match=["Jane", "Smith"],
+                given_name_match=["Jane"],
+                family_name_match="Smith",
             ),
         ),
         (
             "Jane Bob Smith Anderson",
             ["Jane"],
-            "Smith Anderson",
+            "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                name_match=["Jane", "Smith Anderson"],
+                given_name_match=["Jane"],
+                family_name_match="Smith",
             ),
         ),
         (
@@ -835,7 +1065,8 @@ def test_validate_patient_name_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                name_match=["Jane", "Smith Anderson"],
+                given_name_match=["Jane"],
+                family_name_match="Smith Anderson",
             ),
         ),
         (
@@ -844,7 +1075,8 @@ def test_validate_patient_name_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                name_match=["Jane", "Smith Anderson"],
+                given_name_match=["Jane"],
+                family_name_match="Smith Anderson",
             ),
         ),
         (
@@ -853,7 +1085,8 @@ def test_validate_patient_name_return_false(
             "Smith-Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                name_match=["Jane", "Smith-Anderson"],
+                given_name_match=["Jane"],
+                family_name_match="Smith-Anderson",
             ),
         ),
         (
@@ -862,7 +1095,8 @@ def test_validate_patient_name_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                name_match=["Jane Bob", "Smith Anderson"],
+                given_name_match=["Jane Bob"],
+                family_name_match="Smith Anderson",
             ),
         ),
         (
@@ -871,7 +1105,25 @@ def test_validate_patient_name_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                name_match=["Jane Bob", "Smith"],
+                given_name_match=["Jane Bob"],
+                family_name_match="Smith",
+            ),
+        ),
+        (
+            "Jane Smith",
+            ["Bob"],
+            "Smith",
+            ValidationResult(
+                score=ValidationScore.PARTIAL_MATCH,
+                family_name_match="Smith",
+            ),
+        ),
+        (
+            "Jane Smith",
+            ["Bob"],
+            "Dylan",
+            ValidationResult(
+                score=ValidationScore.NO_MATCH,
             ),
         ),
     ],
@@ -879,38 +1131,41 @@ def test_validate_patient_name_return_false(
 def test_validate_patient_name_return_true(
     file_patient_name, first_name_from_pds, family_name_from_pds, expected
 ):
-    actual = validate_patient_name(
+    actual = validate_patient_name_lenient(
         file_patient_name, first_name_from_pds, family_name_from_pds
     )
     assert actual == expected
 
 
 @pytest.mark.parametrize(
-    ["file_patient_name", "score"],
+    ["file_patient_name", "expected_score", "expected_historical_match"],
     [
-        ("Jane Smith", ValidationScore.FULL_MATCH),
-        ("Smith Jane", ValidationScore.FULL_MATCH),
-        ("Jane Bob Smith Moody", ValidationScore.FULL_MATCH),
-        ("Jane Smith Moody", ValidationScore.FULL_MATCH),
-        ("Jane B Smith Moody", ValidationScore.FULL_MATCH),
-        ("Jane Smith-Moody", ValidationScore.FULL_MATCH),
-        ("Jane Bob Smith Moody", ValidationScore.FULL_MATCH),
-        ("Jane Bob Smith", ValidationScore.FULL_MATCH),
-        ("Bob Smith", ValidationScore.MIXED_FULL_MATCH),
-        ("Bob Jane", ValidationScore.FULL_MATCH),
-        ("Alastor Moody", ValidationScore.NO_MATCH),
-        ("Jones Bob", ValidationScore.MIXED_FULL_MATCH),
+        ("Jane Smith", ValidationScore.FULL_MATCH, True),
+        ("Smith Jane", ValidationScore.FULL_MATCH, True),
+        ("Jane Bob Smith Moody", ValidationScore.FULL_MATCH, False),
+        ("Jane Smith Moody", ValidationScore.FULL_MATCH, True),
+        ("Jane B Smith Moody", ValidationScore.FULL_MATCH, True),
+        ("Jane Smith-Moody", ValidationScore.FULL_MATCH, True),
+        ("Jane Bob Smith Moody", ValidationScore.FULL_MATCH, False),
+        ("Jane Bob Smith", ValidationScore.FULL_MATCH, False),
+        ("Bob Smith", ValidationScore.MIXED_FULL_MATCH, True),
+        ("Bob Jane", ValidationScore.FULL_MATCH, False),
+        ("Alastor Moody", ValidationScore.NO_MATCH, False),
+        ("Jones Bob", ValidationScore.MIXED_FULL_MATCH, True),
+        ("Jones Jane", ValidationScore.MIXED_FULL_MATCH, True),
     ],
 )
-def test_calculate_validation_score(file_patient_name, score):
+def test_calculate_validation_score(
+    file_patient_name, expected_score, expected_historical_match
+):
     name_1 = build_test_name(start="1990-01-01", end=None, given=["Jane"])
     name_2 = build_test_name(start="1995-01-01", end=None, given=["Jane"], family="Bob")
     name_3 = build_test_name(use="temp", start=None, end=None, given=["Jones"])
 
     test_patient = build_test_patient_with_names([name_1, name_2, name_3])
 
-    actual_result, historical = calculate_validation_score(
+    actual_result, historical, _ = calculate_validation_score(
         file_patient_name, test_patient
     )
-
-    assert actual_result == score
+    assert historical == expected_historical_match
+    assert actual_result == expected_score

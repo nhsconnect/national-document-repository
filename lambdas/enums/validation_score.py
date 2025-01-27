@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -11,5 +12,6 @@ class ValidationScore(Enum):
 
 
 class ValidationResult(BaseModel):
-    name_match: list[str] = []
+    given_name_match: list[str] = []
+    family_name_match: Optional[str] = None
     score: ValidationScore = ValidationScore.NO_MATCH
