@@ -47,20 +47,23 @@ jobs:
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
           mask-aws-account-id: true
+          
+      - name: Get SSM parameters from SSM
+        id: ssm-parameters
+        run: | 
+          doc_store_api_endpoint=$(aws ssm get-parameter --name "/ndr/${{ inputs.sandbox }}/api_endpoint" --with-decryption --query "Parameter.Value" --output text)
+          echo "::add-mask::$doc_store_api_endpoint"
+          echo "ENDPOINT_DOC_STORE_API=$doc_store_api_endpoint" >> $GITHUB_ENV
+          container_port=$(aws ssm get-parameter --name "/ndr/${{ inputs.sandbox }}/container_port" --with-decryption --query "Parameter.Value" --output text)
+          echo "::add-mask::$container_port"
+          echo "CONTAINER_PORT=$container_port" >> $GITHUB_ENV
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - uses: dkershner6/aws-ssm-getparameters-action@v1
-        with:
-          parameterPairs: '/ndr/${{ inputs.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT, 
-            /ndr/${{ inputs.sandbox }}/container_port = CONTAINER_PORT'
-          withDecryption: 'true' # defaults to true
-
       - name: Configure React environment vars
         env:
-          ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
           AWS_REGION: ${{ vars.AWS_REGION }}
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: ${{ inputs.environment }}
@@ -88,7 +91,7 @@ jobs:
         id: download-task
         run: |
           aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-task-app-cluster --query taskDefinition > task-definition.json
-          echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
+          echo "revision=$(cat task-definition.json | jq .revision)" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
