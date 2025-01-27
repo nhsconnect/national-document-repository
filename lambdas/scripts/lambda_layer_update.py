@@ -80,11 +80,12 @@ class LambdaLayerUpdate:
                 print("Lambda propagated update successfully...")
                 return
 
-            if attempt <= retry_count:
+            if attempt < retry_count:
                 print("Lambda has not finished propagating update, retrying...")
                 time.sleep(seconds_delay)
 
-        sys.exit("Exceeded retries. Failed to verify Lambda state.")
+        print("Exceeded retries. Failed to verify Lambda state.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
