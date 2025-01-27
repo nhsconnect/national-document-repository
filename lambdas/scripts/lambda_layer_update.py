@@ -68,6 +68,8 @@ class LambdaLayerUpdate:
     def propagate_lambda_update(self):
         retry_count = 3
         seconds_delay = 5
+        time.sleep(seconds_delay)
+
         for attempt in range(1, retry_count + 1):
             print(f"Attempt {attempt}: Propagating lambda layer update...")
             response = self.client.get_function_configuration(
