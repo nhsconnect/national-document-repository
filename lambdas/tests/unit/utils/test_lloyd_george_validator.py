@@ -54,7 +54,8 @@ from utils.lloyd_george_validator import (
     validate_lg_files,
     validate_patient_date_of_birth,
     validate_patient_name_lenient,
-    validate_patient_name_using_full_name_history, validate_patient_name_strict,
+    validate_patient_name_strict,
+    validate_patient_name_using_full_name_history,
 )
 
 
@@ -1030,6 +1031,7 @@ def test_validate_patient_name_return_true(
     )
     assert actual is True
 
+
 @pytest.mark.parametrize(
     ["file_patient_name", "first_name_from_pds", "family_name_from_pds", "result"],
     [
@@ -1079,7 +1081,7 @@ def test_validate_patient_name_return_true(
         ],
     ],
 )
-def test_validate_patient_name_return_false(
+def test_validate_patient_name_lenient_return_false(
     file_patient_name, first_name_from_pds, family_name_from_pds, result
 ):
     actual = validate_patient_name_lenient(
@@ -1180,7 +1182,7 @@ def test_validate_patient_name_return_false(
         ),
     ],
 )
-def test_validate_patient_name_return_true(
+def test_validate_patient_name_lenient_return_true(
     file_patient_name, first_name_from_pds, family_name_from_pds, expected
 ):
     actual = validate_patient_name_lenient(
