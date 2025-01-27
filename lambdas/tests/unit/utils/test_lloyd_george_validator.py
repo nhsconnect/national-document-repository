@@ -54,7 +54,7 @@ from utils.lloyd_george_validator import (
     validate_lg_files,
     validate_patient_date_of_birth,
     validate_patient_name_lenient,
-    validate_patient_name_using_full_name_history,
+    validate_patient_name_using_full_name_history, validate_patient_name_strict,
 )
 
 
@@ -977,6 +977,58 @@ def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
             TEST_DOCUMENT_REFERENCE_LIST, patient_with_different_nhs_number
         )
 
+
+@pytest.mark.parametrize(
+    ["file_patient_name", "first_name_from_pds", "family_name_from_pds"],
+    [
+        ["Jim Stevens", "Jane", "Smith"],
+        ["Jane Smith Anderson", "Jane", "Smith"],
+        ["Bob Smith Anderson", "Jane", "Smith"],
+        ["Jane B Smith Anderson", "Jane", "Smith"],
+        ["Jane Bob Anderson", "Jane", "Smith"],
+        ["Jane Bob Smith", "Jane Bob", "Smith Anderson"],
+        ["Jane Smith", "Jane Bob", "Smith"],
+        ["Jane B Smith", "Jane Bob", "Smith"],
+        ["Jane-Bob Smith", "Jane Bob", "Smith"],
+        ["Jane Smith", "Jane Bob", "Smith"],
+        ["Jane Smith Anderson", "Jane", "Smith-Anderson"],
+        ["Jane Smith", "Jane", "Smith-Anderson"],
+        ["Jane Anderson", "Jane", "Smith-Anderson"],
+        ["Jane Bob Smith", "Jane Bob", "Smith-Anderson"],
+        ["Bob Smith Anderson", "Jane", "Smith Anderson"],
+        ["Jane Smith", "Jane", "Smith Anderson"],
+        ["Jane Anderson", "Jane", "Smith Anderson"],
+        ["Jane Anderson Smith", "Jane", "Smith Anderson"],
+    ],
+)
+def test_validate_patient_name_return_false(
+    file_patient_name, first_name_from_pds, family_name_from_pds
+):
+    actual = validate_patient_name_strict(
+        file_patient_name, first_name_from_pds, family_name_from_pds
+    )
+    assert actual is False
+
+
+@pytest.mark.parametrize(
+    ["file_patient_name", "first_name_from_pds", "family_name_from_pds"],
+    [
+        ["Jane Smith", "Jane", "Smith"],
+        ["Jane Bob Smith Anderson", "Jane", "Smith Anderson"],
+        ["Jane Smith Anderson", "Jane", "Smith Anderson"],
+        ["Jane B Smith Anderson", "Jane", "Smith Anderson"],
+        ["Jane Smith-Anderson", "Jane", "Smith-Anderson"],
+        ["Jane Bob Smith Anderson", "Jane Bob", "Smith Anderson"],
+        ["Jane Bob Smith", "Jane Bob", "Smith"],
+    ],
+)
+def test_validate_patient_name_return_true(
+    file_patient_name, first_name_from_pds, family_name_from_pds
+):
+    actual = validate_patient_name_strict(
+        file_patient_name, first_name_from_pds, family_name_from_pds
+    )
+    assert actual is True
 
 @pytest.mark.parametrize(
     ["file_patient_name", "first_name_from_pds", "family_name_from_pds", "result"],
