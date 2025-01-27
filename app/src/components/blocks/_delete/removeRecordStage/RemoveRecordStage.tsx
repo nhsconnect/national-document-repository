@@ -109,7 +109,7 @@ function RemoveRecordStage({
                     >
                         retention period
                     </a>
-                    .
+                    {/**/}.
                 </p>
             </WarningCallout>
             <PatientSummary />
