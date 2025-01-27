@@ -602,6 +602,8 @@ def test_validate_patient_name_with_two_words_family_name_lenient(
         assert actual_is_validate_on_historic is False
         assert actual_score == ValidationScore.FULL_MATCH
     else:
+        expected_message = "matched on 0 family_name and 1 given name"
+        assert result_message == expected_message
         assert actual_is_validate_on_historic is False
         assert actual_score == ValidationScore.PARTIAL_MATCH
 
