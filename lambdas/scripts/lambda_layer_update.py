@@ -68,8 +68,8 @@ class LambdaLayerUpdate:
     def propagate_lambda_update(self):
         retry_count = 3
         seconds_delay = 3
-        for attempt in range(1, retry_count):
-            print("Propagating lambda layer update...")
+        for attempt in range(1, retry_count + 1):
+            print(f"Attempt {attempt}: Propagating lambda layer update...")
             response = self.client.get_function_configuration(
                 FunctionName=self.function_name_aws
             )
@@ -80,11 +80,11 @@ class LambdaLayerUpdate:
                 print("Lambda propagated update successfully...")
                 return
 
-            if attempt < retry_count:
+            if attempt <= retry_count:
                 print("Lambda has not finished propagating update, retrying...")
                 time.sleep(seconds_delay)
 
-        print("Exceeded retries. Failed to verify Lambda state.")
+        sys.exit("Exceeded retries. Failed to verify Lambda state.")
 
 
 if __name__ == "__main__":
