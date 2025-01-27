@@ -59,7 +59,7 @@ def lambda_handler(event, context):
                     )
 
                     logger.info(
-                        f"Create pointer request: Body: {json.loads(document)}, "
+                        f"Create pointer request: Body: {document.model_dump_json(exclude_none=True)}, "
                         f"RequestURL: {nrl_api_service.endpoint}, "
                         "HTTP Verb: POST, "
                         f"NHS Number: {nrl_message.nhs_number}, "
