@@ -306,6 +306,7 @@ def test_validate_name_with_correct_name_lenient(mocker, mock_pds_patient):
     mock_validate_name = mocker.patch(
         "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
+    expected_message = "matched on 1 family_name and 1 given name"
     mock_validate_name.return_value = ValidationResult(
         score=ValidationScore.FULL_MATCH,
         given_name_match=["Jane"],
@@ -315,6 +316,7 @@ def test_validate_name_with_correct_name_lenient(mocker, mock_pds_patient):
         calculate_validation_score(lg_file_patient_name, mock_pds_patient)
     )
 
+    assert expected_message == result_message
     assert mock_validate_name.call_count == 1
     assert actual_is_name_validation_based_on_historic_name is False
     assert actual_score == ValidationScore.FULL_MATCH
@@ -367,6 +369,8 @@ def test_validate_name_with_additional_middle_name_in_file_mismatching_pds_lenie
     mock_validate_name = mocker.patch(
         "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
+    expected_message = "matched on 1 family_name and 1 given name"
+
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
     mock_validate_name.return_value = ValidationResult(
         score=ValidationScore.FULL_MATCH,
@@ -377,6 +381,7 @@ def test_validate_name_with_additional_middle_name_in_file_mismatching_pds_lenie
         calculate_validation_score(lg_file_patient_name, patient)
     )
 
+    assert expected_message == result_message
     assert mock_validate_name.call_count == 1
     assert actual_is_name_validation_based_on_historic_name is False
     assert actual_score == ValidationScore.FULL_MATCH
@@ -407,6 +412,9 @@ def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
     mock_validate_name = mocker.patch(
         "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
+
+    expected_message = "matched on 1 family_name and 1 given name"
+
     mock_validate_name.return_value = ValidationResult(
         score=ValidationScore.FULL_MATCH,
         given_name_match=["Jane"],
@@ -416,6 +424,7 @@ def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
         calculate_validation_score(lg_file_patient_name, mock_pds_patient)
     )
 
+    assert expected_message == result_message
     assert mock_validate_name.call_count == 1
     assert actual_is_name_validation_based_on_historic_name is False
     assert actual_score == ValidationScore.FULL_MATCH
@@ -496,17 +505,23 @@ def test_validate_name_with_historical_name_lenient(mocker, mock_pds_patient):
     mock_validate_name = mocker.patch(
         "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
+    expected_message = "matched on 1 family_name and 1 given name"
+
     mock_validate_name.side_effect = [
         ValidationResult(
             score=ValidationScore.NO_MATCH,
         ),
         ValidationResult(
             score=ValidationScore.FULL_MATCH,
+            given_name_match=["Jim"],
+            family_name_match="Stevens",
         ),
     ]
     actual_score, actual_is_validate_on_historic, result_message = (
         calculate_validation_score(lg_file_patient_name, mock_pds_patient)
     )
+
+    assert result_message == expected_message
     assert actual_score == ValidationScore.FULL_MATCH
     assert mock_validate_name.call_count == 2
     assert actual_is_validate_on_historic is True
@@ -531,12 +546,16 @@ def test_validate_name_without_given_name_strict(mocker, mock_pds_patient):
 def test_validate_name_without_given_name_lenient(mocker, mock_pds_patient):
     lg_file_patient_name = "Jane Smith"
     mock_pds_patient.name[0].given = [""]
+    expected_message = "No match found"
+
     mock_validate_name = mocker.patch(
         "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
     actual_score, actual_is_validate_on_historic, result_message = (
         calculate_validation_score(lg_file_patient_name, mock_pds_patient)
     )
+
+    assert result_message == expected_message
     assert actual_score == ValidationScore.NO_MATCH
     assert actual_is_validate_on_historic is False
     assert mock_validate_name.call_count == 2
@@ -575,6 +594,7 @@ def test_validate_patient_name_with_two_words_family_name_lenient(
     patient_name_in_file_name: str,
     should_accept_name: bool,
 ):
+
     actual_score, actual_is_validate_on_historic, result_message = (
         calculate_validation_score(patient_name_in_file_name, patient_details)
     )
@@ -623,9 +643,13 @@ def test_validate_patient_name_with_family_name_with_hyphen_lenient(
         calculate_validation_score(patient_name_in_file_name, patient_details)
     )
     if should_accept_name:
+        expected_message = "matched on 1 family_name and 1 given name"
+        assert result_message == expected_message
         assert actual_is_validate_on_historic is False
         assert actual_score == ValidationScore.FULL_MATCH
     else:
+        expected_message = "matched on 0 family_name and 1 given name"
+        assert result_message == expected_message
         assert actual_is_validate_on_historic is False
         assert actual_score == ValidationScore.PARTIAL_MATCH
 
@@ -664,9 +688,13 @@ def test_validate_patient_name_with_two_words_given_name_lenient(
         calculate_validation_score(patient_name_in_file_name, patient_details)
     )
     if should_accept_name:
+        expected_message = "matched on 1 family_name and 1 given name"
+        assert result_message == expected_message
         assert actual_is_validate_on_historic is False
         assert actual_score == ValidationScore.FULL_MATCH
     else:
+        expected_message = "matched on 1 family_name and 0 given name"
+        assert result_message == expected_message
         assert actual_is_validate_on_historic is False
         assert actual_score == ValidationScore.PARTIAL_MATCH
 
@@ -705,6 +733,8 @@ def test_validate_patient_name_with_two_words_family_name_and_given_name_lenient
         calculate_validation_score(patient_name_in_file_name, patient_details)
     )
     if should_accept_name:
+        expected_message = "matched on 1 family_name and 1 given name"
+        assert result_message == expected_message
         assert actual_is_validate_on_historic is False
         assert actual_score == ValidationScore.FULL_MATCH
     else:

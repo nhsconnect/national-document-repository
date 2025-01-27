@@ -258,7 +258,7 @@ def calculate_validation_score(
             file_patient_name, first_name_in_pds, family_name_in_pds
         )
         if result.score == ValidationScore.FULL_MATCH:
-            result_message = f"matched on {len(matched_on_family_name)} family_name and {len(matched_on_given_name)} given name"
+            result_message = f"matched on {1 if bool(result.family_name_match) else 0} family_name and {len(result.given_name_match)} given name"
             historical_match = index != 0
             return result.score, historical_match, result_message
         elif result.score == ValidationScore.PARTIAL_MATCH:
@@ -277,7 +277,7 @@ def calculate_validation_score(
         return ValidationScore.MIXED_FULL_MATCH, historical_match, result_message
     elif matched_on_given_name or matched_on_family_name:
         return ValidationScore.PARTIAL_MATCH, historical_match, result_message
-    return ValidationScore.NO_MATCH, False, result_message
+    return ValidationScore.NO_MATCH, False, "No match found"
 
 
 def validate_patient_name_lenient(
