@@ -11,7 +11,7 @@ type Props = {
     children: ReactNode;
 };
 
-function Layout({ children }: Props) {
+function Layout({ children }: Readonly<Props>) {
     const layoutRef = useRef<HTMLDivElement | null>(null);
     const mainRef = useRef<HTMLDivElement | null>(null);
     const location = useLocation();
