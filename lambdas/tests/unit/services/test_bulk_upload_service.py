@@ -233,6 +233,7 @@ def test_handle_sqs_message_happy_path(
     mock_create_lg_records_and_copy_files.assert_called_with(
         TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
     )
+    mock_pds_validation_strict.assert_called()
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
     repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
@@ -1003,6 +1004,41 @@ def test_handle_sqs_message_happy_path_historical_name(
     )
     mock_remove_ingested_file_from_source_bucket.assert_called()
 
+def test_handle_sqs_message_lenient_mode_happy_path(
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation_lenient,
+    mock_pds_validation_strict,
+    mock_ods_validation,
+):
+    TEST_STAGING_METADATA.retries = 0
+    service = BulkUploadService(strict_mode=False)
+    mocker.patch.object(service, "dynamo_repository")
+    mocker.patch.object(service, "sqs_repository")
+    mocker.patch.object(service, "s3_repository")
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_report_upload_complete = mocker.patch.object(
+        service.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        service.s3_repository, "remove_ingested_file_from_source_bucket"
+    )
+    mocker.patch.object(service.s3_repository, "check_virus_result")
+
+    service.handle_sqs_message(message=TEST_SQS_MESSAGE)
+    mock_create_lg_records_and_copy_files.assert_called_with(
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
+    )
+    mock_pds_validation_lenient.assert_called()
+    mock_pds_validation_strict.assert_not_called()
+    mock_report_upload_complete.assert_called()
+    mock_remove_ingested_file_from_source_bucket.assert_called()
+    service.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 def test_concatenate_acceptance_reason(repo_under_test):
     accepted_reason = None
