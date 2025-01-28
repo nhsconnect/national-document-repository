@@ -18,7 +18,7 @@ export type Props = {
     recordLinks?: Array<LGRecordActionLink>;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     showMenu?:boolean;
-};
+ };
 
 function RecordCard({
     heading,

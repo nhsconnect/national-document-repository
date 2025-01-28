@@ -24,7 +24,6 @@ import {
     getNonBSOLUserRecordActionLinks,
 } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
-import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routes, routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
@@ -213,11 +212,6 @@ function LloydGeorgeViewRecordStage({
 
             <h1>{pageHeader}</h1>
             <PatientSimpleSummary />
-            {fullScreen ? (
-                <> </>
-            ) : (
-                <p />
-            )}
 
             {!fullScreen ? (
                 <div className="lloydgeorge_record-stage_flex">
