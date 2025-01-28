@@ -289,7 +289,11 @@ def validate_patient_name_lenient(
         for first_name in first_name_in_pds
         if first_name and name_contains_in(file_patient_name, first_name)
     ]
-    family_name_matches = name_contains_in(file_patient_name, family_name_in_pds) if family_name_in_pds else None
+    family_name_matches = (
+        name_contains_in(file_patient_name, family_name_in_pds)
+        if family_name_in_pds
+        else None
+    )
 
     if given_name_matches and family_name_matches:
         return ValidationResult(

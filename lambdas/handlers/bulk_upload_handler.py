@@ -25,7 +25,7 @@ def lambda_handler(event, _context):
     ]
 
     if validation_strict_mode:
-        logger.info("Lloyd George validation strict mose is enabled")
+        logger.info("Lloyd George validation strict mode is enabled")
 
     if "Records" not in event or len(event["Records"]) < 1:
         http_status_code = 400

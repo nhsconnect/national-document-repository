@@ -1196,13 +1196,13 @@ def test_validate_patient_name_lenient_return_false(
             ),
         ),
         (
-                "Jane Bob Smith",
-                ["Jane Bob"],
-                "Anderson",
-                ValidationResult(
-                    score=ValidationScore.PARTIAL_MATCH,
-                    given_name_match=["Jane Bob"],
-                ),
+            "Jane Bob Smith",
+            ["Jane Bob"],
+            "Anderson",
+            ValidationResult(
+                score=ValidationScore.PARTIAL_MATCH,
+                given_name_match=["Jane Bob"],
+            ),
         ),
         (
             "Jane Smith",
@@ -1257,7 +1257,9 @@ def test_calculate_validation_score(
     name_1 = build_test_name(start="1990-01-01", end=None, given=["Jane"])
     name_2 = build_test_name(start="1995-01-01", end=None, given=["Jane"], family="Bob")
     name_3 = build_test_name(use="temp", start=None, end=None, given=["Jones"])
-    name_4 = build_test_name(use="usual", start="1995-01-01", end=None, given=["Paul Anderson"])
+    name_4 = build_test_name(
+        use="usual", start="1995-01-01", end=None, given=["Paul Anderson"]
+    )
 
     test_patient = build_test_patient_with_names([name_1, name_2, name_3, name_4])
 

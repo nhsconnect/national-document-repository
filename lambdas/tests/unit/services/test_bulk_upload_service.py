@@ -1004,6 +1004,7 @@ def test_handle_sqs_message_happy_path_historical_name(
     )
     mock_remove_ingested_file_from_source_bucket.assert_called()
 
+
 def test_handle_sqs_message_lenient_mode_happy_path(
     set_env,
     mocker,
@@ -1039,6 +1040,7 @@ def test_handle_sqs_message_lenient_mode_happy_path(
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
     service.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+
 
 def test_concatenate_acceptance_reason(repo_under_test):
     accepted_reason = None
