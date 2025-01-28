@@ -208,7 +208,7 @@ def test_patient_without_given_name_in_current_name_logs_a_warning_and_process_s
 ):
     patient = create_patient(PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME)
 
-    expected = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(update={"given_name": [""]})
+    expected = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(update={"given_name": []})
     result = patient.get_patient_details(patient.id)
 
     assert expected == result

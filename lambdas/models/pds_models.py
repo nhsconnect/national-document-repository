@@ -28,7 +28,7 @@ class Address(BaseModel):
 class Name(BaseModel):
     use: str
     period: Optional[Period] = None
-    given: list[str] = [""]
+    given: Optional[list[str]] = []
     family: str
 
     def is_currently_in_use(self) -> bool:
@@ -75,7 +75,7 @@ class Extension(BaseModel):
 class PatientDetails(BaseModel):
     model_config = conf
 
-    given_name: list[str] = [""]
+    given_name: Optional[list[str]] = None
     family_name: str = ""
     birth_date: Optional[date] = None
     postal_code: str = ""
