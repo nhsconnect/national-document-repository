@@ -1,8 +1,11 @@
 import { Card } from 'nhsuk-react-components';
-import React, { ReactNode, useEffect, useRef } from 'react';
+import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from 'react';
 import PdfViewer from '../pdfViewer/PdfViewer';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import { LGRecordActionLink } from '../../../types/blocks/lloydGeorgeActions';
+import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import RecordMenuCard from '../recordMenuCard/RecordMenuCard';
 
 export type Props = {
     heading: string;
@@ -12,6 +15,9 @@ export type Props = {
     refreshRecord: () => void;
     cloudFrontUrl: string;
     resetDocStage: () => void;
+    recordLinks?: Array<LGRecordActionLink>;
+    setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    showMenu?:boolean;
 };
 
 function RecordCard({
@@ -22,6 +28,9 @@ function RecordCard({
     cloudFrontUrl,
     refreshRecord,
     resetDocStage,
+    recordLinks = [],
+    setStage = () => {},
+    showMenu = false,
 }: Props) {
     const role = useRole();
     const userIsGpClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
@@ -60,6 +69,12 @@ function RecordCard({
                         </Card.Heading>
                         {detailsElement}
 
+                        <RecordMenuCard
+                            recordLinks={recordLinks}
+                            setStage={setStage}
+                            showMenu={showMenu}
+                        />
+
                         {cloudFrontUrl && !userIsGpClinical && (
                             <button
                                 className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
@@ -71,12 +86,6 @@ function RecordCard({
                             >
                                 View in full screen
                             </button>
-                        )}
-                        {cloudFrontUrl && (
-                            <p>
-                                To search within this record use <strong>Control</strong> and{' '}
-                                <strong>F</strong>
-                            </p>
                         )}
                     </Card.Content>
                     <div>{children}</div>

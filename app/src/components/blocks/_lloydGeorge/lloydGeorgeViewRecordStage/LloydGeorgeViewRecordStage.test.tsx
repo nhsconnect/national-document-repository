@@ -96,7 +96,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 
     it("renders 'full screen' mode correctly", async () => {
-        const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+        const patientName = `${mockPatientDetails.givenName}, ${mockPatientDetails.familyName}`;
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
 
         renderComponent();

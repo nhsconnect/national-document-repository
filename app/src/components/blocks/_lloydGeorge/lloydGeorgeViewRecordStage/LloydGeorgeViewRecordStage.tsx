@@ -214,20 +214,13 @@ function LloydGeorgeViewRecordStage({
             <h1>{pageHeader}</h1>
             <PatientSimpleSummary />
             {fullScreen ? (
-                <p>
-                    To search within this record use <strong>Control</strong> and <strong>F</strong>
-                </p>
+                <> </>
             ) : (
                 <p />
             )}
 
             {!fullScreen ? (
                 <div className="lloydgeorge_record-stage_flex">
-                    <RecordMenuCard
-                        recordLinks={recordLinksToShow}
-                        setStage={setStage}
-                        showMenu={showMenu}
-                    />
                     <div
                         className={`lloydgeorge_record-stage_flex-row lloydgeorge_record-stage_flex-row${menuClass}`}
                     >
@@ -239,6 +232,9 @@ function LloydGeorgeViewRecordStage({
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}
                             resetDocStage={resetDocState}
+                            recordLinks={recordLinksToShow}
+                            setStage={setStage}
+                            showMenu={showMenu}
                         />
                     </div>
                 </div>

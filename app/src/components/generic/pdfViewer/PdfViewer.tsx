@@ -10,7 +10,7 @@ const PdfViewer = ({ fileUrl }: Props) => {
 
     if (!fileUrl) return null;
     return (
-        <div id="pdf-viewer" data-testid="pdf-viewer" tabIndex={0} style={{ height: 600 }}></div>
+        <div id="pdf-viewer" data-testid="pdf-viewer" tabIndex={0} style={{ height: 800 }}></div>
     );
 };
 
