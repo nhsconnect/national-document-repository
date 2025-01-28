@@ -31,6 +31,8 @@ logger = LoggingService(__name__)
         "LLOYD_GEORGE_BUCKET_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "STAGING_STORE_BUCKET_NAME",
+        "APIM_API_URL",
+        "NRL_SQS_URL",
     ]
 )
 @override_error_check
