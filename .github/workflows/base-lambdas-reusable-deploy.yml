@@ -54,14 +54,14 @@ jobs:
           echo Lambda Layers Names: ${{ inputs.lambda_layer_names }}
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
           fetch-depth: '0'
 
       - name: Set up Python ${{ inputs.python_version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ inputs.python_version }}
 
@@ -70,11 +70,12 @@ jobs:
           make github_env
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
 
       - name: Run Lambda Layer Update
         run: |
@@ -84,9 +85,9 @@ jobs:
         run: |
           make lambda_name=${{ inputs.lambda_handler_name }} zip
 
-      - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
-        uses: appleboy/lambda-action@master
-        with:
-          aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
-          zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
+      - name: Upload Lambda Function zip to ${{ inputs.lambda_aws_name }}
+        run: |
+          aws lambda update-function-code \
+          --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
+          --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip \
+          --region ${{ vars.AWS_REGION }}

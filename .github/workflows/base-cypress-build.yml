@@ -16,12 +16,13 @@ permissions:
 
 jobs:
   install-cypress-build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
+          repository: 'nhsconnect/national-document-repository'
           ref: ${{ github.event.inputs.build_branch }}
 
       - name: Cypress install
@@ -40,7 +41,7 @@ jobs:
         working-directory: ./app
 
       - name: Cypress build
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           # Disable running of tests within install job
           install: false
@@ -49,7 +50,7 @@ jobs:
           working-directory: ./app
 
       - name: Save build folder
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build
           if-no-files-found: error
