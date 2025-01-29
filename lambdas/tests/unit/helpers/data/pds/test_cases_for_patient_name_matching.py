@@ -46,6 +46,18 @@ TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME = {
     "reject": ["Jane Smith", "Jane B Smith", "Jane-Bob Smith", "Bob Smith"],
 }
 
+TEST_CASES_FOR_EMPTY_GIVEN_NAME = {
+    "pds_name": {"family": "Smith", "given": []},
+    "accept": [],
+    "reject": [
+        "Jane Smith",
+        "Jane B Smith",
+        "Jane-Bob Smith",
+        "Bob Smith",
+        "Jane Bob Smith",
+    ],
+}
+
 TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME = {
     "pds_name": {"family": "Smith Anderson", "given": ["Jane Bob"]},
     "accept": ["Jane Bob Smith Anderson"],

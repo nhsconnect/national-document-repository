@@ -186,8 +186,12 @@ def validate_patient_name_using_full_name_history(
         pds_patient_details.get_current_family_name_and_given_name()
     )
 
-    if validate_patient_name_strict(
-        file_patient_name, usual_first_name_in_pds[0], usual_family_name_in_pds
+    if (
+        usual_first_name_in_pds
+        and usual_family_name_in_pds
+        and validate_patient_name_strict(
+            file_patient_name, usual_first_name_in_pds[0], usual_family_name_in_pds
+        )
     ):
         return False
     logger.info(
@@ -195,6 +199,8 @@ def validate_patient_name_using_full_name_history(
     )
 
     for name in pds_patient_details.name:
+        if not name.given or not name.family:
+            continue
         historic_first_name_in_pds: str = name.given[0]
         historic_family_name_in_pds = name.family
         if validate_patient_name_strict(

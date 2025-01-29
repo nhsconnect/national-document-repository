@@ -20,6 +20,7 @@ from tests.unit.helpers.data.pds.test_cases_for_date_logic import (
     build_test_patient_with_names,
 )
 from tests.unit.helpers.data.pds.test_cases_for_patient_name_matching import (
+    TEST_CASES_FOR_EMPTY_GIVEN_NAME,
     TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN,
     TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME,
     TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME,
@@ -724,6 +725,27 @@ def test_validate_patient_name_with_two_words_family_name_and_given_name_strict(
 
 @pytest.mark.parametrize(
     ["patient_details", "patient_name_in_file_name", "should_accept_name"],
+    load_test_cases(TEST_CASES_FOR_EMPTY_GIVEN_NAME),
+)
+def test_validate_patient_name_with_family_name_and_empty_given_name_strict(
+    patient_details: Patient,
+    patient_name_in_file_name: str,
+    should_accept_name: bool,
+):
+    if should_accept_name:
+        with expect_not_to_raise(LGInvalidFilesException):
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
     load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME),
 )
 def test_validate_patient_name_with_two_words_family_name_and_given_name_lenient(
@@ -1053,6 +1075,7 @@ def test_validate_patient_name_return_false(
         ["Jane Smith-Anderson", "Jane", "Smith-Anderson"],
         ["Jane Bob Smith Anderson", "Jane Bob", "Smith Anderson"],
         ["Jane Bob Smith", "Jane Bob", "Smith"],
+        ["Jane Bob Smith", "Jane Bob", ""],
     ],
 )
 def test_validate_patient_name_return_true(

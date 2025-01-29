@@ -75,7 +75,7 @@ class Extension(BaseModel):
 class PatientDetails(BaseModel):
     model_config = conf
 
-    given_name: Optional[list[str]] = None
+    given_name: Optional[list[str]] = []
     family_name: str = ""
     birth_date: Optional[date] = None
     postal_code: str = ""
