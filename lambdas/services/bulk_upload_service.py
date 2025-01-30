@@ -300,7 +300,7 @@ class BulkUploadService:
             )
             doc_details = Attachment(
                 url=document_api_endpoint,
-                content_type="application/pdf",
+                contentType="application/pdf",
             )
             nrl_sqs_message = NrlSqsMessage(
                 nhs_number=staging_metadata.nhs_number,
