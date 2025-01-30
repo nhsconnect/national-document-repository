@@ -3,9 +3,11 @@ import logging
 import os
 import uuid
 
+from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from pydantic import BaseModel, ValidationError
 
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from models.document_reference import DocumentReference
@@ -74,7 +76,8 @@ class NRLBatchCreatePointer:
         # handle pagination
         while "LastEvaluatedKey" in response:
             results.update(self.create_progress_dict(response, results))
-            response = dynamo_service.scan_table(table_name=self.table_name, exclusive_start_key=response["LastEvaluatedKey"])
+            response = dynamo_service.scan_table(table_name=self.table_name, exclusive_start_key=response["LastEvaluatedKey"],
+                                                 filter_expression=Attr(DocumentReferenceMetadataFields.FILE_NAME.value).begins_with('1of1'))
 
         results.update(self.create_progress_dict(response, results))
         self.progress = list(results.values())
