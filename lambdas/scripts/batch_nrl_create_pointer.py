@@ -3,9 +3,7 @@ import logging
 import os
 import uuid
 
-from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pydantic import BaseModel, ValidationError
 
 from enums.nrl_sqs_upload import NrlActionTypes
@@ -13,9 +11,8 @@ from enums.snomed_codes import SnomedCodes
 from models.document_reference import DocumentReference
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.nrl_sqs_message import NrlSqsMessage
-from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.base.dynamo_service import DynamoDBService
-
+from services.base.sqs_service import SQSService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,7 +27,7 @@ class ProgressForPatient(BaseModel):
 class NRLBatchCreatePointer:
     def __init__(self):
         self.dynamo_service = DynamoDBService()
-        self.sqs_repository = BulkUploadSqsRepository()
+        self.sqs_repository = SQSService()
         self.table_name = os.getenv("table_name", "")
         self.progress: list[ProgressForPatient] = []
         self.progress_store = "nrl_batch_update_progress.json"
@@ -38,14 +35,14 @@ class NRLBatchCreatePointer:
 
 
     def main(self):
-        logger.info("Starting batch update script")
-        logger.info(f"Table to be updated: {self.table_name}")
+        print("Starting batch update script")
+        print(f"Table to be updated: {self.table_name}")
 
         if self.found_previous_progress():
-            logger.info("Resuming from previous job")
+            print("Resuming from previous job")
             self.resume_previous_progress()
         else:
-            logger.info("Starting a new job")
+            print("Starting a new job")
             self.list_all_entries()
 
         try:
@@ -63,44 +60,39 @@ class NRLBatchCreatePointer:
                 json_str = json.load(f)
                 self.progress = [ProgressForPatient(**item) for item in json_str]
         except FileNotFoundError:
-            logger.info("Cannot find a progress file. Will start a new job.")
+            print("Cannot find a progress file. Will start a new job.")
             self.list_all_entries()
         except ValidationError as e:
-            logger.info(e)
+            print(e)
 
     def list_all_entries(self):
-        logger.info("Fetching all records from dynamodb table...")
-
-        table = DynamoDBService().get_table(self.table_name)
+        print("Fetching all records from dynamodb table...")
+        dynamo_service = DynamoDBService()
         results = {}
-        columns_to_fetch = DocumentReferenceMetadataFields.NHS_NUMBER.value
 
-        response = table.scan(
-            ProjectionExpression=columns_to_fetch,
-            FilterExpression=Attr(columns_to_fetch).exists(),
-        )
+        response = dynamo_service.scan_table(table_name=self.table_name)
         # handle pagination
         while "LastEvaluatedKey" in response:
-
             results.update(self.create_progress_dict(response, results))
-            response = table.scan(
-                ExclusiveStartKey=response["LastEvaluatedKey"],
-                ProjectionExpression=columns_to_fetch,
-                FilterExpression=Attr(columns_to_fetch).exists(),
-            )
+            response = dynamo_service.scan_table(table_name=self.table_name, exclusive_start_key=response["LastEvaluatedKey"])
 
         results.update(self.create_progress_dict(response, results))
         self.progress = list(results.values())
-        logger.info(f"Totally {len(results)} patients found.")
+        print(f"Totally {len(results)} patients found.")
 
     def create_progress_dict(self, response, results):
         for item in response["Items"]:
-            nhs_number = item[DocumentReferenceMetadataFields.NHS_NUMBER.value]
-            document = DocumentReference.model_validate(item)
-            if nhs_number not in results:
-                results[nhs_number] = ProgressForPatient(nhs_number=nhs_number, document=document)
-            else:
-                logger.warning(f"NHS number {nhs_number} has more than one record")
+            try:
+                document = DocumentReference.model_validate(item)
+                print(f"Processing patient {document.nhs_number}")
+                nhs_number = document.nhs_number
+                if nhs_number not in results:
+                    results[nhs_number] = ProgressForPatient(nhs_number=nhs_number, document=document)
+                else:
+                    logger.warning(f"NHS number {nhs_number} has more than one record")
+            except ValidationError as e:
+                print(e)
+                break
         return results
 
     def create_nrl_pointer(self):
@@ -123,12 +115,14 @@ class NRLBatchCreatePointer:
                         action=NrlActionTypes.CREATE,
                         attachment=doc_details,
                     )
-                    self.sqs_repository.send_message_to_nrl_fifo(
+                    self.sqs_repository.send_message_fifo(
                         queue_url=self.nrl_queue_url,
-                        message=nrl_sqs_message,
-                        group_id=f"nrl_sqs_{uuid.uuid4()}",
+                        message_body=nrl_sqs_message.model_dump_json(),
+                        group_id=f"nrl_sqs_{uuid.uuid4()}"
                     )
+
                     patient.update_completed = True
+                    print(f"Create message to {patient.nhs_number}")
 
                 except ClientError as e:
                     logger.error(e)
