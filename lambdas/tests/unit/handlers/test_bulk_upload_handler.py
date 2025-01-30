@@ -15,7 +15,9 @@ def mock_service(mocker):
     yield mocker.patch.object(BulkUploadService, "process_message_queue")
 
 
-def test_can_process_event_with_one_message(mock_service, context, set_env):
+def test_can_process_event_with_one_message(
+    mock_service, context, set_env, mock_validation_strict_disabled
+):
     expected = ApiGatewayResponse(
         200, "Finished processing all 1 messages", "GET"
     ).create_api_gateway_response()
@@ -24,7 +26,9 @@ def test_can_process_event_with_one_message(mock_service, context, set_env):
     assert expected == actual
 
 
-def test_can_process_event_with_several_messages(mock_service, context, set_env):
+def test_can_process_event_with_several_messages(
+    mock_service, context, set_env, mock_validation_strict_disabled
+):
     expected = ApiGatewayResponse(
         200, "Finished processing all 3 messages", "GET"
     ).create_api_gateway_response()
@@ -34,7 +38,7 @@ def test_can_process_event_with_several_messages(mock_service, context, set_env)
 
 
 def test_receive_correct_response_when_service_returns_error(
-    mock_service, context, set_env
+    mock_service, context, set_env, mock_validation_strict_disabled
 ):
     expected = ApiGatewayResponse(
         500, "Bulk upload failed with error: ", "GET"
@@ -46,7 +50,7 @@ def test_receive_correct_response_when_service_returns_error(
 
 
 def test_receive_correct_response_when_no_records_in_event(
-    mock_service, context, set_env
+    mock_service, context, set_env, mock_validation_strict_disabled
 ):
     expected = ApiGatewayResponse(
         400,
