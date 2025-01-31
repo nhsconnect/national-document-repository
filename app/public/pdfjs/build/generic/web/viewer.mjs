@@ -9742,7 +9742,7 @@ class TextHighlighter {
     } = this;
     const isSelectedPage = pageIdx === findController.selected.pageIdx;
     const selectedMatchIdx = findController.selected.matchIdx;
-    const highlightAll = findController.state.highlightAll;
+    const highlightAll = true;
     let prevEnd = null;
     const infinity = {
       divIdx: -1,
@@ -14577,7 +14577,6 @@ initCom(PDFViewerApplication);
       }
       const fileOrigin = new URL(file, window.location.href).origin;
       if (fileOrigin !== viewerOrigin) {
-        // throw new Error("file origin does not match viewer's");
         return;
       }
     } catch (ex) {

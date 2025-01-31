@@ -16,6 +16,16 @@ PUBLIC_DIR = "../public/pdfjs"
 CUSTOM_CSS_PATH = "./custom_viewer.css"
 
 
+class SearchAndReplaceValue:
+
+    def __init__( self, file_path, find_string, replace_string ):
+    
+        self.file_path = file_path
+        self.find_string = find_string 
+        self.replace_string = replace_string
+
+
+
 
 def clone_pdfjs_to_temp_dir():
     
@@ -100,6 +110,34 @@ def delete_temp_dir():
     shutil.rmtree( TEMP_DIR, ignore_errors=True )
 
 
+def modify_files(searchAndReplaceCode):
+    
+    for item in searchAndReplaceCode:
+        
+        if os.path.exists( item.file_path ):
+            with open ( item.file_path, "r", encoding="utf-8" ) as file:
+                content = file.read()
+
+            new_content = content.replace(item.find_string, item.replace_string)
+
+            if new_content != content:
+
+                with open ( item.file_path, "w", encoding="utf-8" ) as file:
+                
+                    file.write(new_content)
+
+                print_message(f"updated {item.file_path}: replaced '{item.find_string}' with '{item.replace_string}'",
+                    newline_before=True, newline_after=True )
+
+            else:
+
+                print_message(f"did not update {item.file_path}: '{item.find_string}' with '{item.replace_string}'", 
+                    level="ERROR", newline_before=True, newline_after=True )
+
+        else: print_message(f"file not found: {item.file_path}", level="ERROR")
+
+
+
 
 def print_message(message, level="INFO", newline_before=False, newline_after=False):
     if newline_before:
@@ -124,6 +162,21 @@ if __name__ == "__main__":
         copy_build_to_app_public()
         append_custom_css()
 
+        searchAndReplaceCode = [
+            SearchAndReplaceValue(
+                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.mjs" ),
+                "    const highlightAll = findController.state.highlightAll;",
+                "    const highlightAll = true;",
+            ),
+            SearchAndReplaceValue(
+                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.mjs" ),
+                """        throw new Error("file origin does not match viewer's");""",
+                """        return;""",
+            ),
+        ]
+
+        modify_files(searchAndReplaceCode)
+
     except Exception as e:
 
         print_message(f"An error occured: {e}", level="ERROR")
@@ -136,6 +189,10 @@ if __name__ == "__main__":
         print_message("PDF.js setup complete", newline_before=True, newline_after=True)
 
     sys.exit(0)
+
+
+
+
 
 
 
