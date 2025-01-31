@@ -20,7 +20,10 @@
 #scrollModeButtons,
 #documentProperties,
 #findbarOptionsOneContainer,
-#findbarOptionsTwoContainer
+#findbarOptionsTwoContainer,
+#firstPage,
+#lastPage,
+#findMsg
  {
     display: none;
     visibility: hidden;
