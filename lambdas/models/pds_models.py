@@ -28,7 +28,7 @@ class Address(BaseModel):
 class Name(BaseModel):
     use: str
     period: Optional[Period] = None
-    given: list[str] = [""]
+    given: Optional[list[str]] = []
     family: str
 
     def is_currently_in_use(self) -> bool:
@@ -75,7 +75,7 @@ class Extension(BaseModel):
 class PatientDetails(BaseModel):
     model_config = conf
 
-    given_name: list[str] = [""]
+    given_name: Optional[list[str]] = []
     family_name: str = ""
     birth_date: Optional[date] = None
     postal_code: str = ""
@@ -116,26 +116,28 @@ class Patient(BaseModel):
             if entry.use.lower() == "usual":
                 return entry
 
-    def get_most_recent_name(self) -> Optional[Name]:
-        active_names = [name for name in self.name if name.is_currently_in_use()]
-        if not active_names:
-            return None
-
+    def get_names_by_start_date(self) -> [Name]:
         sorted_by_start_date_desc = sorted(
-            active_names, key=lambda name: name.period.start, reverse=True
+            self.name,
+            key=lambda name: (
+                (1, name.period.start, name.use.lower() == "usual")
+                if name.period and name.period.start is not None
+                else (0, 0, name.use.lower() == "usual")
+            ),
+            reverse=True,
         )
-        return sorted_by_start_date_desc[0]
+        return sorted_by_start_date_desc
 
     def get_current_family_name_and_given_name(self) -> Tuple[str, list[str]]:
-        current_name = self.get_most_recent_name() or self.get_usual_name()
-        if not current_name:
+        ordered_names = self.get_names_by_start_date()
+        if not ordered_names:
             logger.warning(
                 "The patient does not have a currently active name or a usual name."
             )
             return "", [""]
 
-        given_name = current_name.given
-        family_name = current_name.family
+        given_name = ordered_names[0].given
+        family_name = ordered_names[0].family
 
         if not given_name or given_name == [""]:
             logger.warning("The given name of patient is empty.")

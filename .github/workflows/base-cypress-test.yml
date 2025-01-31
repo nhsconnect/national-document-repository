@@ -33,10 +33,10 @@ jobs:
           echo Cypress Base Url: ${{ inputs.cypress_base_url }}
 
   cypress-run-job:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
