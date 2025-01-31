@@ -20,7 +20,7 @@ class NRLFormatCode(Coding):
         "urn:nhs-ic:unstructured"
     )
     display: Literal["Contact details (HTTP Unsecured)", "Unstructured Document"] = (
-        "Unstructured document"
+        "Unstructured Document"
     )
 
 

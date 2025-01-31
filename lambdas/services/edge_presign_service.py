@@ -25,7 +25,7 @@ class EdgePresignService:
         domain_name: str = request_values["domain_name"]
 
         presign_string: str = f"{uri}?{querystring}"
-        encoded_presign_string: str = presign_string.encode("utf-8")
+        encoded_presign_string = presign_string.encode("utf-8")
         presign_credentials_hash: str = hashlib.md5(encoded_presign_string).hexdigest()
 
         self.attempt_presign_ingestion(
@@ -70,7 +70,7 @@ class EdgePresignService:
             uri: str = request["uri"]
             querystring: str = request["querystring"]
             headers: dict = request["headers"]
-            origin: str = request.get("origin", {})
+            origin: dict = request.get("origin", {})
             domain_name: str = origin["s3"]["domainName"]
         except KeyError as e:
             logger.error(f"Missing request component: {str(e)}")

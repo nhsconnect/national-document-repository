@@ -58,6 +58,13 @@ def name_ends_with(full_name: str, partial_name: str) -> bool:
     return folded_full_name.endswith(folded_partial_name)
 
 
+def name_contains_in(full_name: str, partial_name: str) -> bool:
+    folded_full_name = convert_to_nfd_form(full_name).casefold()
+    folded_partial_name = convert_to_nfd_form(partial_name).casefold()
+
+    return folded_partial_name in folded_full_name
+
+
 def convert_to_nfc_form(input_str: str) -> str:
     """
     Convert a string to the NFC normalization form

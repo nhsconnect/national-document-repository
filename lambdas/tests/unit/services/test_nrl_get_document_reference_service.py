@@ -108,7 +108,7 @@ MOCK_FHIR_DOCUMENT = {
             "format": {
                 "system": "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode",
                 "code": "urn:nhs-ic:unstructured",
-                "display": "Unstructured document",
+                "display": "Unstructured Document",
             },
             "extension": [
                 {

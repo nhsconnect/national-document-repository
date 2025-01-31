@@ -34,7 +34,8 @@ from utils.lloyd_george_validator import (
     LGInvalidFilesException,
     allowed_to_ingest_ods_code,
     getting_patient_info_from_pds,
-    validate_filename_with_patient_details,
+    validate_filename_with_patient_details_lenient,
+    validate_filename_with_patient_details_strict,
     validate_lg_file_names,
 )
 from utils.request_context import request_context
@@ -48,11 +49,11 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadService:
-    def __init__(self):
+    def __init__(self, strict_mode):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
         self.s3_repository = BulkUploadS3Repository()
-
+        self.strict_mode = strict_mode
         self.pdf_content_type = "application/pdf"
         self.unhandled_messages = []
         self.file_path_cache = {}
@@ -133,13 +134,27 @@ class BulkUploadService:
             patient_ods_code = (
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
-            is_name_validation_based_on_historic_name = (
-                validate_filename_with_patient_details(file_names, pds_patient_details)
-            )
+            if not self.strict_mode:
+                (
+                    name_validation_accepted_reason,
+                    is_name_validation_based_on_historic_name,
+                ) = validate_filename_with_patient_details_lenient(
+                    file_names, pds_patient_details
+                )
+                accepted_reason = self.concatenate_acceptance_reason(
+                    accepted_reason, name_validation_accepted_reason
+                )
+            else:
+                is_name_validation_based_on_historic_name = (
+                    validate_filename_with_patient_details_strict(
+                        file_names, pds_patient_details
+                    )
+                )
             if is_name_validation_based_on_historic_name:
                 accepted_reason = self.concatenate_acceptance_reason(
                     accepted_reason, "Patient matched on historical name"
                 )
+
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")
             patient_death_notification_status = (

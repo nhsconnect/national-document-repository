@@ -111,3 +111,12 @@ def mock_upload_lambda_disabled(mocker):
         "uploadLambdaEnabled": False
     }
     yield mock_upload_lambda_feature_flag
+
+
+@pytest.fixture
+def mock_validation_strict_disabled(mocker):
+    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
+    mock_upload_lambda_feature_flag = mock_function.return_value = {
+        "lloydGeorgeValidationStrictMode": False
+    }
+    yield mock_upload_lambda_feature_flag
