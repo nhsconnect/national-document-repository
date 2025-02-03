@@ -7,7 +7,6 @@ import { LinkProps } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { routes } from '../../../types/generic/routes';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
 
 jest.mock('../../../helpers/hooks/useRole');
 const mockSetStage = jest.fn();
