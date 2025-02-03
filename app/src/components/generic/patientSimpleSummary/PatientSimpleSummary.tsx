@@ -1,4 +1,3 @@
-import React from 'react';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
