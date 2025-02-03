@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
-import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
+import { Button, Fieldset, Input, Radios, Textarea, InsetText } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import {
@@ -85,26 +85,12 @@ function FeedbackPage() {
 
     return (
         <div id="feedback-form">
-            <h1 data-testid="feedback-page-header">
-                Give feedback on accessing Lloyd George digital patient records
-            </h1>
+            <h1 data-testid="feedback-page-header">Give feedback on this service</h1>
 
             <form onSubmit={handleSubmit(submit)}>
-                <Fieldset data-testid="feedback-text-section">
-                    <Fieldset.Legend size="m">What is your feedback?</Fieldset.Legend>
-                    <Textarea
-                        data-testid={FORM_FIELDS.FeedbackContent}
-                        label="Tell us how we could improve this service or explain your experience using it. You
-                can also give feedback about a specific page or section in the service."
-                        rows={7}
-                        error={errors.feedbackContent?.message}
-                        {...feedbackContentProps}
-                    />
-                </Fieldset>
-
                 <Fieldset data-testid="feedback-radio-section">
-                    <Fieldset.Legend size="m">
-                        How satisfied were you with your overall experience of using this service?
+                    <Fieldset.Legend>
+                        <h2>Overall, how satisfied with the service are you?</h2>
                     </Fieldset.Legend>
                     <Radios id="select-how-satisfied" error={errors.howSatisfied?.message}>
                         {Object.values(SATISFACTION_CHOICES).map((choice) => (
@@ -115,22 +101,39 @@ function FeedbackPage() {
                     </Radios>
                 </Fieldset>
 
+                <Fieldset data-testid="feedback-text-section">
+                    <Fieldset.Legend>
+                        <h2>Can you tell us why you selected that option?</h2>
+                    </Fieldset.Legend>
+                    <Textarea
+                        data-testid={FORM_FIELDS.FeedbackContent}
+                        label="You can give details about specific pages or parts of the service here."
+                        rows={7}
+                        error={errors.feedbackContent?.message}
+                        {...feedbackContentProps}
+                    />
+                </Fieldset>
+
+                <InsetText style={{ maxWidth: 'unset' }}>
+                    Help us improve this service. Tell us more about your experience with using it
+                    by completing a further{' '}
+                    <a
+                        href="https://feedback.digital.nhs.uk/jfe/form/SV_5vE7S5wJ0yleEUm"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        short survey (opens in a new tab)
+                    </a>
+                </InsetText>
+
                 <Fieldset data-testid="feedback-details-section">
-                    <Fieldset.Legend size="m">Leave your details (optional)</Fieldset.Legend>
+                    <Fieldset.Legend>
+                        <h3>Leave your details (optional)</h3>
+                    </Fieldset.Legend>
 
                     <p>
-                        If you’re happy to speak to us about your feedback so we can improve this
-                        service, please leave your details below.
-                    </p>
-                    <p>
-                        When submitting your details using our feedback form, any personal
-                        information you give to us will be processed in accordance with the UK
-                        General Data Protection Regulation (GDPR) 2018.
-                    </p>
-                    <p>
-                        We use the information you submitted to process your request and provide
-                        relevant information or services you have requested. This will help support
-                        us in developing this service.
+                        If you’re happy to speak to us about your feedback, leave your details
+                        below.
                     </p>
 
                     <Input
@@ -143,7 +146,7 @@ function FeedbackPage() {
 
                     <Input
                         label="Your email address"
-                        hint="We’ll only use this to speak to you about your feedback"
+                        hint="We’ll only use this to reply to your message"
                         data-testid={FORM_FIELDS.RespondentEmail}
                         autoComplete="email"
                         spellCheck={false}

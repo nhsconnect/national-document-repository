@@ -52,7 +52,7 @@ describe('Feedback Page', () => {
 
                 cy.get('.app-homepage-content h1').should(
                     'have.text',
-                    'Give feedback on accessing Lloyd George digital patient records',
+                    'Give feedback on this service',
                 );
             });
 
