@@ -18,14 +18,21 @@ TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME = {
         "Jane Bob Smith Anderson",
         "Jane Smith Anderson",
         "Jane B Smith Anderson",
+        "Bob Smith Anderson",
     ],
     "reject": [
-        "Bob Smith Anderson",
         "Jane Smith",
         "Jane Anderson",
         "Jane Anderson Smith",
     ],
 }
+
+TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_STRICT = copy.deepcopy(
+    TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME
+)
+TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_STRICT["reject"].append(
+    TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_STRICT["accept"].pop(3)
+)
 
 TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN = {
     "pds_name": {"family": "Smith-Anderson", "given": ["Jane"]},
@@ -37,6 +44,18 @@ TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME = {
     "pds_name": {"family": "Smith", "given": ["Jane Bob"]},
     "accept": ["Jane Bob Smith"],
     "reject": ["Jane Smith", "Jane B Smith", "Jane-Bob Smith", "Bob Smith"],
+}
+
+TEST_CASES_FOR_EMPTY_GIVEN_NAME = {
+    "pds_name": {"family": "Smith", "given": []},
+    "accept": [],
+    "reject": [
+        "Jane Smith",
+        "Jane B Smith",
+        "Jane-Bob Smith",
+        "Bob Smith",
+        "Jane Bob Smith",
+    ],
 }
 
 TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME = {
