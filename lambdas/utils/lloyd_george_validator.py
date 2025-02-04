@@ -20,6 +20,7 @@ from utils.exceptions import (
 )
 from utils.unicode_utils import (
     REGEX_PATIENT_NAME_PATTERN,
+    convert_to_nfd_form,
     name_contains_in,
     name_ends_with,
     name_starts_with,
@@ -219,7 +220,9 @@ def validate_filename_with_patient_details_lenient(
         file_patient_name = file_name_info["patient_name"]
         file_date_of_birth = file_name_info["date_of_birth"]
         name_validation_score, historical_match, result_message = (
-            calculate_validation_score_for_lenient_check(file_patient_name, patient_details)
+            calculate_validation_score_for_lenient_check(
+                file_patient_name, patient_details
+            )
         )
         if name_validation_score == ValidationScore.NO_MATCH:
             raise LGInvalidFilesException("Patient name does not match our records")
@@ -268,13 +271,21 @@ def calculate_validation_score_for_lenient_check(
             historical_match = index != 0
             return result.score, historical_match, result_message
         elif result.score == ValidationScore.PARTIAL_MATCH:
-            historical_match = index != 0
+            current_matched_on_given_name_len = len(matched_on_given_name)
+            current_matched_on_family_name_len = len(matched_on_family_name)
+
             matched_on_given_name.update(result.given_name_match)
             (
                 matched_on_family_name.add(result.family_name_match)
                 if result.family_name_match
                 else None
             )
+            if (
+                len(matched_on_given_name) != current_matched_on_given_name_len
+                or len(matched_on_family_name) != current_matched_on_family_name_len
+            ):
+                historical_match = index != 0
+
             logger.info(
                 "Failed to find full match on patient name, trying to validate using name history"
             )
@@ -290,10 +301,12 @@ def validate_patient_name_lenient(
     file_patient_name: str, first_name_in_pds: list[str], family_name_in_pds: str
 ) -> ValidationResult:
     logger.info("Verifying patient name against the record in PDS...")
+    family_name_in_pds = convert_to_nfd_form(family_name_in_pds).casefold()
+
     given_name_matches = [
-        first_name
+        convert_to_nfd_form(first_name).casefold()
         for first_name in first_name_in_pds
-        if first_name and name_contains_in(file_patient_name, first_name)
+        if len(first_name) > 1 and name_contains_in(file_patient_name, first_name)
     ]
     family_name_matches = (
         name_contains_in(file_patient_name, family_name_in_pds)
