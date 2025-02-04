@@ -314,7 +314,9 @@ def test_validate_name_with_correct_name_lenient(mocker, mock_pds_patient):
         family_name_match="Smith",
     )
     actual_score, actual_is_name_validation_based_on_historic_name, result_message = (
-        calculate_validation_score_for_lenient_check(lg_file_patient_name, mock_pds_patient)
+        calculate_validation_score_for_lenient_check(
+            lg_file_patient_name, mock_pds_patient
+        )
     )
 
     assert expected_message == result_message
@@ -422,7 +424,9 @@ def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
         family_name_match="Smith",
     )
     actual_score, actual_is_name_validation_based_on_historic_name, result_message = (
-        calculate_validation_score_for_lenient_check(lg_file_patient_name, mock_pds_patient)
+        calculate_validation_score_for_lenient_check(
+            lg_file_patient_name, mock_pds_patient
+        )
     )
 
     assert expected_message == result_message
@@ -454,7 +458,7 @@ def test_validate_name_with_wrong_first_name_lenient(mock_pds_patient):
     )
     assert actual_response == ValidationResult(
         score=ValidationScore.PARTIAL_MATCH,
-        family_name_match="Smith",
+        family_name_match="smith",
     )
 
 
@@ -480,7 +484,7 @@ def test_validate_name_with_wrong_family_name_lenient(mock_pds_patient):
     )
     assert actual_response == ValidationResult(
         score=ValidationScore.PARTIAL_MATCH,
-        given_name_match=["Jane"],
+        given_name_match=["jane"],
     )
 
 
@@ -519,7 +523,9 @@ def test_validate_name_with_historical_name_lenient(mocker, mock_pds_patient):
         ),
     ]
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(lg_file_patient_name, mock_pds_patient)
+        calculate_validation_score_for_lenient_check(
+            lg_file_patient_name, mock_pds_patient
+        )
     )
 
     assert result_message == expected_message
@@ -553,7 +559,9 @@ def test_validate_name_without_given_name_lenient(mocker, mock_pds_patient):
         "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(lg_file_patient_name, mock_pds_patient)
+        calculate_validation_score_for_lenient_check(
+            lg_file_patient_name, mock_pds_patient
+        )
     )
 
     assert result_message == expected_message
@@ -597,7 +605,9 @@ def test_validate_patient_name_with_two_words_family_name_lenient(
 ):
 
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(patient_name_in_file_name, patient_details)
+        calculate_validation_score_for_lenient_check(
+            patient_name_in_file_name, patient_details
+        )
     )
     if should_accept_name:
         assert actual_is_validate_on_historic is False
@@ -643,7 +653,9 @@ def test_validate_patient_name_with_family_name_with_hyphen_lenient(
     should_accept_name: bool,
 ):
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(patient_name_in_file_name, patient_details)
+        calculate_validation_score_for_lenient_check(
+            patient_name_in_file_name, patient_details
+        )
     )
     if should_accept_name:
         expected_message = "matched on 1 family_name and 1 given name"
@@ -688,7 +700,9 @@ def test_validate_patient_name_with_two_words_given_name_lenient(
     should_accept_name: bool,
 ):
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(patient_name_in_file_name, patient_details)
+        calculate_validation_score_for_lenient_check(
+            patient_name_in_file_name, patient_details
+        )
     )
     if should_accept_name:
         expected_message = "matched on 1 family_name and 1 given name"
@@ -754,7 +768,9 @@ def test_validate_patient_name_with_two_words_family_name_and_given_name_lenient
     should_accept_name: bool,
 ):
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(patient_name_in_file_name, patient_details)
+        calculate_validation_score_for_lenient_check(
+            patient_name_in_file_name, patient_details
+        )
     )
     if should_accept_name:
         expected_message = "matched on 1 family_name and 1 given name"
@@ -1129,6 +1145,12 @@ def test_validate_patient_name_return_true(
         ["Jane Smith", ["Jane"], "Smith Anderson", ValidationScore.PARTIAL_MATCH],
         ["Jane Anderson", ["Jane"], "Smith Anderson", ValidationScore.PARTIAL_MATCH],
         [
+            "Jane Anderson",
+            ["Jane", "A"],
+            "Smith Anderson",
+            ValidationScore.PARTIAL_MATCH,
+        ],
+        [
             "Jane Anderson Smith",
             ["Jane"],
             "Smith Anderson",
@@ -1154,8 +1176,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith",
+                given_name_match=["jane"],
+                family_name_match="smith",
             ),
         ),
         (
@@ -1164,8 +1186,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith",
+                given_name_match=["jane"],
+                family_name_match="smith",
             ),
         ),
         (
@@ -1174,8 +1196,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith Anderson",
+                given_name_match=["jane"],
+                family_name_match="smith anderson",
             ),
         ),
         (
@@ -1184,8 +1206,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith Anderson",
+                given_name_match=["jane"],
+                family_name_match="smith anderson",
             ),
         ),
         (
@@ -1194,8 +1216,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith-Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith-Anderson",
+                given_name_match=["jane"],
+                family_name_match="smith-anderson",
             ),
         ),
         (
@@ -1204,8 +1226,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane Bob"],
-                family_name_match="Smith Anderson",
+                given_name_match=["jane bob"],
+                family_name_match="smith anderson",
             ),
         ),
         (
@@ -1214,8 +1236,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane Bob"],
-                family_name_match="Smith",
+                given_name_match=["jane bob"],
+                family_name_match="smith",
             ),
         ),
         (
@@ -1224,7 +1246,7 @@ def test_validate_patient_name_lenient_return_false(
             "Anderson",
             ValidationResult(
                 score=ValidationScore.PARTIAL_MATCH,
-                given_name_match=["Jane Bob"],
+                given_name_match=["jane bob"],
             ),
         ),
         (
@@ -1233,7 +1255,7 @@ def test_validate_patient_name_lenient_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.PARTIAL_MATCH,
-                family_name_match="Smith",
+                family_name_match="smith",
             ),
         ),
         (
@@ -1242,6 +1264,24 @@ def test_validate_patient_name_lenient_return_false(
             "Dylan",
             ValidationResult(
                 score=ValidationScore.NO_MATCH,
+            ),
+        ),
+        (
+            "Bob Smith",
+            ["Bob", "S"],
+            "Dylan",
+            ValidationResult(
+                score=ValidationScore.PARTIAL_MATCH,
+                given_name_match=["bob"],
+            ),
+        ),
+        (
+            "Bob S Marleys",
+            ["Bob", "S"],
+            "Dylan",
+            ValidationResult(
+                score=ValidationScore.PARTIAL_MATCH,
+                given_name_match=["bob"],
             ),
         ),
     ],
@@ -1272,6 +1312,8 @@ def test_validate_patient_name_lenient_return_true(
         ("Jones Bob", ValidationScore.MIXED_FULL_MATCH, True),
         ("Jones Jane", ValidationScore.MIXED_FULL_MATCH, True),
         ("Paul Anderson", ValidationScore.PARTIAL_MATCH, True),
+        ("Jane Jane", ValidationScore.PARTIAL_MATCH, False),
+        ("Jane Janet", ValidationScore.PARTIAL_MATCH, False),
     ],
 )
 def test_calculate_validation_score_for_lenient_check(
@@ -1283,8 +1325,11 @@ def test_calculate_validation_score_for_lenient_check(
     name_4 = build_test_name(
         use="usual", start="1995-01-01", end=None, given=["Paul Anderson"]
     )
+    name_5 = build_test_name(start="1980-01-01", end="1990-01-01", given=["JANE"])
 
-    test_patient = build_test_patient_with_names([name_1, name_2, name_3, name_4])
+    test_patient = build_test_patient_with_names(
+        [name_1, name_2, name_3, name_4, name_5]
+    )
 
     actual_result, historical, _ = calculate_validation_score_for_lenient_check(
         file_patient_name, test_patient
