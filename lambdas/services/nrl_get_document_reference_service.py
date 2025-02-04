@@ -85,7 +85,7 @@ class NRLGetDocumentReferenceService:
         except HTTPError as error:
             logger.error(f"HTTP error {error.response.content}")
             raise NRLGetDocumentReferenceException(
-                400, LambdaError.DocumentReferenceGeneralError
+                401, LambdaError.DocumentReferenceUnauthorised
             )
 
     def is_user_allowed_to_see_file(
