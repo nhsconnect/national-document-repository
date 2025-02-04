@@ -27,6 +27,27 @@ def get_aws_account_id():
         sys.exit(1)
 
 
+def propagate_lambda_update(retry_count=3, seconds_delay=5):
+    time.sleep(seconds_delay)
+
+    for attempt in range(1, retry_count + 1):
+        print(f"Attempt {attempt}: Propagating lambda update...")
+        response = lambda_client.get_function_configuration(FunctionName=lambda_name)
+        if (
+            response.get("State") == "Active"
+            and response.get("LastUpdateStatus") == "Successful"
+        ):
+            print("Edge Lambda propagated update successfully...")
+            return
+
+        if attempt < retry_count:
+            print("Edge Lambda has not finished propagating update, retrying...")
+            time.sleep(seconds_delay)
+
+    print("Exceeded retries. Failed to verify Edge Lambda state.")
+    sys.exit(1)
+
+
 def get_latest_lambda_version(function_name):
     """Get the latest version of the Lambda function."""
     try:
@@ -101,7 +122,7 @@ def invalidate_cloudfront_cache(distribution_id):
         sys.exit(12)
 
 
-def update_cloudfront_lambda_association(distribution_id, lambda_arn):
+def update_cloudfront_lambda_association(distribution_id: str, lambda_arn: str):
     """Update the CloudFront distribution with the new Lambda function version."""
     print(
         f"Updating CloudFront distribution: {distribution_id} with Lambda function ARN: {lambda_arn}"
@@ -155,6 +176,7 @@ if __name__ == "__main__":
         if not aws_account_id:
             aws_account_id = get_aws_account_id()
 
+        propagate_lambda_update()
         lambda_version = get_latest_lambda_version(lambda_name)
         lambda_arn = f"arn:aws:lambda:{aws_region}:{aws_account_id}:function:{lambda_name}:{lambda_version}"
         print(f"Lambda ARN: {lambda_arn}")
