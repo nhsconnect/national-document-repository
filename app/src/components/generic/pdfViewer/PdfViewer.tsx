@@ -4,20 +4,25 @@ type Props = { fileUrl: string };
 
 const PdfViewer = ({ fileUrl }: Props) => {
     const [delayedFileUrl, setDelayedFileUrl] = useState<string | null>(null);
+    const [showFileUrl, setShowFileUrl] = useState<string | null>(fileUrl);
 
     useEffect(() => {
         if (!fileUrl) return;
-        
-        console.log("fileurl: ", fileUrl);
-        
         const timer = setTimeout(() => {
             setDelayedFileUrl(fileUrl);
+            setShowFileUrl(null);
         }, 180000);
 
         return () => clearTimeout(timer);
     }, [fileUrl]);
 
-    if (!delayedFileUrl) return <p> waiting to load </p>;
+    if (!delayedFileUrl) {
+        return (
+            <div>
+                <p>{showFileUrl}</p>
+            </div>
+        );
+    }
 
     return (
         <div>
