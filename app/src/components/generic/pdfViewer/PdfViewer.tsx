@@ -1,31 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 type Props = { fileUrl: string };
 
 const PdfViewer = ({ fileUrl }: Props) => {
-    const [delayedFileUrl, setDelayedFileUrl] = useState<string | null>(null);
-    const [showFileUrl, setShowFileUrl] = useState<string | null>(fileUrl);
-
-    useEffect(() => {
-        if (!fileUrl) return;
-        const timer = setTimeout(() => {
-            setDelayedFileUrl(fileUrl);
-            setShowFileUrl(null);
-        }, 180000);
-
-        return () => clearTimeout(timer);
-    }, [fileUrl]);
-
-    if (!delayedFileUrl) {
-        return (
-            <div>
-                <p>{showFileUrl}</p>
-            </div>
-        );
-    }
-
+    if (!fileUrl) return null;
     return (
         <div>
+            <p>{fileUrl}</p>
             <iframe
                 id="pdf-viewer"
                 data-testid="pdf-viewer"
@@ -33,6 +14,7 @@ const PdfViewer = ({ fileUrl }: Props) => {
                 src={`/pdfjs/build/generic/web/viewer.html?file=${encodeURIComponent(fileUrl)}`}
                 title="Embedded PDF Viewer"
                 aria-label="PDF Viewer"
+                loading="lazy"
             />
         </div>
     );
