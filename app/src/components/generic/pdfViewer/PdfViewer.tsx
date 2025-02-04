@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 type Props = { fileUrl: string };
 
 const PdfViewer = ({ fileUrl }: Props) => {
-    if (!fileUrl) return null;
+    const [delayedFileUrl, setDelayedFileUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!fileUrl) return;
+        
+        console.log("fileurl: ", fileUrl);
+        
+        const timer = setTimeout(() => {
+            setDelayedFileUrl(fileUrl);
+        }, 180000);
+
+        return () => clearTimeout(timer);
+    }, [fileUrl]);
+
+    if (!delayedFileUrl) return <p> waiting to load </p>;
+
     return (
         <div>
             <iframe
