@@ -219,7 +219,9 @@ def validate_filename_with_patient_details_lenient(
         file_patient_name = file_name_info["patient_name"]
         file_date_of_birth = file_name_info["date_of_birth"]
         name_validation_score, historical_match, result_message = (
-            calculate_validation_score_for_lenient_check(file_patient_name, patient_details)
+            calculate_validation_score_for_lenient_check(
+                file_patient_name, patient_details
+            )
         )
         if name_validation_score == ValidationScore.NO_MATCH:
             raise LGInvalidFilesException("Patient name does not match our records")
