@@ -13,7 +13,7 @@ const PdfViewer = ({ fileUrl }: Props) => {
                 src={`/pdfjs/build/generic/web/viewer.html?file=${encodeURIComponent(fileUrl)}`}
                 title="Embedded PDF Viewer"
                 aria-label="PDF Viewer"
-                sandbox="allow-scripts allow-same-origin allow-modals"
+                sandbox="allow-scripts allow-modals"
             />
         </div>
     );
