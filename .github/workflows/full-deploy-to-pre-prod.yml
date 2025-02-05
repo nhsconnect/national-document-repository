@@ -1,7 +1,13 @@
-name: "PRE PROD Full - Deploy and Version Main to Pre-Prod"
+name: "PRE PROD Full - Deploy to Pre-Prod"
 
 on:
   workflow_dispatch:
+    inputs:
+      branch_or_tag:
+        description: "Which branch or tag do you want to deploy to pre-prod?"
+        required: true
+        type: string
+        default: main
 
 permissions:
   pull-requests: write
@@ -12,8 +18,7 @@ jobs:
   view_action_parameters:
     name: View input params
     runs-on: ubuntu-latest
-    steps: 
-    
+    steps:
       - name: Display client passed variables
         run: |
           echo Build Branch: main
@@ -52,17 +57,19 @@ jobs:
     needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{steps.versioning.outputs.tag}}
-      new_tag: ${{steps.versioning.outputs.new_tag}}
+      version: ${{ steps.versioning.outputs.tag || github.event.inputs.branch_or_tag }}
     permissions: write-all
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout main
+      if: ${{ github.event.inputs.branch_or_tag == 'main' }}
+      uses: actions/checkout@v4
       with:
         ref: main
         fetch-depth: '0'
 
     - name: Bump version and push tag
+      if: ${{ github.event.inputs.branch_or_tag == 'main' }}
       id: versioning
       uses: anothrNick/github-tag-action@1.64.0
       env:
@@ -72,15 +79,14 @@ jobs:
     
     - name: View outputs
       run: |
-        echo Current tag: ${{steps.versioning.outputs.tag}} 
-        echo New tag: ${{steps.versioning.outputs.new_tag}}
+        echo Deploying branch or tagged version to pre-prod: ${{ steps.versioning.outputs.tag || github.event.inputs.branch_or_tag }}
 
   publish_all_lambda_layers:
     name: Publish all Lambda Layers
     needs: ["tag_and_release"]
     uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
     with:
-      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      build_branch: ${{ needs.tag_and_release.outputs.version }}
       sandbox: pre-prod
       environment: pre-prod
       python_version: "3.11"
@@ -92,7 +98,7 @@ jobs:
     needs: ["tag_and_release", "publish_all_lambda_layers"]
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     with:
-      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      build_branch: ${{ needs.tag_and_release.outputs.version }}
       sandbox: pre-prod
       environment: pre-prod
       python_version: "3.11"
@@ -104,7 +110,7 @@ jobs:
     needs: ["tag_and_release"]
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
-      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      build_branch: ${{ needs.tag_and_release.outputs.version }}
       environment: pre-prod
       sandbox: pre-prod
     secrets:
@@ -115,12 +121,9 @@ jobs:
     needs: ["tag_and_release"]
     uses: ./.github/workflows/base-batch-update.yml
     with:
-      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      build_branch: ${{ needs.tag_and_release.outputs.version }}
       environment: pre-prod
       sandbox: pre-prod
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-
-  
-
         

@@ -42,7 +42,7 @@ describe('GP Workflow: View Lloyd George record', () => {
     const assertPatientInfo = () => {
         cy.getByTestId('patient-name').should(
             'have.text',
-            `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
+            `${searchPatientPayload.givenName}, ${searchPatientPayload.familyName}`,
         );
         cy.getByTestId('patient-nhs-number').should('have.text', `NHS number: 900 000 0009`);
         cy.getByTestId('patient-dob').should('have.text', `Date of birth: 01 January 1970`);
