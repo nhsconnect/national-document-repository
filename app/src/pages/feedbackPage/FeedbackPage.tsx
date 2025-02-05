@@ -107,7 +107,7 @@ function FeedbackPage() {
                     </Fieldset.Legend>
                     <Textarea
                         data-testid={FORM_FIELDS.FeedbackContent}
-                        hint="You can give details about specific pages or parts of the service here."
+                        label="You can give details about specific pages or parts of the service here."
                         rows={7}
                         error={errors.feedbackContent?.message}
                         {...feedbackContentProps}
