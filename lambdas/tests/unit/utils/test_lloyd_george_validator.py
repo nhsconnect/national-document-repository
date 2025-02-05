@@ -458,7 +458,7 @@ def test_validate_name_with_wrong_first_name_lenient(mock_pds_patient):
     )
     assert actual_response == ValidationResult(
         score=ValidationScore.PARTIAL_MATCH,
-        family_name_match="Smith",
+        family_name_match="smith",
     )
 
 
@@ -484,7 +484,7 @@ def test_validate_name_with_wrong_family_name_lenient(mock_pds_patient):
     )
     assert actual_response == ValidationResult(
         score=ValidationScore.PARTIAL_MATCH,
-        given_name_match=["Jane"],
+        given_name_match=["jane"],
     )
 
 
@@ -1145,6 +1145,12 @@ def test_validate_patient_name_return_true(
         ["Jane Smith", ["Jane"], "Smith Anderson", ValidationScore.PARTIAL_MATCH],
         ["Jane Anderson", ["Jane"], "Smith Anderson", ValidationScore.PARTIAL_MATCH],
         [
+            "Jane Anderson",
+            ["Jane", "A"],
+            "Smith Anderson",
+            ValidationScore.PARTIAL_MATCH,
+        ],
+        [
             "Jane Anderson Smith",
             ["Jane"],
             "Smith Anderson",
@@ -1170,8 +1176,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith",
+                given_name_match=["jane"],
+                family_name_match="smith",
             ),
         ),
         (
@@ -1180,8 +1186,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith",
+                given_name_match=["jane"],
+                family_name_match="smith",
             ),
         ),
         (
@@ -1190,8 +1196,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith Anderson",
+                given_name_match=["jane"],
+                family_name_match="smith anderson",
             ),
         ),
         (
@@ -1200,8 +1206,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith Anderson",
+                given_name_match=["jane"],
+                family_name_match="smith anderson",
             ),
         ),
         (
@@ -1210,8 +1216,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith-Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane"],
-                family_name_match="Smith-Anderson",
+                given_name_match=["jane"],
+                family_name_match="smith-anderson",
             ),
         ),
         (
@@ -1220,8 +1226,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith Anderson",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane Bob"],
-                family_name_match="Smith Anderson",
+                given_name_match=["jane bob"],
+                family_name_match="smith anderson",
             ),
         ),
         (
@@ -1230,8 +1236,8 @@ def test_validate_patient_name_lenient_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.FULL_MATCH,
-                given_name_match=["Jane Bob"],
-                family_name_match="Smith",
+                given_name_match=["jane bob"],
+                family_name_match="smith",
             ),
         ),
         (
@@ -1240,7 +1246,7 @@ def test_validate_patient_name_lenient_return_false(
             "Anderson",
             ValidationResult(
                 score=ValidationScore.PARTIAL_MATCH,
-                given_name_match=["Jane Bob"],
+                given_name_match=["jane bob"],
             ),
         ),
         (
@@ -1249,7 +1255,7 @@ def test_validate_patient_name_lenient_return_false(
             "Smith",
             ValidationResult(
                 score=ValidationScore.PARTIAL_MATCH,
-                family_name_match="Smith",
+                family_name_match="smith",
             ),
         ),
         (
@@ -1258,6 +1264,24 @@ def test_validate_patient_name_lenient_return_false(
             "Dylan",
             ValidationResult(
                 score=ValidationScore.NO_MATCH,
+            ),
+        ),
+        (
+            "Bob Smith",
+            ["Bob", "S"],
+            "Dylan",
+            ValidationResult(
+                score=ValidationScore.PARTIAL_MATCH,
+                given_name_match=["bob"],
+            ),
+        ),
+        (
+            "Bob S Marleys",
+            ["Bob", "S"],
+            "Dylan",
+            ValidationResult(
+                score=ValidationScore.PARTIAL_MATCH,
+                given_name_match=["bob"],
             ),
         ),
     ],
@@ -1288,6 +1312,8 @@ def test_validate_patient_name_lenient_return_true(
         ("Jones Bob", ValidationScore.MIXED_FULL_MATCH, True),
         ("Jones Jane", ValidationScore.MIXED_FULL_MATCH, True),
         ("Paul Anderson", ValidationScore.PARTIAL_MATCH, True),
+        ("Jane Jane", ValidationScore.PARTIAL_MATCH, False),
+        ("Jane Janet", ValidationScore.PARTIAL_MATCH, False),
     ],
 )
 def test_calculate_validation_score_for_lenient_check(
@@ -1299,8 +1325,11 @@ def test_calculate_validation_score_for_lenient_check(
     name_4 = build_test_name(
         use="usual", start="1995-01-01", end=None, given=["Paul Anderson"]
     )
+    name_5 = build_test_name(start="1980-01-01", end="1990-01-01", given=["JANE"])
 
-    test_patient = build_test_patient_with_names([name_1, name_2, name_3, name_4])
+    test_patient = build_test_patient_with_names(
+        [name_1, name_2, name_3, name_4, name_5]
+    )
 
     actual_result, historical, _ = calculate_validation_score_for_lenient_check(
         file_patient_name, test_patient

@@ -64,7 +64,7 @@ describe('DeleteSubmitStage', () => {
         it.each(authorisedRoles)(
             "renders the page with patient details when user role is '%s'",
             async (role) => {
-                const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+                const patientName = `${mockPatientDetails.givenName}, ${mockPatientDetails.familyName}`;
                 const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
                 mockedUseRole.mockReturnValue(role);
 

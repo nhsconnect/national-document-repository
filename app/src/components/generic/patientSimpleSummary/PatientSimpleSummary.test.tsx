@@ -1,3 +1,4 @@
+import React from 'react';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
@@ -22,6 +23,13 @@ describe('PatientSummary', () => {
         birthDate: '1970-01-01',
     });
 
+    const mockLongName = buildPatientDetails({
+        familyName: 'AVeryLongFirstName',
+        givenName: ['AVeryLongSecondName'],
+        nhsNumber: '0000222000',
+        birthDate: '1970-01-01',
+    });
+
     it('renders provided patient information', () => {
         mockedUsePatient.mockReturnValue(mockDetails);
         render(<PatientSummary />);
@@ -38,7 +46,27 @@ describe('PatientSummary', () => {
         render(<PatientSummary />);
 
         expect(
-            screen.getByText(`${mockDetails.givenName[0]} ${mockDetails.familyName}`),
+            screen.getByText(`${mockDetails.givenName[0]}, ${mockDetails.familyName}`),
         ).toBeInTheDocument();
+    });
+
+    it('displays a newline after name for very long names', () => {
+        mockedUsePatient.mockReturnValue(mockLongName);
+
+        render(<PatientSummary />);
+
+        const patientInfo = screen.getByTestId('patient-info');
+
+        expect(patientInfo.innerHTML).toContain('<br>');
+    });
+
+    it('displays patient details on same line for short names', () => {
+        mockedUsePatient.mockReturnValue(mockDetails);
+
+        render(<PatientSummary />);
+
+        const patientInfo = screen.getByTestId('patient-info');
+
+        expect(patientInfo.innerHTML).not.toContain('<br>');
     });
 });

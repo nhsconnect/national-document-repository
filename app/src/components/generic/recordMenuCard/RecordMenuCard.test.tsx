@@ -69,8 +69,6 @@ describe('RecordMenuCard', () => {
             render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} showMenu={true} />,
             );
-            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
-            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Download files' })).toBeInTheDocument();
@@ -88,12 +86,8 @@ describe('RecordMenuCard', () => {
                     showMenu={true}
                 />,
             );
-            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
-            expect(
-                screen.queryByRole('heading', { name: 'Download record' }),
-            ).not.toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Download files' })).not.toBeInTheDocument();
 
             const mockLinksDownloadOnly = mockLinks.filter(
@@ -106,12 +100,8 @@ describe('RecordMenuCard', () => {
                     showMenu={true}
                 />,
             );
-            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Download files' })).toBeInTheDocument();
 
-            expect(
-                screen.queryByRole('heading', { name: 'Update record' }),
-            ).not.toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Remove files' })).not.toBeInTheDocument();
         });
@@ -151,7 +141,6 @@ describe('RecordMenuCard', () => {
             render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} showMenu={true} />,
             );
-            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
             act(() => {
                 userEvent.click(screen.getByRole('link', { name: 'Upload files' }));
@@ -163,7 +152,6 @@ describe('RecordMenuCard', () => {
             render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} showMenu={true} />,
             );
-            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
 
             act(() => {

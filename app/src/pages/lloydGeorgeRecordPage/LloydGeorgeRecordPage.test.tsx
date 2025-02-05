@@ -61,7 +61,7 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('renders patient details', async () => {
-        const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+        const patientName = `${mockPatientDetails.givenName}, ${mockPatientDetails.familyName}`;
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 

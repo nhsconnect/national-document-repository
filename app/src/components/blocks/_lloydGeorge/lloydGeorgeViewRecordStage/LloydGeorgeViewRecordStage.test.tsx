@@ -19,7 +19,6 @@ import LloydGeorgeViewRecordStage, { Props } from './LloydGeorgeViewRecordStage'
 import { createMemoryHistory } from 'history';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import * as ReactRouter from 'react-router-dom';
-import { useRef } from 'react';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../../helpers/hooks/useRole');
@@ -96,7 +95,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 
     it("renders 'full screen' mode correctly", async () => {
-        const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+        const patientName = `${mockPatientDetails.givenName}, ${mockPatientDetails.familyName}`;
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
 
         renderComponent();
