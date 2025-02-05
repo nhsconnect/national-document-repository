@@ -5211,7 +5211,12 @@ dialog :link{
 #spreadModeButtons,
 #cursorToolButtons,
 #scrollModeButtons,
-#documentProperties
+#documentProperties,
+#findbarOptionsOneContainer,
+#findbarOptionsTwoContainer,
+#firstPage,
+#lastPage,
+#findMsg
  {
     display: none;
     visibility: hidden;
@@ -5220,5 +5225,9 @@ dialog :link{
 .horizontalToolbarSeparator
  {
     display: none;
+}
+
+#viewerContainer {
+    margin-top: 40px;
 }
 

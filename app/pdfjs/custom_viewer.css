@@ -18,7 +18,12 @@
 #spreadModeButtons,
 #cursorToolButtons,
 #scrollModeButtons,
-#documentProperties
+#documentProperties,
+#findbarOptionsOneContainer,
+#findbarOptionsTwoContainer,
+#firstPage,
+#lastPage,
+#findMsg
  {
     display: none;
     visibility: hidden;
@@ -27,5 +32,9 @@
 .horizontalToolbarSeparator
  {
     display: none;
+}
+
+#viewerContainer {
+    margin-top: 40px;
 }
 
