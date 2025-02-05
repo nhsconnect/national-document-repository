@@ -25,6 +25,10 @@ logger = LoggingService(__name__)
 )
 def lambda_handler(event, context):
     try:
+        if not event:
+            raise NRLGetDocumentReferenceException(
+                400, LambdaError.DocumentReferenceInvalidRequest
+            )
 
         bearer_token = event.get("headers", {}).get("Authorization", None)
         if not bearer_token:

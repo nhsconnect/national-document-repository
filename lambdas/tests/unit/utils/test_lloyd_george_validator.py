@@ -314,7 +314,9 @@ def test_validate_name_with_correct_name_lenient(mocker, mock_pds_patient):
         family_name_match="Smith",
     )
     actual_score, actual_is_name_validation_based_on_historic_name, result_message = (
-        calculate_validation_score_for_lenient_check(lg_file_patient_name, mock_pds_patient)
+        calculate_validation_score_for_lenient_check(
+            lg_file_patient_name, mock_pds_patient
+        )
     )
 
     assert expected_message == result_message
@@ -422,7 +424,9 @@ def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
         family_name_match="Smith",
     )
     actual_score, actual_is_name_validation_based_on_historic_name, result_message = (
-        calculate_validation_score_for_lenient_check(lg_file_patient_name, mock_pds_patient)
+        calculate_validation_score_for_lenient_check(
+            lg_file_patient_name, mock_pds_patient
+        )
     )
 
     assert expected_message == result_message
@@ -519,7 +523,9 @@ def test_validate_name_with_historical_name_lenient(mocker, mock_pds_patient):
         ),
     ]
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(lg_file_patient_name, mock_pds_patient)
+        calculate_validation_score_for_lenient_check(
+            lg_file_patient_name, mock_pds_patient
+        )
     )
 
     assert result_message == expected_message
@@ -553,7 +559,9 @@ def test_validate_name_without_given_name_lenient(mocker, mock_pds_patient):
         "utils.lloyd_george_validator.validate_patient_name_lenient"
     )
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(lg_file_patient_name, mock_pds_patient)
+        calculate_validation_score_for_lenient_check(
+            lg_file_patient_name, mock_pds_patient
+        )
     )
 
     assert result_message == expected_message
@@ -597,7 +605,9 @@ def test_validate_patient_name_with_two_words_family_name_lenient(
 ):
 
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(patient_name_in_file_name, patient_details)
+        calculate_validation_score_for_lenient_check(
+            patient_name_in_file_name, patient_details
+        )
     )
     if should_accept_name:
         assert actual_is_validate_on_historic is False
@@ -643,7 +653,9 @@ def test_validate_patient_name_with_family_name_with_hyphen_lenient(
     should_accept_name: bool,
 ):
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(patient_name_in_file_name, patient_details)
+        calculate_validation_score_for_lenient_check(
+            patient_name_in_file_name, patient_details
+        )
     )
     if should_accept_name:
         expected_message = "matched on 1 family_name and 1 given name"
@@ -688,7 +700,9 @@ def test_validate_patient_name_with_two_words_given_name_lenient(
     should_accept_name: bool,
 ):
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(patient_name_in_file_name, patient_details)
+        calculate_validation_score_for_lenient_check(
+            patient_name_in_file_name, patient_details
+        )
     )
     if should_accept_name:
         expected_message = "matched on 1 family_name and 1 given name"
@@ -754,7 +768,9 @@ def test_validate_patient_name_with_two_words_family_name_and_given_name_lenient
     should_accept_name: bool,
 ):
     actual_score, actual_is_validate_on_historic, result_message = (
-        calculate_validation_score_for_lenient_check(patient_name_in_file_name, patient_details)
+        calculate_validation_score_for_lenient_check(
+            patient_name_in_file_name, patient_details
+        )
     )
     if should_accept_name:
         expected_message = "matched on 1 family_name and 1 given name"

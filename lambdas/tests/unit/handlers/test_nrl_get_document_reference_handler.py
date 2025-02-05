@@ -50,6 +50,12 @@ def test_lambda_handler_missing_id(set_env, mock_service, event, context):
     mock_service.handle_get_document_reference_request.assert_not_called()
 
 
+def test_lambda_handler_empty_event(set_env, mock_service, event, context):
+    response = lambda_handler({}, context)
+    assert response["statusCode"] == 400
+    mock_service.handle_get_document_reference_request.assert_not_called()
+
+
 def test_lambda_handler_missing_auth(set_env, mock_service, event, context):
     response = lambda_handler(
         {"pathParameters": {"id": f"{SnomedCodes.LLOYD_GEORGE}~{TEST_UUID}"}}, context
