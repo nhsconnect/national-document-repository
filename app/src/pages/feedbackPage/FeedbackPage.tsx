@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
-import { Button, Fieldset, Input, Radios, Textarea, InsetText } from 'nhsuk-react-components';
+import { Button, Fieldset, Input, Radios, Textarea, InsetText, Hint } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import {
@@ -107,7 +107,7 @@ function FeedbackPage() {
                     </Fieldset.Legend>
                     <Textarea
                         data-testid={FORM_FIELDS.FeedbackContent}
-                        label="You can give details about specific pages or parts of the service here."
+                        hint="You can give details about specific pages or parts of the service here."
                         rows={7}
                         error={errors.feedbackContent?.message}
                         {...feedbackContentProps}
@@ -134,8 +134,10 @@ function FeedbackPage() {
                     </Fieldset.Legend>
 
                     <p>
-                        If you’re happy to speak to us about your feedback, leave your details
-                        below.
+                        <Hint>
+                            If you’re happy to speak to us about your feedback, leave your details
+                            below:
+                        </Hint>
                     </p>
 
                     <Input
