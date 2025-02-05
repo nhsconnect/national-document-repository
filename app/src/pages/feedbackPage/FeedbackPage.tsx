@@ -114,16 +114,18 @@ function FeedbackPage() {
                     />
                 </Fieldset>
 
-                <InsetText style={{ maxWidth: 'unset' }}>
-                    Help us improve this service. Tell us more about your experience with using it
-                    by completing a further{' '}
-                    <a
-                        href="https://feedback.digital.nhs.uk/jfe/form/SV_5vE7S5wJ0yleEUm"
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        short survey (opens in a new tab)
-                    </a>
+                <InsetText className="feedback-page_inset-text">
+                    <p>
+                        Help us improve this service. Tell us more about your experience with using
+                        it by completing a further{' '}
+                        <a
+                            href="https://feedback.digital.nhs.uk/jfe/form/SV_5vE7S5wJ0yleEUm"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            short survey (opens in a new tab)
+                        </a>
+                    </p>
                 </InsetText>
 
                 <Fieldset data-testid="feedback-details-section">

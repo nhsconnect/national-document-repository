@@ -674,7 +674,6 @@ $hunit: '%';
     }
 
     &_item {
-
         a {
             color: $color_nhsuk-white;
             text-decoration: underline;
@@ -693,9 +692,7 @@ $hunit: '%';
         &--desktop {
             margin: 0 2rem;
         }
-
     }
-
 }
 
 // Generic
@@ -815,4 +812,8 @@ $hunit: '%';
 
 .nhs-warning-color {
     color: $color_nhsuk-red;
+}
+
+.feedback-page_inset-text {
+    background-color: #fff;
 }
