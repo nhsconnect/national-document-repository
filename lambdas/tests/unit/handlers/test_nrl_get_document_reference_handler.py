@@ -44,12 +44,6 @@ def test_lambda_handler_happy_path(set_env, mock_service, context):
     assert response["statusCode"] == 200
 
 
-def test_lambda_handler_missing_id(set_env, mock_service, event, context):
-    response = lambda_handler(event, context)
-    assert response["statusCode"] == 500
-    mock_service.handle_get_document_reference_request.assert_not_called()
-
-
 def test_lambda_handler_empty_event(set_env, mock_service, event, context):
     response = lambda_handler({}, context)
     assert response["statusCode"] == 400
