@@ -1,5 +1,4 @@
-import { Card } from 'nhsuk-react-components';
-import React, { Dispatch, HTMLAttributes, SetStateAction } from 'react';
+import { Dispatch, HTMLAttributes, SetStateAction } from 'react';
 import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import { Link, useNavigate } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
@@ -21,7 +20,7 @@ function RecordMenuCard({
     recordLinks,
     setStage,
     showMenu,
-    className = 'lloydgeorge_record-stage_flex-row',
+    className = 'lloydgeorge_record-stage_links',
 }: Props) {
     const updateActions = recordLinks.filter((link) => link.type === RECORD_ACTION.UPDATE);
     const downloadActions = recordLinks.filter((link) => link.type === RECORD_ACTION.DOWNLOAD);
@@ -35,32 +34,28 @@ function RecordMenuCard({
     }
     return (
         <div className={className} data-testid="record-menu-card">
-            <Card className="lloydgeorge_record-stage_menu">
-                <Card.Content className="lloydgeorge_record-stage_menu-content">
-                    {updateActions.length > 0 && (
-                        <SideMenuSubSection
-                            actionLinks={updateActions}
-                            heading="Update record"
-                            setStage={setStage}
-                        />
-                    )}
-                    {downloadActions.length > 0 && (
-                        <SideMenuSubSection
-                            actionLinks={downloadActions}
-                            heading="Download record"
-                            setStage={setStage}
-                        />
-                    )}
-                </Card.Content>
-            </Card>
+            {updateActions.length > 0 && (
+                <LinkSection
+                    actionLinks={updateActions}
+                    heading="Update record"
+                    setStage={setStage}
+                />
+            )}
+
+            {downloadActions.length > 0 && (
+                <LinkSection
+                    actionLinks={downloadActions}
+                    heading="Download record"
+                    setStage={setStage}
+                />
+            )}
         </div>
     );
 }
 
-const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps) => {
+const LinkSection = ({ actionLinks, setStage }: SubSectionProps) => {
     return (
         <>
-            <h2 className="nhsuk-heading-m">{heading}</h2>
             {actionLinks.map((link) => (
                 <LinkItem key={link.key} link={link} setStage={setStage} />
             ))}

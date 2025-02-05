@@ -250,17 +250,17 @@ $hunit: '%';
 // Lloyd George
 .lloydgeorge {
     &_record-stage {
+        max-width: 960px;
+
+    &_links, a {
+        padding-right:  30px;
+    }
+
         &_flex {
-            display: flex;
-            flex-flow: row nowrap;
-            justify-content: space-between;
-            margin: 0 -15px;
 
             &-row {
-                margin: 0 15px;
 
                 &--menu {
-                    flex-basis: calc(70% - 17px);
                 }
 
                 &--upload {
@@ -272,15 +272,6 @@ $hunit: '%';
         &_patient-info {
             p {
                 font-size: 1.2rem;
-            }
-
-            p:first-child {
-                margin-bottom: 5px;
-                font-weight: 700;
-            }
-
-            p:nth-child(2) {
-                margin-bottom: 0;
             }
         }
 
