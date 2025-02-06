@@ -15,13 +15,13 @@ token_service = TokenService()
 
 
 class AuthoriserService:
-    def __init__(
-        self
-    ):
+    def __init__(self):
         self.redact_session_id = ""
         self.allowed_nhs_numbers = []
 
-    def auth_request(self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: None):
+    def auth_request(
+        self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: None
+    ):
         try:
             decoded_token = token_service.get_public_key_and_decode_auth_token(
                 auth_token=auth_token,
@@ -38,9 +38,8 @@ class AuthoriserService:
             current_session = self.find_login_session(ndr_session_id)
             self.validate_login_session(float(current_session["TimeToExist"]))
 
-            resource_denied = self.deny_access_policy(path, user_role)
-            if nhs_number and path != '/SearchPatient':
-                resource_denied = nhs_number not in self.allowed_nhs_numbers
+            resource_denied = self.deny_access_policy(path, user_role, nhs_number)
+
             allow_policy = False
 
             if not resource_denied:
@@ -53,20 +52,27 @@ class AuthoriserService:
             raise AuthorisationException(e)
 
     @staticmethod
-    def deny_access_policy(path, user_role):
+    def deny_access_policy(self, path, user_role, nhs_number: None):
         logger.info(f"Path: {path}")
+        deny_access_to_patient = (
+            nhs_number not in self.allowed_nhs_numbers if nhs_number else False
+        )
+        deny_access_to_clinical_role = user_role == RepositoryRole.GP_CLINICAL.value
         match path:
             case "/DocumentDelete":
-                deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
+                deny_resource = deny_access_to_patient and deny_access_to_clinical_role
 
             case "/DocumentManifest":
-                deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
+                deny_resource = deny_access_to_patient and deny_access_to_clinical_role
 
             case "/DocumentReference":
-                deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
+                deny_resource = deny_access_to_patient and deny_access_to_clinical_role
+
+            case "/SearchPatient":
+                deny_resource = False
 
             case _:
-                deny_resource = False
+                deny_resource = deny_access_to_patient
 
         logger.info("Allow resource: %s" % (not deny_resource))
 
@@ -86,9 +92,9 @@ class AuthoriserService:
 
         try:
             current_session = query_response["Items"][0]
-            list_of_allowed_nhs_numbers = current_session.get("AllowedNHSNumbers", None)
+            list_of_allowed_nhs_numbers = current_session.get("AllowedNHSNumbers", [])
             if list_of_allowed_nhs_numbers:
-                self.allowed_nhs_numbers = list_of_allowed_nhs_numbers.split(',')
+                self.allowed_nhs_numbers = list_of_allowed_nhs_numbers.split(",")
             return current_session
         except (KeyError, IndexError):
             raise AuthorisationException(

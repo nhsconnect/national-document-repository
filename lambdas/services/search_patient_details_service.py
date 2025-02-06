@@ -4,7 +4,6 @@ from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
-
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
@@ -29,7 +28,6 @@ class SearchPatientDetailsService:
         self.ssm_service = SSMService()
         self.session_table_name = os.getenv("AUTH_SESSION_TABLE_NAME")
         self.db_service = DynamoDBService()
-
 
     def handle_search_patient_request(self, nhs_number):
         try:
@@ -101,7 +99,6 @@ class SearchPatientDetailsService:
 
             case _:
                 raise UserNotAuthorisedException
-
 
     def update_auth_table_with_permitted_search(self):
         ndr_session_id = request_context.authorization.get("ndr_session_id")
