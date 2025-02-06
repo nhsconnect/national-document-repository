@@ -19,7 +19,7 @@ class AuthoriserService:
         self
     ):
         self.redact_session_id = ""
-        self.allowed_nhs_numbers = []
+        self.allowed_nhs_numbers = None
 
     def auth_request(self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: None):
         try:
@@ -39,7 +39,7 @@ class AuthoriserService:
             self.validate_login_session(float(current_session["TimeToExist"]))
 
             resource_denied = self.deny_access_policy(path, user_role)
-            if nhs_number:
+            if nhs_number and path != '/SearchPatient':
                 resource_denied = nhs_number not in self.allowed_nhs_numbers
             allow_policy = False
 
@@ -83,11 +83,12 @@ class AuthoriserService:
             search_key="NDRSessionId",
             search_condition=ndr_session_id,
         )
-        list_of_allowed_nhs_numbers = query_response["Items"][0]["AllowedNHSNumbers"].split(',')
-        self.allowed_nhs_numbers.append(list_of_allowed_nhs_numbers)
 
         try:
             current_session = query_response["Items"][0]
+            list_of_allowed_nhs_numbers = current_session.get("AllowedNHSNumbers", None)
+            if list_of_allowed_nhs_numbers:
+                self.allowed_nhs_numbers = list_of_allowed_nhs_numbers.split(',')
             return current_session
         except (KeyError, IndexError):
             raise AuthorisationException(
