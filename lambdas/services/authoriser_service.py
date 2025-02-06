@@ -19,7 +19,7 @@ class AuthoriserService:
         self
     ):
         self.redact_session_id = ""
-        self.allowed_nhs_numbers = None
+        self.allowed_nhs_numbers = []
 
     def auth_request(self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: None):
         try:
