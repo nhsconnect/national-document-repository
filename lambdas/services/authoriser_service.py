@@ -16,11 +16,12 @@ token_service = TokenService()
 
 class AuthoriserService:
     def __init__(
-        self,
+        self
     ):
         self.redact_session_id = ""
+        self.allowed_nhs_numbers = []
 
-    def auth_request(self, path, ssm_jwt_public_key_parameter, auth_token):
+    def auth_request(self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: None):
         try:
             decoded_token = token_service.get_public_key_and_decode_auth_token(
                 auth_token=auth_token,
@@ -38,6 +39,8 @@ class AuthoriserService:
             self.validate_login_session(float(current_session["TimeToExist"]))
 
             resource_denied = self.deny_access_policy(path, user_role)
+            if nhs_number:
+                resource_denied = nhs_number not in self.allowed_nhs_numbers
             allow_policy = False
 
             if not resource_denied:
@@ -80,6 +83,8 @@ class AuthoriserService:
             search_key="NDRSessionId",
             search_condition=ndr_session_id,
         )
+        list_of_allowed_nhs_numbers = query_response["Items"][0]["AllowedNHSNumbers"].split(',')
+        self.allowed_nhs_numbers.append(list_of_allowed_nhs_numbers)
 
         try:
             current_session = query_response["Items"][0]
