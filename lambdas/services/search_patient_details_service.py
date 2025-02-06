@@ -4,6 +4,7 @@ from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
+from services.authoriser_service import AuthoriserService
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
@@ -28,6 +29,7 @@ class SearchPatientDetailsService:
         self.ssm_service = SSMService()
         self.session_table_name = os.getenv("AUTH_SESSION_TABLE_NAME")
         self.db_service = DynamoDBService()
+        self.auth_service = AuthoriserService()
 
     def handle_search_patient_request(self, nhs_number):
         try:
@@ -41,6 +43,9 @@ class SearchPatientDetailsService:
             logger.audit_splunk_info(
                 "Searched for patient details", {"Result": "Patient found"}
             )
+
+            self.update_auth_session_with_permitted_search(nhs_number=nhs_number)
+
             response = patient_details.model_dump_json(
                 by_alias=True,
                 exclude={
@@ -100,7 +105,35 @@ class SearchPatientDetailsService:
             case _:
                 raise UserNotAuthorisedException
 
-    def update_auth_table_with_permitted_search(self):
+    def update_auth_session_with_permitted_search(self, nhs_number: str):
         ndr_session_id = request_context.authorization.get("ndr_session_id")
 
-        self.db_service.update_item(self.session_table_name, ndr_session_id, {})
+        self.auth_service.find_login_session(ndr_session_id)
+        allowed_nhs_numbers = self.auth_service.allowed_nhs_numbers
+
+        logger.info("Searching Auth session table for existing NHS number")
+        if nhs_number in allowed_nhs_numbers:
+            return
+
+        if allowed_nhs_numbers:
+            allowed_nhs_numbers.append(nhs_number)
+            allowed_nhs_numbers_str = ",".join(allowed_nhs_numbers)
+            updated_fields = {"AllowedNHSNumbers": allowed_nhs_numbers_str}
+            logger.info(
+                f"permitted nhs numbers found, appending: {allowed_nhs_numbers_str}"
+            )
+
+        else:
+            updated_fields = {"AllowedNHSNumbers": nhs_number}
+            logger.info(f"No permitted nhs numbers found, creating: {nhs_number}")
+
+        self.db_service.update_item(
+            table_name=self.session_table_name,
+            key_pair={"NDRSessionId": ndr_session_id},
+            updated_fields=updated_fields,
+            condition_expression=(
+                "attribute_not_exists(AllowedNHSNumbers)"
+                if not allowed_nhs_numbers
+                else None
+            ),
+        )
