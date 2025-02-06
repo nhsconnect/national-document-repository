@@ -27,9 +27,9 @@ class SearchPatientDetailsService:
         self.user_role = user_role
         self.user_ods_code = user_ods_code
         self.ssm_service = SSMService()
-        self.session_table_name = os.getenv("AUTH_SESSION_TABLE_NAME")
         self.db_service = DynamoDBService()
         self.auth_service = AuthoriserService()
+        self.session_table_name = os.getenv("AUTH_SESSION_TABLE_NAME")
 
     def handle_search_patient_request(self, nhs_number):
         try:

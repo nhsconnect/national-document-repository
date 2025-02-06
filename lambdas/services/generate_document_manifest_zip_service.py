@@ -101,9 +101,11 @@ class DocumentManifestZipService:
     def update_dynamo_with_fields(self, fields: set):
         logger.info("Writing zip trace to db")
         self.dynamo_service.update_item(
-            self.zip_trace_table,
-            self.zip_trace_object.id,
-            self.zip_trace_object.model_dump(by_alias=True, include=fields),
+            table_name=self.zip_trace_table,
+            key_pair={"ID": self.zip_trace_object.id},
+            updated_fields=self.zip_trace_object.model_dump(
+                by_alias=True, include=fields
+            ),
         )
 
     def update_processing_status(self):

@@ -159,9 +159,11 @@ def test_update_stitch_job_complete(stitch_service, mocker):
     stitch_service.update_stitch_job_complete()
 
     stitch_service.document_service.dynamo_service.update_item.assert_called_with(
-        "test_stitch_metadata",
-        MOCK_STITCH_TRACE_OBJECT.id,
-        MOCK_STITCH_TRACE_OBJECT.model_dump(by_alias=True, exclude={"id"}),
+        table_name="test_stitch_metadata",
+        key_pair={"ID": MOCK_STITCH_TRACE_OBJECT.id},
+        updated_fields=MOCK_STITCH_TRACE_OBJECT.model_dump(
+            by_alias=True, exclude={"id"}
+        ),
     )
 
 
@@ -447,7 +449,7 @@ def test_update_trace_status(stitch_service, mocker):
     stitch_service.update_trace_status(TraceStatus.FAILED)
 
     stitch_service.document_service.dynamo_service.update_item.assert_called_with(
-        "test_stitch_metadata",
-        MOCK_STITCH_TRACE_OBJECT.id,
-        {"JobStatus": TraceStatus.FAILED},
+        table_name="test_stitch_metadata",
+        key_pair={"ID": MOCK_STITCH_TRACE_OBJECT.id},
+        updated_fields={"JobStatus": TraceStatus.FAILED},
     )
