@@ -8,19 +8,18 @@ import shutil
 
 PDFJS_VERSION = "v4.10.38"
 
-
 PDFJS_REPO = "https://github.com/mozilla/pdf.js"
-
 
 # update local dir to a previously cloned pdfjs or a extracted download .zip to save cloning it again 
 
 LOCAL_DIR = "./local_pdfjs/pdf.js-4.10.38"
 
-
 TEMP_DIR = "./temp_pdfjs"
 PUBLIC_DIR = "../public/pdfjs"
 CUSTOM_CSS_PATH = "./custom_viewer.css"
 
+
+# ---------------------------------------------------------------------------------------------
 
 # used in the automatic search replace, for path/file, find string, replace with new code;
 # finds line with the same whitespace
@@ -28,12 +27,61 @@ CUSTOM_CSS_PATH = "./custom_viewer.css"
 class SearchAndReplaceValue:
 
     def __init__( self, file_path, find_string, replace_string ):
-    
+
         self.file_path = file_path
-        self.find_string = find_string 
+        self.find_string = find_string
         self.replace_string = replace_string
 
+search_and_replace_code = [
 
+            # set highlight 
+            SearchAndReplaceValue(
+                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.mjs" ),
+                "    const highlightAll = findController.state.highlightAll;",
+                "    const highlightAll = true;",
+            ),
+
+            # 
+            SearchAndReplaceValue(
+                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.mjs" ),
+                """        throw new Error("file origin does not match viewer's");""",
+                """        return;""",
+            ),
+
+            # 
+            SearchAndReplaceValue(
+                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.html" ),
+                """                <div class="toolbarHorizontalGroup hiddenMediumView">""",
+                """                <div class="toolbarHorizontalGroup">""",
+            ),
+
+            # relocate rotate
+            SearchAndReplaceValue(
+                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.html" ),
+                """                <div id="editorModeSeparator" class="verticalToolbarSeparator"></div>""",
+                """                <div id="editorModeSeparator" class="verticalToolbarSeparator"></div>
+                                        <button id="pageRotateCw" class="toolbarButton" type="button" title="Rotate Clockwise" tabindex="0" data-l10n-id="pdfjs-page-rotate-cw-button">
+                                            <span data-l10n-id="pdfjs-page-rotate-cw-button-label">Rotate Clockwise</span>
+                                        </button>
+                                        <button id="pageRotateCcw" class="toolbarButton" type="button" title="Rotate Counterclockwise" tabindex="0" data-l10n-id="pdfjs-page-rotate-ccw-button">
+                                            <span data-l10n-id="pdfjs-page-rotate-ccw-button-label">Rotate Counterclockwise</span>
+                                        </button>""",
+            ),
+            SearchAndReplaceValue(
+                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.css" ),
+                """#secondaryToolbar #pageRotateCw::before{""",
+                """#pageRotateCw::before{""",
+            ),
+            SearchAndReplaceValue(
+                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.css" ),
+                """#secondaryToolbar #pageRotateCcw::before{""",
+                """#pageRotateCcw::before{""",
+            ),
+
+]
+
+
+# ---------------------------------------------------------------------------------------------
 
 
 def clone_pdfjs_to_temp_dir():
@@ -125,11 +173,12 @@ def delete_temp_dir():
 
 
 # this method can be improved
+# finds line with the same whitespace
 
 def modify_files(searchAndReplaceCode):
     
     for item in searchAndReplaceCode:
-        
+
         if os.path.exists( item.file_path ):
             with open ( item.file_path, "r", encoding="utf-8" ) as file:
                 content = file.read()
@@ -137,18 +186,13 @@ def modify_files(searchAndReplaceCode):
             new_content = content.replace(item.find_string, item.replace_string)
 
             if new_content != content:
-
                 with open ( item.file_path, "w", encoding="utf-8" ) as file:
-                
                     file.write(new_content)
 
-                print_message(f"updated {item.file_path}: replaced '{item.find_string}' with '{item.replace_string}'",
-                    newline_before=True, newline_after=True )
+                print_message(f"updated {item.file_path}: replaced '{item.find_string}' with '{item.replace_string}'");
 
             else:
-
-                print_message(f"did not update {item.file_path}: '{item.find_string}' with '{item.replace_string}'", 
-                    level="ERROR", newline_before=True, newline_after=True )
+                print_message(f"did not update {item.file_path}: '{item.find_string}' with '{item.replace_string}'", level="ERROR");
 
         else: print_message(f"file not found: {item.file_path}", level="ERROR")
 
@@ -158,11 +202,17 @@ def modify_files(searchAndReplaceCode):
 def print_message(message, level="INFO", newline_before=False, newline_after=False):
     if newline_before:
         print()
+    if level == "ERROR":
+        print("")
+        print("---------------------------")
+        print("")
     print(f"[{level}] { message }" )
+    if level == "ERROR":
+        print("")
+        print("---------------------------")
+        print("")
     if newline_after:
         print()
-
-
 
 
 
@@ -182,21 +232,7 @@ if __name__ == "__main__":
         # it could also use git compare to compare the new versions first?
 
         append_custom_css()
-
-        searchAndReplaceCode = [
-            SearchAndReplaceValue(
-                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.mjs" ),
-                "    const highlightAll = findController.state.highlightAll;",
-                "    const highlightAll = true;",
-            ),
-            SearchAndReplaceValue(
-                os.path.join( PUBLIC_DIR, "build", "generic", "web", "viewer.mjs" ),
-                """        throw new Error("file origin does not match viewer's");""",
-                """        return;""",
-            ),
-        ]
-
-        modify_files(searchAndReplaceCode)
+        modify_files(search_and_replace_code)
 
     except Exception as e:
 

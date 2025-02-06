@@ -23,7 +23,8 @@
 #findbarOptionsTwoContainer,
 #firstPage,
 #lastPage,
-#findMsg
+#findMsg,
+#secondaryToolbarToggle
  {
     display: none;
     visibility: hidden;

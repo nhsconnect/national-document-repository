@@ -5097,12 +5097,12 @@ dialog :link{
             mask-image:var(--secondaryToolbarButton-lastPage-icon);
   }
 
-#secondaryToolbar #pageRotateCcw::before{
+#pageRotateCcw::before{
     -webkit-mask-image:var(--secondaryToolbarButton-rotateCcw-icon);
             mask-image:var(--secondaryToolbarButton-rotateCcw-icon);
   }
 
-#secondaryToolbar #pageRotateCw::before{
+#pageRotateCw::before{
     -webkit-mask-image:var(--secondaryToolbarButton-rotateCw-icon);
             mask-image:var(--secondaryToolbarButton-rotateCw-icon);
   }
@@ -5216,7 +5216,8 @@ dialog :link{
 #findbarOptionsTwoContainer,
 #firstPage,
 #lastPage,
-#findMsg
+#findMsg,
+#secondaryToolbarToggle
  {
     display: none;
     visibility: hidden;
