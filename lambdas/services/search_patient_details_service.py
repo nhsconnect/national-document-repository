@@ -1,7 +1,11 @@
+import os
+
 from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
+
+from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
@@ -12,6 +16,7 @@ from utils.exceptions import (
 )
 from utils.lambda_exceptions import SearchPatientException
 from utils.ods_utils import is_ods_code_active
+from utils.request_context import request_context
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -22,6 +27,9 @@ class SearchPatientDetailsService:
         self.user_role = user_role
         self.user_ods_code = user_ods_code
         self.ssm_service = SSMService()
+        self.session_table_name = os.getenv("AUTH_SESSION_TABLE_NAME")
+        self.db_service = DynamoDBService()
+
 
     def handle_search_patient_request(self, nhs_number):
         try:
@@ -93,3 +101,9 @@ class SearchPatientDetailsService:
 
             case _:
                 raise UserNotAuthorisedException
+
+
+    def update_auth_table_with_permitted_search(self):
+        ndr_session_id = request_context.authorization.get("ndr_session_id")
+
+        self.db_service.update_item(self.session_table_name, ndr_session_id, {})
