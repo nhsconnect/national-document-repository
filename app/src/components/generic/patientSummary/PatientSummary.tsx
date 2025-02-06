@@ -1,4 +1,3 @@
-import React from 'react';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { SummaryList } from 'nhsuk-react-components';
