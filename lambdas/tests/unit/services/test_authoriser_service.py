@@ -90,10 +90,12 @@ def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
     mock_auth_service: AuthoriserService,
 ):
     expected = True
+    mock_auth_service.allowed_nhs_numbers = ["900000001"]
     actual = mock_auth_service.deny_access_policy(
-        test_path, RepositoryRole.GP_CLINICAL.value
+        test_path, RepositoryRole.GP_CLINICAL.value, "900000001"
     )
-    assert expected == actual
+    assert actual == expected
+    mock_auth_service.allowed_nhs_numbers = []
 
 
 def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
@@ -101,7 +103,7 @@ def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
 ):
     expected = False
     actual = mock_auth_service.deny_access_policy(
-        "/SearchPatient", RepositoryRole.GP_CLINICAL.value
+        "/SearchPatient", RepositoryRole.GP_CLINICAL.value, "122222222"
     )
     assert expected == actual
 
@@ -124,7 +126,10 @@ def test_deny_access_policy_returns_false_for_unrecognised_path(
 ):
     expected = False
 
-    actual = mock_auth_service.deny_access_policy("/test", RepositoryRole.PCSE.value)
+    actual = mock_auth_service.deny_access_policy(
+        "/test",
+        RepositoryRole.PCSE.value,
+    )
 
     assert expected == actual
 

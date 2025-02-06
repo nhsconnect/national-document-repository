@@ -20,7 +20,7 @@ class AuthoriserService:
         self.allowed_nhs_numbers = []
 
     def auth_request(
-        self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: None
+        self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: str = None
     ):
         try:
             decoded_token = token_service.get_public_key_and_decode_auth_token(
@@ -51,8 +51,7 @@ class AuthoriserService:
         except (KeyError, IndexError) as e:
             raise AuthorisationException(e)
 
-    @staticmethod
-    def deny_access_policy(self, path, user_role, nhs_number: None):
+    def deny_access_policy(self, path, user_role, nhs_number: str = None):
         logger.info(f"Path: {path}")
         deny_access_to_patient = (
             nhs_number not in self.allowed_nhs_numbers if nhs_number else False
@@ -60,13 +59,13 @@ class AuthoriserService:
         deny_access_to_clinical_role = user_role == RepositoryRole.GP_CLINICAL.value
         match path:
             case "/DocumentDelete":
-                deny_resource = deny_access_to_patient and deny_access_to_clinical_role
+                deny_resource = deny_access_to_patient or deny_access_to_clinical_role
 
             case "/DocumentManifest":
-                deny_resource = deny_access_to_patient and deny_access_to_clinical_role
+                deny_resource = deny_access_to_patient or deny_access_to_clinical_role
 
             case "/DocumentReference":
-                deny_resource = deny_access_to_patient and deny_access_to_clinical_role
+                deny_resource = deny_access_to_patient or deny_access_to_clinical_role
 
             case "/SearchPatient":
                 deny_resource = False
