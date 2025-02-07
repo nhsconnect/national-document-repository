@@ -35,6 +35,7 @@ describe('[POST] updateDocumentState', () => {
             uploadingState: true,
             baseUrl: '/test',
             baseHeaders: { 'Content-Type': 'application/json', test: 'test' },
+            nhsNumber: '9000000009',
         };
 
         const error = AxiosError;

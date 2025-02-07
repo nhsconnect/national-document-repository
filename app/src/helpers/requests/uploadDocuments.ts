@@ -46,6 +46,7 @@ export type UpdateStateArgs = {
     uploadingState: boolean;
     baseUrl: string;
     baseHeaders: AuthHeaders;
+    nhsNumber: string;
 };
 
 type VirusScanArgs = {
@@ -120,6 +121,9 @@ export const uploadConfirmation = async ({
         await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
             headers: {
                 ...baseHeaders,
+            },
+            params: {
+                patientId: nhsNumber,
             },
         });
         return DOCUMENT_UPLOAD_STATE.SUCCEEDED;
@@ -219,6 +223,7 @@ export const updateDocumentState = async ({
     uploadingState,
     baseUrl,
     baseHeaders,
+    nhsNumber,
 }: UpdateStateArgs) => {
     const updateUploadStateUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
     const body = {
@@ -232,6 +237,9 @@ export const updateDocumentState = async ({
         return await axios.post(updateUploadStateUrl, body, {
             headers: {
                 ...baseHeaders,
+            },
+            params: {
+                patientId: nhsNumber,
             },
         });
     } catch (e) {}

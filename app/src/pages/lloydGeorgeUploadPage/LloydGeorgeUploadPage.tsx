@@ -62,6 +62,7 @@ function LloydGeorgeUploadPage() {
                 uploadingState: false,
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
             navigate(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED);
         };
@@ -156,6 +157,7 @@ function LloydGeorgeUploadPage() {
             uploadingState: false,
             baseUrl,
             baseHeaders,
+            nhsNumber,
         });
     }
 
@@ -223,6 +225,7 @@ function LloydGeorgeUploadPage() {
                 uploadingState: true,
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
         }, FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD);
     };
