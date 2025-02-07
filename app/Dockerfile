@@ -11,8 +11,7 @@ RUN npm run build
 
 # Host the App
 FROM nginx:latest
-RUN apt-get update
-RUN apt install -y nginx-extras
+RUN apt-get update && apt-get install -y nginx-extras
 ARG CONTAINER_PORT
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
