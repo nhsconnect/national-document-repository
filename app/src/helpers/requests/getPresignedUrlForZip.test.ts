@@ -137,7 +137,7 @@ describe('requestJobId', () => {
     const expectedJobId = 'jobId1234';
     const mockJobIdResponse = {
         statusCode: 200,
-        data: { jobId: expectedJobId },
+        data: { jobId: expectedJobId, nhsNumber: nhsNumber },
     };
 
     it('returns a jobId from backend', async () => {
@@ -162,7 +162,7 @@ describe('requestJobId', () => {
             }),
         );
 
-        expect(actual).toEqual(expectedJobId);
+        expect(actual[0]).toEqual(expectedJobId);
     });
 
     it('call backend with the correct params for docType and docReferences', async () => {
@@ -207,6 +207,7 @@ describe('pollForPresignedUrl', () => {
             baseHeaders,
             baseUrl,
             jobId: testJobId,
+            nhsNumber: nhsNumber,
         });
 
         expect(actual).toEqual(expectedData);
