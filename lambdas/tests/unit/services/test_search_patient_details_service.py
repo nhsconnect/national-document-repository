@@ -17,7 +17,7 @@ EMPTY_ODS_CODE = ""
 
 
 @pytest.fixture(scope="function")
-def mock_service(request, mocker):
+def mock_service(set_env, request, mocker):
     request_context.authorization = {"ndr_session_id": TEST_UUID}
     user_role, user_ods_code = request.param
     service = SearchPatientDetailsService(user_role, user_ods_code)
@@ -198,8 +198,8 @@ def test_update_auth_session_with_permitted_search_with_previous_search(
     mock_service.auth_service.allowed_nhs_numbers = [TEST_NHS_NUMBER]
     mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER)
 
-    assert mock_updated_permitted_search_fields.not_called()
-    assert mock_service.db_service.update_item.not_called()
+    mock_updated_permitted_search_fields.assert_not_called()
+    mock_service.db_service.update_item.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -211,12 +211,16 @@ def test_update_auth_session_with_permitted_search_with_new_search(
     mock_service, mock_updated_permitted_search_fields
 ):
     mock_service.auth_service.allowed_nhs_numbers = []
+    mock_updated_permitted_search_fields.return_value = {
+        "AllowedNHSNumbers": TEST_NHS_NUMBER
+    }
+
     mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER)
 
-    assert mock_updated_permitted_search_fields.called_once_with(
+    mock_updated_permitted_search_fields.assert_called_once_with(
         nhs_number=TEST_NHS_NUMBER, allowed_nhs_numbers=[]
     )
-    assert mock_service.db_service.update_item.called_once_with(
+    mock_service.db_service.update_item.assert_called_once_with(
         table_name=AUTH_SESSION_TABLE_NAME,
         key_pair={"NDRSessionId": TEST_UUID},
         updated_fields={"AllowedNHSNumbers": TEST_NHS_NUMBER},
@@ -233,13 +237,18 @@ def test_update_auth_session_with_permitted_search_with_new_search_existing_list
     mock_service, mock_updated_permitted_search_fields
 ):
     existing_nhs_number_search = "9000000000"
+    expected_list = f"{existing_nhs_number_search},{TEST_NHS_NUMBER}"
     mock_service.auth_service.allowed_nhs_numbers = [existing_nhs_number_search]
+    mock_updated_permitted_search_fields.return_value = {
+        "AllowedNHSNumbers": expected_list
+    }
+
     mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER)
 
-    assert mock_updated_permitted_search_fields.called_once_with(
+    mock_updated_permitted_search_fields.assert_called_once_with(
         nhs_number=TEST_NHS_NUMBER, allowed_nhs_numbers=[existing_nhs_number_search]
     )
-    assert mock_service.db_service.update_item.called_once_with(
+    mock_service.db_service.update_item.assert_called_once_with(
         table_name=AUTH_SESSION_TABLE_NAME,
         key_pair={"NDRSessionId": TEST_UUID},
         updated_fields={
