@@ -29,9 +29,9 @@ const UnexpectedResponseMessage =
     'Got unexpected response from server when trying to download record';
 
 const getPresignedUrlForZip = async (args: Args) => {
-    const { baseUrl, baseHeaders } = args;
+    const { baseUrl, baseHeaders, nhsNumber } = args;
 
-    const [jobId, nhsNumber] = await requestJobId(args);
+    const jobId = await requestJobId(args);
     let pendingCount = 0;
 
     while (pendingCount < 3) {
@@ -64,7 +64,7 @@ export const requestJobId = async ({
     baseHeaders,
     docType = DOCUMENT_TYPE.ALL,
     docReferences,
-}: Args): Promise<Array<string>> => {
+}: Args): Promise<string> => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 
     const response = await axios.post(gatewayUrl, '', {
@@ -79,7 +79,7 @@ export const requestJobId = async ({
         paramsSerializer: { indexes: null },
     });
 
-    return [response.data.jobId, response.data.nhsNumber];
+    return response.data.jobId;
 };
 
 export const pollForPresignedUrl = async ({
