@@ -1284,6 +1284,15 @@ def test_validate_patient_name_lenient_return_false(
                 given_name_match=["bob"],
             ),
         ),
+        (
+            "Bob Sam Marleys",
+            ["Bob", "Sam"],
+            "Dylan",
+            ValidationResult(
+                score=ValidationScore.PARTIAL_MATCH,
+                given_name_match=["bob", "sam"],
+            ),
+        ),
     ],
 )
 def test_validate_patient_name_lenient_return_true(
@@ -1306,11 +1315,11 @@ def test_validate_patient_name_lenient_return_true(
         ("Jane Smith-Moody", ValidationScore.FULL_MATCH, True),
         ("Jane Bob Smith Moody", ValidationScore.FULL_MATCH, False),
         ("Jane Bob Smith", ValidationScore.FULL_MATCH, False),
-        ("Bob Smith", ValidationScore.MIXED_FULL_MATCH, True),
+        ("Bob Smith", ValidationScore.PARTIAL_MATCH, True),
         ("Bob Jane", ValidationScore.FULL_MATCH, False),
         ("Alastor Moody", ValidationScore.NO_MATCH, False),
         ("Jones Bob", ValidationScore.MIXED_FULL_MATCH, True),
-        ("Jones Jane", ValidationScore.MIXED_FULL_MATCH, True),
+        ("Jones Jane", ValidationScore.PARTIAL_MATCH, True),
         ("Paul Anderson", ValidationScore.PARTIAL_MATCH, True),
         ("Jane Jane", ValidationScore.PARTIAL_MATCH, False),
         ("Jane Janet", ValidationScore.PARTIAL_MATCH, False),
@@ -1323,7 +1332,7 @@ def test_calculate_validation_score_for_lenient_check(
     name_2 = build_test_name(start="1995-01-01", end=None, given=["Jane"], family="Bob")
     name_3 = build_test_name(use="temp", start=None, end=None, given=["Jones"])
     name_4 = build_test_name(
-        use="usual", start="1995-01-01", end=None, given=["Paul Anderson"]
+        use="usual", start="1995-01-01", end=None, given=["Paul", "Anderson"]
     )
     name_5 = build_test_name(start="1980-01-01", end="1990-01-01", given=["JANE"])
 
