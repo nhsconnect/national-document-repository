@@ -30,6 +30,7 @@ class SearchPatientDetailsService:
         self.db_service = DynamoDBService()
         self.auth_service = AuthoriserService()
         self.session_table_name = os.getenv("AUTH_SESSION_TABLE_NAME")
+        self.permitted_field = "AllowedNHSNumbers"
 
     def handle_search_patient_request(self, nhs_number):
         try:
@@ -107,33 +108,41 @@ class SearchPatientDetailsService:
 
     def update_auth_session_with_permitted_search(self, nhs_number: str):
         ndr_session_id = request_context.authorization.get("ndr_session_id")
-
         self.auth_service.find_login_session(ndr_session_id)
         allowed_nhs_numbers = self.auth_service.allowed_nhs_numbers
 
         logger.info("Searching Auth session table for existing NHS number")
         if nhs_number in allowed_nhs_numbers:
+            logger.info(
+                "Permitted search, NHS number already exists in allowed NHS numbers"
+            )
             return
 
-        if allowed_nhs_numbers:
-            allowed_nhs_numbers.append(nhs_number)
-            allowed_nhs_numbers_str = ",".join(allowed_nhs_numbers)
-            updated_fields = {"AllowedNHSNumbers": allowed_nhs_numbers_str}
-            logger.info(
-                f"permitted nhs numbers found, appending: {allowed_nhs_numbers_str}"
-            )
-
-        else:
-            updated_fields = {"AllowedNHSNumbers": nhs_number}
-            logger.info(f"No permitted nhs numbers found, creating: {nhs_number}")
+        logger.info("Permitted search, NHS number will be added to allowed NHS numbers")
+        updated_fields = self.create_updated_permitted_search_fields(
+            nhs_number=nhs_number, allowed_nhs_numbers=allowed_nhs_numbers
+        )
 
         self.db_service.update_item(
             table_name=self.session_table_name,
             key_pair={"NDRSessionId": ndr_session_id},
             updated_fields=updated_fields,
             condition_expression=(
-                "attribute_not_exists(AllowedNHSNumbers)"
+                f"attribute_not_exists({self.permitted_field})"
                 if not allowed_nhs_numbers
                 else None
             ),
         )
+
+    def create_updated_permitted_search_fields(
+        self, nhs_number: str, allowed_nhs_numbers: list[str]
+    ) -> dict[str, str]:
+        if allowed_nhs_numbers:
+            allowed_nhs_numbers.append(nhs_number)
+            allowed_nhs_numbers_str = ",".join(allowed_nhs_numbers)
+            updated_fields = {self.permitted_field: allowed_nhs_numbers_str}
+
+        else:
+            updated_fields = {self.permitted_field: nhs_number}
+
+        return updated_fields

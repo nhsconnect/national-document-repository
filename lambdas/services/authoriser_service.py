@@ -77,7 +77,7 @@ class AuthoriserService:
 
         return bool(deny_resource)
 
-    def find_login_session(self, ndr_session_id):
+    def find_login_session(self, ndr_session_id: str):
         logger.info(
             f"Retrieving session for session ID ending in: f{self.redact_session_id}"
         )
