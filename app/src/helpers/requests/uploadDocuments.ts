@@ -203,6 +203,9 @@ const uploadDocuments = async ({
             headers: {
                 ...baseHeaders,
             },
+            params: {
+                patientId: nhsNumber,
+            },
         });
         return data;
     } catch (e) {
