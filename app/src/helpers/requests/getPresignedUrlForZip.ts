@@ -21,6 +21,7 @@ type GetRequestArgs = {
     jobId: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
+    nhsNumber: string;
 };
 
 const ThreePendingErrorMessage = 'Failed to initiate download';
@@ -30,7 +31,7 @@ const UnexpectedResponseMessage =
 const getPresignedUrlForZip = async (args: Args) => {
     const { baseUrl, baseHeaders } = args;
 
-    const jobId = await requestJobId(args);
+    const [jobId, nhsNumber] = await requestJobId(args);
     let pendingCount = 0;
 
     while (pendingCount < 3) {
@@ -39,6 +40,7 @@ const getPresignedUrlForZip = async (args: Args) => {
             baseUrl,
             baseHeaders,
             jobId,
+            nhsNumber,
         });
 
         switch (pollingResponse?.jobStatus) {
@@ -62,7 +64,7 @@ export const requestJobId = async ({
     baseHeaders,
     docType = DOCUMENT_TYPE.ALL,
     docReferences,
-}: Args): Promise<string> => {
+}: Args): Promise<Array<string>> => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 
     const response = await axios.post(gatewayUrl, '', {
@@ -77,13 +79,14 @@ export const requestJobId = async ({
         paramsSerializer: { indexes: null },
     });
 
-    return response.data.jobId;
+    return [response.data.jobId, response.data.nhsNumber];
 };
 
 export const pollForPresignedUrl = async ({
     jobId,
     baseUrl,
     baseHeaders,
+    nhsNumber,
 }: GetRequestArgs): Promise<PollingResponse> => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 
@@ -93,6 +96,7 @@ export const pollForPresignedUrl = async ({
         },
         params: {
             jobId,
+            patientId: nhsNumber,
         },
     });
 
