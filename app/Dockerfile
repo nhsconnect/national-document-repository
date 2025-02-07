@@ -11,7 +11,6 @@ RUN npm run build
 
 # Host the App
 FROM nginx:latest
-#RUN apt-get install nginx-module-headers-more
 ARG CONTAINER_PORT
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
