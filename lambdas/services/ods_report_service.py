@@ -14,8 +14,8 @@ class OdsReportService:
     def __init__(self):
         self.dynamo_service = DynamoDBService()
         self.table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
-        self.s3_service = S3Service()
-        self.reports_bucket = os.environ["STATISTICAL_REPORTS_BUCKET"]
+        # self.s3_service = S3Service()
+        # self.reports_bucket = os.environ["STATISTICAL_REPORTS_BUCKET"]
         self.output_file_suffix = "_ods_report.csv"
 
     def get_nhs_numbers_by_ods(self, ods_code):
@@ -89,11 +89,11 @@ class OdsReportService:
             )
             f.writelines(f"{nhs_number}\n" for nhs_number in nhs_numbers)
         logger.info("Uploading the csv report to S3 bucket...")
-        self.s3_service.upload_file(
-            s3_bucket_name=self.reports_bucket,
-            file_key=f"ods-reports/{ods_code}/{file_name}",
-            file_name=file_name,
-        )
+        # self.s3_service.upload_file(
+        #     s3_bucket_name=self.reports_bucket,
+        #     file_key=f"ods-reports/{ods_code}/{file_name}",
+        #     file_name=file_name,
+        # )
         print(f"Query completed. {len(nhs_numbers)} items written to {file_name}.")
 
 
