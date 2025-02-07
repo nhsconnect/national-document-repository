@@ -12,7 +12,7 @@ RUN npm run build
 # Host the App
 FROM nginx:latest
 RUN apt-get update
-RUN apt-get install libnginx-mod-http-headers-more-filter
+RUN apt install -y nginx-extras
 ARG CONTAINER_PORT
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
