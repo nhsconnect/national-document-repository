@@ -50,6 +50,8 @@ def lambda_handler(event, context):
     policy.region = region
     policy.stage = stage
     try:
+        if not auth_token:
+            raise AuthorisationException("Authorization header is required")
         patient_id = event.get("queryStringParameters", {}).get("patientId", None)
         logger.info("Validating resource req: %s, http: %s" % (path, _http_verb))
         is_allow_policy = authoriser_service.auth_request(
