@@ -60,6 +60,7 @@ function UploadDocumentsPage() {
                 uploadingState: true,
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
         };
 
@@ -161,6 +162,7 @@ function UploadDocumentsPage() {
                 baseUrl,
                 baseHeaders,
                 uploadingState: false,
+                nhsNumber,
             });
         }
     }, [
