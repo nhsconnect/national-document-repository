@@ -345,3 +345,32 @@ def test_list_all_objects_raises_client_error_if_unexpected_response(
 
     with pytest.raises(ClientError):
         mock_service.list_all_objects(MOCK_BUCKET)
+
+
+def test_file_size_return_int(mock_service, mock_client):
+    mock_response = {
+        "ResponseMetadata": {
+            "RequestId": "mock_req",
+            "HostId": "",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {},
+            "RetryAttempts": 0,
+        },
+        "ContentLength": "3191",
+        "ETag": '"eb2996dae99afd8308e4c97bdb6a4178"',
+        "ContentType": "application/pdf",
+        "Metadata": {},
+    }
+
+    mock_client.head_object.return_value = mock_response
+
+    expected = "3191"
+    actual = mock_service.get_file_size(
+        s3_bucket_name=MOCK_BUCKET, object_key=TEST_FILE_NAME
+    )
+    assert actual == expected
+
+    mock_client.head_object.assert_called_once_with(
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_NAME,
+    )

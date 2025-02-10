@@ -3,17 +3,23 @@ from copy import copy
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.nrl_sqs_message import NrlSqsMessage
 from models.pds_models import Patient
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (
+    APIM_API_URL,
     MOCK_LG_BUCKET,
     MOCK_STAGING_STORE_BUCKET,
+    NRL_SQS_URL,
     TEST_CURRENT_GP_ODS,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import (
@@ -21,9 +27,11 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_FILE_METADATA,
     TEST_SQS_10_MESSAGES_AS_LIST,
     TEST_SQS_MESSAGE,
+    TEST_SQS_MESSAGE_SINGLE_FILE,
     TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
     TEST_SQS_MESSAGES_AS_LIST,
     TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_SINGLE_FILE,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
     build_test_sqs_message,
     build_test_staging_metadata_from_patient_name,
@@ -54,7 +62,7 @@ from utils.lloyd_george_validator import LGInvalidFilesException
 
 @pytest.fixture
 def repo_under_test(set_env, mocker):
-    service = BulkUploadService()
+    service = BulkUploadService(strict_mode=True)
     mocker.patch.object(service, "dynamo_repository")
     mocker.patch.object(service, "sqs_repository")
     mocker.patch.object(service, "s3_repository")
@@ -112,9 +120,17 @@ def mock_pds_service_patient_restricted(mocker):
 
 
 @pytest.fixture
-def mock_pds_validation(mocker):
+def mock_pds_validation_lenient(mocker):
     yield mocker.patch(
-        "services.bulk_upload_service.validate_filename_with_patient_details"
+        "services.bulk_upload_service.validate_filename_with_patient_details_lenient",
+        return_value=("test string", True),
+    )
+
+
+@pytest.fixture
+def mock_pds_validation_strict(mocker):
+    yield mocker.patch(
+        "services.bulk_upload_service.validate_filename_with_patient_details_strict",
     )
 
 
@@ -142,7 +158,7 @@ def build_resolved_file_names_cache(
 def test_lambda_handler_process_each_sqs_message_one_by_one(
     set_env, mock_handle_sqs_message
 ):
-    service = BulkUploadService()
+    service = BulkUploadService(True)
 
     service.process_message_queue(TEST_SQS_MESSAGES_AS_LIST)
 
@@ -160,7 +176,7 @@ def test_lambda_handler_continue_process_next_message_after_handled_error(
         InvalidMessageException,
         None,
     ]
-    service = BulkUploadService()
+    service = BulkUploadService(True)
     service.process_message_queue(TEST_SQS_MESSAGES_AS_LIST)
 
     assert mock_handle_sqs_message.call_count == len(TEST_SQS_MESSAGES_AS_LIST)
@@ -177,7 +193,7 @@ def test_lambda_handler_handle_pds_too_many_requests_exception(
     expected_handled_messages = TEST_SQS_10_MESSAGES_AS_LIST[0:6]
     expected_unhandled_message = TEST_SQS_10_MESSAGES_AS_LIST[6:]
 
-    service = BulkUploadService()
+    service = BulkUploadService(True)
     with pytest.raises(BulkUploadException):
         service.process_message_queue(TEST_SQS_10_MESSAGES_AS_LIST)
 
@@ -197,10 +213,11 @@ def test_handle_sqs_message_happy_path(
     repo_under_test,
     mock_validate_files,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
+
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
@@ -216,8 +233,55 @@ def test_handle_sqs_message_happy_path(
     mock_create_lg_records_and_copy_files.assert_called_with(
         TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
     )
+    mock_pds_validation_strict.assert_called()
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+
+
+def test_handle_sqs_message_happy_path_single_file(
+    set_env,
+    mocker,
+    mock_uuid,
+    repo_under_test,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation_strict,
+    mock_ods_validation,
+):
+    TEST_STAGING_METADATA.retries = 0
+    mock_nrl_attachment = Attachment(
+        url=f"{APIM_API_URL}/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{TEST_DOCUMENT_REFERENCE.id}",
+    )
+    mock_nrl_message = NrlSqsMessage(
+        nhs_number=TEST_STAGING_METADATA.nhs_number,
+        action=NrlActionTypes.CREATE,
+        attachment=mock_nrl_attachment,
+    )
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_create_lg_records_and_copy_files.return_value = TEST_DOCUMENT_REFERENCE
+    mock_report_upload_complete = mocker.patch.object(
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
+    )
+    mocker.patch.object(repo_under_test.s3_repository, "check_virus_result")
+
+    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE_SINGLE_FILE)
+
+    mock_create_lg_records_and_copy_files.assert_called_with(
+        TEST_STAGING_METADATA_SINGLE_FILE, TEST_CURRENT_GP_ODS
+    )
+    mock_report_upload_complete.assert_called()
+    mock_remove_ingested_file_from_source_bucket.assert_called()
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_called_with(
+        queue_url=NRL_SQS_URL,
+        message=mock_nrl_message,
+        group_id=f"nrl_sqs_{mock_uuid}",
+    )
 
 
 def set_up_mocks_for_non_ascii_files(
@@ -279,7 +343,7 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
     mock_validate_files,
     patient_name_on_s3,
     patient_name_in_metadata_file,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_pds_service,
     mock_ods_validation,
 ):
@@ -305,7 +369,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_uuid,
     mock_validate_files,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
 ):
     TEST_STAGING_METADATA.retries = 0
 
@@ -330,6 +394,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA, UploadStatus.FAILED, str(mocked_error), ""
     )
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
@@ -339,7 +404,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
     mock_uuid,
     mock_validate_files,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -366,6 +431,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
         str(mocked_error),
         "",
     )
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_is_infected(
@@ -376,7 +442,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     mock_validate_files,
     mock_check_virus_result,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
@@ -403,6 +469,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     )
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_not_exist(
@@ -413,7 +480,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     mock_validate_files,
     mock_check_virus_result,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
@@ -432,6 +499,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
         "One or more of the files is not accessible from staging bucket",
         "Y12345",
     )
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_formally_deceased(
@@ -442,7 +510,7 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_forma
     mock_validate_files,
     mock_check_virus_result,
     mock_pds_service_patient_deceased_formal,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -451,7 +519,7 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_forma
     mock_remove_ingested_file_from_source_bucket = (
         repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
     )
-    mock_pds_validation.return_value = False
+    mock_pds_validation_strict.return_value = False
     mock_put_staging_metadata_back_to_queue = (
         repo_under_test.sqs_repository.put_staging_metadata_back_to_queue
     )
@@ -479,13 +547,13 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_infor
     mock_validate_files,
     mock_check_virus_result,
     mock_pds_service_patient_deceased_informal,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
-    mock_pds_validation.return_value = True
+    mock_pds_validation_strict.return_value = True
     mock_remove_ingested_file_from_source_bucket = (
         repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
     )
@@ -516,13 +584,13 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_has_hist
     mock_validate_files,
     mock_check_virus_result,
     mock_pds_service_patient_restricted,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
-    mock_pds_validation.return_value = True
+    mock_pds_validation_strict.return_value = True
     mock_remove_ingested_file_from_source_bucket = (
         repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
     )
@@ -553,13 +621,13 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_infor
     mock_validate_files,
     mock_check_virus_result,
     mock_pds_service_patient_deceased_informal,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
-    mock_pds_validation.return_value = False
+    mock_pds_validation_strict.return_value = False
     mock_remove_ingested_file_from_source_bucket = (
         repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
     )
@@ -590,7 +658,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     mock_validate_files,
     mock_check_virus_result,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
@@ -617,6 +685,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     mock_report_upload_failure.assert_not_called()
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
@@ -627,7 +696,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     mock_check_virus_result,
     mock_validate_files,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
@@ -830,7 +899,7 @@ def test_raise_client_error_from_ssm_with_pds_service(
     repo_under_test,
     mock_validate_files,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
 ):
     mock_client_error = ClientError(
         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
@@ -847,7 +916,7 @@ def test_mismatch_ods_with_pds_service(
     mock_uuid,
     mock_validate_files,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
 ):
     mock_ods_validation.return_value = False
 
@@ -869,7 +938,7 @@ def test_create_lg_records_and_copy_files_client_error(
     mock_check_virus_result,
     mock_validate_files,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
@@ -905,7 +974,7 @@ def test_handle_sqs_message_happy_path_historical_name(
     repo_under_test,
     mock_validate_files,
     mock_pds_service,
-    mock_pds_validation,
+    mock_pds_validation_strict,
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
@@ -919,7 +988,7 @@ def test_handle_sqs_message_happy_path_historical_name(
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
     )
     mocker.patch.object(repo_under_test.s3_repository, "check_virus_result")
-    mock_pds_validation.return_value = True
+    mock_pds_validation_strict.return_value = True
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
@@ -934,6 +1003,43 @@ def test_handle_sqs_message_happy_path_historical_name(
         "Y12345",
     )
     mock_remove_ingested_file_from_source_bucket.assert_called()
+
+
+def test_handle_sqs_message_lenient_mode_happy_path(
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation_lenient,
+    mock_pds_validation_strict,
+    mock_ods_validation,
+):
+    TEST_STAGING_METADATA.retries = 0
+    service = BulkUploadService(strict_mode=False)
+    mocker.patch.object(service, "dynamo_repository")
+    mocker.patch.object(service, "sqs_repository")
+    mocker.patch.object(service, "s3_repository")
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_report_upload_complete = mocker.patch.object(
+        service.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        service.s3_repository, "remove_ingested_file_from_source_bucket"
+    )
+    mocker.patch.object(service.s3_repository, "check_virus_result")
+
+    service.handle_sqs_message(message=TEST_SQS_MESSAGE)
+    mock_create_lg_records_and_copy_files.assert_called_with(
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
+    )
+    mock_pds_validation_lenient.assert_called()
+    mock_pds_validation_strict.assert_not_called()
+    mock_report_upload_complete.assert_called()
+    mock_remove_ingested_file_from_source_bucket.assert_called()
+    service.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_concatenate_acceptance_reason(repo_under_test):

@@ -49,14 +49,14 @@ jobs:
           echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
           fetch-depth: '0'
 
       - name: Set up Python ${{ inputs.python_version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ inputs.python_version }}
 
@@ -64,22 +64,24 @@ jobs:
         run: make edge_env
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
           aws-region: 'us-east-1'
+          mask-aws-account-id: true
 
       - name: Create release package for Lambda ${{ inputs.lambda_aws_name }}
         run: |
           make lambda_name=${{ inputs.lambda_handler_name}} edge_zip
 
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
-        uses: appleboy/lambda-action@master
-        with:
-          aws_region: 'us-east-1'
-          function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
-          zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
+        run: |
+          aws lambda update-function-code \
+          --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
+          --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip \
+          --region 'us-east-1' \
+          --publish
 
       - name: Get CloudFront Distribution ID
         id: cloudfront

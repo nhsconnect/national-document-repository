@@ -10,6 +10,7 @@ describe('GP Workflow: View Lloyd George record', () => {
     const assertEmptyLloydGeorgeCard = () => {
         cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
         cy.getByTestId('pdf-card').should('include.text', 'No documents are available');
+        cy.getByTestId('pdf-card').contains('Control and F').should('not.exist');
     };
 
     const assertFailedLloydGeorgeLoad = () => {
@@ -41,7 +42,7 @@ describe('GP Workflow: View Lloyd George record', () => {
     const assertPatientInfo = () => {
         cy.getByTestId('patient-name').should(
             'have.text',
-            `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
+            `${searchPatientPayload.givenName}, ${searchPatientPayload.familyName}`,
         );
         cy.getByTestId('patient-nhs-number').should('have.text', `NHS number: 900 000 0009`);
         cy.getByTestId('patient-dob').should('have.text', `Date of birth: 01 January 1970`);
@@ -95,8 +96,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     assertPatientInfo();
                     cy.getByTestId('pdf-card')
                         .should('include.text', 'Lloyd George record')
-                        .should('include.text', 'Last updated: 09 October 2023 at 15:41:38')
-                        .should('include.text', '12 files | File size: 502 KB | File format: PDF');
+                        .should('include.text', 'Last updated: 09 October 2023 at 15:41:38');
                     cy.getByTestId('pdf-viewer').should('be.visible');
 
                     // Act - open full screen view

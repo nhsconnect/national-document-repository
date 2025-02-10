@@ -79,6 +79,9 @@ describe('LloydGeorgeDownloadStage', () => {
 
         const expectedTestId = 'download-file-header-' + mockPdf.numberOfFiles + '-files';
         expect(screen.getByTestId(expectedTestId)).toBeInTheDocument();
+        expect(screen.getByTestId('cancel-download-link')).toHaveTextContent(
+            'Cancel and return to patient record',
+        );
     });
 
     it('renders a progress bar', () => {
@@ -220,9 +223,9 @@ describe('LloydGeorgeDownloadStage', () => {
 
 const renderComponent = (history: MemoryHistory, propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
-        numberOfFiles: mockPdf.numberOfFiles,
         deleteAfterDownload: false,
         ...propsOverride,
+        numberOfFiles: mockPdf.numberOfFiles,
     };
 
     return render(

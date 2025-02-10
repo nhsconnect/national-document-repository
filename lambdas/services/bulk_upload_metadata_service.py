@@ -74,7 +74,9 @@ class BulkUploadMetadataService:
         logger.info("Parsing bulk upload metadata")
 
         patients = {}
-        with open(csv_file_path, mode="r") as csv_file_handler:
+        with open(
+            csv_file_path, mode="r", encoding="utf-8", errors="replace"
+        ) as csv_file_handler:
             csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
             for row in csv_reader:
                 file_metadata = MetadataFile.model_validate(row)

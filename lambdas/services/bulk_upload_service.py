@@ -4,10 +4,14 @@ import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
+from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.nhs_document_reference import NHSDocumentReference
+from models.nrl_sqs_message import NrlSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -30,7 +34,8 @@ from utils.lloyd_george_validator import (
     LGInvalidFilesException,
     allowed_to_ingest_ods_code,
     getting_patient_info_from_pds,
-    validate_filename_with_patient_details,
+    validate_filename_with_patient_details_lenient,
+    validate_filename_with_patient_details_strict,
     validate_lg_file_names,
 )
 from utils.request_context import request_context
@@ -44,14 +49,15 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadService:
-    def __init__(self):
+    def __init__(self, strict_mode):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
         self.s3_repository = BulkUploadS3Repository()
-
+        self.strict_mode = strict_mode
         self.pdf_content_type = "application/pdf"
         self.unhandled_messages = []
         self.file_path_cache = {}
+        self.nrl_queue_url = os.environ["NRL_SQS_URL"]
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -128,13 +134,27 @@ class BulkUploadService:
             patient_ods_code = (
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
-            is_name_validation_based_on_historic_name = (
-                validate_filename_with_patient_details(file_names, pds_patient_details)
-            )
+            if not self.strict_mode:
+                (
+                    name_validation_accepted_reason,
+                    is_name_validation_based_on_historic_name,
+                ) = validate_filename_with_patient_details_lenient(
+                    file_names, pds_patient_details
+                )
+                accepted_reason = self.concatenate_acceptance_reason(
+                    accepted_reason, name_validation_accepted_reason
+                )
+            else:
+                is_name_validation_based_on_historic_name = (
+                    validate_filename_with_patient_details_strict(
+                        file_names, pds_patient_details
+                    )
+                )
             if is_name_validation_based_on_historic_name:
                 accepted_reason = self.concatenate_acceptance_reason(
                     accepted_reason, "Patient matched on historical name"
                 )
+
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")
             patient_death_notification_status = (
@@ -231,7 +251,9 @@ class BulkUploadService:
         )
 
         try:
-            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
+            last_document_processed = self.create_lg_records_and_copy_files(
+                staging_metadata, patient_ods_code
+            )
             logger.info(
                 f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
                 {"Result": "Successful upload"},
@@ -268,6 +290,28 @@ class BulkUploadService:
             accepted_reason,
             patient_ods_code,
         )
+        if len(file_names) == 1:
+            document_api_endpoint = (
+                os.environ.get("APIM_API_URL", "")
+                + "/DocumentReference/"
+                + SnomedCodes.LLOYD_GEORGE.value.code
+                + "~"
+                + last_document_processed.id
+            )
+            doc_details = Attachment(
+                url=document_api_endpoint,
+                content_type="application/pdf",
+            )
+            nrl_sqs_message = NrlSqsMessage(
+                nhs_number=staging_metadata.nhs_number,
+                action=NrlActionTypes.CREATE,
+                attachment=doc_details,
+            )
+            self.sqs_repository.send_message_to_nrl_fifo(
+                queue_url=self.nrl_queue_url,
+                message=nrl_sqs_message,
+                group_id=f"nrl_sqs_{uuid.uuid4()}",
+            )
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
         sample_file_path = staging_metadata.files[0].file_path
@@ -313,7 +357,7 @@ class BulkUploadService:
         self, staging_metadata: StagingMetadata, current_gp_ods: str
     ):
         nhs_number = staging_metadata.nhs_number
-
+        document_reference = None
         for file_metadata in staging_metadata.files:
             document_reference = self.convert_to_document_reference(
                 file_metadata, nhs_number, current_gp_ods
@@ -327,6 +371,8 @@ class BulkUploadService:
             )
             document_reference.set_uploaded_to_true()
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
+        # returning last document ref until stitching as default is implemented
+        return document_reference
 
     def rollback_transaction(self):
         try:

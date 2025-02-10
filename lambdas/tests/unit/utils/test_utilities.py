@@ -5,6 +5,7 @@ from utils.exceptions import InvalidResourceIdException
 from utils.utilities import (
     camelize_dict,
     flatten,
+    format_cloudfront_url,
     get_file_key_from_s3_url,
     get_pds_service,
     redact_id_to_last_4_chars,
@@ -97,3 +98,20 @@ def test_flatten_reduce_one_level_of_nesting_given_a_nested_list():
     actual = flatten(nested_list)
 
     assert actual == expected
+
+
+def test_format_cloudfront_url_valid():
+    presign_url = "https://example.com/path/to/resource"
+    cloudfront_domain = "d12345.cloudfront.net"
+    expected_url = "https://d12345.cloudfront.net/path/to/resource"
+    assert format_cloudfront_url(presign_url, cloudfront_domain) == expected_url
+
+
+@pytest.mark.parametrize(
+    "presign_url",
+    ["https://example.com", "https:/example.com/path"],
+)
+def test_format_cloudfront_url_invalid(presign_url):
+    cloudfront_domain = "d12345.cloudfront.net"
+    with pytest.raises(ValueError, match="Invalid presigned URL format"):
+        format_cloudfront_url(presign_url, cloudfront_domain)

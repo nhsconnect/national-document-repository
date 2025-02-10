@@ -250,17 +250,17 @@ $hunit: '%';
 // Lloyd George
 .lloydgeorge {
     &_record-stage {
+        max-width: 960px;
+
+    &_links, a {
+        padding-right:  30px;
+    }
+
         &_flex {
-            display: flex;
-            flex-flow: row nowrap;
-            justify-content: space-between;
-            margin: 0 -15px;
 
             &-row {
-                margin: 0 15px;
 
                 &--menu {
-                    flex-basis: calc(70% - 17px);
                 }
 
                 &--upload {
@@ -273,28 +273,15 @@ $hunit: '%';
             p {
                 font-size: 1.2rem;
             }
-
-            p:first-child {
-                margin-bottom: 5px;
-                font-weight: 700;
-            }
-
-            p:nth-child(2) {
-                margin-bottom: 0;
-            }
         }
 
         &_menu {
             &-content {
                 padding: 24px;
 
-                ol {
-                    padding-left: 0;
-
-                    li {
-                        font-size: 1rem;
-                        list-style-type: none;
-                    }
+                a {
+                    display: inline-block;
+                    margin-bottom: 24px;
                 }
             }
         }
@@ -678,9 +665,16 @@ $hunit: '%';
     }
 
     &_item {
-        a,
-        a:hover {
+
+        a {
             color: $color_nhsuk-white;
+            text-decoration: underline;
+            text-decoration-color: $color_nhsuk-white;
+            text-underline-offset: 2px;
+        }
+
+        a:hover {
+            text-decoration: none;
         }
 
         a:visited {
@@ -690,7 +684,9 @@ $hunit: '%';
         &--desktop {
             margin: 0 2rem;
         }
+
     }
+
 }
 
 // Generic
@@ -791,6 +787,10 @@ $hunit: '%';
 .govuk-phase-banner {
     background: #fff;
     border: none;
+}
+
+.govuk-phase-banner__content__tag {
+    text-transform: none;
 }
 
 .govuk-warning-text__icon {

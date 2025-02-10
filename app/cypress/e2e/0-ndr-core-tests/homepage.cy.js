@@ -34,7 +34,7 @@ describe('Home Page', () => {
     });
 
     it('displays service banner', { tags: 'regression' }, () => {
-        cy.get('.govuk-phase-banner__content__tag').should('have.text', 'New Service');
+        cy.get('.govuk-phase-banner__content__tag').should('have.text', 'New service');
         cy.get('.govuk-phase-banner__text').should(
             'have.text',
             'Your feedback will help us to improve this service.',

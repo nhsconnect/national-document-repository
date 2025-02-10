@@ -1,7 +1,13 @@
-name: 'PRE PROD UI - Deploy and Version Main to Pre-Prod'
+name: 'PRE PROD UI - Deploy to Pre-Prod'
 
 on:
   workflow_dispatch:
+    inputs:
+      branch_or_tag:
+        description: "Which branch or tag do you want to deploy to pre-prod?"
+        required: true
+        type: string
+        default: main
 
 permissions:
   pull-requests: write
@@ -9,7 +15,6 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-
   react_testing_job:
     name: Run UI Unit Tests
     uses: ./.github/workflows/base-jest-test.yml
@@ -31,20 +36,22 @@ jobs:
       build_branch: main
 
   tag_and_release:
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
+    needs: ["react_testing_job", "cypress_test_job"]
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{steps.versioning.outputs.tag}}
-      new_tag: ${{steps.versioning.outputs.new_tag}}
+      version: ${{ steps.versioning.outputs.tag || github.event.inputs.branch_or_tag }}
     permissions: write-all
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout main
+      if: ${{ github.event.inputs.branch_or_tag == 'main' }}
+      uses: actions/checkout@v4
       with:
         ref: main
         fetch-depth: '0'
 
     - name: Bump version and push tag
+      if: ${{ github.event.inputs.branch_or_tag == 'main' }}
       id: versioning
       uses: anothrNick/github-tag-action@1.64.0
       env:
@@ -54,15 +61,14 @@ jobs:
     
     - name: View outputs
       run: |
-        echo Current tag: ${{steps.versioning.outputs.tag}} 
-        echo New tag: ${{steps.versioning.outputs.new_tag}}
+        echo Deploying branch or tagged version to pre-prod UI: ${{ steps.versioning.outputs.tag || github.event.inputs.branch_or_tag }}
 
   deploy_ui:
     name: Deploy UI
     needs: ["tag_and_release"]
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
-      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      build_branch: ${{ needs.tag_and_release.outputs.version }}
       environment: pre-prod
       sandbox: pre-prod
     secrets:

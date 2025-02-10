@@ -1,10 +1,16 @@
 import os
+import uuid
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.nrl_sqs_upload import NrlActionTypes
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.nrl_sqs_message import NrlSqsMessage
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
+from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import CleanFiles, NotDeleted
@@ -17,9 +23,11 @@ class UploadConfirmResultService:
     def __init__(self, nhs_number):
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
+        self.sqs_service = SQSService()
         self.s3_service = S3Service()
         self.nhs_number = nhs_number
         self.staging_bucket = os.environ["STAGING_STORE_BUCKET_NAME"]
+        self.nrl_queue_url = os.environ["NRL_SQS_URL"]
 
     def process_documents(self, documents: dict):
         lg_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
@@ -67,6 +75,14 @@ class UploadConfirmResultService:
                     lg_table_name,
                     SupportedDocumentTypes.LG.value,
                 )
+
+                if len(lg_document_references) == 1:
+                    logger.info("Sending message to NRL queue.")
+                    self.send_message_to_nrl_queue(lg_document_references[0])
+                else:
+                    logger.info(
+                        "Did not create NRL pointer, more than one document uploaded."
+                    )
 
         except ClientError as e:
             logger.error(f"Error with one of our services: {str(e)}")
@@ -161,3 +177,27 @@ class UploadConfirmResultService:
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultFilesNotClean
             )
+
+    def send_message_to_nrl_queue(self, document_reference):
+
+        document_api_endpoint = (
+            os.environ.get("APIM_API_URL")
+            + "/DocumentReference/"
+            + SnomedCodes.LLOYD_GEORGE.value.code
+            + "~"
+            + document_reference
+        )
+        doc_details = Attachment(
+            url=document_api_endpoint,
+        )
+        nrl_sqs_message = NrlSqsMessage(
+            nhs_number=self.nhs_number,
+            action=NrlActionTypes.CREATE,
+            attachment=doc_details,
+        )
+        self.sqs_service.send_message_fifo(
+            queue_url=self.nrl_queue_url,
+            message_body=nrl_sqs_message.model_dump_json(exclude_none=True),
+            group_id=f"nrl_sqs_{uuid.uuid4()}",
+        )
+        logger.info("Message sent to NRL queue.")

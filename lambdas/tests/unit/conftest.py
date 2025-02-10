@@ -6,6 +6,7 @@ from enum import Enum
 from unittest import mock
 
 import pytest
+from botocore.exceptions import ClientError
 from models.document_reference import DocumentReference
 from models.pds_models import Patient, PatientDetails
 from pydantic import ValidationError
@@ -27,10 +28,12 @@ MOCK_LG_BUCKET_ENV_NAME = "LLOYD_GEORGE_BUCKET_NAME"
 
 MOCK_ZIP_OUTPUT_BUCKET_ENV_NAME = "ZIPPED_STORE_BUCKET_NAME"
 MOCK_ZIP_TRACE_TABLE_ENV_NAME = "ZIPPED_STORE_DYNAMODB_NAME"
+MOCK_METADATA_NRL_SQS_URL_ENV_NAME = "NRL_SQS_URL"
 
 MOCK_LG_STAGING_STORE_BUCKET_ENV_NAME = "STAGING_STORE_BUCKET_NAME"
 MOCK_LG_METADATA_SQS_QUEUE_ENV_NAME = "METADATA_SQS_QUEUE_URL"
 MOCK_LG_INVALID_SQS_QUEUE_ENV_NAME = "INVALID_SQS_QUEUE_URL"
+MOCK_MNS_SQS_QUEUE_ENV_NAME = "MNS_SQS_QUEUE_URL"
 MOCK_LG_BULK_UPLOAD_DYNAMO_ENV_NAME = "BULK_UPLOAD_DYNAMODB_NAME"
 
 MOCK_AUTH_DYNAMODB_NAME = "AUTH_DYNAMODB_NAME"
@@ -76,6 +79,7 @@ TEST_DOCUMENT_LOCATION = f"s3://{MOCK_BUCKET}/{TEST_FILE_KEY}"
 TEST_CURRENT_GP_ODS = "Y12345"
 
 AUTH_STATE_TABLE_NAME = "test_state_table"
+NRL_SQS_URL = "https://test-queue.com"
 AUTH_SESSION_TABLE_NAME = "test_session_table"
 FAKE_URL = "https://fake-url.com"
 OIDC_CALLBACK_URL = FAKE_URL
@@ -107,6 +111,7 @@ MOCK_PRESIGNED_URL_ROLE_ARN_VALUE = "arn:aws:iam::test123"
 
 STITCH_METADATA_DYNAMODB_NAME_VALUE = "test_stitch_metadata"
 NRL_SQS_URL = "https://sqs.us-east-1.amazonaws.com/177715257436/MyQueue"
+APIM_API_URL = "https://apim.api.service.uk"
 
 
 @pytest.fixture
@@ -125,6 +130,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_LG_METADATA_SQS_QUEUE_ENV_NAME, MOCK_LG_METADATA_SQS_QUEUE)
     monkeypatch.setenv(MOCK_LG_INVALID_SQS_QUEUE_ENV_NAME, MOCK_LG_INVALID_SQS_QUEUE)
     monkeypatch.setenv(MOCK_AUTH_STATE_TABLE_NAME_ENV_NAME, AUTH_STATE_TABLE_NAME)
+    monkeypatch.setenv(MOCK_METADATA_NRL_SQS_URL_ENV_NAME, NRL_SQS_URL)
     monkeypatch.setenv(MOCK_AUTH_SESSION_TABLE_NAME_ENV_NAME, AUTH_SESSION_TABLE_NAME)
     monkeypatch.setenv(MOCK_OIDC_CALLBACK_URL_ENV_NAME, OIDC_CALLBACK_URL)
     monkeypatch.setenv(MOCK_OIDC_CLIENT_ID_ENV_NAME, OIDC_CLIENT_ID)
@@ -168,7 +174,10 @@ def set_env(monkeypatch):
     )
     monkeypatch.setenv("NRL_API_ENDPOINT", FAKE_URL)
     monkeypatch.setenv("NRL_END_USER_ODS_CODE", "test_nrl_user_ods_ssm_key")
+    monkeypatch.setenv("MNS_NOTIFICATION_QUEUE_URL", MOCK_MNS_SQS_QUEUE_ENV_NAME)
     monkeypatch.setenv("NRL_SQS_QUEUE_URL", NRL_SQS_URL)
+    monkeypatch.setenv("APIM_API_URL", APIM_API_URL)
+    monkeypatch.setenv("CLOUDFRONT_URL", "mock-cloudfront-url.com")
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
@@ -285,6 +294,11 @@ class MockError(Enum):
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
+
+
+MOCK_CLIENT_ERROR = ClientError(
+    {"Error": {"Code": 500, "Message": "Test error message"}}, "Query"
+)
 
 
 @pytest.fixture

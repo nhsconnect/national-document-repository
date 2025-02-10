@@ -123,6 +123,7 @@ const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
         created: moment().format(),
         virusScannerResult: 'Clean',
         ID: '1234qwer-241ewewr',
+        fileSize: 224,
         ...searchResultOverride,
     };
     return result;

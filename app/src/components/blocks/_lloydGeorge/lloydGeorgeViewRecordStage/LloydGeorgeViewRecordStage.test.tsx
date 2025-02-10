@@ -9,7 +9,6 @@ import useRole from '../../../../helpers/hooks/useRole';
 import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
@@ -20,7 +19,6 @@ import LloydGeorgeViewRecordStage, { Props } from './LloydGeorgeViewRecordStage'
 import { createMemoryHistory } from 'history';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import * as ReactRouter from 'react-router-dom';
-import { useRef } from 'react';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../../helpers/hooks/useRole');
@@ -62,11 +60,6 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.getByText(`Last updated: ${mockPdf.lastUpdated}`)).toBeInTheDocument();
-        expect(screen.getByText(`${mockPdf.numberOfFiles} files`)).toBeInTheDocument();
-        expect(
-            screen.getByText(`File size: ${formatFileSize(mockPdf.totalFileSizeInBytes)}`),
-        ).toBeInTheDocument();
-        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
 
         expect(
             screen.queryByText('No documents are available for this patient.'),
@@ -102,7 +95,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 
     it("renders 'full screen' mode correctly", async () => {
-        const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+        const patientName = `${mockPatientDetails.givenName}, ${mockPatientDetails.familyName}`;
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
 
         renderComponent();
