@@ -97,6 +97,34 @@ def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
     assert actual == expected
     mock_auth_service.allowed_nhs_numbers = []
 
+@pytest.mark.parametrize(
+    "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "Any"]
+)
+def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
+    test_path,
+    mock_auth_service: AuthoriserService,
+):
+    expected = True
+    mock_auth_service.allowed_nhs_numbers = ["900000002"]
+    actual = mock_auth_service.deny_access_policy(
+        test_path, RepositoryRole.GP_ADMIN.value, "900000001"
+    )
+    assert actual == expected
+    mock_auth_service.allowed_nhs_numbers = []
+
+def test_allow_access_policy_returns_false_for_nhs_number_not_in_allowed_on_search_path(
+    mock_auth_service: AuthoriserService,
+):
+    expected = False
+    mock_auth_service.allowed_nhs_numbers = ["900000002"]
+
+    actual = mock_auth_service.deny_access_policy(
+        "/SearchPatient", RepositoryRole.GP_ADMIN.value, "122222222"
+    )
+    assert expected == actual
+    mock_auth_service.allowed_nhs_numbers = []
+
+
 
 def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
     mock_auth_service: AuthoriserService,
