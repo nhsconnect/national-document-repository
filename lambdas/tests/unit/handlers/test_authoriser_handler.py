@@ -38,7 +38,12 @@ def test_valid_gp_admin_token_return_allow_policy(set_env, context, mocker):
     }
 
     response = lambda_handler(event=test_event, context=context)
-    mock_auth_service.assert_called_with("/SearchDocumentReferences", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER)
+    mock_auth_service.assert_called_with(
+        "/SearchDocumentReferences",
+        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY,
+        auth_token,
+        TEST_NHS_NUMBER,
+    )
     assert response["policyDocument"] == expected_allow_policy
 
 
@@ -66,7 +71,9 @@ def test_valid_pcse_token_return_allow_policy(set_env, mocker, context):
 
     response = lambda_handler(test_event, context=context)
 
-    mock_auth_service.assert_called_with("/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER)
+    mock_auth_service.assert_called_with(
+        "/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
+    )
     assert response["policyDocument"] == expected_allow_policy
 
 
@@ -93,7 +100,12 @@ def test_valid_gp_admin_token_return_deny_policy(set_env, context, mocker):
 
     response = lambda_handler(event=test_event, context=context)
 
-    mock_auth_service.assert_called_with("/SearchDocumentReferences", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER)
+    mock_auth_service.assert_called_with(
+        "/SearchDocumentReferences",
+        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY,
+        auth_token,
+        TEST_NHS_NUMBER,
+    )
     assert response["policyDocument"] == expected_allow_policy
 
 
@@ -121,7 +133,9 @@ def test_valid_pcse_token_return_deny_policy(set_env, mocker, context):
 
     response = lambda_handler(test_event, context=context)
 
-    mock_auth_service.assert_called_with("/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER)
+    mock_auth_service.assert_called_with(
+        "/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
+    )
     assert response["policyDocument"] == expected_allow_policy
 
 
@@ -141,7 +155,10 @@ def test_return_deny_all_policy_pcse_user_when_auth_exception(set_env, mocker, c
     response = lambda_handler(test_event, context=context)
 
     assert response["policyDocument"] == DENY_ALL_POLICY
-    mock_auth_service.assert_called_with("/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER)
+    mock_auth_service.assert_called_with(
+        "/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
+    )
+
 
 def test_return_deny_all_policy_user_when_auth_exception(set_env, mocker, context):
     mock_auth_service = mocker.patch(

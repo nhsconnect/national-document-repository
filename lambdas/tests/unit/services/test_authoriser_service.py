@@ -22,6 +22,7 @@ MOCK_CURRENT_SESSION = {
     "sid": "test_cis2_session_id",
     "Subject": "test_cis2_user_id",
     "TimeToExist": 12345678960,
+    "AllowedNHSNumbers": "12,34,12,534",
 }
 
 
@@ -41,6 +42,7 @@ def mock_dynamo_service(mocker):
                 "sid": "test_cis2_session_id",
                 "Subject": "test_cis2_user_id",
                 "TimeToExist": 12345678960,
+                "AllowedNHSNumbers": "12,34,12,534",
             }
         ],
     }
@@ -97,6 +99,7 @@ def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
     assert actual == expected
     mock_auth_service.allowed_nhs_numbers = []
 
+
 @pytest.mark.parametrize(
     "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "Any"]
 )
@@ -112,6 +115,7 @@ def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
     assert actual == expected
     mock_auth_service.allowed_nhs_numbers = []
 
+
 def test_allow_access_policy_returns_false_for_nhs_number_not_in_allowed_on_search_path(
     mock_auth_service: AuthoriserService,
 ):
@@ -123,7 +127,6 @@ def test_allow_access_policy_returns_false_for_nhs_number_not_in_allowed_on_sear
     )
     assert expected == actual
     mock_auth_service.allowed_nhs_numbers = []
-
 
 
 def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
@@ -166,6 +169,20 @@ def test_find_login_session(mock_dynamo_service, mock_auth_service: AuthoriserSe
     expected = MOCK_CURRENT_SESSION
     actual = mock_auth_service.find_login_session(MOCK_SESSION_ID)
 
+    assert mock_auth_service.allowed_nhs_numbers == ["12", "34", "12", "534"]
+    assert expected == actual
+    mock_auth_service.allowed_nhs_numbers = []
+
+
+def test_find_login_session_without_allowed_nhs_numbers(
+    mock_dynamo_service, mock_auth_service: AuthoriserService
+):
+    expected = MOCK_CURRENT_SESSION
+    MOCK_CURRENT_SESSION.pop("AllowedNHSNumbers")
+    mock_dynamo_service.return_value["Items"][0].pop("AllowedNHSNumbers")
+    actual = mock_auth_service.find_login_session(MOCK_SESSION_ID)
+
+    assert mock_auth_service.allowed_nhs_numbers == []
     assert expected == actual
 
 
