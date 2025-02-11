@@ -91,7 +91,9 @@ class AuthoriserService:
 
         try:
             current_session = query_response["Items"][0]
-            list_of_allowed_nhs_numbers = current_session.get("AllowedNHSNumbers", [])
+            list_of_allowed_nhs_numbers = current_session.get(
+                "AllowedNHSNumbers", False
+            )
             if list_of_allowed_nhs_numbers:
                 self.allowed_nhs_numbers = list_of_allowed_nhs_numbers.split(",")
             return current_session
