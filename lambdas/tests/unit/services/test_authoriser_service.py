@@ -85,7 +85,15 @@ def mock_jwt_decode(mocker):
 
 
 @pytest.mark.parametrize(
-    "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"]
+    "test_path",
+    [
+        "/DocumentManifest",
+        "/DocumentDelete",
+        "/DocumentReference",
+        "/UploadConfirm",
+        "/UploadState",
+        "/VirusScan",
+    ],
 )
 def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
     test_path,
@@ -141,7 +149,7 @@ def test_allow_access_policy_returns_false_for_nhs_number_not_in_allowed_on_sear
     actual = mock_auth_service.deny_access_policy(
         "/SearchPatient", RepositoryRole.GP_ADMIN.value, "122222222"
     )
-    assert expected == actual
+    assert actual == expected
     mock_auth_service.allowed_nhs_numbers = []
 
 
@@ -157,13 +165,32 @@ def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
 
 @pytest.mark.parametrize(
     "test_path",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "/SearchPatient"],
+    ["/DocumentManifest", "/DocumentDelete", "/SearchPatient"],
 )
 def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
     test_path,
     mock_auth_service: AuthoriserService,
 ):
     expected = False
+    actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.PCSE.value)
+    assert expected == actual
+
+
+@pytest.mark.parametrize(
+    "test_path",
+    [
+        "/UploadConfirm",
+        "/UploadState",
+        "/DocumentReference",
+        "/VirusScan",
+        "/LloydGeorgeStitch",
+    ],
+)
+def test_deny_access_policy_returns_true_for_pcse_on_paths(
+    test_path,
+    mock_auth_service: AuthoriserService,
+):
+    expected = True
     actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.PCSE.value)
     assert expected == actual
 
