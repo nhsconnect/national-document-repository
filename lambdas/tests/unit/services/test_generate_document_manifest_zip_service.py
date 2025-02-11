@@ -15,6 +15,7 @@ from ..conftest import (
     TEST_DOCUMENT_LOCATION,
     TEST_FILE_KEY,
     TEST_FILE_NAME,
+    TEST_NHS_NUMBER,
     TEST_UUID,
 )
 
@@ -26,6 +27,7 @@ TEST_DYNAMO_RESPONSE = {
         TEST_DOCUMENT_LOCATION: TEST_FILE_NAME,
         f"{TEST_DOCUMENT_LOCATION}2": f"{TEST_FILE_KEY}2",
     },
+    "NhsNumber": TEST_NHS_NUMBER,
     "JobStatus": TraceStatus.PENDING.value,
     "Created": TEST_TIME,
 }

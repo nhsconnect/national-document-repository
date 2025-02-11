@@ -20,7 +20,7 @@ class UpdateUploadStateService:
     def __init__(self):
         self.dynamo_service = DynamoDBService()
 
-    def handle_update_state(self, event_body: dict):
+    def handle_update_state(self, event_body: dict, nhs_number: str):
         try:
             upload_document_references = UploadDocumentReferences.model_validate(
                 event_body
@@ -31,6 +31,7 @@ class UpdateUploadStateService:
                     file.reference,
                     file.doc_type,
                     file.fields[str(Fields.UPLOADING.value)],
+                    nhs_number,
                 )
         except (KeyError, TypeError) as e:
             logger.error(
@@ -46,7 +47,11 @@ class UpdateUploadStateService:
             )
 
     def update_document(
-        self, doc_ref: str, doc_type: SupportedDocumentTypes, uploaded: bool
+        self,
+        doc_ref: str,
+        doc_type: SupportedDocumentTypes,
+        uploaded: bool,
+        nhs_number: str,
     ):
         updated_fields = self.format_update({Fields.UPLOADING.value: uploaded})
         table = doc_type.get_dynamodb_table_name()
@@ -55,11 +60,16 @@ class UpdateUploadStateService:
                 table_name=table,
                 key_pair={DocumentReferenceMetadataFields.ID.value: doc_ref},
                 updated_fields=updated_fields,
+                condition_expression=f"begins_with({DocumentReferenceMetadataFields.NHS_NUMBER.value}, :v_nhs_number)",
+                expression_attribute_values={":v_nhs_number": nhs_number},
             )
         except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code")
             logger.error(
                 f"{LambdaError.UpdateUploadStateClient.to_str()} :{str(e)}",
             )
+            if error_code == "ConditionalCheckFailedException":
+                raise UpdateUploadStateException(400, LambdaError.PatientIdMismatch)
             raise UpdateUploadStateException(500, LambdaError.UpdateUploadStateClient)
 
     def format_update(self, fields: dict) -> dict:

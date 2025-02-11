@@ -5,7 +5,12 @@ from handlers.generate_document_manifest_handler import (
     manifest_zip_handler,
     prepare_zip_trace_data,
 )
-from tests.unit.conftest import TEST_DOCUMENT_LOCATION, TEST_FILE_NAME, TEST_UUID
+from tests.unit.conftest import (
+    TEST_DOCUMENT_LOCATION,
+    TEST_FILE_NAME,
+    TEST_NHS_NUMBER,
+    TEST_UUID,
+)
 from utils.lambda_exceptions import GenerateManifestZipException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -35,6 +40,7 @@ VALID_NEW_IMAGE = {
             f"{TEST_DOCUMENT_LOCATION}2": {"S": f"{TEST_FILE_NAME}2"},
         }
     },
+    "NhsNumber": {"S": TEST_NHS_NUMBER},
     "Status": {"S": "Pending"},
     "ID": {"S": f"{TEST_UUID}"},
     "JobId": {"S": f"{TEST_UUID}"},
@@ -84,6 +90,7 @@ PROCESSES_VALID_IMAGE = {
         f"{TEST_DOCUMENT_LOCATION}1": f"{TEST_FILE_NAME}1",
         f"{TEST_DOCUMENT_LOCATION}2": f"{TEST_FILE_NAME}2",
     },
+    "NhsNumber": TEST_NHS_NUMBER,
     "Status": "Pending",
     "ID": TEST_UUID,
     "JobId": TEST_UUID,

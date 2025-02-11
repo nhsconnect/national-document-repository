@@ -35,6 +35,7 @@ describe('[POST] updateDocumentState', () => {
             uploadingState: true,
             baseUrl: '/test',
             baseHeaders: { 'Content-Type': 'application/json', test: 'test' },
+            nhsNumber: '9000000009',
         };
 
         const error = AxiosError;
@@ -69,6 +70,7 @@ describe('virusScanResult', () => {
         documentReference: 'mock_doc_id',
         baseUrl: '/test',
         baseHeaders: { 'Content-Type': 'application/json', test: 'test' },
+        nhsNumber: '9000000001',
     };
     const cleanResponse = { status: 200 };
     const uncleanResponse = { response: { status: 400 } };

@@ -13,6 +13,7 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_exceptions import CreateDocumentRefException, FeatureFlagsException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -22,6 +23,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__)))
 logger = LoggingService(__name__)
 
 
+@validate_patient_id
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[
@@ -51,14 +53,19 @@ def lambda_handler(event, context):
         raise FeatureFlagsException(500, LambdaError.FeatureFlagDisabled)
 
     logger.info("Starting document reference creation process")
-
-    nhs_number, doc_list = processing_event_details(event)
-    request_context.patient_nhs_no = nhs_number
+    nhs_number_query_string = event["queryStringParameters"]["patientId"]
+    nhs_number_body, doc_list = processing_event_details(event)
+    if nhs_number_body != nhs_number_query_string:
+        logger.warning(
+            "Received nhs number query string does not match event's body nhs number"
+        )
+        raise CreateDocumentRefException(400, LambdaError.PatientIdMismatch)
+    request_context.patient_nhs_no = nhs_number_query_string
 
     logger.info("Processed upload documents from request")
     docs_services = CreateDocumentReferenceService()
     url_references = docs_services.create_document_reference_request(
-        nhs_number, doc_list
+        nhs_number_query_string, doc_list
     )
 
     return ApiGatewayResponse(

@@ -21,6 +21,7 @@ jest.mock('../../../../helpers/requests/uploadDocuments');
 const mockUploadAndScan = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
+const nhsNumber = mockPatient.nhsNumber;
 
 describe('<LloydGeorgeUploadingStage />', () => {
     beforeEach(() => {
@@ -72,6 +73,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
 
@@ -104,6 +106,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
 
@@ -115,6 +118,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(10);
@@ -128,6 +132,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(70);
@@ -141,6 +146,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(20);
@@ -154,6 +160,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(100);
@@ -176,6 +183,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
 
@@ -204,6 +212,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
 
@@ -239,6 +248,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
 
@@ -262,6 +272,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+                    nhsNumber={nhsNumber}
                 />,
             );
 

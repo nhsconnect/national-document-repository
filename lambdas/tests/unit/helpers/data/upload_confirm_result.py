@@ -18,6 +18,7 @@ MOCK_VALID_LG_EVENT_BODY = {
 MOCK_VALID_LG_EVENT = {
     "httpMethod": "POST",
     "body": json.dumps(MOCK_VALID_LG_EVENT_BODY),
+    "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
 }
 
 MOCK_VALID_ARF_EVENT_BODY = {
@@ -27,6 +28,7 @@ MOCK_VALID_ARF_EVENT_BODY = {
 MOCK_VALID_ARF_EVENT = {
     "httpMethod": "POST",
     "body": json.dumps(MOCK_VALID_ARF_EVENT_BODY),
+    "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
 }
 
 MOCK_VALID_BOTH_DOC_TYPES_EVENT_BODY = {
@@ -36,6 +38,7 @@ MOCK_VALID_BOTH_DOC_TYPES_EVENT_BODY = {
 MOCK_VALID_BOTH_DOC_TYPES_EVENT = {
     "httpMethod": "POST",
     "body": json.dumps(MOCK_VALID_BOTH_DOC_TYPES_EVENT_BODY),
+    "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
 }
 
 MOCK_MISSING_NHS_NUMBER_BODY = {"documents": MOCK_ARF_DOCUMENTS}

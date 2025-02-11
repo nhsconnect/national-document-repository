@@ -21,6 +21,7 @@ type GetRequestArgs = {
     jobId: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
+    nhsNumber: string;
 };
 
 const ThreePendingErrorMessage = 'Failed to initiate download';
@@ -28,7 +29,7 @@ const UnexpectedResponseMessage =
     'Got unexpected response from server when trying to download record';
 
 const getPresignedUrlForZip = async (args: Args) => {
-    const { baseUrl, baseHeaders } = args;
+    const { baseUrl, baseHeaders, nhsNumber } = args;
 
     const jobId = await requestJobId(args);
     let pendingCount = 0;
@@ -39,6 +40,7 @@ const getPresignedUrlForZip = async (args: Args) => {
             baseUrl,
             baseHeaders,
             jobId,
+            nhsNumber,
         });
 
         switch (pollingResponse?.jobStatus) {
@@ -84,6 +86,7 @@ export const pollForPresignedUrl = async ({
     jobId,
     baseUrl,
     baseHeaders,
+    nhsNumber,
 }: GetRequestArgs): Promise<PollingResponse> => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 
@@ -93,6 +96,7 @@ export const pollForPresignedUrl = async ({
         },
         params: {
             jobId,
+            patientId: nhsNumber,
         },
     });
 
