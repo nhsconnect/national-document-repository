@@ -1,5 +1,6 @@
 import os
 
+from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from enums.trace_status import TraceStatus
@@ -11,6 +12,7 @@ from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import DocumentManifestJobServiceException
 from utils.utilities import flatten, get_file_key_from_s3_url
 
@@ -64,7 +66,7 @@ class DocumentManifestJobService:
             document.file_location: document.file_name for document in self.documents
         }
 
-        job_id = self.write_zip_trace(documents_to_download)
+        job_id = self.write_zip_trace(documents_to_download, nhs_number)
 
         return job_id
 
@@ -106,18 +108,23 @@ class DocumentManifestJobService:
     def write_zip_trace(
         self,
         documents_to_download: dict,
+        nhs_number: str,
     ) -> str:
         logger.info("Writing Document Manifest zip trace to db")
 
-        zip_trace = DocumentManifestZipTrace(FilesToDownload=documents_to_download)
+        zip_trace = DocumentManifestZipTrace(
+            files_to_download=documents_to_download, nhs_number=nhs_number
+        )
         self.dynamo_service.create_item(
             self.zip_trace_table, zip_trace.model_dump(by_alias=True)
         )
 
         return str(zip_trace.job_id)
 
-    def query_document_manifest_job(self, job_id: str) -> DocumentManifestJob:
-        zip_trace = self.query_zip_trace(job_id=job_id)
+    def query_document_manifest_job(
+        self, job_id: str, nhs_number: str
+    ) -> DocumentManifestJob:
+        zip_trace = self.query_zip_trace(job_id=job_id, nhs_number=nhs_number)
 
         match zip_trace.job_status:
             case TraceStatus.FAILED:
@@ -125,9 +132,9 @@ class DocumentManifestJobService:
                     500, LambdaError.ManifestFailure
                 )
             case TraceStatus.PENDING:
-                return DocumentManifestJob(jobStatus=TraceStatus.PENDING, url="")
+                return DocumentManifestJob(job_status=TraceStatus.PENDING, url="")
             case TraceStatus.PROCESSING:
-                return DocumentManifestJob(jobStatus=TraceStatus.PROCESSING, url="")
+                return DocumentManifestJob(job_status=TraceStatus.PROCESSING, url="")
             case TraceStatus.COMPLETED:
                 presigned_url = self.create_document_manifest_presigned_url(
                     zip_trace.zip_file_location
@@ -138,7 +145,7 @@ class DocumentManifestJobService:
                 )
 
                 return DocumentManifestJob(
-                    jobStatus=TraceStatus.COMPLETED, url=presigned_url
+                    job_status=TraceStatus.COMPLETED, url=presigned_url
                 )
 
     def create_document_manifest_presigned_url(self, zip_file_location: str):
@@ -156,13 +163,20 @@ class DocumentManifestJobService:
             file_key=file_key,
         )
 
-    def query_zip_trace(self, job_id: str) -> DocumentManifestZipTrace:
+    def query_zip_trace(self, job_id: str, nhs_number: str) -> DocumentManifestZipTrace:
+        filter_builder = DynamoQueryFilterBuilder()
+        nhs_number_filter_expression = filter_builder.add_condition(
+            attribute="NhsNumber",
+            attr_operator=AttributeOperator.EQUAL,
+            filter_value=nhs_number,
+        ).build()
         response = self.dynamo_service.query_table_by_index(
             table_name=self.zip_trace_table,
             index_name="JobIdIndex",
             search_key="JobId",
             search_condition=job_id,
             requested_fields=DocumentManifestZipTrace.get_field_names_alias_list(),
+            query_filter=nhs_number_filter_expression,
         )
 
         try:

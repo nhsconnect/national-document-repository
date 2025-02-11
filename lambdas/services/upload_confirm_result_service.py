@@ -59,7 +59,7 @@ class UploadConfirmResultService:
                     arf_document_references,
                     arf_bucket_name,
                     arf_table_name,
-                    SupportedDocumentTypes.ARF.value,
+                    SupportedDocumentTypes.ARF,
                 )
 
             if lg_document_references:
@@ -74,7 +74,7 @@ class UploadConfirmResultService:
                     lg_document_references,
                     lg_bucket_name,
                     lg_table_name,
-                    SupportedDocumentTypes.LG.value,
+                    SupportedDocumentTypes.LG,
                 )
 
                 if len(lg_document_references) == 1:

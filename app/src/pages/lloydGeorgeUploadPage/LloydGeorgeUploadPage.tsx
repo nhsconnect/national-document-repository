@@ -62,6 +62,7 @@ function LloydGeorgeUploadPage() {
                 uploadingState: false,
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
             navigate(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED);
         };
@@ -129,6 +130,7 @@ function LloydGeorgeUploadPage() {
     const uploadAndScanSingleLloydGeorgeDocument = async (
         document: UploadDocument,
         uploadSession: UploadSession,
+        nhsNumber: string,
     ) => {
         try {
             await uploadAndScanSingleDocument({
@@ -137,6 +139,7 @@ function LloydGeorgeUploadPage() {
                 setDocuments,
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
         } catch (e) {
             window.clearInterval(intervalTimer);
@@ -156,15 +159,17 @@ function LloydGeorgeUploadPage() {
             uploadingState: false,
             baseUrl,
             baseHeaders,
+            nhsNumber,
         });
     }
 
     const uploadAndScanAllDocuments = (
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
+        nhsNumber: string,
     ) => {
         uploadDocuments.forEach((document) => {
-            void uploadAndScanSingleLloydGeorgeDocument(document, uploadSession);
+            void uploadAndScanSingleLloydGeorgeDocument(document, uploadSession, nhsNumber);
         });
     };
 
@@ -182,7 +187,7 @@ function LloydGeorgeUploadPage() {
             const updateStateInterval = startIntervalTimer(uploadingDocuments);
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);
-            uploadAndScanAllDocuments(uploadingDocuments, uploadSession);
+            uploadAndScanAllDocuments(uploadingDocuments, uploadSession, nhsNumber);
             navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
         } catch (e) {
             const error = e as AxiosError;
@@ -223,6 +228,7 @@ function LloydGeorgeUploadPage() {
                 uploadingState: true,
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
         }, FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD);
     };
@@ -248,6 +254,7 @@ function LloydGeorgeUploadPage() {
                                 documents={documents}
                                 uploadSession={uploadSession}
                                 uploadAndScanDocuments={uploadAndScanAllDocuments}
+                                nhsNumber={nhsNumber}
                             />
                         }
                     />

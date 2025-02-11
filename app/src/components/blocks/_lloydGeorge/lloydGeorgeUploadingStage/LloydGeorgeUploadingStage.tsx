@@ -18,10 +18,17 @@ export type Props = {
     uploadAndScanDocuments: (
         documents: Array<UploadDocument>,
         uploadSession: UploadSession,
+        nhsNumber: string,
     ) => void;
+    nhsNumber: string;
 };
 
-function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocuments }: Props) {
+function LloydGeorgeUploadStage({
+    documents,
+    uploadSession,
+    uploadAndScanDocuments,
+    nhsNumber,
+}: Props) {
     const hasFailedUploads = documents.some(
         (d) =>
             !!d.attempts &&
@@ -48,7 +55,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                             return d.attempts === 1 && notInProgress;
                         });
                         if (uploadSession) {
-                            uploadAndScanDocuments(failedUploads, uploadSession);
+                            uploadAndScanDocuments(failedUploads, uploadSession, nhsNumber);
                         }
                     }}
                 />
@@ -116,6 +123,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                                                         uploadAndScanDocuments(
                                                             [document],
                                                             uploadSession,
+                                                            nhsNumber,
                                                         );
                                                     }
                                                 }}

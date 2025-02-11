@@ -46,12 +46,14 @@ export type UpdateStateArgs = {
     uploadingState: boolean;
     baseUrl: string;
     baseHeaders: AuthHeaders;
+    nhsNumber: string;
 };
 
 type VirusScanArgs = {
     documentReference: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
+    nhsNumber: string;
 };
 type UploadConfirmationArgs = {
     baseUrl: string;
@@ -74,13 +76,21 @@ export const virusScan = async (virusScanArgs: VirusScanArgs) => {
     throw new Error(`Virus scan api calls timed-out for ${VIRUS_SCAN_RETRY_LIMIT} attempts.`);
 };
 
-const requestVirusScan = async ({ documentReference, baseUrl, baseHeaders }: VirusScanArgs) => {
+const requestVirusScan = async ({
+    documentReference,
+    baseUrl,
+    baseHeaders,
+    nhsNumber,
+}: VirusScanArgs) => {
     const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
     const body = { documentReference };
     try {
         await axios.post(virusScanGatewayUrl, body, {
             headers: {
                 ...baseHeaders,
+            },
+            params: {
+                patientId: nhsNumber,
             },
         });
         return DOCUMENT_UPLOAD_STATE.CLEAN;
@@ -120,6 +130,9 @@ export const uploadConfirmation = async ({
         await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
             headers: {
                 ...baseHeaders,
+            },
+            params: {
+                patientId: nhsNumber,
             },
         });
         return DOCUMENT_UPLOAD_STATE.SUCCEEDED;
@@ -203,6 +216,9 @@ const uploadDocuments = async ({
             headers: {
                 ...baseHeaders,
             },
+            params: {
+                patientId: nhsNumber,
+            },
         });
         return data;
     } catch (e) {
@@ -216,6 +232,7 @@ export const updateDocumentState = async ({
     uploadingState,
     baseUrl,
     baseHeaders,
+    nhsNumber,
 }: UpdateStateArgs) => {
     const updateUploadStateUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
     const body = {
@@ -229,6 +246,9 @@ export const updateDocumentState = async ({
         return await axios.post(updateUploadStateUrl, body, {
             headers: {
                 ...baseHeaders,
+            },
+            params: {
+                patientId: nhsNumber,
             },
         });
     } catch (e) {}
