@@ -92,7 +92,6 @@ def mock_jwt_decode(mocker):
         "/DocumentReference",
         "/UploadConfirm",
         "/UploadState",
-        "/DocumentReference",
         "/VirusScan",
     ],
 )
