@@ -53,10 +53,13 @@ class AuthoriserService:
 
     def deny_access_policy(self, path, user_role, nhs_number: str = None):
         logger.info(f"Path: {path}")
+
         deny_access_to_patient = (
             nhs_number not in self.allowed_nhs_numbers if nhs_number else False
         )
         deny_access_to_clinical_role = user_role == RepositoryRole.GP_CLINICAL.value
+        deny_access_to_pcse_role = user_role == RepositoryRole.PCSE.value
+
         match path:
             case "/DocumentDelete":
                 deny_resource = deny_access_to_patient or deny_access_to_clinical_role
@@ -65,7 +68,35 @@ class AuthoriserService:
                 deny_resource = deny_access_to_patient or deny_access_to_clinical_role
 
             case "/DocumentReference":
-                deny_resource = deny_access_to_patient or deny_access_to_clinical_role
+                deny_resource = (
+                    deny_access_to_patient
+                    or deny_access_to_clinical_role
+                    or deny_access_to_pcse_role
+                )
+
+            case "/LloydGeorgeStitch":
+                deny_resource = deny_access_to_patient or deny_access_to_pcse_role
+
+            case "/UploadConfirm":
+                deny_resource = (
+                    deny_access_to_patient
+                    or deny_access_to_clinical_role
+                    or deny_access_to_pcse_role
+                )
+
+            case "/UploadState":
+                deny_resource = (
+                    deny_access_to_patient
+                    or deny_access_to_clinical_role
+                    or deny_access_to_pcse_role
+                )
+
+            case "/VirusScan":
+                deny_resource = (
+                    deny_access_to_patient
+                    or deny_access_to_clinical_role
+                    or deny_access_to_pcse_role
+                )
 
             case "/SearchPatient":
                 deny_resource = False
