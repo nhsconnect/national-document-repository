@@ -40,7 +40,11 @@ def mocked_context(mocker):
 
 
 def test_lambda_handler_valid_id_returns_200(
-    valid_id_event_with_auth_header, context, mocker, mocked_context
+    set_env,
+    valid_id_event_with_auth_header,
+    context,
+    mocker,
+    mocked_context,
 ):
     patient_details = """{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",
         "postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,
@@ -76,7 +80,7 @@ def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context):
 
 
 def test_lambda_handler_valid_id_not_in_pds_returns_404(
-    valid_id_event_with_auth_header, context, mocker, mocked_context
+    set_env, valid_id_event_with_auth_header, context, mocker, mocked_context
 ):
     mocker.patch(
         "handlers.search_patient_details_handler.SearchPatientDetailsService.handle_search_patient_request",
@@ -95,7 +99,7 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
 
 
 def test_lambda_handler_missing_id_in_query_params_returns_400(
-    missing_id_event, context
+    set_env, missing_id_event, context
 ):
     body = json.dumps(
         {
@@ -112,7 +116,7 @@ def test_lambda_handler_missing_id_in_query_params_returns_400(
 
 
 def test_lambda_handler_missing_auth_returns_400(
-    valid_id_event_with_auth_header, context, mocker
+    set_env, valid_id_event_with_auth_header, context, mocker
 ):
     mocked_context = mocker.MagicMock()
     mocked_context.authorization = {"selected_organisation": {"org_ods_code": ""}}

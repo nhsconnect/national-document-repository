@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from botocore.exceptions import ClientError
 from enums.document_retention import DocumentRetentionDays
 from enums.lambda_error import LambdaError
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
@@ -85,9 +86,9 @@ class DocumentDeletionService:
         for record in documents_in_stitch_table:
             record.deleted = True
             self.document_service.dynamo_service.update_item(
-                self.stitch_service.stitch_trace_table,
-                record.id,
-                record.model_dump(by_alias=True, include={"deleted"}),
+                table_name=self.stitch_service.stitch_trace_table,
+                key_pair={DocumentReferenceMetadataFields.ID.value: record.id},
+                updated_fields=record.model_dump(by_alias=True, include={"deleted"}),
             )
 
     def delete_specific_doc_type(

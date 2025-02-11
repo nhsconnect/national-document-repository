@@ -58,7 +58,7 @@ class MNSNotificationService:
             if reference["CurrentGpOds"] is not updated_ods_code:
                 self.dynamo_service.update_item(
                     table_name=self.table,
-                    key=reference["ID"],
+                    key_pair={"ID": reference["ID"]},
                     updated_fields={
                         DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: updated_ods_code,
                         DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
@@ -118,7 +118,7 @@ class MNSNotificationService:
             logger.info("Updating patient document reference...")
             self.dynamo_service.update_item(
                 table_name=self.table,
-                key=document["ID"],
+                key_pair={"ID": document["ID"]},
                 updated_fields={
                     DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: code,
                     DocumentReferenceMetadataFields.LAST_UPDATED.value: int(

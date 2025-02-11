@@ -145,9 +145,9 @@ class VirusScanService:
         logger.info("Updating dynamo db table")
 
         self.dynamo_service.update_item(
-            table_name,
-            key,
-            {"VirusScannerResult": scan_result},
+            table_name=table_name,
+            key_pair={"ID": key},
+            updated_fields={"VirusScannerResult": scan_result},
         )
 
     def get_dynamo_info(self, file_ref: str):

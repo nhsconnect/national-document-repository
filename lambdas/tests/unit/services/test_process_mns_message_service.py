@@ -104,7 +104,7 @@ def test_update_patient_details(mns_service):
     calls = [
         call(
             table_name=mns_service.table,
-            key="3d8683b9-1665-40d2-8499-6e8302d507ff",
+            key_pair={"ID": "3d8683b9-1665-40d2-8499-6e8302d507ff"},
             updated_fields={
                 DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: PatientOdsInactiveStatus.DECEASED,
                 DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
@@ -114,7 +114,7 @@ def test_update_patient_details(mns_service):
         ),
         call(
             table_name=mns_service.table,
-            key="4d8683b9-1665-40d2-8499-6e8302d507ff",
+            key_pair={"ID": "4d8683b9-1665-40d2-8499-6e8302d507ff"},
             updated_fields={
                 DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: PatientOdsInactiveStatus.DECEASED,
                 DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
@@ -124,7 +124,7 @@ def test_update_patient_details(mns_service):
         ),
         call(
             table_name=mns_service.table,
-            key="5d8683b9-1665-40d2-8499-6e8302d507ff",
+            key_pair={"ID": "5d8683b9-1665-40d2-8499-6e8302d507ff"},
             updated_fields={
                 DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: PatientOdsInactiveStatus.DECEASED,
                 DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
@@ -168,7 +168,7 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
     calls = [
         call(
             table_name=mns_service.table,
-            key="3d8683b9-1665-40d2-8499-6e8302d507ff",
+            key_pair={"ID": "3d8683b9-1665-40d2-8499-6e8302d507ff"},
             updated_fields={
                 DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: other_gp_ods,
                 DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
@@ -178,7 +178,7 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
         ),
         call(
             table_name=mns_service.table,
-            key="4d8683b9-1665-40d2-8499-6e8302d507ff",
+            key_pair={"ID": "4d8683b9-1665-40d2-8499-6e8302d507ff"},
             updated_fields={
                 DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: other_gp_ods,
                 DocumentReferenceMetadataFields.LAST_UPDATED.value: int(
@@ -188,7 +188,7 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
         ),
         call(
             table_name=mns_service.table,
-            key="5d8683b9-1665-40d2-8499-6e8302d507ff",
+            key_pair={"ID": "5d8683b9-1665-40d2-8499-6e8302d507ff"},
             updated_fields={
                 DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: other_gp_ods,
                 DocumentReferenceMetadataFields.LAST_UPDATED.value: int(

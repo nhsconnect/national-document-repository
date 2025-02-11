@@ -371,8 +371,8 @@ def test_update_dynamo_table(mocker, virus_scanner_service):
     virus_scanner_service.update_dynamo_table(MOCK_LG_FILE_REF, VirusScanResult.CLEAN)
 
     virus_scanner_service.dynamo_service.update_item.assert_called_once_with(
-        MOCK_LG_TABLE_NAME,
-        "test-id",
-        {"VirusScannerResult": VirusScanResult.CLEAN},
+        table_name=MOCK_LG_TABLE_NAME,
+        key_pair={"ID": "test-id"},
+        updated_fields={"VirusScannerResult": VirusScanResult.CLEAN},
     )
     mock_get_dynamo_info.assert_called_once()

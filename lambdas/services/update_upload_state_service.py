@@ -53,7 +53,7 @@ class UpdateUploadStateService:
         try:
             self.dynamo_service.update_item(
                 table_name=table,
-                key=doc_ref,
+                key_pair={DocumentReferenceMetadataFields.ID.value: doc_ref},
                 updated_fields=updated_fields,
             )
         except ClientError as e:

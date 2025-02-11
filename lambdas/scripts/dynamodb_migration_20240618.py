@@ -75,7 +75,7 @@ class BatchUpdate:
         }
         self.dynamo_service.update_item(
             table_name=self.table_name,
-            key=doc_ref_id,
+            key_pair={DocumentReferenceMetadataFields.ID.value: doc_ref_id},
             updated_fields=updated_fields,
         )
 
