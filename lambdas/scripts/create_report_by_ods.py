@@ -8,5 +8,3 @@ if __name__ == "__main__":
     print("Starting process for ods code: %s", ods_code)
     service = OdsReportService()
     service.get_nhs_numbers_by_ods(ods_code)
-
-
