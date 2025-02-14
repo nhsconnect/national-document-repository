@@ -61,6 +61,18 @@ function RecordCard({
                         data-testid="pdf-card"
                         className="lloydgeorge_record-stage_pdf-content"
                     >
+                        {cloudFrontUrl && !userIsGpClinical && (
+                            <button
+                                className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
+                                data-testid="full-screen-btn"
+                                onClick={() => {
+                                    fullScreenHandler(true);
+                                    resetDocStage();
+                                }}
+                            >
+                                View in full screen
+                            </button>
+                        )}
                         <Card.Heading
                             className="lloydgeorge_record-stage_pdf-content-label"
                             headingLevel="h2"
@@ -74,19 +86,6 @@ function RecordCard({
                             setStage={setStage}
                             showMenu={showMenu}
                         />
-
-                        {cloudFrontUrl && !userIsGpClinical && (
-                            <button
-                                className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
-                                data-testid="full-screen-btn"
-                                onClick={() => {
-                                    fullScreenHandler(true);
-                                    resetDocStage();
-                                }}
-                            >
-                                View in full screen
-                            </button>
-                        )}
                     </Card.Content>
                     <div>{children}</div>
                 </Card>
