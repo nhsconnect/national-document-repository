@@ -303,9 +303,13 @@ def test_update_dynamo_table(patched_service):
     )
 
     patched_service.dynamo_service.update_item.assert_called_with(
-        MOCK_ARF_TABLE_NAME,
-        TEST_FILE_KEY,
-        {"Uploaded": True, "Uploading": False, "FileLocation": file_location},
+        table_name=MOCK_ARF_TABLE_NAME,
+        key_pair={"ID": TEST_FILE_KEY},
+        updated_fields={
+            "Uploaded": True,
+            "Uploading": False,
+            "FileLocation": file_location,
+        },
     )
 
 

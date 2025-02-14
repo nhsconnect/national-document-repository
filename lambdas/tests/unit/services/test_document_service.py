@@ -204,7 +204,9 @@ def test_delete_documents_soft_delete(
     )
 
     mock_dynamo_service.update_item.assert_called_once_with(
-        MOCK_TABLE_NAME, test_doc_ref.id, updated_fields=test_update_fields
+        table_name=MOCK_TABLE_NAME,
+        key_pair={"ID": test_doc_ref.id},
+        updated_fields=test_update_fields,
     )
 
 
@@ -227,7 +229,9 @@ def test_delete_documents_death_delete(
     )
 
     mock_dynamo_service.update_item.assert_called_once_with(
-        MOCK_TABLE_NAME, test_doc_ref.id, updated_fields=test_update_fields
+        table_name=MOCK_TABLE_NAME,
+        key_pair={"ID": test_doc_ref.id},
+        updated_fields=test_update_fields,
     )
 
 
@@ -239,7 +243,9 @@ def test_update_documents(mock_service, mock_dynamo_service):
     }
 
     update_item_call = call(
-        MOCK_TABLE_NAME, test_doc_ref.id, updated_fields=test_update_fields
+        table_name=MOCK_TABLE_NAME,
+        key_pair={"ID": test_doc_ref.id},
+        updated_fields=test_update_fields,
     )
 
     mock_service.update_documents(

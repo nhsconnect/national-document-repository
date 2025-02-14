@@ -1,6 +1,7 @@
 from unittest.mock import call
 
 import pytest
+from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from enums.trace_status import TraceStatus
@@ -21,6 +22,7 @@ from tests.unit.helpers.data.test_documents import (
     create_test_lloyd_george_doc_store_refs,
 )
 from utils.common_query_filters import UploadCompleted
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import DocumentManifestJobServiceException
 
 TEST_DOC_STORE_DOCUMENT_REFS = create_test_doc_store_refs()
@@ -48,7 +50,8 @@ TEST_ZIP_TRACE_DATA = {
     "JobId": TEST_UUID,
     "Created": "2024-01-01T12:00:00Z",
     "FilesToDownload": TEST_FILES_TO_DOWNLOAD,
-    "JobStatus": "Pending",
+    "JobStatus": TraceStatus.PENDING,
+    "NhsNumber": TEST_NHS_NUMBER,
     "ZipFileLocation": "",
 }
 
@@ -127,6 +130,17 @@ def mock_query_filter(mocker):
     yield query_filter.return_value
 
 
+@pytest.fixture
+def mock_filter_expression():
+    filter_builder = DynamoQueryFilterBuilder()
+    filter_expression = filter_builder.add_condition(
+        attribute="NhsNumber",
+        attr_operator=AttributeOperator.EQUAL,
+        filter_value=TEST_NHS_NUMBER,
+    ).build()
+    yield filter_expression
+
+
 def test_create_document_manifest_job_raises_exception(
     manifest_service, mock_document_service
 ):
@@ -180,7 +194,8 @@ def test_create_document_manifest_job_for_arf(
             TEST_DOC_STORE_DOCUMENT_REFS[2]
             .file_location: TEST_DOC_STORE_DOCUMENT_REFS[2]
             .file_name,
-        }
+        },
+        TEST_NHS_NUMBER,
     )
     assert response == expected
 
@@ -224,7 +239,8 @@ def test_create_document_manifest_job_for_lg(
             TEST_LLOYD_GEORGE_DOCUMENT_REFS[2]
             .file_location: TEST_LLOYD_GEORGE_DOCUMENT_REFS[2]
             .file_name,
-        }
+        },
+        TEST_NHS_NUMBER,
     )
     assert response == expected
 
@@ -290,7 +306,8 @@ def test_create_document_manifest_job_for_both(
             TEST_DOC_STORE_DOCUMENT_REFS[2]
             .file_location: TEST_DOC_STORE_DOCUMENT_REFS[2]
             .file_name,
-        }
+        },
+        TEST_NHS_NUMBER,
     )
     assert response == expected
 
@@ -338,7 +355,8 @@ def test_create_document_manifest_job_for_arf_with_doc_references(
             TEST_DOC_STORE_DOCUMENT_REFS[2]
             .file_location: TEST_DOC_STORE_DOCUMENT_REFS[2]
             .file_name,
-        }
+        },
+        TEST_NHS_NUMBER,
     )
     assert response == expected
 
@@ -388,7 +406,8 @@ def test_create_document_manifest_job_for_lg_with_doc_references(
             TEST_LLOYD_GEORGE_DOCUMENT_REFS[2]
             .file_location: TEST_LLOYD_GEORGE_DOCUMENT_REFS[2]
             .file_name,
-        }
+        },
+        TEST_NHS_NUMBER,
     )
     assert response == expected
 
@@ -460,7 +479,8 @@ def test_create_document_manifest_job_for_both_with_doc_references(
             TEST_DOC_STORE_DOCUMENT_REFS[2]
             .file_location: TEST_DOC_STORE_DOCUMENT_REFS[2]
             .file_name,
-        }
+        },
+        TEST_NHS_NUMBER,
     )
     assert response == expected
 
@@ -529,7 +549,7 @@ def test_handle_duplicate_document_filenames_duplicates(manifest_service):
 def test_write_zip_trace_valid(manifest_service, mock_dynamo_service, mock_uuid):
     expected = TEST_UUID
 
-    actual = manifest_service.write_zip_trace(TEST_FILES_TO_DOWNLOAD)
+    actual = manifest_service.write_zip_trace(TEST_FILES_TO_DOWNLOAD, TEST_NHS_NUMBER)
 
     mock_dynamo_service.create_item.assert_called_with(
         MOCK_ZIP_TRACE_TABLE,
@@ -546,9 +566,9 @@ def test_query_document_manifest_job_status_pending(
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
     mock_query_zip_trace.return_value = test_zip_trace
 
-    expected = DocumentManifestJob(jobStatus="Pending", url="")
+    expected = DocumentManifestJob(job_status=TraceStatus.PENDING, url="")
 
-    actual = manifest_service.query_document_manifest_job(TEST_UUID)
+    actual = manifest_service.query_document_manifest_job(TEST_UUID, TEST_NHS_NUMBER)
 
     assert actual == expected
 
@@ -560,9 +580,9 @@ def test_query_document_manifest_job_status_processing(
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
     mock_query_zip_trace.return_value = test_zip_trace
 
-    expected = DocumentManifestJob(jobStatus="Processing", url="")
+    expected = DocumentManifestJob(job_status=TraceStatus.PROCESSING, url="")
 
-    actual = manifest_service.query_document_manifest_job(TEST_UUID)
+    actual = manifest_service.query_document_manifest_job(TEST_UUID, TEST_NHS_NUMBER)
 
     assert actual == expected
 
@@ -581,9 +601,11 @@ def test_query_document_manifest_job_status_completed(
     mock_query_zip_trace.return_value = test_zip_trace
     mock_create_presigned_url.return_value = TEST_DOCUMENT_LOCATION
 
-    expected = DocumentManifestJob(jobStatus="Completed", url=TEST_DOCUMENT_LOCATION)
+    expected = DocumentManifestJob(
+        job_status=TraceStatus.COMPLETED, url=TEST_DOCUMENT_LOCATION
+    )
 
-    actual = manifest_service.query_document_manifest_job(TEST_UUID)
+    actual = manifest_service.query_document_manifest_job(TEST_UUID, TEST_NHS_NUMBER)
 
     assert actual == expected
 
@@ -597,7 +619,7 @@ def test_query_document_manifest_job_status_failed(
     mock_query_zip_trace.return_value = test_zip_trace
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
-        manifest_service.query_document_manifest_job(TEST_UUID)
+        manifest_service.query_document_manifest_job(TEST_UUID, TEST_NHS_NUMBER)
 
     assert e.value == DocumentManifestJobServiceException(
         500, LambdaError.ManifestFailure
@@ -643,14 +665,14 @@ def test_create_document_manifest_presigned_url_missing_manifest_raises_exceptio
 
 
 def test_query_zip_trace_returns_zip_trace_object(
-    manifest_service, mock_dynamo_service
+    manifest_service, mock_dynamo_service, mock_filter_expression
 ):
     mock_dynamo_service.query_table_by_index.return_value = {
         "Items": [TEST_ZIP_TRACE_DATA]
     }
     expected = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
-    actual = manifest_service.query_zip_trace(TEST_UUID)
+    actual = manifest_service.query_zip_trace(TEST_UUID, TEST_NHS_NUMBER)
 
     mock_dynamo_service.query_table_by_index.assert_called_once_with(
         table_name=MOCK_ZIP_TRACE_TABLE,
@@ -658,6 +680,7 @@ def test_query_zip_trace_returns_zip_trace_object(
         search_key="JobId",
         search_condition=TEST_UUID,
         requested_fields=DocumentManifestZipTrace.get_field_names_alias_list(),
+        query_filter=mock_filter_expression,
     )
     assert actual == expected
 
@@ -668,7 +691,7 @@ def test_query_zip_trace_empty_response_raises_exception(
     mock_dynamo_service.query_table_by_index.return_value = {"Items": []}
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
-        manifest_service.query_zip_trace(TEST_UUID)
+        manifest_service.query_zip_trace(TEST_UUID, TEST_NHS_NUMBER)
 
     assert e.value == DocumentManifestJobServiceException(
         404, LambdaError.ManifestMissingJob
@@ -681,7 +704,7 @@ def test_query_zip_trace_empty_response_object_raises_exception(
     mock_dynamo_service.query_table_by_index.return_value = {"Items": [{}]}
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
-        manifest_service.query_zip_trace(TEST_UUID)
+        manifest_service.query_zip_trace(TEST_UUID, TEST_NHS_NUMBER)
 
     assert e.value == DocumentManifestJobServiceException(
         404, LambdaError.ManifestMissingJob

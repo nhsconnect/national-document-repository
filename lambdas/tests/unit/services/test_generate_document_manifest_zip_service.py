@@ -15,6 +15,7 @@ from ..conftest import (
     TEST_DOCUMENT_LOCATION,
     TEST_FILE_KEY,
     TEST_FILE_NAME,
+    TEST_NHS_NUMBER,
     TEST_UUID,
 )
 
@@ -26,6 +27,7 @@ TEST_DYNAMO_RESPONSE = {
         TEST_DOCUMENT_LOCATION: TEST_FILE_NAME,
         f"{TEST_DOCUMENT_LOCATION}2": f"{TEST_FILE_KEY}2",
     },
+    "NhsNumber": TEST_NHS_NUMBER,
     "JobStatus": TraceStatus.PENDING.value,
     "Created": TEST_TIME,
 }
@@ -157,9 +159,11 @@ def test_update_dynamo(mock_service, mock_dynamo_service):
     mock_service.update_dynamo_with_fields({"job_status"})
 
     mock_dynamo_service.update_item.assert_called_once_with(
-        "test_zip_table",
-        mock_service.zip_trace_object.id,
-        mock_service.zip_trace_object.model_dump(by_alias=True, include={"job_status"}),
+        table_name="test_zip_table",
+        key_pair={"ID": mock_service.zip_trace_object.id},
+        updated_fields=mock_service.zip_trace_object.model_dump(
+            by_alias=True, include={"job_status"}
+        ),
     )
 
 

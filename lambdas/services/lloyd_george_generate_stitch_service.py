@@ -163,17 +163,21 @@ class LloydGeorgeStitchService:
         logger.info("Writing stitch trace to db")
         self.stitch_trace_object.job_status = TraceStatus.COMPLETED
         self.document_service.dynamo_service.update_item(
-            self.stitch_trace_table,
-            self.stitch_trace_object.id,
-            self.stitch_trace_object.model_dump(by_alias=True, exclude={"id"}),
+            table_name=self.stitch_trace_table,
+            key_pair={"ID": self.stitch_trace_object.id},
+            updated_fields=self.stitch_trace_object.model_dump(
+                by_alias=True, exclude={"id"}
+            ),
         )
 
     def update_trace_status(self, trace_status: TraceStatus):
         self.stitch_trace_object.job_status = trace_status
         self.document_service.dynamo_service.update_item(
-            self.stitch_trace_table,
-            self.stitch_trace_object.id,
-            self.stitch_trace_object.model_dump(by_alias=True, include={"job_status"}),
+            table_name=self.stitch_trace_table,
+            key_pair={"ID": self.stitch_trace_object.id},
+            updated_fields=self.stitch_trace_object.model_dump(
+                by_alias=True, include={"job_status"}
+            ),
         )
 
     def get_lloyd_george_record_for_patient(

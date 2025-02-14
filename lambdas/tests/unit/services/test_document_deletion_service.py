@@ -224,9 +224,9 @@ def test_delete_documents_references_in_stitch_table(mock_deletion_service):
     )
     expected_calls = [
         call(
-            mock_deletion_service.stitch_service.stitch_trace_table,
-            record.id,
-            {"deleted": True},
+            table_name=mock_deletion_service.stitch_service.stitch_trace_table,
+            key_pair={"ID": record.id},
+            updated_fields={"deleted": True},
         )
         for record in TEST_LG_DOC_STORE_REFERENCES
     ]

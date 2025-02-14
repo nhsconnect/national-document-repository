@@ -1,4 +1,5 @@
 from handlers.authoriser_handler import lambda_handler
+from tests.unit.conftest import SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, TEST_NHS_NUMBER
 from utils.exceptions import AuthorisationException
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:fake_arn:fake_api_endpoint/dev"
@@ -31,14 +32,19 @@ def test_valid_gp_admin_token_return_allow_policy(set_env, context, mocker):
     )
     auth_token = "valid_gp_admin_token"
     test_event = {
-        "authorizationToken": auth_token,
+        "headers": {"authorization": auth_token},
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences",
     }
 
     response = lambda_handler(event=test_event, context=context)
-
+    mock_auth_service.assert_called_with(
+        "/SearchDocumentReferences",
+        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY,
+        auth_token,
+        TEST_NHS_NUMBER,
+    )
     assert response["policyDocument"] == expected_allow_policy
-    mock_auth_service.assert_called_once()
 
 
 def test_valid_pcse_token_return_allow_policy(set_env, mocker, context):
@@ -52,9 +58,11 @@ def test_valid_pcse_token_return_allow_policy(set_env, mocker, context):
         ],
         "Version": "2012-10-17",
     }
+    auth_token = "valid_pcse_token"
 
     test_event = {
-        "authorizationToken": "valid_pcse_token",
+        "headers": {"authorization": auth_token},
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
     mock_auth_service = mocker.patch(
@@ -63,8 +71,10 @@ def test_valid_pcse_token_return_allow_policy(set_env, mocker, context):
 
     response = lambda_handler(test_event, context=context)
 
+    mock_auth_service.assert_called_with(
+        "/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
+    )
     assert response["policyDocument"] == expected_allow_policy
-    mock_auth_service.assert_called_once()
 
 
 def test_valid_gp_admin_token_return_deny_policy(set_env, context, mocker):
@@ -83,14 +93,20 @@ def test_valid_gp_admin_token_return_deny_policy(set_env, context, mocker):
     )
     auth_token = "valid_gp_admin_token"
     test_event = {
-        "authorizationToken": auth_token,
+        "headers": {"authorization": auth_token},
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences",
     }
 
     response = lambda_handler(event=test_event, context=context)
 
+    mock_auth_service.assert_called_with(
+        "/SearchDocumentReferences",
+        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY,
+        auth_token,
+        TEST_NHS_NUMBER,
+    )
     assert response["policyDocument"] == expected_allow_policy
-    mock_auth_service.assert_called_once()
 
 
 def test_valid_pcse_token_return_deny_policy(set_env, mocker, context):
@@ -104,9 +120,11 @@ def test_valid_pcse_token_return_deny_policy(set_env, mocker, context):
         ],
         "Version": "2012-10-17",
     }
+    auth_token = "valid_pcse_token"
 
     test_event = {
-        "authorizationToken": "valid_pcse_token",
+        "headers": {"authorization": auth_token},
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
     mock_auth_service = mocker.patch(
@@ -115,8 +133,10 @@ def test_valid_pcse_token_return_deny_policy(set_env, mocker, context):
 
     response = lambda_handler(test_event, context=context)
 
+    mock_auth_service.assert_called_with(
+        "/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
+    )
     assert response["policyDocument"] == expected_allow_policy
-    mock_auth_service.assert_called_once()
 
 
 def test_return_deny_all_policy_pcse_user_when_auth_exception(set_env, mocker, context):
@@ -124,13 +144,33 @@ def test_return_deny_all_policy_pcse_user_when_auth_exception(set_env, mocker, c
         "services.authoriser_service.AuthoriserService.auth_request",
         side_effect=AuthorisationException(),
     )
+    auth_token = "valid_pcse_token"
 
     test_event = {
-        "authorizationToken": "valid_pcse_token",
+        "headers": {"authorization": auth_token},
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
 
     response = lambda_handler(test_event, context=context)
 
     assert response["policyDocument"] == DENY_ALL_POLICY
-    mock_auth_service.assert_called_once()
+    mock_auth_service.assert_called_with(
+        "/SearchPatient", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
+    )
+
+
+def test_return_deny_all_policy_user_when_auth_exception(set_env, mocker, context):
+    mock_auth_service = mocker.patch(
+        "services.authoriser_service.AuthoriserService.auth_request",
+    )
+    auth_token = "Invalid_pcse_token"
+
+    test_event = {
+        "authorizationToken": auth_token,
+        "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
+    }
+    response = lambda_handler(test_event, context=context)
+
+    assert response["policyDocument"] == DENY_ALL_POLICY
+    mock_auth_service.assert_not_called()

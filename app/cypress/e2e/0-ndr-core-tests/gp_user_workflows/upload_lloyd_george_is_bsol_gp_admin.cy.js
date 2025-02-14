@@ -122,12 +122,12 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 });
-                cy.intercept('POST', '**/VirusScan', (req) => {
+                cy.intercept('POST', '**/VirusScan*', (req) => {
                     req.reply({
                         statusCode: 200,
                     });
                 }).as('virus_scan');
-                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                cy.intercept('POST', '**/UploadConfirm*', (req) => {
                     req.reply({
                         statusCode: 204,
                     });
@@ -176,12 +176,12 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 });
-                cy.intercept('POST', '**/VirusScan', (req) => {
+                cy.intercept('POST', '**/VirusScan*', (req) => {
                     req.reply({
                         statusCode: 200,
                     });
                 }).as('virus_scan');
-                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                cy.intercept('POST', '**/UploadConfirm*', (req) => {
                     req.reply({
                         statusCode: 204,
                     });
@@ -220,12 +220,12 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 });
-                cy.intercept('POST', '**/VirusScan', (req) => {
+                cy.intercept('POST', '**/VirusScan*', (req) => {
                     req.reply({
                         statusCode: 200,
                     });
                 }).as('virus_scan');
-                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                cy.intercept('POST', '**/UploadConfirm*', (req) => {
                     req.reply({
                         statusCode: 204,
                     });
@@ -269,13 +269,13 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                     });
                 }).as('s3_upload');
 
-                cy.intercept('POST', '**/VirusScan', (req) => {
+                cy.intercept('POST', '**/VirusScan*', (req) => {
                     req.reply({
                         statusCode: 200,
                     });
                 }).as('virus_scan');
 
-                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                cy.intercept('POST', '**/UploadConfirm*', (req) => {
                     req.reply({
                         statusCode: 204,
                     });
@@ -333,12 +333,12 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 }).as('s3_upload');
-                cy.intercept('POST', '**/VirusScan', (req) => {
+                cy.intercept('POST', '**/VirusScan*', (req) => {
                     req.reply({
                         statusCode: 200,
                     });
                 }).as('virus_scan');
-                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                cy.intercept('POST', '**/UploadConfirm*', (req) => {
                     req.reply({
                         statusCode: 204,
                     });
@@ -397,12 +397,12 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 }).as('s3_upload');
-                cy.intercept('POST', '**/VirusScan', (req) => {
+                cy.intercept('POST', '**/VirusScan*', (req) => {
                     req.reply({
                         statusCode: 200,
                     });
                 }).as('virus_scan');
-                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                cy.intercept('POST', '**/UploadConfirm*', (req) => {
                     req.reply({
                         statusCode: 204,
                     });
@@ -477,7 +477,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         statusCode: 200,
                     });
                 }).as('s3_upload');
-                cy.intercept('POST', '**/VirusScan', (req) => {
+                cy.intercept('POST', '**/VirusScan*', (req) => {
                     req.reply({
                         statusCode: 500,
                     });
@@ -521,13 +521,13 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 }).as('s3_upload');
-                cy.intercept('POST', '**/VirusScan', (req) => {
+                cy.intercept('POST', '**/VirusScan*', (req) => {
                     req.reply({
                         statusCode: 200,
                     });
                 }).as('virus_scan');
 
-                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                cy.intercept('POST', '**/UploadConfirm*', (req) => {
                     req.reply({
                         statusCode: 500,
                     });

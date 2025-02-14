@@ -4,6 +4,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from services.update_upload_state_service import UpdateUploadStateService
+from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.update_upload_state import (
     MOCK_ARF_DOCUMENTS_REQUEST,
     MOCK_DOCUMENT_REFERENCE,
@@ -41,20 +42,20 @@ def test_handle_update_state_with_lg_document_references(
     patched_service,
     mock_update_document,
 ):
-    patched_service.handle_update_state(MOCK_LG_DOCUMENTS_REQUEST)
+    patched_service.handle_update_state(MOCK_LG_DOCUMENTS_REQUEST, TEST_NHS_NUMBER)
 
     mock_update_document.assert_called_with(
-        MOCK_DOCUMENT_REFERENCE, SupportedDocumentTypes.LG, True
+        MOCK_DOCUMENT_REFERENCE, SupportedDocumentTypes.LG, True, TEST_NHS_NUMBER
     )
 
 
 def test_handle_update_state_with_arf_document_references(
     patched_service, mock_update_document, mock_format_update
 ):
-    patched_service.handle_update_state(MOCK_ARF_DOCUMENTS_REQUEST)
+    patched_service.handle_update_state(MOCK_ARF_DOCUMENTS_REQUEST, TEST_NHS_NUMBER)
 
     mock_update_document.assert_called_with(
-        MOCK_DOCUMENT_REFERENCE, SupportedDocumentTypes.ARF, True
+        MOCK_DOCUMENT_REFERENCE, SupportedDocumentTypes.ARF, True, TEST_NHS_NUMBER
     )
 
 
@@ -64,7 +65,7 @@ def test_handle_update_state_when_doc_type_empty_and_raises_exception(
     mock_format_update,
 ):
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_NO_DOCTYPE_REQUEST)
+        patched_service.handle_update_state(MOCK_NO_DOCTYPE_REQUEST, TEST_NHS_NUMBER)
 
     mock_update_document.assert_not_called()
     mock_format_update.assert_not_called()
@@ -76,7 +77,7 @@ def test_handle_update_state_when_doc_ref_empty_and_raises_exception(
     mock_format_update,
 ):
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_NO_REFERENCE_REQUEST)
+        patched_service.handle_update_state(MOCK_NO_REFERENCE_REQUEST, TEST_NHS_NUMBER)
 
     mock_update_document.assert_not_called()
     mock_format_update.assert_not_called()
@@ -88,7 +89,7 @@ def test_handle_update_state_when_fields_empty_and_raises_exception(
     mock_format_update,
 ):
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_NO_FIELDS_REQUEST)
+        patched_service.handle_update_state(MOCK_NO_FIELDS_REQUEST, TEST_NHS_NUMBER)
 
     mock_update_document.assert_not_called()
     mock_format_update.assert_not_called()
@@ -100,7 +101,7 @@ def test_handle_update_state_no_files_key_raises_exception(
     mock_format_update,
 ):
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_NO_FILES_REQUEST)
+        patched_service.handle_update_state(MOCK_NO_FILES_REQUEST, TEST_NHS_NUMBER)
 
     mock_update_document.assert_not_called()
     mock_format_update.assert_not_called()
@@ -112,7 +113,9 @@ def test_handle_update_state_when_doctype_ALL_and_raises_exception(
     mock_format_update,
 ):
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_INVALID_TYPE_DOCUMENTS_REQUEST)
+        patched_service.handle_update_state(
+            MOCK_INVALID_TYPE_DOCUMENTS_REQUEST, TEST_NHS_NUMBER
+        )
 
     mock_update_document.assert_not_called()
     mock_format_update.assert_not_called()
@@ -124,7 +127,7 @@ def test_handle_update_state_when_dynamo_throws_error(patched_service):
     )
 
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_LG_DOCUMENTS_REQUEST)
+        patched_service.handle_update_state(MOCK_LG_DOCUMENTS_REQUEST, TEST_NHS_NUMBER)
 
 
 def test_format_update_success(patched_service):
@@ -136,11 +139,13 @@ def test_format_update_success(patched_service):
 
 def test_format_update_throws_error(patched_service):
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_EMPTY_LIST)
+        patched_service.handle_update_state(MOCK_EMPTY_LIST, TEST_NHS_NUMBER)
 
 
 def test_update_document_success(patched_service):
-    patched_service.update_document("111222", SupportedDocumentTypes.LG, True)
+    patched_service.update_document(
+        "111222", SupportedDocumentTypes.LG, True, TEST_NHS_NUMBER
+    )
     patched_service.dynamo_service.update_item.assert_called_once()
 
 
@@ -149,4 +154,6 @@ def test_update_document_when_dynamo_throws_error(patched_service):
         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
     )
     with pytest.raises(UpdateUploadStateException):
-        patched_service.update_document("111222", SupportedDocumentTypes.LG, True)
+        patched_service.update_document(
+            "111222", SupportedDocumentTypes.LG, True, TEST_NHS_NUMBER
+        )

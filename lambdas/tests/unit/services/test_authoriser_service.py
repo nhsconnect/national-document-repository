@@ -22,6 +22,7 @@ MOCK_CURRENT_SESSION = {
     "sid": "test_cis2_session_id",
     "Subject": "test_cis2_user_id",
     "TimeToExist": 12345678960,
+    "AllowedNHSNumbers": "12,34,12,534",
 }
 
 
@@ -41,6 +42,7 @@ def mock_dynamo_service(mocker):
                 "sid": "test_cis2_session_id",
                 "Subject": "test_cis2_user_id",
                 "TimeToExist": 12345678960,
+                "AllowedNHSNumbers": "12,34,12,534",
             }
         ],
     }
@@ -83,17 +85,72 @@ def mock_jwt_decode(mocker):
 
 
 @pytest.mark.parametrize(
-    "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"]
+    "test_path",
+    [
+        "/DocumentManifest",
+        "/DocumentDelete",
+        "/DocumentReference",
+        "/UploadConfirm",
+        "/UploadState",
+        "/VirusScan",
+    ],
 )
 def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
     test_path,
     mock_auth_service: AuthoriserService,
 ):
     expected = True
+    mock_auth_service.allowed_nhs_numbers = ["900000001"]
     actual = mock_auth_service.deny_access_policy(
-        test_path, RepositoryRole.GP_CLINICAL.value
+        test_path, RepositoryRole.GP_CLINICAL.value, "900000001"
     )
-    assert expected == actual
+    assert actual == expected
+    mock_auth_service.allowed_nhs_numbers = []
+
+
+@pytest.mark.parametrize(
+    "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "Any"]
+)
+def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
+    test_path,
+    mock_auth_service: AuthoriserService,
+):
+    expected = True
+    mock_auth_service.allowed_nhs_numbers = ["900000002"]
+    actual = mock_auth_service.deny_access_policy(
+        test_path, RepositoryRole.GP_ADMIN.value, "900000001"
+    )
+    assert actual == expected
+    mock_auth_service.allowed_nhs_numbers = []
+
+
+@pytest.mark.parametrize(
+    "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "Any"]
+)
+def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
+    test_path,
+    mock_auth_service: AuthoriserService,
+):
+    expected = False
+    mock_auth_service.allowed_nhs_numbers = ["900000002"]
+    actual = mock_auth_service.deny_access_policy(
+        test_path, RepositoryRole.GP_ADMIN.value, "900000002"
+    )
+    assert actual == expected
+    mock_auth_service.allowed_nhs_numbers = []
+
+
+def test_allow_access_policy_returns_false_for_nhs_number_not_in_allowed_on_search_path(
+    mock_auth_service: AuthoriserService,
+):
+    expected = False
+    mock_auth_service.allowed_nhs_numbers = ["900000002"]
+
+    actual = mock_auth_service.deny_access_policy(
+        "/SearchPatient", RepositoryRole.GP_ADMIN.value, "122222222"
+    )
+    assert actual == expected
+    mock_auth_service.allowed_nhs_numbers = []
 
 
 def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
@@ -101,14 +158,14 @@ def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
 ):
     expected = False
     actual = mock_auth_service.deny_access_policy(
-        "/SearchPatient", RepositoryRole.GP_CLINICAL.value
+        "/SearchPatient", RepositoryRole.GP_CLINICAL.value, "122222222"
     )
     assert expected == actual
 
 
 @pytest.mark.parametrize(
     "test_path",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "/SearchPatient"],
+    ["/DocumentManifest", "/DocumentDelete", "/SearchPatient"],
 )
 def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
     test_path,
@@ -119,12 +176,34 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
     assert expected == actual
 
 
+@pytest.mark.parametrize(
+    "test_path",
+    [
+        "/UploadConfirm",
+        "/UploadState",
+        "/DocumentReference",
+        "/VirusScan",
+        "/LloydGeorgeStitch",
+    ],
+)
+def test_deny_access_policy_returns_true_for_pcse_on_paths(
+    test_path,
+    mock_auth_service: AuthoriserService,
+):
+    expected = True
+    actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.PCSE.value)
+    assert expected == actual
+
+
 def test_deny_access_policy_returns_false_for_unrecognised_path(
     mock_auth_service: AuthoriserService,
 ):
     expected = False
 
-    actual = mock_auth_service.deny_access_policy("/test", RepositoryRole.PCSE.value)
+    actual = mock_auth_service.deny_access_policy(
+        "/test",
+        RepositoryRole.PCSE.value,
+    )
 
     assert expected == actual
 
@@ -133,6 +212,20 @@ def test_find_login_session(mock_dynamo_service, mock_auth_service: AuthoriserSe
     expected = MOCK_CURRENT_SESSION
     actual = mock_auth_service.find_login_session(MOCK_SESSION_ID)
 
+    assert mock_auth_service.allowed_nhs_numbers == ["12", "34", "12", "534"]
+    assert expected == actual
+    mock_auth_service.allowed_nhs_numbers = []
+
+
+def test_find_login_session_without_allowed_nhs_numbers(
+    mock_dynamo_service, mock_auth_service: AuthoriserService
+):
+    expected = MOCK_CURRENT_SESSION
+    MOCK_CURRENT_SESSION.pop("AllowedNHSNumbers")
+    mock_dynamo_service.return_value["Items"][0].pop("AllowedNHSNumbers")
+    actual = mock_auth_service.find_login_session(MOCK_SESSION_ID)
+
+    assert mock_auth_service.allowed_nhs_numbers == []
     assert expected == actual
 
 
