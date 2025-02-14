@@ -20,7 +20,7 @@ const preview: Preview = {
             <PatientDetailsProvider patientDetails={{ ...buildPatientDetails() }}>
                 <MemoryRouter initialEntries={['/']}>
                     <div
-                        className="nhsuk-width-container"
+                        className="nhsuk-width-container.preview"
                         style={{
                             margin: `0 auto`,
                             maxWidth: 960,

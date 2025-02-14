@@ -96,7 +96,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                     Download Manifest URL
                 </a>
                 <Button
-                    className="nhsuk-button nhsuk-button--secondary margin"
+                    className="nhsuk-button nhsuk-button--secondary left-margin"
                     data-testid="delete-all-documents-btn"
                     onClick={deleteAllDocuments}
                 >

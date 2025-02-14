@@ -145,11 +145,11 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     <li>The patient details must match the record you are uploading</li>
                     <li>The patient record must be in a PDF file or multiple PDFs</li>
                     <li>Your PDF file(s) should be named in this format:</li>
-                    <p style>
+                    <p className="lg-input-format-paragraph">
                         [PDFnumber]_Lloyd_George_Record_[Patient Name]_[NHS Number]_[D.O.B].PDF
                     </p>
                 </ul>
-                <InsetText style={{ maxWidth: 'unset' }}>
+                <InsetText className="input-stage-inset-text">
                     <p>For example:</p>
                     <p>1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].PDF</p>
                     <p>2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].PDF</p>
@@ -174,10 +174,10 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     onDrop={onFileDrop}
                     className={'lloydgeorge_drag-and-drop'}
                 >
-                    <strong style={{ fontSize: '1.2rem' }}>
+                    <strong className="lg-input-bold">
                         Drag and drop a file or multiple files here
                     </strong>
-                    <div style={{ margin: '0 2rem' }}>
+                    <div className="lg-input-svg-display">
                         <FileSVG />
                     </div>
                     <div>
@@ -198,8 +198,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                         <Button
                             data-testid={`upload-button-input`}
                             type={'button'}
-                            className={'nhsuk-button nhsuk-button--secondary'}
-                            style={{ marginBottom: 0 }}
+                            className={'nhsuk-button nhsuk-button--secondary bottom-margin'}
                             onClick={() => {
                                 fileInputRef.current?.click();
                             }}
@@ -213,7 +212,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                 <Table caption="Chosen file(s)" id="selected-documents-table">
                     <Table.Head>
                         <Table.Row>
-                            <Table.Cell style={{ border: 'unset' }}>
+                            <Table.Cell table-cell-lg-input-cell-border>
                                 <div style={{ padding: '6px 0 12px 0', color: '#425563' }}>
                                     <strong>
                                         {`${documents.length}`} file
