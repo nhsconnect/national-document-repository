@@ -431,6 +431,13 @@ class LambdaError(Enum):
         "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
     """
+       Errors for get ods report lambda 
+    """
+    NoDataFound = {
+        "err_code": "OR_4041",
+        "message": "No data found for requested ods code",
+    }
+    """
         Edge Lambda Errors
     """
     EdgeMalformed = {

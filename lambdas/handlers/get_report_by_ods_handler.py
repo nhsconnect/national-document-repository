@@ -49,3 +49,6 @@ def handle_manual_trigger(event):
     for ods_code in ods_codes:
         logger.info(f"Starting process for ods code: {ods_code}")
         service.get_nhs_numbers_by_ods(ods_code)
+    return ApiGatewayResponse(
+        200, "Successfully created report", "GET"
+    ).create_api_gateway_response()
