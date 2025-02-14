@@ -43,7 +43,7 @@ class OdsReportService:
         if (
             request_context.authorization
             and request_context.authorization.get("repository_role")
-            == RepositoryRole.PCSE
+            == RepositoryRole.PCSE.value
         ):
             ods_codes = [
                 PatientOdsInactiveStatus.SUSPENDED,
