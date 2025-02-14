@@ -1,4 +1,4 @@
-const { Roles } = require('../../../support/roles');
+import { Roles } from '../../../support/roles';
 
 const testPatient = '9000000009';
 const patient = {

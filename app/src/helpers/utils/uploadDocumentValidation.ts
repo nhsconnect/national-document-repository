@@ -25,7 +25,7 @@ export const uploadLloydGeorgeDocumentValidation = (
 
     const filesPassedRegexCheck = [];
 
-    for (let document of uploadDocuments) {
+    for (const document of uploadDocuments) {
         const currentFile = document.file;
         if (currentFile.size > FIVEGB) {
             errors.push({

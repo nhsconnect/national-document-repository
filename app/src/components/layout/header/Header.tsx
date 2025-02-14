@@ -5,12 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import NavLinks from '../navLinks/NavLinks';
 import useRole from '../../../helpers/hooks/useRole';
 
-type Props = {};
-
-const Header = (props: Props) => {
+const Header = () => {
     const role = useRole();
     const navigateHome = () => {
-        navigate(!!role ? routes.HOME : routes.START);
+        navigate(role ? routes.HOME : routes.START);
     };
     const navigate = useNavigate();
     return (

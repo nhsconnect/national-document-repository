@@ -1,22 +1,13 @@
 import { act, render, RenderResult, screen, waitFor } from '@testing-library/react';
 import UploadDocumentsPage from './UploadDocumentsPage';
-import {
-    buildConfig,
-    buildDocument,
-    buildTextFile,
-    buildUploadSession,
-} from '../../helpers/test/testBuilders';
+import { buildConfig, buildTextFile, buildUploadSession } from '../../helpers/test/testBuilders';
 import useConfig from '../../helpers/hooks/useConfig';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import {
-    DOCUMENT_TYPE,
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import uploadDocuments, {
     updateDocumentState,
     uploadConfirmation,

@@ -1,4 +1,4 @@
-const { Roles } = require('../../support/roles');
+import { Roles } from '../../support/roles';
 
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
@@ -6,9 +6,6 @@ describe('Home Page', () => {
     const startUrl = '/';
     const homeUrl = '/home';
     const patientSearchUrl = '/patient/search';
-    const patientVerifyUrl = '/patient/verify';
-    const lloydGeorgeViewUrl = '/patient/lloyd-george-record/';
-    const arfDownloadUrl = '/patient/download';
 
     beforeEach(() => {
         cy.visit(baseUrl + startUrl);

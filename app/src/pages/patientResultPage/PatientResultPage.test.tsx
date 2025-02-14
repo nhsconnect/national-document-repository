@@ -19,9 +19,10 @@ jest.mock('../../helpers/hooks/usePatient');
 const mockedUseRole = useRole as jest.Mock;
 const mockedUsePatient = usePatient as jest.Mock;
 
-const PAGE_HEADER_TEXT = 'Patient details'
-const PAGE_TEXT = "This page displays the current data recorded in the Patient Demographic Service for this patient."
-const CONFIRM_BUTTON_TEXT = 'Confirm patient details and continue' 
+const PAGE_HEADER_TEXT = 'Patient details';
+const PAGE_TEXT =
+    'This page displays the current data recorded in the Patient Demographic Service for this patient.';
+const CONFIRM_BUTTON_TEXT = 'Confirm patient details and continue';
 
 describe('PatientResultPage', () => {
     beforeEach(() => {
@@ -50,14 +51,11 @@ describe('PatientResultPage', () => {
 
                 render(<PatientResultPage />);
 
-                expect(
-                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-                ).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
                 expect(screen.getByText(familyName)).toBeInTheDocument();
                 expect(
                     screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }),
                 ).toBeInTheDocument();
-
             },
         );
 
@@ -72,14 +70,8 @@ describe('PatientResultPage', () => {
 
                 render(<PatientResultPage />);
 
-                expect(
-                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-                ).toBeInTheDocument();
-                expect(
-                    screen.getByText(
-                       PAGE_TEXT ,
-                    ),
-                ).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
+                expect(screen.getByText(PAGE_TEXT)).toBeInTheDocument();
             },
         );
 
@@ -93,20 +85,14 @@ describe('PatientResultPage', () => {
 
             render(<PatientResultPage />);
 
-            expect(
-                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
 
             expect(screen.queryByText('Select patient status')).not.toBeInTheDocument();
             expect(screen.queryByRole('radio', { name: 'Active patient' })).not.toBeInTheDocument();
             expect(
                 screen.queryByRole('radio', { name: 'Inactive patient' }),
             ).not.toBeInTheDocument();
-            expect(
-                screen.queryByText(
-                   PAGE_TEXT, 
-                ),
-            ).not.toBeInTheDocument();
+            expect(screen.queryByText(PAGE_TEXT)).not.toBeInTheDocument();
         });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
@@ -141,9 +127,7 @@ describe('PatientResultPage', () => {
 
             render(<PatientResultPage />);
 
-            expect(
-                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
             expect(
                 screen.getByText('The NHS number for this patient has changed.'),
             ).toBeInTheDocument();
@@ -160,9 +144,7 @@ describe('PatientResultPage', () => {
 
             render(<PatientResultPage />);
 
-            expect(
-                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
             expect(
                 screen.getByText(
                     'Certain details about this patient cannot be displayed without the necessary access.',
@@ -183,9 +165,7 @@ describe('PatientResultPage', () => {
 
                 render(<PatientResultPage />);
 
-                expect(
-                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-                ).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
 
                 const results = await runAxeTest(document.body);
                 expect(results).toHaveNoViolations();
@@ -252,9 +232,7 @@ describe('PatientResultPage', () => {
                 render(<PatientResultPage />);
 
                 act(() => {
-                    userEvent.click(
-                        screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }),
-                    );
+                    userEvent.click(screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }));
                 });
 
                 await waitFor(() => {

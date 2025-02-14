@@ -1,4 +1,4 @@
-const { Roles } = require('../../support/roles');
+import { Roles } from '../../support/roles';
 
 describe('Privacy Page', () => {
     const baseUrl = Cypress.config('baseUrl');

@@ -3,13 +3,9 @@ import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatientLG
 
 const baseUrl = Cypress.config('baseUrl');
 const patientSearchUrl = '/patient/search';
-const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const lloydGeorgeUploadUrl = '/patient/lloyd-george-record/upload';
 const lloydGeorgeInfectedUrl = '/patient/lloyd-george-record/upload/infected';
-const arfDownloadUrl = '/patient/arf';
-const arfUploadUrl = '/patient/arf/upload';
-const unauthorisedUrl = '/unauthorised';
 
 const clickUploadButton = () => {
     cy.get('#upload-button').click();

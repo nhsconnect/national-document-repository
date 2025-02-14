@@ -11,9 +11,7 @@ import TestPanel from '../../components/blocks/testPanel/TestPanel';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 import useTitle from '../../helpers/hooks/useTitle';
 
-type Props = {};
-
-function StartPage(props: Props) {
+function StartPage() {
     const navigate = useNavigate();
     const baseAPIUrl = useBaseAPIUrl();
     const [isLoading, setIsLoading] = useState(false);
@@ -62,9 +60,9 @@ function StartPage(props: Props) {
                 <ServiceDeskLink />
                 {' if there is an issue with this service or call 0300 303 5678.'}
             </p>
-            {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
-                process.env.REACT_APP_ENVIRONMENT === 'development' ||
-                process.env.REACT_APP_ENVIRONMENT === 'test') && <TestPanel />}
+            {(import.meta.env.VITE_APP_ENVIRONMENT === 'local' ||
+                import.meta.env.VITE_APP_ENVIRONMENT === 'development' ||
+                import.meta.env.VITE_APP_ENVIRONMENT === 'test') && <TestPanel />}
         </>
     ) : (
         <Spinner status="Signing in..." />

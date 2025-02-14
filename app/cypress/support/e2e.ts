@@ -1,11 +1,12 @@
 import { DynamoDB, S3 } from 'aws-sdk';
 import { Roles, roleIds, roleList } from './roles';
 import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
+// @ts-ignore
 import Bluebird from 'cypress/types/bluebird';
+// @ts-ignore
+import registerCypressGrep from '@cypress/grep';
 import './aws.commands';
 
-/// <reference types="cypress" />
-const registerCypressGrep = require('@cypress/grep');
 registerCypressGrep();
 
 Cypress.Commands.add('getByTestId', (selector, ...args) => {

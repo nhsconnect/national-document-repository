@@ -13,8 +13,8 @@ import { AxiosError } from 'axios/index';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
-
-const FakeProgress = require('fake-progress');
+// @ts-ignore
+import FakeProgress from 'fake-progress';
 
 export type Props = {
     deleteAfterDownload: boolean;

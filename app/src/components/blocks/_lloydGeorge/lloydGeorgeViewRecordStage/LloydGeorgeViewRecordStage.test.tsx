@@ -333,7 +333,6 @@ describe('LloydGeorgeViewRecordStage', () => {
                 ).toBeInTheDocument();
 
                 // to supress act() warning from non-captured classname change
-                // eslint-disable-next-line testing-library/no-node-access
                 const fieldsetParentDiv = screen.getByTestId('fieldset').closest('div');
                 await waitFor(() => {
                     expect(fieldsetParentDiv).toHaveClass('nhsuk-form-group--error');
@@ -418,7 +417,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
 });
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
-    let history = createMemoryHistory({
+    const history = createMemoryHistory({
         initialEntries: ['/'],
         initialIndex: 0,
     });

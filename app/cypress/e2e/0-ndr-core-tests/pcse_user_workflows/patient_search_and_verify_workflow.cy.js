@@ -1,16 +1,12 @@
-const { Roles } = require('../../../support/roles');
+import { Roles } from '../../../support/roles';
 
 describe('PCSE Workflow: patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
-
-    const patientSearchUrl = '/patient/search';
     const patientVerifyUrl = '/patient/verify';
-    const lloydGeorgeViewUrl = '/patient/lloyd-george-record/';
     const arfDownloadUrl = '/patient/arf';
-    const arfUploadUrl = '/patient/arf/upload';
-
     const homeUrl = '/';
+
     const patient = {
         birthDate: '1970-01-01',
         familyName: 'Default Surname',

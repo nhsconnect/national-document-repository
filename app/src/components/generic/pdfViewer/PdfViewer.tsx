@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
+// @ts-ignore
+import pdfObject from 'pdfobject';
 
-type Props = { fileUrl: String };
+type Props = { fileUrl: string };
 
 const PdfViewer = ({ fileUrl }: Props) => {
     useEffect(() => {
-        const pdfObject = require('pdfobject');
         pdfObject.embed(fileUrl + '#toolbar', '#pdf-viewer');
     }, [fileUrl]);
 

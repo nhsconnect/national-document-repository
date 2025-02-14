@@ -3,7 +3,8 @@ import BackButton from '../../../generic/backButton/BackButton';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { Input, Button, Fieldset, InsetText, Table } from 'nhsuk-react-components';
-import { ReactComponent as FileSVG } from '../../../../styles/file-input.svg';
+// @ts-ignore
+import FileSVG from '../../../../styles/file-input.svg?react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -36,7 +37,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
     const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
-    let fileInputRef = useRef<HTMLInputElement | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [uploadFilesErrors, setUploadFilesErrors] = useState<Array<UploadFilesErrors>>([]);
     const hasFileInput = !!documents.length;
     const [showNoFilesMessage, setShowNoFilesMessage] = useState<boolean>(false);

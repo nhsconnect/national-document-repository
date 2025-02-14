@@ -75,6 +75,7 @@ describe('LloydGeorgeRecordError', () => {
 
             expect(
                 screen.getByText(
+                    // eslint-disable-next-line max-len
                     /You can view this record once it’s finished uploading. This may take a few minutes./i,
                 ),
             ).toBeInTheDocument();
