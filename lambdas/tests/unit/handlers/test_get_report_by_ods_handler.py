@@ -33,11 +33,9 @@ def test_lambda_handler_api_gateway_request(
     mock_service, set_env, context, mock_jwt_encode
 ):
     event = {"httpMethod": "GET", "headers": {"Authorization": "mock_token"}}
-    mock_service.get_nhs_numbers_by_ods.return_value = (
-        "http://example.com/presigned-url"
-    )
+    mock_service.get_nhs_numbers_by_ods.return_value = "example.com/presigned-url"
     expected = ApiGatewayResponse(
-        200, json.dumps({"url": "http://example.com/presigned-url"}), "GET"
+        200, json.dumps({"url": "example.com/presigned-url"}), "GET"
     ).create_api_gateway_response()
 
     result = lambda_handler(event, context)
