@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { routes } from '../../types/generic/routes';
 import { FieldValues, useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
-import { Button, Input } from 'nhsuk-react-components';
+import { Button, TextInput } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
 import { useNavigate } from 'react-router-dom';
@@ -109,7 +109,7 @@ function PatientSearchPage() {
             )}
             <h1>{pageTitle}</h1>
             <form onSubmit={handleSubmit(handleSearch, handleError)} noValidate>
-                <Input
+                <TextInput
                     id="nhs-number-input"
                     data-testid="nhs-number-input"
                     className="nhsuk-input--width-10"

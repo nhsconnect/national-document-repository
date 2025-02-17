@@ -2,7 +2,15 @@ import React, { useState } from 'react';
 
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
-import { Button, Fieldset, Input, Radios, Textarea, InsetText, Hint } from 'nhsuk-react-components';
+import {
+    Button,
+    Fieldset,
+    TextInput,
+    Radios,
+    Textarea,
+    InsetText,
+    HintText,
+} from 'nhsuk-react-components';
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import {
@@ -134,10 +142,10 @@ function FeedbackPage() {
                     </Fieldset.Legend>
 
                     <p>
-                        <Hint>
+                        <HintText>
                             If you’re happy to speak to us about your feedback, leave your details
                             below:
-                        </Hint>
+                        </HintText>
                     </p>
 
                     <TextInput
