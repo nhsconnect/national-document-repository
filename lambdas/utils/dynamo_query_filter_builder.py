@@ -24,6 +24,8 @@ class DynamoQueryFilterBuilder:
                 condition = Attr(attribute).lt(filter_value)
             case AttributeOperator.LESS_THAN_OR_EQUAL:
                 condition = Attr(attribute).lte(filter_value)
+            case AttributeOperator.IN:
+                condition = Attr(attribute).is_in(filter_value)
             case _:
                 raise DynamoServiceException(
                     f"Unsupported attribute filter operator: {attr_operator}"
