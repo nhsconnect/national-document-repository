@@ -60,11 +60,12 @@ def test_process_event_with_multiple_messages(mock_service, context, set_env):
 
 def test_failed_to_create_a_pointer(mock_service, context, set_env, caplog):
     event = {"Records": [build_test_sqs_message("create")]}
+    expected_log = "Failed to process current message due to error: test exception"
     mock_service.create_new_pointer.side_effect = NrlApiException("test exception")
 
-    lambda_handler(event, context)
+    with pytest.raises(NrlApiException):
+        lambda_handler(event, context)
 
-    expected_log = "Failed to process current message due to error: test exception"
     actual_log = caplog.records[-2].msg
     assert actual_log == expected_log
     mock_service.create_new_pointer.assert_called_once()
