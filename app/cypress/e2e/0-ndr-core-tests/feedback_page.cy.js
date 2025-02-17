@@ -52,7 +52,7 @@ describe('Feedback Page', () => {
 
                 cy.get('.app-homepage-content h1').should(
                     'have.text',
-                    'Give feedback on accessing Lloyd George digital patient records',
+                    'Give feedback on this service',
                 );
             });
 
@@ -135,10 +135,10 @@ describe('Feedback Page', () => {
                             .and('have.length', 2)
                             .as('errors');
                         cy.get('@errors')
-                            .first()
+                            .eq(1)
                             .should('have.text', 'Error: Please enter your feedback');
                         cy.get('@errors')
-                            .eq(1)
+                            .first()
                             .should('have.text', 'Error: Please select an option');
                     },
                 );

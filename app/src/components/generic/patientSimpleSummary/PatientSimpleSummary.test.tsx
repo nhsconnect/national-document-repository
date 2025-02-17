@@ -51,7 +51,6 @@ describe('PatientSummary', () => {
     });
 
     it('displays a newline after name for very long names', () => {
-
         mockedUsePatient.mockReturnValue(mockLongName);
 
         render(<PatientSummary />);
@@ -59,11 +58,9 @@ describe('PatientSummary', () => {
         const patientInfo = screen.getByTestId('patient-info');
 
         expect(patientInfo.innerHTML).toContain('<br>');
-
     });
 
     it('displays patient details on same line for short names', () => {
-
         mockedUsePatient.mockReturnValue(mockDetails);
 
         render(<PatientSummary />);
@@ -71,7 +68,5 @@ describe('PatientSummary', () => {
         const patientInfo = screen.getByTestId('patient-info');
 
         expect(patientInfo.innerHTML).not.toContain('<br>');
-
     });
-
 });
