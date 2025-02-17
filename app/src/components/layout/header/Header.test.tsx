@@ -46,7 +46,7 @@ describe('Header', () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             renderHeaderWithRouter();
 
-            userEvent.click(screen.getByRole('img', { name: 'NHS Logo' }));
+            userEvent.click(screen.getByTestId('nhs-header-logo'));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
@@ -57,7 +57,7 @@ describe('Header', () => {
             mockedUseRole.mockReturnValue(null);
             renderHeaderWithRouter();
 
-            userEvent.click(screen.getByRole('img', { name: 'NHS Logo' }));
+            userEvent.click(screen.getByTestId('nhs-header-logo'));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
