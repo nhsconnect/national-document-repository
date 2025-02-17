@@ -1,3 +1,6 @@
+import os
+import tempfile
+
 import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from freezegun import freeze_time
@@ -8,6 +11,8 @@ from services.ods_report_service import OdsReportService
 def ods_report_service(mocker, set_env):
     mocker.patch("services.ods_report_service.S3Service")
     mocker.patch("services.ods_report_service.DynamoDBService")
+    temp_folder = tempfile.mkdtemp()
+    mocker.patch.object(tempfile, "mkdtemp", return_value=temp_folder)
     service = OdsReportService()
     return service
 
@@ -103,11 +108,12 @@ def test_create_and_save_ods_report(ods_report_service, mocker):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
     file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
+    temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     result = ods_report_service.create_and_save_ods_report(ods_code, nhs_numbers)
 
-    mock_create_report.assert_called_once_with(ods_code, nhs_numbers, file_name)
-    mock_save_report_to_s3.assert_called_once_with(ods_code, file_name)
+    mock_create_report.assert_called_once_with(temp_file_path, nhs_numbers, ods_code)
+    mock_save_report_to_s3.assert_called_once_with(ods_code, file_name, temp_file_path)
     mock_get_pre_signed_url.assert_not_called()
 
     assert result is None
@@ -126,11 +132,12 @@ def test_create_and_save_ods_report_with_pre_sign_url(ods_report_service, mocker
     mock_get_pre_signed_url = mocker.patch.object(
         ods_report_service, "get_pre_signed_url", return_value=mock_pre_sign_url
     )
+    temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     result = ods_report_service.create_and_save_ods_report(ods_code, nhs_numbers, True)
 
-    mock_create_report.assert_called_once_with(ods_code, nhs_numbers, file_name)
-    mock_save_report_to_s3.assert_called_once_with(ods_code, file_name)
+    mock_create_report.assert_called_once_with(temp_file_path, nhs_numbers, ods_code)
+    mock_save_report_to_s3.assert_called_once_with(ods_code, file_name, temp_file_path)
     mock_get_pre_signed_url.assert_called_once_with(ods_code, file_name)
     assert result == mock_pre_sign_url
 
@@ -157,10 +164,10 @@ def test_create_report(ods_report_service, tmp_path):
 def test_save_report_to_s3(ods_report_service, mocker):
     mocker.patch.object(ods_report_service.s3_service, "upload_file")
 
-    ods_report_service.save_report_to_s3("ODS123", "test_report.csv")
+    ods_report_service.save_report_to_s3("ODS123", "test_report.csv", "path/to/file")
 
     ods_report_service.s3_service.upload_file.assert_called_once_with(
         s3_bucket_name="test_statistics_report_bucket",
         file_key="ods-reports/ODS123/test_report.csv",
-        file_name="test_report.csv",
+        file_name="path/to/file",
     )
