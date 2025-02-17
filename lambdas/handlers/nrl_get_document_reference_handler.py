@@ -37,12 +37,8 @@ def lambda_handler(event, context):
             )
 
         path_params = event.get("pathParameters", {}).get("id", None)
-        if not path_params:
-            raise NRLGetDocumentReferenceException(
-                400, LambdaError.DocumentReferenceInvalidRequest
-            )
-
         document_id, snomed_code = get_id_and_snomed_from_path_parameters(path_params)
+
         if not document_id or not snomed_code:
             raise NRLGetDocumentReferenceException(
                 404, LambdaError.DocumentReferenceNotFound
