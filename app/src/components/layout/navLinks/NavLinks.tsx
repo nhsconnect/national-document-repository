@@ -19,7 +19,7 @@ const NavLinks = () => {
     ];
 
     return session.isLoggedIn ? (
-        <Header.Nav className="">
+        <Header.Nav>
             {appLinks.map((l) => (
                 <Header.NavItem
                     tabIndex={0}
