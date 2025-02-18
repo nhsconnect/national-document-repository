@@ -58,6 +58,13 @@ jobs:
           echo "::add-mask::$container_port"
           echo "CONTAINER_PORT=$container_port" >> $GITHUB_ENV
 
+      - name: Get CloudFront domain name
+        id: cloudfront-domain-name
+        run : |
+          cloudfront_domain_name=$(aws cloudfront list-distributions --query "DistributionList.Items[?starts_with(Origins.Items[0].DomainName, '${{ inputs.sandbox }}')].DomainName" --output text)
+          echo "Cloudfront domain name found for environment: $cloudfront_domain_name"
+          echo "CLOUDFRONT_DOMAIN_NAME=$cloudfront_domain_name" >> $GITHUB_ENV
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -80,7 +87,11 @@ jobs:
           IMAGE_TAG_SHA: ${{ github.sha }}
           CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          docker build --build-arg="CONTAINER_PORT=$CONTAINER_PORT" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
+          docker build \
+            --build-arg="CONTAINER_PORT=$CONTAINER_PORT" \
+            --build-arg="CLOUDFRONT_DOMAIN_NAME=$CLOUDFRONT_DOMAIN_NAME" \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT

@@ -12,11 +12,17 @@ RUN npm run build
 # Host the App
 FROM nginx:latest
 ARG CONTAINER_PORT
+ARG CLOUDFRONT_DOMAIN_NAME
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 COPY --from=builder /app/build .
+
 WORKDIR /etc/nginx
 COPY --from=builder ./app/docker/nginx.conf ./nginx.conf.template
-RUN sed "s/\$CONTAINER_PORT/${CONTAINER_PORT}/g" ./nginx.conf.template > ./nginx.conf
+
+RUN sed -i "s|\$CLOUDFRONT_DOMAIN_NAME|${CLOUDFRONT_DOMAIN_NAME}|g" ./nginx.conf.template && \
+    sed -i "s|\$CONTAINER_PORT|${CONTAINER_PORT}|g" ./nginx.conf.template && \
+    mv ./nginx.conf.template ./nginx.conf
+
 EXPOSE ${CONTAINER_PORT}
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
