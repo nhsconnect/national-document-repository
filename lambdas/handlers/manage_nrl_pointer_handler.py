@@ -9,7 +9,6 @@ from services.base.ssm_service import SSMService
 from services.nrl_api_service import NrlApiService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.request_context import request_context
 
@@ -26,15 +25,12 @@ logger = LoggingService(__name__)
         "NRL_END_USER_ODS_CODE",
     ]
 )
-@handle_lambda_exceptions
 def lambda_handler(event, context):
     logger.info(f"Received event: {event}")
     sqs_messages = event.get("Records", [])
     ssm_service = SSMService()
     oauth_service = NhsOauthService(ssm_service)
     nrl_api_service = NrlApiService(ssm_service, oauth_service)
-
-    unhandled_messages = []
 
     for sqs_message in sqs_messages:
         try:
@@ -71,6 +67,6 @@ def lambda_handler(event, context):
                         nrl_message.nhs_number, nrl_message.snomed_code_doc_type
                     )
         except Exception as error:
-            unhandled_messages.append(sqs_message)
             logger.info(f"Failed to process current message due to error: {error}")
             logger.info("Continue on next message")
+            raise error
