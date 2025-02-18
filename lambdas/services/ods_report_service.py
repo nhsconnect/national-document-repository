@@ -3,10 +3,14 @@ import tempfile
 from datetime import datetime
 
 from enums.dynamo_filter import AttributeOperator
+from enums.file_type import FileType
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.repository_role import RepositoryRole
+from openpyxl.workbook import Workbook
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -23,25 +27,36 @@ class OdsReportService:
         self.s3_service = S3Service(custom_aws_role=download_report_aws_role_arn)
         self.dynamo_service = DynamoDBService()
         self.table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
-        self.reports_bucket = os.environ["STATISTICAL_REPORTS_BUCKET"]
-        self.output_file_suffix = ".csv"
-        self.temp_output_dir = tempfile.mkdtemp()
+        self.reports_bucket = os.getenv("STATISTICAL_REPORTS_BUCKET")
+        self.temp_output_dir = ""
 
-    def get_nhs_numbers_by_ods(self, ods_code: str, is_pre_signed_need: bool = False):
+    def get_nhs_numbers_by_ods(
+        self,
+        ods_code: str,
+        is_pre_signed_needed: bool = False,
+        is_upload_to_s3_needed: bool = False,
+        file_type_output: FileType = FileType.CSV,
+    ):
         results = self.scan_table_with_filter(ods_code)
         nhs_numbers = {
             item.get(DocumentReferenceMetadataFields.NHS_NUMBER.value)
             for item in results
             if item.get(DocumentReferenceMetadataFields.NHS_NUMBER.value)
         }
+        if is_upload_to_s3_needed:
+            self.temp_output_dir = tempfile.mkdtemp()
         return self.create_and_save_ods_report(
-            ods_code, nhs_numbers, is_pre_signed_need
+            ods_code,
+            nhs_numbers,
+            is_pre_signed_needed,
+            is_upload_to_s3_needed,
+            file_type_output,
         )
 
     def scan_table_with_filter(self, ods_code):
         ods_codes = [ods_code]
         if (
-            request_context.authorization
+            hasattr(request_context, "authorization")
             and request_context.authorization.get("repository_role")
             == RepositoryRole.PCSE.value
         ):
@@ -104,33 +119,78 @@ class OdsReportService:
         return results
 
     def create_and_save_ods_report(
-        self, ods_code, nhs_numbers, create_pre_signed_url: bool = False
+        self,
+        ods_code,
+        nhs_numbers,
+        create_pre_signed_url: bool = False,
+        upload_to_s3: bool = False,
+        file_type_output: FileType = FileType.CSV,
     ):
         now = datetime.now()
         formatted_time = now.strftime("%Y-%m-%d_%H-%M")
-        file_name = (
-            "NDR_"
-            + ods_code
-            + f"_{len(nhs_numbers)}_"
-            + formatted_time
-            + self.output_file_suffix
-        )
+        file_name = "NDR_" + ods_code + f"_{len(nhs_numbers)}_" + formatted_time
         temp_file_path = os.path.join(self.temp_output_dir, file_name)
-        self.create_report(temp_file_path, nhs_numbers, ods_code)
-        self.save_report_to_s3(ods_code, file_name, temp_file_path)
+        match file_type_output:
+            case FileType.CSV:
+                self.create_report_csv(temp_file_path, nhs_numbers, ods_code)
+            case FileType.XLSX:
+                self.create_xlsx_report(temp_file_path, nhs_numbers, ods_code)
+            case FileType.PDF:
+                self.create_pdf_report(temp_file_path, nhs_numbers, ods_code)
+
         logger.info(
             f"Query completed. {len(nhs_numbers)} items written to {file_name}."
         )
+        if upload_to_s3:
+            self.save_report_to_s3(ods_code, file_name, temp_file_path)
+
         if create_pre_signed_url:
             return self.get_pre_signed_url(ods_code, file_name)
 
-    def create_report(self, file_name, nhs_numbers, ods_code):
+    def create_report_csv(self, file_name, nhs_numbers, ods_code):
+        file_name = file_name + ".csv"
         with open(file_name, "w") as f:
             f.write(
                 f"Total number of patients for ODS code {ods_code}: {len(nhs_numbers)}\n"
             )
             f.write("NHS Numbers:\n")
             f.writelines(f"{nhs_number}\n" for nhs_number in nhs_numbers)
+
+    def create_xlsx_report(self, file_name, nhs_numbers, ods_code):
+        wb = Workbook()
+        ws = wb.active
+        ws["A1"] = (
+            f"Total number of patients for ODS code {ods_code}: {len(nhs_numbers)}\n"
+        )
+        ws["A2"] = "NHS Numbers:\n"
+        for row in nhs_numbers:
+            ws.append([row])
+
+        wb.save(f"{file_name}.xlsx")
+
+    def create_pdf_report(self, file_name, nhs_numbers, ods_code):
+        c = canvas.Canvas(f"{file_name}.pdf", pagesize=letter)
+        width, height = letter
+        c.setFont("Helvetica-Bold", 16)
+        x = 100
+        y = 700
+        c.drawString(x, height - 50, f"NHS numbers within NDR for ODS code: {ods_code}")
+        c.setFont("Helvetica", 12)
+
+        c.drawString(x, y, f"Total number of patients: {len(nhs_numbers)}")
+        y -= 20
+        c.drawString(x, y, "NHS Numbers:")
+        y -= 20
+        for row in nhs_numbers:
+            if y < 40:
+                c.showPage()
+                y = height - 50
+                c.setFont("Helvetica", 12)
+
+            c.drawString(100, y, row)
+            y -= 20
+
+        c.save()
 
     def save_report_to_s3(self, ods_code, file_name, temp_file_path):
         logger.info("Uploading the csv report to S3 bucket...")
@@ -141,7 +201,8 @@ class OdsReportService:
         )
 
     def get_pre_signed_url(self, ods_code, file_name):
+        year, month, day = (d := datetime.now()).year, d.month, d.day
         return self.s3_service.create_download_presigned_url(
             s3_bucket_name=self.reports_bucket,
-            file_key=f"ods-reports/{ods_code}/{file_name}",
+            file_key=f"ods-reports/{ods_code}/{year}/{month}/{day}/{file_name}",
         )

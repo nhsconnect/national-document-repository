@@ -1,5 +1,6 @@
 import json
 
+from enums.file_type import FileType
 from services.ods_report_service import OdsReportService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -36,7 +37,9 @@ def handle_api_gateway_request(event):
         raise OdsErrorException("No ODS code provided")
     service = OdsReportService()
     logger.info(f"Starting process for ods code: {ods_code}")
-    pre_sign_url = service.get_nhs_numbers_by_ods(ods_code, is_pre_signed_need=True)
+    pre_sign_url = service.get_nhs_numbers_by_ods(
+        ods_code, is_pre_signed_needed=True, is_upload_to_s3_needed=True
+    )
     return ApiGatewayResponse(
         200, json.dumps({"url": pre_sign_url}), "GET"
     ).create_api_gateway_response()
@@ -44,11 +47,15 @@ def handle_api_gateway_request(event):
 
 def handle_manual_trigger(event):
     ods_codes = event.get("odsCode").split(",")
-
+    file_type = event.get("fileType")
+    if file_type not in FileType:
+        file_type = FileType.CSV
     service = OdsReportService()
     for ods_code in ods_codes:
         logger.info(f"Starting process for ods code: {ods_code}")
-        service.get_nhs_numbers_by_ods(ods_code)
+        service.get_nhs_numbers_by_ods(
+            ods_code, is_upload_to_s3_needed=True, file_type_output=file_type
+        )
     return ApiGatewayResponse(
         200, "Successfully created report", "GET"
     ).create_api_gateway_response()

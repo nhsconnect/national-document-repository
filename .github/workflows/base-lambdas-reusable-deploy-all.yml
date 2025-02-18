@@ -461,7 +461,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: get_report_by_ods_handler
       lambda_aws_name: GetReportsByODSLambda
-      lambda_layer_names: 'core_lambda_layer'
+      lambda_layer_names: 'core_lambda_layer,data_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
