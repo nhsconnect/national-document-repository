@@ -15,12 +15,13 @@ token_service = TokenService()
 
 
 class AuthoriserService:
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.redact_session_id = ""
+        self.allowed_nhs_numbers = []
 
-    def auth_request(self, path, ssm_jwt_public_key_parameter, auth_token):
+    def auth_request(
+        self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: str = None
+    ):
         try:
             decoded_token = token_service.get_public_key_and_decode_auth_token(
                 auth_token=auth_token,
@@ -37,7 +38,8 @@ class AuthoriserService:
             current_session = self.find_login_session(ndr_session_id)
             self.validate_login_session(float(current_session["TimeToExist"]))
 
-            resource_denied = self.deny_access_policy(path, user_role)
+            resource_denied = self.deny_access_policy(path, user_role, nhs_number)
+
             allow_policy = False
 
             if not resource_denied:
@@ -49,27 +51,64 @@ class AuthoriserService:
         except (KeyError, IndexError) as e:
             raise AuthorisationException(e)
 
-    @staticmethod
-    def deny_access_policy(path, user_role):
+    def deny_access_policy(self, path, user_role, nhs_number: str = None):
         logger.info(f"Path: {path}")
+
+        deny_access_to_patient = (
+            nhs_number not in self.allowed_nhs_numbers if nhs_number else False
+        )
+        deny_access_to_clinical_role = user_role == RepositoryRole.GP_CLINICAL.value
+        deny_access_to_pcse_role = user_role == RepositoryRole.PCSE.value
+
         match path:
             case "/DocumentDelete":
-                deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
+                deny_resource = deny_access_to_patient or deny_access_to_clinical_role
 
             case "/DocumentManifest":
-                deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
+                deny_resource = deny_access_to_patient or deny_access_to_clinical_role
 
             case "/DocumentReference":
-                deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
+                deny_resource = (
+                    deny_access_to_patient
+                    or deny_access_to_clinical_role
+                    or deny_access_to_pcse_role
+                )
+
+            case "/LloydGeorgeStitch":
+                deny_resource = deny_access_to_patient or deny_access_to_pcse_role
+
+            case "/UploadConfirm":
+                deny_resource = (
+                    deny_access_to_patient
+                    or deny_access_to_clinical_role
+                    or deny_access_to_pcse_role
+                )
+
+            case "/UploadState":
+                deny_resource = (
+                    deny_access_to_patient
+                    or deny_access_to_clinical_role
+                    or deny_access_to_pcse_role
+                )
+
+            case "/VirusScan":
+                deny_resource = (
+                    deny_access_to_patient
+                    or deny_access_to_clinical_role
+                    or deny_access_to_pcse_role
+                )
+
+            case "/SearchPatient":
+                deny_resource = False
 
             case _:
-                deny_resource = False
+                deny_resource = deny_access_to_patient
 
         logger.info("Allow resource: %s" % (not deny_resource))
 
         return bool(deny_resource)
 
-    def find_login_session(self, ndr_session_id):
+    def find_login_session(self, ndr_session_id: str):
         logger.info(
             f"Retrieving session for session ID ending in: f{self.redact_session_id}"
         )
@@ -83,6 +122,11 @@ class AuthoriserService:
 
         try:
             current_session = query_response["Items"][0]
+            list_of_allowed_nhs_numbers = current_session.get(
+                "AllowedNHSNumbers", False
+            )
+            if list_of_allowed_nhs_numbers:
+                self.allowed_nhs_numbers = list_of_allowed_nhs_numbers.split(",")
             return current_session
         except (KeyError, IndexError):
             raise AuthorisationException(

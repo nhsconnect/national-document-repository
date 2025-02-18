@@ -32,17 +32,29 @@ class MockError(Enum):
 
 @pytest.fixture
 def both_type_event():
-    return {"httpMethod": "POST", "body": json.dumps(MOCK_EVENT_BODY)}
+    return {
+        "httpMethod": "POST",
+        "body": json.dumps(MOCK_EVENT_BODY),
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
+    }
 
 
 @pytest.fixture
 def arf_type_event():
-    return {"httpMethod": "POST", "body": json.dumps(ARF_MOCK_EVENT_BODY)}
+    return {
+        "httpMethod": "POST",
+        "body": json.dumps(ARF_MOCK_EVENT_BODY),
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
+    }
 
 
 @pytest.fixture
 def lg_type_event():
-    return {"httpMethod": "POST", "body": json.dumps(LG_MOCK_EVENT_BODY)}
+    return {
+        "httpMethod": "POST",
+        "body": json.dumps(LG_MOCK_EVENT_BODY),
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
+    }
 
 
 @pytest.fixture
@@ -53,13 +65,22 @@ def mock_processing_event_details(mocker):
     )
 
 
-def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
-    set_env, both_type_event, context, mocker, mock_upload_lambda_enabled
-):
-    mock_service = mocker.patch(
-        "handlers.create_document_reference_handler.CreateDocumentReferenceService.create_document_reference_request",
+@pytest.fixture
+def mock_service(mocker):
+    mock_service = mocker.MagicMock()
+    mocker.patch(
+        "handlers.create_document_reference_handler.CreateDocumentReferenceService",
+        return_value=mock_service,
     )
-    mock_service.return_value = LG_AND_ARF_MOCK_RESPONSE
+    yield mock_service
+
+
+def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
+    set_env, both_type_event, context, mock_service, mock_upload_lambda_enabled
+):
+    mock_service.create_document_reference_request.return_value = (
+        LG_AND_ARF_MOCK_RESPONSE
+    )
     expected = ApiGatewayResponse(
         200, json.dumps(LG_AND_ARF_MOCK_RESPONSE), "POST"
     ).create_api_gateway_response()
@@ -175,19 +196,18 @@ def test_lambda_handler_processing_event_details_raise_error(
 
 
 def test_lambda_handler_service_raise_error(
-    mocker,
     arf_type_event,
     context,
     set_env,
     mock_processing_event_details,
     mock_upload_lambda_enabled,
+    mock_service,
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
-
-    mock_service = mocker.patch(
-        "services.create_document_reference_service.CreateDocumentReferenceService.create_document_reference_request",
-        side_effect=CreateDocumentRefException(400, MockError.Error),
+    mock_service.create_document_reference_request.side_effect = (
+        CreateDocumentRefException(400, MockError.Error),
     )
+
     expected = ApiGatewayResponse(
         400,
         json.dumps(MockError.Error.value),
@@ -195,24 +215,23 @@ def test_lambda_handler_service_raise_error(
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
     assert expected == actual
-    mock_service.assert_called_with(TEST_NHS_NUMBER, ARF_FILE_LIST)
+    mock_service.create_document_reference_request.assert_called_with(
+        TEST_NHS_NUMBER, ARF_FILE_LIST
+    )
     mock_processing_event_details.assert_called_with(arf_type_event)
 
 
 def test_lambda_handler_valid(
-    mocker,
     arf_type_event,
     context,
     set_env,
     mock_processing_event_details,
     mock_upload_lambda_enabled,
+    mock_service,
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
 
-    mock_service = mocker.patch(
-        "handlers.create_document_reference_handler.CreateDocumentReferenceService.create_document_reference_request",
-    )
-    mock_service.return_value = ARF_MOCK_RESPONSE
+    mock_service.create_document_reference_request.return_value = ARF_MOCK_RESPONSE
 
     expected = ApiGatewayResponse(
         200,

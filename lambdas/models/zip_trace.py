@@ -16,6 +16,7 @@ class DocumentManifestZipTrace(BaseModel):
 
     id: str = Field(alias="ID", default_factory=lambda: str(uuid.uuid4()))
     job_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nhs_number: str
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc)
         .isoformat()
@@ -31,7 +32,11 @@ class DocumentManifestZipTrace(BaseModel):
 
 
 class DocumentManifestJob(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, use_enum_values=True)
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        use_enum_values=True,
+        populate_by_name=True,
+    )
 
     job_status: TraceStatus
     url: str

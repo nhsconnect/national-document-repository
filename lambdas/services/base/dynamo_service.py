@@ -103,7 +103,7 @@ class DynamoDBService:
     def update_item(
         self,
         table_name: str,
-        key: str,
+        key_pair: dict[str, str],
         updated_fields: dict,
         condition_expression: str = None,
         expression_attribute_values: dict = None,
@@ -121,7 +121,7 @@ class DynamoDBService:
             generated_expression_attribute_values.update(expression_attribute_values)
 
         update_item_args = {
-            "Key": {"ID": key},
+            "Key": key_pair,
             "UpdateExpression": update_expression,
             "ExpressionAttributeNames": expression_attribute_names,
             "ExpressionAttributeValues": generated_expression_attribute_values,

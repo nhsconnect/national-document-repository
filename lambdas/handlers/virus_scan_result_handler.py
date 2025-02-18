@@ -12,6 +12,7 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_exceptions import FeatureFlagsException, VirusScanResultException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -19,6 +20,7 @@ from utils.request_context import request_context
 logger = LoggingService(__name__)
 
 
+@validate_patient_id
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[
@@ -47,20 +49,19 @@ def lambda_handler(event, context):
         event_body = json.loads(event["body"])
         if not event_body:
             raise VirusScanResultException(400, LambdaError.VirusScanNoBody)
+        nhs_number_query_string = event["queryStringParameters"]["patientId"]
 
         document_reference = event_body.get("documentReference")
-
-        if not any(
-            doctype in document_reference.upper()
-            for doctype in [
-                SupportedDocumentTypes.ARF.value,
-                SupportedDocumentTypes.LG.value,
-            ]
-        ):
+        _, doc_type, nhs_number, _ = document_reference.split("/")
+        if doc_type.upper() not in SupportedDocumentTypes.list():
             raise VirusScanResultException(400, LambdaError.VirusScanNoDocumentType)
+        if nhs_number != nhs_number_query_string:
+            raise VirusScanResultException(400, LambdaError.PatientIdMismatch)
 
     except (JSONDecodeError, KeyError):
         raise VirusScanResultException(400, LambdaError.VirusScanNoBody)
+    except ValueError:
+        raise VirusScanResultException(400, LambdaError.VirusScanNoDocumentType)
 
     virus_scan_service = VirusScanService()
     virus_scan_service.scan_file(document_reference)

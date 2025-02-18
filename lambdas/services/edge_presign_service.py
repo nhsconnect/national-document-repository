@@ -46,7 +46,7 @@ class EdgePresignService:
             logger.info(f"Table: {formatted_table_name}")
             self.dynamo_service.update_item(
                 table_name=formatted_table_name,
-                key=uri_hash,
+                key_pair={"ID": uri_hash},
                 updated_fields={"IsRequested": True},
                 condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
                 expression_attribute_values={":false": False},

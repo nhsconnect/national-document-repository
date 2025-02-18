@@ -93,7 +93,9 @@ class DocumentService:
 
         for reference in document_references:
             self.dynamo_service.update_item(
-                table_name, reference.id, updated_fields=update_fields
+                table_name=table_name,
+                key_pair={DocumentReferenceMetadataFields.ID.value: reference.id},
+                updated_fields=update_fields,
             )
 
     def delete_document_object(self, bucket: str, key: str):
@@ -124,7 +126,9 @@ class DocumentService:
     ):
         for reference in document_references:
             self.dynamo_service.update_item(
-                table_name, reference.id, updated_fields=update_fields
+                table_name=table_name,
+                key_pair={DocumentReferenceMetadataFields.ID.value: reference.id},
+                updated_fields=update_fields,
             )
 
     def hard_delete_metadata_records(
