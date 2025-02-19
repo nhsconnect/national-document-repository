@@ -109,7 +109,7 @@ def test_create_and_save_ods_report(ods_report_service, mocker):
     )
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00"
+    file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     result = ods_report_service.create_and_save_ods_report(
@@ -129,7 +129,7 @@ def test_create_and_save_ods_report(ods_report_service, mocker):
 def test_create_and_save_ods_report_with_pre_sign_url(ods_report_service, mocker):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00"
+    file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
     mock_pre_sign_url = "https://presigned.url"
     mock_create_report_csv = mocker.patch.object(
         ods_report_service, "create_report_csv"

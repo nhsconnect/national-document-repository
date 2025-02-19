@@ -128,7 +128,14 @@ class OdsReportService:
     ):
         now = datetime.now()
         formatted_time = now.strftime("%Y-%m-%d_%H-%M")
-        file_name = "NDR_" + ods_code + f"_{len(nhs_numbers)}_" + formatted_time
+        file_name = (
+            "NDR_"
+            + ods_code
+            + f"_{len(nhs_numbers)}_"
+            + formatted_time
+            + "."
+            + file_type_output
+        )
         temp_file_path = os.path.join(self.temp_output_dir, file_name)
         match file_type_output:
             case FileType.CSV:
@@ -148,7 +155,6 @@ class OdsReportService:
                 return self.get_pre_signed_url(ods_code, file_name)
 
     def create_report_csv(self, file_name, nhs_numbers, ods_code):
-        file_name = file_name + ".csv"
         with open(file_name, "w") as f:
             f.write(
                 f"Total number of patients for ODS code {ods_code}: {len(nhs_numbers)}\n"
@@ -166,10 +172,10 @@ class OdsReportService:
         for row in nhs_numbers:
             ws.append([row])
 
-        wb.save(f"{file_name}.xlsx")
+        wb.save(file_name)
 
     def create_pdf_report(self, file_name, nhs_numbers, ods_code):
-        c = canvas.Canvas(f"{file_name}.pdf", pagesize=letter)
+        c = canvas.Canvas(file_name, pagesize=letter)
         width, height = letter
         c.setFont("Helvetica-Bold", 16)
         x = 100
