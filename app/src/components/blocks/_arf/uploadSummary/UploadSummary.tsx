@@ -24,7 +24,6 @@ const UploadSummary = ({ documents }: Props) => {
         );
     });
 
-    const tableMargin = { marginBottom: 50 };
     const tableCaption = (
         <>
             <h2 className="nhsuk-heading-m">
