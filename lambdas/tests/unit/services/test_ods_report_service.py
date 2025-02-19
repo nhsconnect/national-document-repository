@@ -5,6 +5,7 @@ import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from freezegun import freeze_time
 from services.ods_report_service import OdsReportService
+from utils.lambda_exceptions import OdsReportException
 
 
 @pytest.fixture
@@ -46,6 +47,29 @@ def test_get_nhs_numbers_by_ods(ods_report_service, mocker):
     mock_create_and_save_ods_report.assert_called_once_with(
         "ODS123", {"NHS123", "NHS456"}, False, False, "csv"
     )
+
+
+def test_get_nhs_numbers_by_ods_with_temp_folder(ods_report_service, mocker):
+
+    mock_scan_table_with_filter = mocker.patch.object(
+        ods_report_service,
+        "scan_table_with_filter",
+        return_value=[
+            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
+            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
+        ],
+    )
+    mock_create_and_save_ods_report = mocker.patch.object(
+        ods_report_service, "create_and_save_ods_report"
+    )
+
+    ods_report_service.get_nhs_numbers_by_ods("ODS123", is_upload_to_s3_needed=True)
+
+    mock_scan_table_with_filter.assert_called_once_with("ODS123")
+    mock_create_and_save_ods_report.assert_called_once_with(
+        "ODS123", {"NHS123", "NHS456"}, False, True, "csv"
+    )
+    assert ods_report_service.temp_output_dir != ""
 
 
 def test_scan_table_with_filter_with_last_eva_key(
@@ -93,6 +117,20 @@ def test_scan_table_with_filter_without_last_eva_key(
     results = ods_report_service.scan_table_with_filter("ODS123")
 
     assert len(results) == 2
+    assert mock_dynamo_service_scan_table.call_count == 1
+
+
+def test_scan_table_with_filter_no_results(ods_report_service, mocker, mocked_context):
+    mock_dynamo_service_scan_table = mocker.patch.object(
+        ods_report_service.dynamo_service,
+        "scan_table",
+        return_value={
+            "Items": [],
+        },
+    )
+    with pytest.raises(OdsReportException):
+        ods_report_service.scan_table_with_filter("ODS123")
+
     assert mock_dynamo_service_scan_table.call_count == 1
 
 

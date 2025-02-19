@@ -176,7 +176,7 @@ class OdsReportService:
 
     def create_pdf_report(self, file_name, nhs_numbers, ods_code):
         c = canvas.Canvas(file_name, pagesize=letter)
-        width, height = letter
+        _, height = letter
         c.setFont("Helvetica-Bold", 16)
         x = 100
         y = 700
