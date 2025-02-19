@@ -497,10 +497,15 @@ class LambdaError(Enum):
         "err_code": "PN_4002",
         "message": "An error occurred due to missing key",
     }
+    PatientIdMismatch = {
+        "err_code": "PN_4003",
+        "message": "An error occurred due to patient number mismatch",
+    }
     GatewayError = {
         "err_code": "GWY_5001",
         "message": "Failed to utilise AWS client/resource",
     }
+
     UploadInProgressError = {
         "err_code": "LGL_423",
         "message": "Records are in the process of being uploaded",

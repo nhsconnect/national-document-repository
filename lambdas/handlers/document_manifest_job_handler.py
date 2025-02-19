@@ -17,7 +17,6 @@ from utils.request_context import request_context
 logger = LoggingService(__name__)
 
 
-@validate_patient_id
 @validate_document_type
 def create_manifest_job(event, context):
     logger.info("Starting document manifest process")
@@ -42,17 +41,18 @@ def create_manifest_job(event, context):
 @validate_job_id
 def get_manifest_job(event, context):
     logger.info("Retrieving document manifest")
-
+    nhs_number = event["queryStringParameters"]["patientId"]
     job_id = event["queryStringParameters"]["jobId"]
 
     document_manifest_service = DocumentManifestJobService()
-    response = document_manifest_service.query_document_manifest_job(job_id)
+    response = document_manifest_service.query_document_manifest_job(job_id, nhs_number)
 
     return ApiGatewayResponse(
         200, json.dumps(response.model_dump(by_alias=True)), "GET"
     ).create_api_gateway_response()
 
 
+@validate_patient_id
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[

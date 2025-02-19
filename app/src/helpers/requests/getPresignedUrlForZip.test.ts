@@ -207,6 +207,7 @@ describe('pollForPresignedUrl', () => {
             baseHeaders,
             baseUrl,
             jobId: testJobId,
+            nhsNumber: nhsNumber,
         });
 
         expect(actual).toEqual(expectedData);

@@ -256,6 +256,10 @@ $hunit: '%';
         a {
             padding-right: 30px;
         }
+        &_links,
+        a {
+            padding-right: 30px;
+        }
 
         &_flex {
             &-row {
@@ -813,6 +817,10 @@ $hunit: '%';
 
 .nhs-warning-color {
     color: $color_nhsuk-red;
+}
+
+.feedback-page_inset-text {
+    background-color: #fff;
 }
 
 .paragraph-top-margin {

@@ -60,6 +60,7 @@ type UploadAndScanSingleDocumentArgs = {
     uploadSession: UploadSession;
     baseUrl: string;
     baseHeaders: AuthHeaders;
+    nhsNumber: string;
 };
 
 export async function uploadAndScanSingleDocument({
@@ -68,6 +69,7 @@ export async function uploadAndScanSingleDocument({
     setDocuments,
     baseUrl,
     baseHeaders,
+    nhsNumber,
 }: UploadAndScanSingleDocumentArgs): Promise<void> {
     await uploadDocumentToS3({ setDocuments, document, uploadSession });
     setSingleDocument(setDocuments, {
@@ -79,6 +81,7 @@ export async function uploadAndScanSingleDocument({
         documentReference: document.key ?? '',
         baseUrl,
         baseHeaders,
+        nhsNumber,
     });
     setSingleDocument(setDocuments, {
         id: document.id,

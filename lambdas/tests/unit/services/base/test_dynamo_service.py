@@ -280,9 +280,9 @@ def test_update_item_is_called_with_correct_parameters(mock_service, mock_table)
     }
 
     mock_service.update_item(
-        MOCK_TABLE_NAME,
-        TEST_NHS_NUMBER,
-        {
+        table_name=MOCK_TABLE_NAME,
+        key_pair={"ID": TEST_NHS_NUMBER},
+        updated_fields={
             DocumentReferenceMetadataFields.FILE_NAME.value: "test-filename",
             DocumentReferenceMetadataFields.DELETED.value: "test-delete",
         },
@@ -304,7 +304,7 @@ def test_update_item_client_error_raises_exception(mock_service, mock_table):
     with pytest.raises(ClientError) as actual_response:
         mock_service.update_item(
             MOCK_TABLE_NAME,
-            TEST_NHS_NUMBER,
+            {"ID": TEST_NHS_NUMBER},
             {
                 DocumentReferenceMetadataFields.FILE_NAME.value: "test-filename",
                 DocumentReferenceMetadataFields.DELETED.value: "test-delete",

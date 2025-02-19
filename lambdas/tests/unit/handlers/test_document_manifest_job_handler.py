@@ -78,6 +78,7 @@ def valid_job_id_get_event():
         "httpMethod": "GET",
         "queryStringParameters": {
             "jobId": TEST_UUID,
+            "patientId": TEST_NHS_NUMBER,
         },
     }
     return api_gateway_proxy_event

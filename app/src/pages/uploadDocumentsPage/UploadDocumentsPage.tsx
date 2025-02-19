@@ -60,6 +60,7 @@ function UploadDocumentsPage() {
                 uploadingState: true,
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
         };
 
@@ -161,6 +162,7 @@ function UploadDocumentsPage() {
                 baseUrl,
                 baseHeaders,
                 uploadingState: false,
+                nhsNumber,
             });
         }
     }, [
@@ -196,7 +198,7 @@ function UploadDocumentsPage() {
             setIntervalTimer(timerId);
 
             uploadingDocuments.forEach((document) => {
-                void uploadAndScanSingleArfDocument(document, uploadSession);
+                void uploadAndScanSingleArfDocument(document, uploadSession, nhsNumber);
             });
         } catch (error) {
             window.clearInterval(timerId);
@@ -207,6 +209,7 @@ function UploadDocumentsPage() {
     const uploadAndScanSingleArfDocument = async (
         document: UploadDocument,
         uploadSession: UploadSession,
+        nhsNumber: string,
     ) => {
         try {
             await uploadAndScanSingleDocument({
@@ -215,6 +218,7 @@ function UploadDocumentsPage() {
                 setDocuments,
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
         } catch (e) {
             markDocumentAsFailed(document);

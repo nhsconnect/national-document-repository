@@ -3,6 +3,7 @@ import uuid
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
@@ -58,7 +59,7 @@ class UploadConfirmResultService:
                     arf_document_references,
                     arf_bucket_name,
                     arf_table_name,
-                    SupportedDocumentTypes.ARF.value,
+                    SupportedDocumentTypes.ARF,
                 )
 
             if lg_document_references:
@@ -73,7 +74,7 @@ class UploadConfirmResultService:
                     lg_document_references,
                     lg_bucket_name,
                     lg_table_name,
-                    SupportedDocumentTypes.LG.value,
+                    SupportedDocumentTypes.LG,
                 )
 
                 if len(lg_document_references) == 1:
@@ -136,9 +137,13 @@ class UploadConfirmResultService:
         file_location = f"s3://{bucket_name}/{self.nhs_number}/{document_reference}"
 
         self.dynamo_service.update_item(
-            table_name,
-            document_reference,
-            {"Uploaded": True, "Uploading": False, "FileLocation": file_location},
+            table_name=table_name,
+            key_pair={DocumentReferenceMetadataFields.ID.value: document_reference},
+            updated_fields={
+                "Uploaded": True,
+                "Uploading": False,
+                "FileLocation": file_location,
+            },
         )
 
     def validate_number_of_documents(

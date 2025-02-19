@@ -37,7 +37,8 @@ def lambda_handler(event, context):
     authoriser_service = AuthoriserService()
 
     ssm_jwt_public_key_parameter = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-    auth_token = event.get("authorizationToken")
+    headers = event.get("headers", {})
+    auth_token = headers.get("authorization") or headers.get("Authorization")
     if event.get("methodArn") is None:
         return {"Error": "methodArn is not defined"}
     _, _, _, region, aws_account_id, api_gateway_arn = event.get("methodArn").split(":")
@@ -49,9 +50,12 @@ def lambda_handler(event, context):
     policy.region = region
     policy.stage = stage
     try:
+        if not auth_token:
+            raise AuthorisationException("Authorization header is required")
+        patient_id = event.get("queryStringParameters", {}).get("patientId", None)
         logger.info("Validating resource req: %s, http: %s" % (path, _http_verb))
         is_allow_policy = authoriser_service.auth_request(
-            path, ssm_jwt_public_key_parameter, auth_token
+            path, ssm_jwt_public_key_parameter, auth_token, patient_id
         )
         if is_allow_policy:
             policy.allow_method(_http_verb, path)

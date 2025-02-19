@@ -2,7 +2,7 @@ import json
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
-from tests.unit.conftest import TEST_FILE_KEY
+from tests.unit.conftest import TEST_FILE_KEY, TEST_NHS_NUMBER
 
 Fields = DocumentReferenceMetadataFields
 
@@ -76,18 +76,29 @@ MOCK_EMPTY_LIST = []
 MOCK_VALID_LG_EVENT = {
     "httpMethod": "POST",
     "body": json.dumps(MOCK_LG_DOCUMENTS_REQUEST),
+    "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
 }
 
 MOCK_VALID_ARF_EVENT = {
     "httpMethod": "POST",
     "body": json.dumps(MOCK_ARF_DOCUMENTS_REQUEST),
+    "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
 }
 
 MOCK_INVALID_TYPE_EVENT = {
     "httpMethod": "POST",
     "body": json.dumps(MOCK_INVALID_TYPE_DOCUMENTS_REQUEST),
+    "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
 }
 
-MOCK_INVALID_BODY_EVENT = {"httpMethod": "POST", "body": "test"}
+MOCK_INVALID_BODY_EVENT = {
+    "httpMethod": "POST",
+    "body": "test",
+    "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
+}
 
-MOCK_NO_BODY_EVENT = {"httpMethod": "POST", "test": "test"}
+MOCK_NO_BODY_EVENT = {
+    "httpMethod": "POST",
+    "test": "test",
+    "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
+}

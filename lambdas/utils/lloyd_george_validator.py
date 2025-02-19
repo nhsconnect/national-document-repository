@@ -290,7 +290,7 @@ def calculate_validation_score_for_lenient_check(
                 "Failed to find full match on patient name, trying to validate using name history"
             )
     result_message = f"matched on {len(matched_on_family_name)} family_name and {len(matched_on_given_name)} given name"
-    if len(matched_on_given_name) + len(matched_on_family_name) > 1:
+    if len(matched_on_given_name) > 0 and len(matched_on_family_name) > 0:
         return ValidationScore.MIXED_FULL_MATCH, historical_match, result_message
     elif matched_on_given_name or matched_on_family_name:
         return ValidationScore.PARTIAL_MATCH, historical_match, result_message
