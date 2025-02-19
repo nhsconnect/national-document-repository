@@ -20,8 +20,8 @@ COPY --from=builder /app/build .
 WORKDIR /etc/nginx
 COPY --from=builder ./app/docker/nginx.conf ./nginx.conf.template
 
-RUN sed -i "s/\$CLOUDFRONT_DOMAIN_NAME|${CLOUDFRONT_DOMAIN_NAME}/g" ./nginx.conf.template && \
-    sed -i "s/\$CONTAINER_PORT|${CONTAINER_PORT}/g" ./nginx.conf.template && \
+RUN sed -i "s/\$CLOUDFRONT_DOMAIN_NAME/${CLOUDFRONT_DOMAIN_NAME}/g" ./nginx.conf.template && \
+    sed -i "s/\$CONTAINER_PORT/${CONTAINER_PORT}/g" ./nginx.conf.template && \
     mv ./nginx.conf.template ./nginx.conf
 
 EXPOSE ${CONTAINER_PORT}
