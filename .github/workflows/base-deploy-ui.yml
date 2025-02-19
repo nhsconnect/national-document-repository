@@ -60,7 +60,7 @@ jobs:
 
       - name: Get CloudFront domain name
         id: cloudfront-domain-name
-        run : |
+        run: |
           cloudfront_domain_name=$(aws cloudfront list-distributions --query "DistributionList.Items[?starts_with(Origins.Items[0].DomainName, '${{ inputs.sandbox }}')].DomainName" --output text)
           echo "Cloudfront domain name found for environment: $cloudfront_domain_name"
           echo "CLOUDFRONT_DOMAIN_NAME=$cloudfront_domain_name" >> $GITHUB_ENV
