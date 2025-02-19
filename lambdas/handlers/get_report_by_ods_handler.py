@@ -35,9 +35,9 @@ def handle_api_gateway_request(event):
     )
     if not ods_code:
         raise OdsErrorException("No ODS code provided")
-    file_type = event.get("queryStringParameters", {}).get(
-        "OutputFileType", FileType.CSV
-    )
+    file_type = event.get("queryStringParameters", {}).get("OutputFileType")
+    if file_type not in FileType.__members__.values():
+        file_type = FileType.CSV
     service = OdsReportService()
     logger.info(f"Starting process for ods code: {ods_code}")
     pre_sign_url = service.get_nhs_numbers_by_ods(
@@ -54,7 +54,7 @@ def handle_api_gateway_request(event):
 def handle_manual_trigger(event):
     ods_codes = event.get("odsCode").split(",")
     file_type = event.get("fileType")
-    if file_type not in FileType:
+    if file_type not in FileType.__members__.values():
         file_type = FileType.CSV
     service = OdsReportService()
     for ods_code in ods_codes:

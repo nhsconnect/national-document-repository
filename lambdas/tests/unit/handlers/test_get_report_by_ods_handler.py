@@ -77,7 +77,7 @@ def test_handle_api_gateway_request_no_ods_code(mock_service):
 
 
 def test_handle_manual_trigger_single_ods_code(mock_service):
-    event = {"odsCode": "ODS123"}
+    event = {"odsCode": "ODS123", "fileType": "pdf"}
     mock_service.get_nhs_numbers_by_ods.return_value = None
     expected = ApiGatewayResponse(
         200, "Successfully created report", "GET"
@@ -88,7 +88,7 @@ def test_handle_manual_trigger_single_ods_code(mock_service):
     assert result == expected
     assert mock_service.get_nhs_numbers_by_ods.call_count == 1
     mock_service.get_nhs_numbers_by_ods.assert_called_once_with(
-        "ODS123", file_type_output="csv", is_upload_to_s3_needed=True
+        "ODS123", file_type_output="pdf", is_upload_to_s3_needed=True
     )
 
 
