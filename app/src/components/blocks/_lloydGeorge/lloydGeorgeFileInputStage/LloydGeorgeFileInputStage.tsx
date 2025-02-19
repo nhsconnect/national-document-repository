@@ -213,7 +213,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     <Table.Head>
                         <Table.Row>
                             <Table.Cell table-cell-lg-input-cell-border>
-                                <div style={{ padding: '6px 0 12px 0', color: '#425563' }}>
+                                <div className="div-lg-input-cell">
                                     <strong>
                                         {`${documents.length}`} file
                                         {`${documents.length === 1 ? '' : 's'}`} chosen

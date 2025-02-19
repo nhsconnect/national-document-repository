@@ -19,15 +19,7 @@ const preview: Preview = {
         (Story) => (
             <PatientDetailsProvider patientDetails={{ ...buildPatientDetails() }}>
                 <MemoryRouter initialEntries={['/']}>
-                    <div
-                        className="nhsuk-width-container.preview"
-                        style={{
-                            margin: `0 auto`,
-                            maxWidth: 960,
-                            padding: `0 1.0875rem 1.45rem`,
-                            minHeight: '75vh',
-                        }}
-                    >
+                    <div className="nhsuk-width-container preview">
                         <main
                             className="nhsuk-main-wrapper app-homepage"
                             id="maincontent"
