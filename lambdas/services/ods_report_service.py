@@ -177,11 +177,11 @@ class OdsReportService:
     def create_pdf_report(self, file_name, nhs_numbers, ods_code):
         c = canvas.Canvas(file_name, pagesize=letter)
         width, height = letter
-        c.setFont("Arial-Bold", 16)
+        c.setFont("Helvetica-Bold", 16)
         x = 100
         y = 700
         c.drawString(x, height - 50, f"NHS numbers within NDR for ODS code: {ods_code}")
-        c.setFont("Arial", 12)
+        c.setFont("Helvetica", 12)
 
         c.drawString(x, y, f"Total number of patients: {len(nhs_numbers)}")
         y -= 20
