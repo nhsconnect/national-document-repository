@@ -144,8 +144,8 @@ class OdsReportService:
         if upload_to_s3:
             self.save_report_to_s3(ods_code, file_name, temp_file_path)
 
-        if create_pre_signed_url:
-            return self.get_pre_signed_url(ods_code, file_name)
+            if create_pre_signed_url:
+                return self.get_pre_signed_url(ods_code, file_name)
 
     def create_report_csv(self, file_name, nhs_numbers, ods_code):
         file_name = file_name + ".csv"

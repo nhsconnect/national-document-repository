@@ -42,7 +42,10 @@ def test_lambda_handler_api_gateway_request(
     assert result == expected
 
     mock_service.get_nhs_numbers_by_ods.assert_called_once_with(
-        "ODS123", is_pre_signed_need=True
+        "ODS123",
+        is_pre_signed_needed=True,
+        is_upload_to_s3_needed=True,
+        file_type_output="csv",
     )
 
 
@@ -57,8 +60,12 @@ def test_lambda_handler_manual_trigger(mock_service, set_env, context):
 
     assert result == expected
     assert mock_service.get_nhs_numbers_by_ods.call_count == 2
-    mock_service.get_nhs_numbers_by_ods.assert_any_call("ODS123")
-    mock_service.get_nhs_numbers_by_ods.assert_any_call("ODS456")
+    mock_service.get_nhs_numbers_by_ods.assert_any_call(
+        "ODS123", file_type_output="csv", is_upload_to_s3_needed=True
+    )
+    mock_service.get_nhs_numbers_by_ods.assert_any_call(
+        "ODS456", file_type_output="csv", is_upload_to_s3_needed=True
+    )
 
 
 def test_handle_api_gateway_request_no_ods_code(mock_service):
@@ -80,7 +87,9 @@ def test_handle_manual_trigger_single_ods_code(mock_service):
 
     assert result == expected
     assert mock_service.get_nhs_numbers_by_ods.call_count == 1
-    mock_service.get_nhs_numbers_by_ods.assert_called_once_with("ODS123")
+    mock_service.get_nhs_numbers_by_ods.assert_called_once_with(
+        "ODS123", file_type_output="csv", is_upload_to_s3_needed=True
+    )
 
 
 def test_handle_manual_trigger_invalid_ods_code_format(mock_service):

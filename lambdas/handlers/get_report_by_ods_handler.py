@@ -35,10 +35,16 @@ def handle_api_gateway_request(event):
     )
     if not ods_code:
         raise OdsErrorException("No ODS code provided")
+    file_type = event.get("queryStringParameters", {}).get(
+        "OutputFileType", FileType.CSV
+    )
     service = OdsReportService()
     logger.info(f"Starting process for ods code: {ods_code}")
     pre_sign_url = service.get_nhs_numbers_by_ods(
-        ods_code, is_pre_signed_needed=True, is_upload_to_s3_needed=True
+        ods_code,
+        is_pre_signed_needed=True,
+        is_upload_to_s3_needed=True,
+        file_type_output=file_type,
     )
     return ApiGatewayResponse(
         200, json.dumps({"url": pre_sign_url}), "GET"

@@ -44,7 +44,7 @@ def test_get_nhs_numbers_by_ods(ods_report_service, mocker):
 
     mock_scan_table_with_filter.assert_called_once_with("ODS123")
     mock_create_and_save_ods_report.assert_called_once_with(
-        "ODS123", {"NHS123", "NHS456"}, False
+        "ODS123", {"NHS123", "NHS456"}, False, False, "csv"
     )
 
 
@@ -98,7 +98,9 @@ def test_scan_table_with_filter_without_last_eva_key(
 
 @freeze_time("2024-01-01T12:00:00Z")
 def test_create_and_save_ods_report(ods_report_service, mocker):
-    mock_create_report = mocker.patch.object(ods_report_service, "create_report")
+    mock_create_report_csv = mocker.patch.object(
+        ods_report_service, "create_report_csv"
+    )
     mock_save_report_to_s3 = mocker.patch.object(
         ods_report_service, "save_report_to_s3"
     )
@@ -107,12 +109,16 @@ def test_create_and_save_ods_report(ods_report_service, mocker):
     )
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
+    file_name = "NDR_ODS123_2_2024-01-01_12-00"
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
-    result = ods_report_service.create_and_save_ods_report(ods_code, nhs_numbers)
+    result = ods_report_service.create_and_save_ods_report(
+        ods_code, nhs_numbers, upload_to_s3=True
+    )
 
-    mock_create_report.assert_called_once_with(temp_file_path, nhs_numbers, ods_code)
+    mock_create_report_csv.assert_called_once_with(
+        temp_file_path, nhs_numbers, ods_code
+    )
     mock_save_report_to_s3.assert_called_once_with(ods_code, file_name, temp_file_path)
     mock_get_pre_signed_url.assert_not_called()
 
@@ -123,9 +129,11 @@ def test_create_and_save_ods_report(ods_report_service, mocker):
 def test_create_and_save_ods_report_with_pre_sign_url(ods_report_service, mocker):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
+    file_name = "NDR_ODS123_2_2024-01-01_12-00"
     mock_pre_sign_url = "https://presigned.url"
-    mock_create_report = mocker.patch.object(ods_report_service, "create_report")
+    mock_create_report_csv = mocker.patch.object(
+        ods_report_service, "create_report_csv"
+    )
     mock_save_report_to_s3 = mocker.patch.object(
         ods_report_service, "save_report_to_s3"
     )
@@ -134,20 +142,24 @@ def test_create_and_save_ods_report_with_pre_sign_url(ods_report_service, mocker
     )
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
-    result = ods_report_service.create_and_save_ods_report(ods_code, nhs_numbers, True)
+    result = ods_report_service.create_and_save_ods_report(
+        ods_code, nhs_numbers, True, True
+    )
 
-    mock_create_report.assert_called_once_with(temp_file_path, nhs_numbers, ods_code)
+    mock_create_report_csv.assert_called_once_with(
+        temp_file_path, nhs_numbers, ods_code
+    )
     mock_save_report_to_s3.assert_called_once_with(ods_code, file_name, temp_file_path)
     mock_get_pre_signed_url.assert_called_once_with(ods_code, file_name)
     assert result == mock_pre_sign_url
 
 
-def test_create_report(ods_report_service, tmp_path):
+def test_create_report_csv(ods_report_service, tmp_path):
     nhs_numbers = {"NHS123", "NHS456"}
     file_name = tmp_path / "test_report.csv"
     ods_code = "ODS123"
 
-    ods_report_service.create_report(file_name, nhs_numbers, ods_code)
+    ods_report_service.create_report_csv(file_name, nhs_numbers, ods_code)
 
     with open(file_name, "r") as f:
         content = f.readlines()
