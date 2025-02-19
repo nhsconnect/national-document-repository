@@ -437,6 +437,10 @@ class LambdaError(Enum):
         "err_code": "OR_4041",
         "message": "No data found for requested ods code",
     }
+    BadFileTypeRequest = {
+        "err_code": "OR_4001",
+        "message": "Bad request for file type",
+    }
     """
         Edge Lambda Errors
     """

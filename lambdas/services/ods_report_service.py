@@ -55,10 +55,10 @@ class OdsReportService:
 
     def scan_table_with_filter(self, ods_code):
         ods_codes = [ods_code]
+        authorization_user = getattr(request_context, "authorization", {})
         if (
-            hasattr(request_context, "authorization")
-            and request_context.authorization.get("repository_role")
-            == RepositoryRole.PCSE.value
+            authorization_user
+            and authorization_user.get("repository_role") == RepositoryRole.PCSE.value
         ):
             ods_codes = [
                 PatientOdsInactiveStatus.SUSPENDED,
@@ -144,7 +144,8 @@ class OdsReportService:
                 self.create_xlsx_report(temp_file_path, nhs_numbers, ods_code)
             case FileType.PDF:
                 self.create_pdf_report(temp_file_path, nhs_numbers, ods_code)
-
+            case _:
+                raise OdsReportException(400, LambdaError.BadFileTypeRequest)
         logger.info(
             f"Query completed. {len(nhs_numbers)} items written to {file_name}."
         )
@@ -199,15 +200,16 @@ class OdsReportService:
 
     def save_report_to_s3(self, ods_code, file_name, temp_file_path):
         logger.info("Uploading the csv report to S3 bucket...")
+        today = datetime.now().date()
         self.s3_service.upload_file(
             s3_bucket_name=self.reports_bucket,
-            file_key=f"ods-reports/{ods_code}/{file_name}",
+            file_key=f"ods-reports/{ods_code}/{today.year}/{today.month}/{today.day}/{file_name}",
             file_name=temp_file_path,
         )
 
     def get_pre_signed_url(self, ods_code, file_name):
-        year, month, day = (d := datetime.now()).year, d.month, d.day
+        today = datetime.now().date()
         return self.s3_service.create_download_presigned_url(
             s3_bucket_name=self.reports_bucket,
-            file_key=f"ods-reports/{ods_code}/{year}/{month}/{day}/{file_name}",
+            file_key=f"ods-reports/{ods_code}/{today.year}/{today.month}/{today.day}/{file_name}",
         )

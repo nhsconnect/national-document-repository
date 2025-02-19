@@ -4,6 +4,8 @@ import tempfile
 import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from freezegun import freeze_time
+from openpyxl.reader.excel import load_workbook
+from pypdf import PdfReader
 from services.ods_report_service import OdsReportService
 from utils.lambda_exceptions import OdsReportException
 
@@ -151,7 +153,7 @@ def test_create_and_save_ods_report(ods_report_service, mocker):
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     result = ods_report_service.create_and_save_ods_report(
-        ods_code, nhs_numbers, upload_to_s3=True
+        ods_code, nhs_numbers, upload_to_s3=True, file_type_output="csv"
     )
 
     mock_create_report_csv.assert_called_once_with(
@@ -161,6 +163,59 @@ def test_create_and_save_ods_report(ods_report_service, mocker):
     mock_get_pre_signed_url.assert_not_called()
 
     assert result is None
+
+
+@freeze_time("2024-01-01T12:00:00Z")
+def test_create_and_save_ods_report_create_pdf(ods_report_service, mocker):
+    mock_create_report_pdf = mocker.patch.object(
+        ods_report_service, "create_pdf_report"
+    )
+    mock_save_report_to_s3 = mocker.patch.object(
+        ods_report_service, "save_report_to_s3"
+    )
+    mock_get_pre_signed_url = mocker.patch.object(
+        ods_report_service, "get_pre_signed_url"
+    )
+    ods_code = "ODS123"
+    nhs_numbers = {"NHS123", "NHS456"}
+    file_name = "NDR_ODS123_2_2024-01-01_12-00.pdf"
+    temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
+
+    ods_report_service.create_and_save_ods_report(
+        ods_code, nhs_numbers, upload_to_s3=True, file_type_output="pdf"
+    )
+
+    mock_create_report_pdf.assert_called_once_with(
+        temp_file_path, nhs_numbers, ods_code
+    )
+    mock_save_report_to_s3.assert_called_once_with(ods_code, file_name, temp_file_path)
+    mock_get_pre_signed_url.assert_not_called()
+
+
+def test_create_and_save_ods_report_send_invalid_file_type(ods_report_service, mocker):
+    mock_create_report_pdf = mocker.patch.object(
+        ods_report_service, "create_report_csv"
+    )
+    mock_save_report_to_s3 = mocker.patch.object(
+        ods_report_service, "save_report_to_s3"
+    )
+    mock_get_pre_signed_url = mocker.patch.object(
+        ods_report_service, "get_pre_signed_url"
+    )
+    ods_code = "ODS123"
+    nhs_numbers = {"NHS123", "NHS456"}
+    with pytest.raises(OdsReportException):
+        ods_report_service.create_and_save_ods_report(
+            ods_code,
+            nhs_numbers,
+            upload_to_s3=True,
+            create_pre_signed_url=True,
+            file_type_output="aaaaa",
+        )
+
+    mock_create_report_pdf.assert_not_called()
+    mock_save_report_to_s3.assert_not_called()
+    mock_get_pre_signed_url.assert_not_called()
 
 
 @freeze_time("2024-01-01T12:00:00Z")
@@ -211,6 +266,54 @@ def test_create_report_csv(ods_report_service, tmp_path):
     assert "NHS456\n" in content
 
 
+def test_create_xlsx_report(ods_report_service, tmp_path):
+    file_name = "test_report.xlsx"
+    nhs_numbers = ["NHS123456", "NHS654321", "NHS111222"]
+    ods_code = "ODS123"
+
+    ods_report_service.create_xlsx_report(file_name, nhs_numbers, ods_code)
+
+    assert os.path.exists(file_name)
+
+    wb = load_workbook(file_name)
+    ws = wb.active
+
+    assert (
+        ws["A1"].value
+        == f"Total number of patients for ODS code {ods_code}: {len(nhs_numbers)}\n"
+    )
+    assert ws["A2"].value == "NHS Numbers:\n"
+
+    for i, nhs_number in enumerate(nhs_numbers, start=3):  # Start from row 3
+        assert ws.cell(row=i, column=1).value == nhs_number
+
+    os.remove(file_name)
+
+
+@freeze_time("2024-01-01T12:00:00Z")
+def test_create_pdf_report(ods_report_service):
+    file_name = "test_report.pdf"
+    nhs_numbers = ["NHS123456", "NHS654321", "NHS111222"]
+    ods_code = "ODS123"
+
+    ods_report_service.create_pdf_report(file_name, nhs_numbers, ods_code)
+
+    assert os.path.exists(file_name)
+
+    reader = PdfReader(file_name)
+    assert len(reader.pages) > 0
+
+    first_page = reader.pages[0].extract_text()
+
+    assert f"NHS numbers within NDR for ODS code: {ods_code}" in first_page
+    assert f"Total number of patients: {len(nhs_numbers)}" in first_page
+    for nhs_number in nhs_numbers:
+        assert nhs_number in first_page
+
+    os.remove(file_name)
+
+
+@freeze_time("2024-01-01T12:00:00Z")
 def test_save_report_to_s3(ods_report_service, mocker):
     mocker.patch.object(ods_report_service.s3_service, "upload_file")
 
@@ -218,6 +321,18 @@ def test_save_report_to_s3(ods_report_service, mocker):
 
     ods_report_service.s3_service.upload_file.assert_called_once_with(
         s3_bucket_name="test_statistics_report_bucket",
-        file_key="ods-reports/ODS123/test_report.csv",
+        file_key="ods-reports/ODS123/2024/1/1/test_report.csv",
         file_name="path/to/file",
+    )
+
+
+@freeze_time("2024-01-01T12:00:00Z")
+def test_get_pre_signed_url(ods_report_service, mocker):
+    mocker.patch.object(ods_report_service.s3_service, "create_download_presigned_url")
+
+    ods_report_service.get_pre_signed_url("ODS123", "test_report.csv")
+
+    ods_report_service.s3_service.create_download_presigned_url.assert_called_once_with(
+        s3_bucket_name="test_statistics_report_bucket",
+        file_key="ods-reports/ODS123/2024/1/1/test_report.csv",
     )

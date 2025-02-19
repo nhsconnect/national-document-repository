@@ -35,7 +35,7 @@ def handle_api_gateway_request(event):
     )
     if not ods_code:
         raise OdsErrorException("No ODS code provided")
-    file_type = event.get("queryStringParameters", {}).get("OutputFileType")
+    file_type = event.get("queryStringParameters", {}).get("OutputFileFormat")
     if file_type not in FileType.__members__.values():
         file_type = FileType.CSV
     service = OdsReportService()
