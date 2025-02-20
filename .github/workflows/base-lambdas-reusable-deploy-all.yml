@@ -460,7 +460,7 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: get_report_by_ods_handler
-      lambda_aws_name: GetReportsByODSLambda
+      lambda_aws_name: GetReportByODS
       lambda_layer_names: 'core_lambda_layer,reports_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
