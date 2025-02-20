@@ -3,7 +3,7 @@ import { SearchResult } from '../../../../types/generic/searchResult';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 import { useNavigate } from 'react-router-dom';
 import { routeChildren } from '../../../../types/generic/routes';
-import React, { Dispatch, ReactNode, SetStateAction, SyntheticEvent, useState } from 'react';
+import React, { Dispatch, ReactNode, SetStateAction, useState } from 'react';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
@@ -43,7 +43,7 @@ const AvailableFilesTable = ({
             setSelectedDocuments([]);
         }
     };
-    const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
+    const handleChangeCheckboxes = (e: React.FormEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const toggledDocumentId = target.value;
         if (target.checked) {
@@ -122,19 +122,18 @@ const AvailableFilesTable = ({
                         >
                             {allowSelectDocument && (
                                 <Table.Cell id={`selected-files-row-${index}`}>
-                                    <Checkboxes onChange={handleChangeCheckboxes}>
-                                        <Checkboxes.Box
-                                            value={result.ID}
-                                            id={result.ID}
-                                            data-testid={`checkbox-${index}`}
-                                            checked={selectedDocuments.includes(result.ID)}
-                                            aria-checked={selectedDocuments.includes(result.ID)}
-                                        >
-                                            <span className="nhsuk-u-visually-hidden">
-                                                {result.fileName}
-                                            </span>
-                                        </Checkboxes.Box>
-                                    </Checkboxes>
+                                    <Checkboxes.Box
+                                        value={result.ID}
+                                        id={result.ID}
+                                        data-testid={`checkbox-${index}`}
+                                        checked={selectedDocuments.includes(result.ID)}
+                                        aria-checked={selectedDocuments.includes(result.ID)}
+                                        onChange={(e) => handleChangeCheckboxes(e)}
+                                    >
+                                        <span className="nhsuk-u-visually-hidden">
+                                            {result.fileName}
+                                        </span>
+                                    </Checkboxes.Box>
                                 </Table.Cell>
                             )}
                             <Table.Cell

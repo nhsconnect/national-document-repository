@@ -696,6 +696,35 @@ $hunit: '%';
     }
 }
 
+// override
+.nhsuk-back-link {
+    margin-top: nhsuk-spacing(0);
+    margin-bottom: nhsuk-spacing(3);
+}
+
+.nhsuk-header__navigation-list {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+}
+
+@media (min-width: 350px) {
+    .nhsuk-header__navigation-item:nth-last-child(1) {
+        justify-self: end;
+    }
+}
+
+@media (max-width: 350px) {
+    .nhsuk-header__navigation-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .nhsuk-header__navigation-link {
+        padding: 4px 2px;
+    }
+}
+
 // Generic
 .pdfobject-container:focus {
     border: 2px solid #212b32;
