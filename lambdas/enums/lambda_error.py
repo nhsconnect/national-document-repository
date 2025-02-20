@@ -437,9 +437,9 @@ class LambdaError(Enum):
         "err_code": "OR_4041",
         "message": "No data found for requested ods code",
     }
-    BadFileTypeRequest = {
+    UnsupportedFileType = {
         "err_code": "OR_4001",
-        "message": "Bad request for file type",
+        "message": "Failed to process unsupported file type",
     }
     """
         Edge Lambda Errors

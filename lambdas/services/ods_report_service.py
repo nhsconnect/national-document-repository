@@ -86,13 +86,22 @@ class OdsReportService:
 
         return results
 
-    def build_filter_expression(self, ods_codes):
+    @staticmethod
+    def build_filter_expression(ods_codes: list[str]):
         filter_builder = DynamoQueryFilterBuilder()
-        return filter_builder.add_condition(
-            attribute=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
-            attr_operator=AttributeOperator.IN,
-            filter_value=ods_codes,
-        ).build()
+        return (
+            filter_builder.add_condition(
+                attribute=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+                attr_operator=AttributeOperator.IN,
+                filter_value=ods_codes,
+            )
+            .add_condition(
+                attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+                attr_operator=AttributeOperator.EQUAL,
+                filter_value="",
+            )
+            .build()
+        )
 
     def query_table_by_index(self, ods_code):
         results = []
@@ -145,7 +154,7 @@ class OdsReportService:
             case FileType.PDF:
                 self.create_pdf_report(temp_file_path, nhs_numbers, ods_code)
             case _:
-                raise OdsReportException(400, LambdaError.BadFileTypeRequest)
+                raise OdsReportException(400, LambdaError.UnsupportedFileType)
         logger.info(
             f"Query completed. {len(nhs_numbers)} items written to {file_name}."
         )

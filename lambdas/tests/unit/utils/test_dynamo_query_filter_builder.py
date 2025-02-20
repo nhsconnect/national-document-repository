@@ -131,6 +131,28 @@ def test_query_filter_builder_handles_multiple_attributes_with_and_operator(
     assert actual == expected
 
 
+def test_query_filter_builder_handles_multiple_different_attribute_operators(
+    dynamo_filter,
+):
+    expected = Attr("CurrentGpOds").is_in(["Test"]) & Attr("Deleted").eq("")
+
+    actual = (
+        dynamo_filter.add_condition(
+            attribute=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value),
+            attr_operator=AttributeOperator.IN,
+            filter_value=["Test"],
+        )
+        .add_condition(
+            attribute=DocumentReferenceMetadataFields.DELETED.value,
+            attr_operator=AttributeOperator.EQUAL,
+            filter_value="",
+        )
+        .build()
+    )
+
+    assert actual.__dict__ == expected.__dict__
+
+
 def test_query_filter_builder_handles_multiple_attributes_with_or_operator(
     dynamo_filter,
 ):

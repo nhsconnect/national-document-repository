@@ -11,6 +11,30 @@ class DynamoQueryFilterBuilder:
     def add_condition(
         self, attribute: str, attr_operator: AttributeOperator, filter_value
     ):
+        """
+        Args:
+            attribute: The DynamoDb table field name we want to apply a condition on
+            attr_operator: DynamoDb operator we want to apply to the query (e.g. eq, gt, lt)
+            filter_value: The value of our filter
+
+        Returns:
+            Return instance of self, with a populated list of filter conditions
+
+        Example Usage:
+            filter_builder = DynamoQueryFilterBuilder()
+            filter_builder.add_condition(
+                attribute="Name",
+                attr_operator=AttributeOperator.EQUAL,
+                filter_value="John",
+            )
+            .add_condition(
+                attribute="Age",
+                attr_operator=AttributeOperator.LESS_THAN,
+                filter_value=80
+            )
+            .build()
+        """
+
         try:
             condition = getattr(Attr(attribute), attr_operator.value)(filter_value)
         except AttributeError:
@@ -21,6 +45,29 @@ class DynamoQueryFilterBuilder:
         return self
 
     def set_combination_operator(self, operator: ConditionOperator):
+        """
+        Args:
+            operator: Change the operator of the filter combinations.
+                The default is AND e.g. filter by condition1 AND condition2
+
+        Returns:
+            Return instance of self, with an updated filter combination operator
+
+        Example Usage:
+            filter_builder = DynamoQueryFilterBuilder()
+            filter_builder.add_condition(
+                attribute="Name",
+                attr_operator=AttributeOperator.EQUAL,
+                filter_value="John",
+            )
+            .add_condition(
+                attribute="Name",
+                attr_operator=AttributeOperator.EQUAL,
+                filter_value="Steve",
+            )
+            .set_combination_operator(operator=ConditionOperator.OR)
+            .build()
+        """
         self.conditions_operator = operator
         return self
 
