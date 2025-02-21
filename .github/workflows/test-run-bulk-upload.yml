@@ -1,9 +1,7 @@
 name: TEST - Bulk Upload
 
 on:
-  push:
-    branches:
-      - PRMP-1567
+  workflow_dispatch:
 
 jobs:
   perform-bulk-upload:
