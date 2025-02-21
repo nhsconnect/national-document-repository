@@ -1,6 +1,9 @@
 import json
 
+from enums.feature_flags import FeatureFlags
 from enums.file_type import FileType
+from enums.lambda_error import LambdaError
+from services.feature_flags_service import FeatureFlagService
 from services.ods_report_service import OdsReportService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -8,6 +11,7 @@ from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import OdsErrorException
+from utils.lambda_exceptions import FeatureFlagsException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -23,6 +27,16 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 @set_request_context_for_logging
 def lambda_handler(event, context):
+    feature_flag_service = FeatureFlagService()
+    flag_name = FeatureFlags.ODS_REPORT_LAMBDA_ENABLED.value
+    ods_report_lambda_enabled_flag = feature_flag_service.get_feature_flags_by_flag(
+        flag_name
+    )
+
+    if not ods_report_lambda_enabled_flag.get(flag_name):
+        logger.info("Feature flag not enabled, event will not be processed")
+        raise FeatureFlagsException(500, LambdaError.FeatureFlagDisabled)
+
     if "httpMethod" in event:
         return handle_api_gateway_request(event)
     else:
