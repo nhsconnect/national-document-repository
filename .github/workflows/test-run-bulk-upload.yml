@@ -1,0 +1,30 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  run-python-scripts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3
+        working-directory: ./tests
+
+      - name: Run script1.py
+        run: python script1.py
+        working-directory: ./tests
+
+      - name: Run script2.py
+        run: python script2.py
+        working-directory: ./tests
+
