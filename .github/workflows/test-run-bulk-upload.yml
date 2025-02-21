@@ -1,7 +1,9 @@
-name: Run Bulk Upload
+name: TEST - Bulk Upload
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - PRMP-1567
 
 jobs:
   run-python-scripts:
@@ -29,3 +31,4 @@ jobs:
       - name: Run script2.py
         run: python script2.py
         working-directory: ./tests
+
