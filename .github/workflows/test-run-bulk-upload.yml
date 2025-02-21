@@ -1,3 +1,5 @@
+name: Run Bulk Upload
+
 on:
   workflow_dispatch:
 
@@ -27,4 +29,3 @@ jobs:
       - name: Run script2.py
         run: python script2.py
         working-directory: ./tests
-
