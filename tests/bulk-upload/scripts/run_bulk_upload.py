@@ -1,0 +1,61 @@
+import boto3
+import json
+import argparse
+
+
+def invoke_lambda(lambda_name, payload={}):
+    client = boto3.client("lambda")
+    response = client.invoke(
+        FunctionName=lambda_name,
+        InvocationType="RequestResponse",
+        Payload=json.dumps(payload),
+    )
+    return json.loads(response["Payload"].read())
+
+
+def update_lambda_environment_variables(lambda_name, new_variables):
+    session = boto3.Session()
+    lambda_client = session.client("lambda")
+
+    response = lambda_client.get_function_configuration(FunctionName=lambda_name)
+    current_environment = response["Environment"]["Variables"]
+
+    updated_environment = current_environment.copy()
+    updated_environment.update(new_variables)
+
+    lambda_client.update_function_configuration(
+        FunctionName=lambda_name, Environment={"Variables": updated_environment}
+    )
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run Bulk Upload Script")
+
+    parser.add_argument(
+        "--environment",
+        help="The name of the environment",
+    )
+    parser.add_argument(
+        "--disable-pds-stub",
+        action="store_true",
+        help="Disable the PDS Stub",
+    )
+    parser.add_argument(
+        "--start-bulk-upload",
+        action="store_true",
+        help="Start the Bulk Upload",
+    )
+
+    args = parser.parse_args()
+
+    if not args.environment:
+        args.environment = input("Please enter the name of the environment: ")
+
+    lambda_name = f"{args.environment}_BulkUploadLambda"
+    if args.disable_pds_stub or input("Would you like to disable the FHIR Stub: "):
+        new_variables = {"PDS_FHIR_IS_STUBBED": "false"}
+        update_lambda_environment_variables(lambda_name, new_variables)
+    if args.start_bulk_upload or input(
+        "Would you like to start the Bulk Upload Process:"
+    ):
+        invoke_lambda(f"{args.environment}_BulkUploadMetadataLambda")

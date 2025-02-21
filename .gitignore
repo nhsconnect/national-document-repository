@@ -105,3 +105,7 @@ batch_update_progress.json
 
 # jupyter notebook files
 *.ipynb
+
+./tests/bulk-upload/output/
+./tests/bulk-upload/test_patients_data/
+tests/bulk-upload/scripts/scenario_report.txt
