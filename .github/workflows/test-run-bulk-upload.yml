@@ -2,31 +2,74 @@ name: TEST - Bulk Upload
 
 on:
   workflow_dispatch:
+    inputs:
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
+      combi-settings:
+        description: "Use 300 or 8000 patients"
+        required: true
+        type: "choice"
+        options:
+          - "combi300"
+          - "combi8000"
+        default: "combi300"
+      file-count:
+        description: "How many files per patient to generate."
+        required: true
+        type: "string"
+        default: "1"
 
 jobs:
   perform-bulk-upload:
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.environment }}
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.x"
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install boto3
-        working-directory: ./tests
+        working-directory: ./tests/bulk-upload/scripts
 
-      - name: Run script1.py
-        run: python script1.py
-        working-directory: ./tests
+      - name: Setup Bulk Upload
+        run: |
+          python setup_bulk_upload.py \
+            --environment ${{ inputs.sandbox }} \
+            --delete-table \
+            --download-data \
+            --build-files \
+            --data-file ${{ inputs.combi-settings }} \
+            --upload \
+            --empty-lloydgeorge-store
+        working-directory: ./tests/bulk-upload/scripts
 
-      - name: Run script2.py
-        run: python script2.py
-        working-directory: ./tests
-
+      - name: Run Bulk Upload
+        run: |
+          python run_bulk_upload.py \
+            --environment ${{ inputs.sandbox }} \
+            --disable-pds-stub \
+            --start-bulk-upload
+        working-directory: ./tests/bulk-upload/scripts

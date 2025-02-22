@@ -494,9 +494,6 @@ def get_user_input():
         help="The environment to run the script on.",
     )
     parser.add_argument(
-        "--confirm-env", action="store_true", help="Confirm the environment."
-    )
-    parser.add_argument(
         "--delete-table",
         action="store_true",
         help="Remove all existing data from the dynamo tables.",
@@ -543,7 +540,7 @@ if __name__ == "__main__":
     BULK_UPLOAD_TABLE_NAME = f"{ENVIRONMENT}_BulkUploadReport"
     LG_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeReferenceMetadata"
 
-    if not args.confirm_env:
+    if not args.environment:
         env_confirmation = input(
             f"Please confirm you want to use {ENVIRONMENT} (y/N): "
         )
@@ -572,8 +569,8 @@ if __name__ == "__main__":
         or input("Would you like to build the test files? (y/N) ").lower() == "y"
     ):
         is_small_data_file = (
-            args.data_file == 2
-            or int(input("Input 1 for Combi 8000 or 2 for Combi 300:")) == 2
+            args.data_file != "combi8000"
+            or input("Input combi8000 or combi300:") != "combi8000"
         )
         file_number = args.num_files or int(
             input("How many files per patient do you wish to generate: ")
