@@ -1,0 +1,29 @@
+name: Run Bulk Upload Dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
+      combi-settings:
+        description: "Use 300 or 8000 patients"
+        required: true
+        type: "string"
+        default: "combi300"
+      file-count:
+        description: "How many files per patient"
+        required: true
+        type: "number"
+        default: 1
+jobs:
+  bulk_upload:
+    uses: ./.github/workflows/base-run-bulk-upload.yml
+    with:
+      environment: development
+      sandbox: "{{ inputs.sandbox }}"
+      combi-settings: "{{ inputs.combi-settings }}"
+      file-count: "{{ inputs.file-count }}"
+

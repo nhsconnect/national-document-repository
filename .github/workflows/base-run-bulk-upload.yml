@@ -1,7 +1,7 @@
 name: TEST - Bulk Upload
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       sandbox:
         description: "Which Sandbox to push to."
@@ -16,16 +16,13 @@ on:
       combi-settings:
         description: "Use 300 or 8000 patients"
         required: true
-        type: "choice"
-        options:
-          - "combi300"
-          - "combi8000"
+        type: "string"
         default: "combi300"
       file-count:
         description: "How many files per patient to generate."
         required: true
-        type: "string"
-        default: "1"
+        type: "number"
+        default: 1
 
 jobs:
   perform-bulk-upload:
@@ -73,3 +70,4 @@ jobs:
             --disable-pds-stub \
             --start-bulk-upload
         working-directory: ./tests/bulk-upload/scripts
+

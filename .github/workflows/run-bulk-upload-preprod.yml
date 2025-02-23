@@ -1,0 +1,23 @@
+name: Run Bulk Upload - Preprod
+
+on:
+  workflow_dispatch:
+    inputs:
+      combi-settings:
+        description: "Use 300 or 8000 patients"
+        required: true
+        type: "string"
+        default: "combi300"
+      file-count:
+        description: "How many files per patient"
+        required: true
+        type: "number"
+        default: 1
+jobs:
+  bulk_upload:
+    uses: ./.github/workflows/base-run-bulk-upload.yml
+    with:
+      environment: preprod
+      sandbox: "ndr-preprod"
+      combi-settings: "{{ inputs.combi-settings }}"
+      file-count: "{{ inputs.file-count }}"
