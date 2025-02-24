@@ -12,6 +12,7 @@ from enums.virus_scan_result import VirusScanResult
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.nhs_document_reference import NHSDocumentReference
 from models.nrl_sqs_message import NrlSqsMessage
+from models.pdf_stitcher_sqs_message import PdfStitcherSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -58,6 +59,7 @@ class BulkUploadService:
         self.unhandled_messages = []
         self.file_path_cache = {}
         self.nrl_queue_url = os.environ["NRL_SQS_URL"]
+        self.pdf_stitcher_queue_url = os.environ["PDF_STITCHER_SQS_URL"]
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -312,6 +314,19 @@ class BulkUploadService:
                 message=nrl_sqs_message,
                 group_id=f"nrl_sqs_{uuid.uuid4()}",
             )
+
+        pdf_stitcher_sqs_message = PdfStitcherSqsMessage(
+            nhs_number=staging_metadata.nhs_number,
+            snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+        )
+        self.sqs_repository.send_message_to_pdf_stitcher_queue(
+            queue_url=self.pdf_stitcher_queue_url,
+            message=pdf_stitcher_sqs_message,
+        )
+
+        logger.info(
+            f"Message sent to stitching queue for patient {staging_metadata.nhs_number}"
+        )
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
         sample_file_path = staging_metadata.files[0].file_path

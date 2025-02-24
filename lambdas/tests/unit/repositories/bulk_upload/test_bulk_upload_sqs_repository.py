@@ -2,14 +2,22 @@ import copy
 
 import pytest
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
-from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, NRL_SQS_URL
+from tests.unit.conftest import (
+    MOCK_LG_METADATA_SQS_QUEUE,
+    NRL_SQS_URL,
+    PDF_STITCHER_SQS_URL,
+)
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_GROUP_ID,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
     TEST_NRL_SQS_MESSAGE,
+    TEST_PDF_STITCHER_SQS_MESSAGE,
     TEST_SQS_MESSAGE,
     TEST_STAGING_METADATA,
 )
+from utils.audit_logging_setup import LoggingService
+
+logger = LoggingService(__name__)
 
 
 @pytest.fixture
@@ -54,8 +62,22 @@ def test_send_message_to_nrl_sqs_fifo(set_env, repo_under_test):
         TEST_GROUP_ID,
     )
     message_body = TEST_NRL_SQS_MESSAGE
+    logger.info("GUAVA: " + message_body.model_dump_json())
     repo_under_test.sqs_repository.send_message_fifo.assert_called_with(
         queue_url=NRL_SQS_URL,
         message_body=message_body.model_dump_json(),
         group_id="123",
+    )
+
+
+def test_send_message_to_pdf_stitcher_queue(set_env, repo_under_test):
+    repo_under_test.send_message_to_pdf_stitcher_queue(
+        PDF_STITCHER_SQS_URL,
+        TEST_PDF_STITCHER_SQS_MESSAGE,
+    )
+    message_body = TEST_PDF_STITCHER_SQS_MESSAGE
+    logger.info(message_body.model_dump_json())
+    repo_under_test.sqs_repository.send_message_standard.assert_called_with(
+        queue_url=PDF_STITCHER_SQS_URL,
+        message_body=message_body.model_dump_json(),
     )

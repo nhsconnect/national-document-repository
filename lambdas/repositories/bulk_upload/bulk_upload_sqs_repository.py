@@ -2,6 +2,7 @@ import os
 import uuid
 
 from models.nrl_sqs_message import NrlSqsMessage
+from models.pdf_stitcher_sqs_message import PdfStitcherSqsMessage
 from models.staging_metadata import StagingMetadata
 from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
@@ -49,4 +50,12 @@ class BulkUploadSqsRepository:
             queue_url=queue_url,
             message_body=message.model_dump_json(),
             group_id=group_id,
+        )
+
+    def send_message_to_pdf_stitcher_queue(
+        self, queue_url: str, message: PdfStitcherSqsMessage
+    ):
+        self.sqs_repository.send_message_standard(
+            queue_url=queue_url,
+            message_body=message.model_dump_json(),
         )

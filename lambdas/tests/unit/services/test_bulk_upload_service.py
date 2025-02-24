@@ -237,6 +237,7 @@ def test_handle_sqs_message_happy_path(
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
     repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitcher_queue.assert_called()
 
 
 def test_handle_sqs_message_happy_path_single_file(
@@ -282,6 +283,7 @@ def test_handle_sqs_message_happy_path_single_file(
         message=mock_nrl_message,
         group_id=f"nrl_sqs_{mock_uuid}",
     )
+    repo_under_test.sqs_repository.send_message_to_pdf_stitcher_queue.assert_called()
 
 
 def set_up_mocks_for_non_ascii_files(
@@ -395,6 +397,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
         TEST_STAGING_METADATA, UploadStatus.FAILED, str(mocked_error), ""
     )
     repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitcher_queue.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
@@ -432,6 +435,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
         "",
     )
     repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitcher_queue.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_is_infected(
@@ -470,6 +474,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
     repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitcher_queue.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_not_exist(
@@ -500,6 +505,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
         "Y12345",
     )
     repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitcher_queue.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_formally_deceased(
@@ -686,6 +692,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
     repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitcher_queue.assert_not_called()
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
