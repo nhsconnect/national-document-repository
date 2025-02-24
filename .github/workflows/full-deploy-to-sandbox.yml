@@ -112,3 +112,5 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       combi-settings: "combi300"
       file-count: "1"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
