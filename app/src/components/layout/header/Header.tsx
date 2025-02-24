@@ -22,7 +22,7 @@ const Header = (props: Props) => {
                 </NhsHeader.ServiceName>
             </NhsHeader.Container>
 
-            <NavLinks />
+            <NavLinks data-testid="header-navigation-link" />
         </NhsHeader>
     );
 };
