@@ -62,7 +62,6 @@ def test_send_message_to_nrl_sqs_fifo(set_env, repo_under_test):
         TEST_GROUP_ID,
     )
     message_body = TEST_NRL_SQS_MESSAGE
-    logger.info("GUAVA: " + message_body.model_dump_json())
     repo_under_test.sqs_repository.send_message_fifo.assert_called_with(
         queue_url=NRL_SQS_URL,
         message_body=message_body.model_dump_json(),
@@ -76,7 +75,6 @@ def test_send_message_to_pdf_stitcher_queue(set_env, repo_under_test):
         TEST_PDF_STITCHER_SQS_MESSAGE,
     )
     message_body = TEST_PDF_STITCHER_SQS_MESSAGE
-    logger.info(message_body.model_dump_json())
     repo_under_test.sqs_repository.send_message_standard.assert_called_with(
         queue_url=PDF_STITCHER_SQS_URL,
         message_body=message_body.model_dump_json(),
