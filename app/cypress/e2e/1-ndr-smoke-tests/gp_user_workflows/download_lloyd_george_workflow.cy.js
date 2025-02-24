@@ -83,7 +83,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.getByTestId('logout-btn').click();
                 cy.url({ timeout: 10000 }).should('eq', Cypress.config('baseUrl') + '/');
-                cy.get('.nhsuk-header__navigation').should('not.exist');
+                cy.getByTestId('header-navigation-link').should('not.exist');
             },
         );
     });
