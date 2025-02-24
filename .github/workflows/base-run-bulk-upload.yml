@@ -1,5 +1,10 @@
 name: TEST - Bulk Upload
 
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
 on:
   workflow_call:
     inputs:
@@ -70,4 +75,3 @@ jobs:
             --disable-pds-stub \
             --start-bulk-upload
         working-directory: ./tests/bulk-upload/scripts
-
