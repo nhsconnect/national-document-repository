@@ -26,8 +26,8 @@ on:
       file-count:
         description: "How many files per patient to generate."
         required: true
-        type: "number"
-        default: 1
+        type: "string"
+        default: "1"
 
 jobs:
   perform-bulk-upload:
