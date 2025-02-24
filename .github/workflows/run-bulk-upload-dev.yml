@@ -12,7 +12,7 @@ on:
         description: "Which Sandbox to push to."
         required: true
         type: "string"
-        default: "ndrd"
+        default: "ndr"
       combi-settings:
         description: "Use 300 or 8000 patients"
         required: true
