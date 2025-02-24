@@ -29,6 +29,6 @@ jobs:
     uses: ./.github/workflows/base-run-bulk-upload.yml
     with:
       environment: development
-      sandbox: "{{ inputs.sandbox }}"
-      combi-settings: "{{ inputs.combi-settings }}"
-      file-count: "{{ inputs.file-count }}"
+      sandbox: "${{ inputs.sandbox }}"
+      combi-settings: "${{ inputs.combi-settings }}"
+      file-count: "${{ inputs.file-count }}"
