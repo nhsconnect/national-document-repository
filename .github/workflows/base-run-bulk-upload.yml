@@ -28,13 +28,16 @@ on:
         required: true
         type: "string"
         default: "1"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 jobs:
   perform-bulk-upload:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials for ${{ vars.AWS_REGION }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
