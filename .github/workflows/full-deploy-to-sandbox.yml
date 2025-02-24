@@ -17,8 +17,13 @@ on:
       environment:
         description: "Which Environment settings to use."
         required: true
-        type: "string" 
+        type: "string"
         default: "development"
+      bulk_upload:
+        description: "Do you want to run a Bulk Upload on this sandbox?"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   pull-requests: write
@@ -26,7 +31,6 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-
   view_action_parameters:
     name: View input params
     runs-on: ubuntu-latest
@@ -56,7 +60,7 @@ jobs:
     uses: ./.github/workflows/base-cypress-build.yml
     with:
       build_branch: ${{ inputs.build_branch }}
-  
+
   cypress_test_job:
     name: Run Cypress E2E Tests
     needs: [cypress_build_job]
@@ -88,7 +92,7 @@ jobs:
       is_sandbox: true
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
+
   deploy_ui:
     name: Deploy UI
     uses: ./.github/workflows/base-deploy-ui.yml
@@ -98,3 +102,13 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  bulk_upload:
+    name: "Run Bulk Upload"
+    if: ${{ inputs.bulk_upload == 'true' }}
+    uses: "./.github/workflows/base-run-bulk-upload.yml"
+    with:
+      environment: ${{ inputs.environment }}
+      sandbox: ${{ inputs.sandbox }}
+      combi-settings: "combi300"
+      file-count: "1"
