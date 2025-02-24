@@ -50,6 +50,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
     const beforeEachConfiguration = (role) => {
         cy.login(role);
+        cy.navigateToPatientSearchPage();
         // search patient
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,

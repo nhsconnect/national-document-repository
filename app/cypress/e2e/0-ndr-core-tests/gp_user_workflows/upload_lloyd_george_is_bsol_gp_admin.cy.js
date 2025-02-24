@@ -78,7 +78,7 @@ const mockCreateDocRefHandler = (req) => {
     req.reply(response);
 };
 
-describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and patient has no record', () => {
+describe('GP Workflow: Upload Lloyd George record when user is GP admin and patient has no record', () => {
     const beforeEachConfiguration = () => {
         cy.login(Roles.GP_ADMIN);
         cy.visit(patientSearchUrl);

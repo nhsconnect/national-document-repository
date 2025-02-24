@@ -20,6 +20,8 @@ describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient 
 
                 cy.url({ timeout: 10000 }).should('eq', baseUrl + homeUrl);
 
+                cy.navigateToPatientSearchPage();
+
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();

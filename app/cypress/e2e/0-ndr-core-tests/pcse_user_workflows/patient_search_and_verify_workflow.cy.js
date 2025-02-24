@@ -24,6 +24,7 @@ describe('PCSE Workflow: patient search and verify', () => {
     beforeEach(() => {
         cy.visit(homeUrl);
         cy.login(Roles.PCSE);
+        cy.navigateToPatientSearchPage();
     });
 
     it(

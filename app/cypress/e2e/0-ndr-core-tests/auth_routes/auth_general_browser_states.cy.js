@@ -46,11 +46,14 @@ describe('Authentication & Authorisation', () => {
 
     context('Unauthorised access redirection', () => {
         const unauthorisedRoutes = [
+            '/home',
             '/patient/search',
             '/patient/verify',
             '/patient/arf',
             '/patient/lloyd-george-record',
             '/patient/lloyd-george-record/upload',
+            '/create-report',
+            '/create-report/complete'
         ];
 
         unauthorisedRoutes.forEach((route) => {

@@ -12,7 +12,7 @@ on:
         description: 'Base URL to run tests against'
         required: true
         type: 'string'
-      cypress_broswer:
+      cypress_browser:
         description: 'what browser to run against'
         required: true
         type: 'string'
@@ -70,12 +70,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-screenshots
+          name: cypress-screenshots-${{ inputs.cypress_browser}}
           path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-videos
+          name: cypress-videos-${{ inputs.cypress_browser}}
           path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
           if-no-files-found: ignore

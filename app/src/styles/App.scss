@@ -1,6 +1,7 @@
 $govuk-compatibility-govukelements: true;
 @import 'node_modules/govuk-frontend/govuk/components/phase-banner/phase-banner';
 @import 'node_modules/govuk-frontend/govuk/components/warning-text/warning-text';
+@import 'node_modules/govuk-frontend/govuk/components/notification-banner/notification-banner';
 
 @import 'node_modules/nhsuk-frontend/packages/nhsuk';
 @import 'node_modules/nhsuk-frontend/packages/core/all';
@@ -470,47 +471,6 @@ $hunit: '%';
         }
     }
 
-    &_download-complete {
-        width: 711px;
-
-        &_details {
-            &-content {
-                padding: 95px 76px;
-                text-align: center;
-                background-color: $color_nhsuk-blue;
-                color: #fff;
-                font-size: 1.5rem;
-                white-space: pre-wrap;
-
-                &_header {
-                    font-weight: 700;
-                    font-size: 3rem;
-                    margin-bottom: 25px;
-                }
-
-                &_subheader {
-                    font-weight: 700;
-                    margin-top: 25px;
-                }
-
-                &_description {
-                    font-size: 1.5rem !important;
-                }
-            }
-        }
-
-        &_paragraph-headers {
-            font-weight: 700;
-            font-size: 2rem;
-        }
-
-        &_paragraph-subheaders {
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-top: 2.4rem;
-        }
-    }
-
     &_delete-complete {
         width: 711px;
 
@@ -648,6 +608,51 @@ $hunit: '%';
 .lg-input-svg-display {
     margin: '0 2rem';
 }
+
+.lloydgeorge,
+.report {
+    &_download-complete {
+        width: 711px;
+
+        &_details {
+            &-content {
+                padding: 95px 76px;
+                text-align: center;
+                background-color: $color_nhsuk-blue;
+                color: #fff;
+                font-size: 1.5rem;
+                white-space: pre-wrap;
+
+                &_header {
+                    font-weight: 700;
+                    font-size: 3rem;
+                    margin-bottom: 25px;
+                }
+
+                &_subheader {
+                    font-weight: 700;
+                    margin-top: 25px;
+                }
+
+                &_description {
+                    font-size: 1.5rem !important;
+                }
+            }
+        }
+
+        &_paragraph-headers {
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        &_paragraph-subheaders {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 2.4rem;
+        }
+    }
+}
+
 //Feedback
 #feedback-form {
     max-width: 800px;
@@ -875,7 +880,7 @@ $hunit: '%';
 }
 
 .nhsuk-button.nhsuk-button--secondary.left-margin {
-    margin-left: 72;
+    margin-left: 72px;
 }
 
 .nhsuk-button.nhsuk-button--secondary.bottom-margin {
@@ -984,4 +989,26 @@ $hunit: '%';
 .role-select-page-paragraph {
     margin: 0px;
     font-weight: 'bold';
+}
+.button-list {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+}
+
+.govuk-notification-banner {
+    background-color: black;
+    border-color: black;
+}
+
+.download-failed-banner {
+    max-width: fit-content;
+}
+
+.smaller-title {
+    font-size: 36px;
+}
+
+.home-action-card-content {
+    padding-right: 115px;
 }

@@ -1,82 +1,64 @@
-import WarningText from '../../components/generic/warningText/WarningText';
-import { ButtonLink } from 'nhsuk-react-components';
-import { useNavigate } from 'react-router-dom';
+import { Card } from 'nhsuk-react-components';
 import { routes } from '../../types/generic/routes';
-import useIsBSOL from '../../helpers/hooks/useIsBSOL';
-import React, { useEffect } from 'react';
-import useRole from '../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 import useTitle from '../../helpers/hooks/useTitle';
+import { REPORT_TYPE } from '../../types/generic/reports';
+import { ReactComponent as RightCircleIcon } from '../../styles/right-chevron-circle.svg';
+import useConfig from '../../helpers/hooks/useConfig';
 
 type Props = {};
 
-const RedirectToSearchPage = () => {
-    const navigate = useNavigate();
-    useEffect(() => {
-        navigate(routes.SEARCH_PATIENT);
-    });
-    return <></>;
-};
-
 const HomePage = (props: Props) => {
-    const navigate = useNavigate();
-    const isBsol = useIsBSOL();
+    const { featureFlags } = useConfig();
 
-    const role = useRole();
-    const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
+    useTitle({ pageTitle: 'Access and store digital patient documents' });
 
-    const SearchButton = () => (
-        <ButtonLink
-            role="button"
-            data-testid="search-patient-btn"
-            href="#"
-            onClick={(e) => {
-                e.preventDefault();
-                navigate(routes.SEARCH_PATIENT);
-            }}
-        >
-            Search for a patient
-        </ButtonLink>
+    return (
+        <>
+            <h1 className="smaller-title">Access and store digital patient documents</h1>
+            <h3>Select an action</h3>
+            <Card.Group>
+                <Card.GroupItem width="one-half">
+                    <Card clickable cardType="primary">
+                        <Card.Content className="home-action-card-content">
+                            <Card.Heading className="nhsuk-heading-m">
+                                <Card.Link
+                                    data-testid="search-patient-btn"
+                                    href={routes.SEARCH_PATIENT}
+                                >
+                                    Search for a patient
+                                </Card.Link>
+                            </Card.Heading>
+                            <Card.Description>
+                                Find a Lloyd George record for a patient using their NHS number.
+                            </Card.Description>
+                            <RightCircleIcon />
+                        </Card.Content>
+                    </Card>
+                </Card.GroupItem>
+                {featureFlags.downloadOdsReportEnabled && (
+                    <Card.GroupItem width="one-half">
+                        <Card clickable cardType="primary">
+                            <Card.Content>
+                                <Card.Heading className="nhsuk-heading-m">
+                                    <Card.Link
+                                        data-testid="download-report-btn"
+                                        href={`${routes.REPORT_DOWNLOAD}?reportType=${REPORT_TYPE.ODS_PATIENT_SUMMARY}`}
+                                    >
+                                        Download a report
+                                    </Card.Link>
+                                </Card.Heading>
+                                <Card.Description>
+                                    This report shows the list of Lloyd George records stored for
+                                    your organisation.
+                                </Card.Description>
+                                <RightCircleIcon />
+                            </Card.Content>
+                        </Card>
+                    </Card.GroupItem>
+                )}
+            </Card.Group>
+        </>
     );
-
-    const NonBsolContent = () => {
-        useTitle({ pageTitle: 'Access to this service outside of Birmingham and Solihull' });
-        return (
-            <>
-                <h1>You’re outside of Birmingham and Solihull (BSOL)</h1>
-                <p>
-                    As you’re outside Birmingham and Solihull, the pilot area for this service, you
-                    can use this service to:
-                </p>
-
-                <ul>
-                    <li>view records if the patient joins your practice</li>
-
-                    <li>download records if a patient leaves your practice</li>
-                </ul>
-                <p>You’ll be asked for patient details, including their:</p>
-                <ul>
-                    <li>name</li>
-                    <li>date of birth</li>
-                    <li>NHS number</li>
-                </ul>
-
-                <WarningText text="Downloading a record will remove it from our storage." />
-
-                <SearchButton />
-
-                <h2 className="nhsuk-heading-m">Get support with the service</h2>
-                <p>
-                    {'Contact the '}
-                    <ServiceDeskLink />
-                    {' if there is an issue with this service or call 0300 303 5678.'}
-                </p>
-            </>
-        );
-    };
-
-    return isBsol || userIsPCSE ? <RedirectToSearchPage /> : <NonBsolContent />;
 };
 
 export default HomePage;
