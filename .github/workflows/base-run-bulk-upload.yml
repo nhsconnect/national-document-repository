@@ -1,4 +1,4 @@
-name: TEST - Bulk Upload
+name: "Base Bulk Upload - Execute a Bulk Upload"
 
 permissions:
   pull-requests: write
