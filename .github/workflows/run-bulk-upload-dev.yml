@@ -23,7 +23,6 @@ on:
         required: true
         type: "number"
         default: 1
-  pull_request:
 
 jobs:
   bulk_upload:
