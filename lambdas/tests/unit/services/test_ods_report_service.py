@@ -2,6 +2,7 @@ import os
 import tempfile
 
 import pytest
+from enums.file_type import FileType
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from freezegun import freeze_time
 from openpyxl.reader.excel import load_workbook
@@ -20,7 +21,7 @@ def ods_report_service(mocker, set_env):
     return service
 
 
-@pytest.fixture()
+@pytest.fixture
 def mocked_context(mocker):
     mocked_context = mocker.MagicMock()
     mocked_context.authorization = {
@@ -30,18 +31,48 @@ def mocked_context(mocker):
     yield mocker.patch("services.ods_report_service.request_context", mocked_context)
 
 
-def test_get_nhs_numbers_by_ods(ods_report_service, mocker):
-    mock_scan_table_with_filter = mocker.patch.object(
-        ods_report_service,
-        "scan_table_with_filter",
-        return_value=[
-            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
-            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
-        ],
-    )
-    mock_create_and_save_ods_report = mocker.patch.object(
-        ods_report_service, "create_and_save_ods_report"
-    )
+@pytest.fixture
+def mock_create_and_save_ods_report(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service, "create_and_save_ods_report")
+
+
+@pytest.fixture
+def mock_scan_table_with_filter(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service, "scan_table_with_filter")
+
+
+@pytest.fixture
+def mock_dynamo_service_scan_table(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service.dynamo_service, "scan_table")
+
+
+@pytest.fixture
+def mock_create_report_csv(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service, "create_csv_report")
+
+
+@pytest.fixture
+def mock_create_report_pdf(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service, "create_pdf_report")
+
+
+@pytest.fixture
+def mock_save_report_to_s3(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service, "save_report_to_s3")
+
+
+@pytest.fixture
+def mock_get_pre_signed_url(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service, "get_pre_signed_url")
+
+
+def test_get_nhs_numbers_by_ods(
+    ods_report_service, mock_scan_table_with_filter, mock_create_and_save_ods_report
+):
+    mock_scan_table_with_filter.return_value = [
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
+    ]
 
     ods_report_service.get_nhs_numbers_by_ods("ODS123")
 
@@ -51,19 +82,13 @@ def test_get_nhs_numbers_by_ods(ods_report_service, mocker):
     )
 
 
-def test_get_nhs_numbers_by_ods_with_temp_folder(ods_report_service, mocker):
-
-    mock_scan_table_with_filter = mocker.patch.object(
-        ods_report_service,
-        "scan_table_with_filter",
-        return_value=[
-            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
-            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
-        ],
-    )
-    mock_create_and_save_ods_report = mocker.patch.object(
-        ods_report_service, "create_and_save_ods_report"
-    )
+def test_get_nhs_numbers_by_ods_with_temp_folder(
+    ods_report_service, mock_scan_table_with_filter, mock_create_and_save_ods_report
+):
+    mock_scan_table_with_filter.return_value = [
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
+    ]
 
     ods_report_service.get_nhs_numbers_by_ods("ODS123", is_upload_to_s3_needed=True)
 
@@ -75,26 +100,22 @@ def test_get_nhs_numbers_by_ods_with_temp_folder(ods_report_service, mocker):
 
 
 def test_scan_table_with_filter_with_last_eva_key(
-    ods_report_service, mocker, mocked_context
+    ods_report_service, mocked_context, mock_dynamo_service_scan_table
 ):
-    mock_dynamo_service_scan_table = mocker.patch.object(
-        ods_report_service.dynamo_service,
-        "scan_table",
-        side_effect=[
-            {
-                "Items": [
-                    {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
-                    {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
-                ],
-                "LastEvaluatedKey": None,
-            },
-            {
-                "Items": [
-                    {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS789"},
-                ],
-            },
-        ],
-    )
+    mock_dynamo_service_scan_table.side_effect = [
+        {
+            "Items": [
+                {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
+                {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
+            ],
+            "LastEvaluatedKey": None,
+        },
+        {
+            "Items": [
+                {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS789"},
+            ],
+        },
+    ]
 
     results = ods_report_service.scan_table_with_filter("ODS123")
 
@@ -103,18 +124,14 @@ def test_scan_table_with_filter_with_last_eva_key(
 
 
 def test_scan_table_with_filter_without_last_eva_key(
-    ods_report_service, mocker, mocked_context
+    ods_report_service, mocked_context, mock_dynamo_service_scan_table
 ):
-    mock_dynamo_service_scan_table = mocker.patch.object(
-        ods_report_service.dynamo_service,
-        "scan_table",
-        return_value={
-            "Items": [
-                {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
-                {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
-            ],
-        },
-    )
+    mock_dynamo_service_scan_table.return_value = {
+        "Items": [
+            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
+            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
+        ],
+    }
 
     results = ods_report_service.scan_table_with_filter("ODS123")
 
@@ -122,14 +139,13 @@ def test_scan_table_with_filter_without_last_eva_key(
     assert mock_dynamo_service_scan_table.call_count == 1
 
 
-def test_scan_table_with_filter_no_results(ods_report_service, mocker, mocked_context):
-    mock_dynamo_service_scan_table = mocker.patch.object(
-        ods_report_service.dynamo_service,
-        "scan_table",
-        return_value={
-            "Items": [],
-        },
-    )
+def test_scan_table_with_filter_no_results(
+    ods_report_service, mocked_context, mock_dynamo_service_scan_table
+):
+    mock_dynamo_service_scan_table.return_value = {
+        "Items": [],
+    }
+
     with pytest.raises(OdsReportException):
         ods_report_service.scan_table_with_filter("ODS123")
 
@@ -137,23 +153,19 @@ def test_scan_table_with_filter_no_results(ods_report_service, mocker, mocked_co
 
 
 @freeze_time("2024-01-01T12:00:00Z")
-def test_create_and_save_ods_report(ods_report_service, mocker):
-    mock_create_report_csv = mocker.patch.object(
-        ods_report_service, "create_report_csv"
-    )
-    mock_save_report_to_s3 = mocker.patch.object(
-        ods_report_service, "save_report_to_s3"
-    )
-    mock_get_pre_signed_url = mocker.patch.object(
-        ods_report_service, "get_pre_signed_url"
-    )
+def test_create_and_save_ods_report_create_csv(
+    ods_report_service,
+    mock_create_report_csv,
+    mock_save_report_to_s3,
+    mock_get_pre_signed_url,
+):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
     file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     result = ods_report_service.create_and_save_ods_report(
-        ods_code, nhs_numbers, upload_to_s3=True, file_type_output="csv"
+        ods_code, nhs_numbers, upload_to_s3=True, file_type_output=FileType.CSV
     )
 
     mock_create_report_csv.assert_called_once_with(
@@ -166,23 +178,19 @@ def test_create_and_save_ods_report(ods_report_service, mocker):
 
 
 @freeze_time("2024-01-01T12:00:00Z")
-def test_create_and_save_ods_report_create_pdf(ods_report_service, mocker):
-    mock_create_report_pdf = mocker.patch.object(
-        ods_report_service, "create_pdf_report"
-    )
-    mock_save_report_to_s3 = mocker.patch.object(
-        ods_report_service, "save_report_to_s3"
-    )
-    mock_get_pre_signed_url = mocker.patch.object(
-        ods_report_service, "get_pre_signed_url"
-    )
+def test_create_and_save_ods_report_create_pdf(
+    ods_report_service,
+    mock_create_report_pdf,
+    mock_save_report_to_s3,
+    mock_get_pre_signed_url,
+):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
     file_name = "NDR_ODS123_2_2024-01-01_12-00.pdf"
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     ods_report_service.create_and_save_ods_report(
-        ods_code, nhs_numbers, upload_to_s3=True, file_type_output="pdf"
+        ods_code, nhs_numbers, upload_to_s3=True, file_type_output=FileType.PDF
     )
 
     mock_create_report_pdf.assert_called_once_with(
@@ -192,16 +200,12 @@ def test_create_and_save_ods_report_create_pdf(ods_report_service, mocker):
     mock_get_pre_signed_url.assert_not_called()
 
 
-def test_create_and_save_ods_report_send_invalid_file_type(ods_report_service, mocker):
-    mock_create_report_pdf = mocker.patch.object(
-        ods_report_service, "create_report_csv"
-    )
-    mock_save_report_to_s3 = mocker.patch.object(
-        ods_report_service, "save_report_to_s3"
-    )
-    mock_get_pre_signed_url = mocker.patch.object(
-        ods_report_service, "get_pre_signed_url"
-    )
+def test_create_and_save_ods_report_send_invalid_file_type(
+    ods_report_service,
+    mock_create_report_pdf,
+    mock_save_report_to_s3,
+    mock_get_pre_signed_url,
+):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
     with pytest.raises(OdsReportException):
@@ -210,7 +214,7 @@ def test_create_and_save_ods_report_send_invalid_file_type(ods_report_service, m
             nhs_numbers,
             upload_to_s3=True,
             create_pre_signed_url=True,
-            file_type_output="aaaaa",
+            file_type_output="invalid",
         )
 
     mock_create_report_pdf.assert_not_called()
@@ -219,20 +223,18 @@ def test_create_and_save_ods_report_send_invalid_file_type(ods_report_service, m
 
 
 @freeze_time("2024-01-01T12:00:00Z")
-def test_create_and_save_ods_report_with_pre_sign_url(ods_report_service, mocker):
+def test_create_and_save_ods_report_with_pre_sign_url(
+    ods_report_service,
+    mock_create_report_csv,
+    mock_save_report_to_s3,
+    mock_get_pre_signed_url,
+):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
     file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
     mock_pre_sign_url = "https://presigned.url"
-    mock_create_report_csv = mocker.patch.object(
-        ods_report_service, "create_report_csv"
-    )
-    mock_save_report_to_s3 = mocker.patch.object(
-        ods_report_service, "save_report_to_s3"
-    )
-    mock_get_pre_signed_url = mocker.patch.object(
-        ods_report_service, "get_pre_signed_url", return_value=mock_pre_sign_url
-    )
+
+    mock_get_pre_signed_url.return_value = mock_pre_sign_url
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     result = ods_report_service.create_and_save_ods_report(
@@ -252,7 +254,7 @@ def test_create_report_csv(ods_report_service, tmp_path):
     file_name = tmp_path / "test_report.csv"
     ods_code = "ODS123"
 
-    ods_report_service.create_report_csv(file_name, nhs_numbers, ods_code)
+    ods_report_service.create_csv_report(file_name, nhs_numbers, ods_code)
 
     with open(file_name, "r") as f:
         content = f.readlines()

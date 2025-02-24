@@ -29,11 +29,8 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     feature_flag_service = FeatureFlagService()
     flag_name = FeatureFlags.ODS_REPORT_LAMBDA_ENABLED.value
-    ods_report_lambda_enabled_flag = feature_flag_service.get_feature_flags_by_flag(
-        flag_name
-    )
-
-    if not ods_report_lambda_enabled_flag.get(flag_name):
+    lambda_enabled_flag = feature_flag_service.get_feature_flags_by_flag(flag_name)
+    if not lambda_enabled_flag.get(flag_name):
         logger.info("Feature flag not enabled, event will not be processed")
         raise FeatureFlagsException(500, LambdaError.FeatureFlagDisabled)
 
@@ -49,32 +46,36 @@ def handle_api_gateway_request(event):
     )
     if not ods_code:
         raise OdsErrorException("No ODS code provided")
-    file_type = event.get("queryStringParameters", {}).get("OutputFileFormat")
+
+    params = event.get("queryStringParameters") or {}
+    file_type = params.get("outputFileFormat", "")
     if file_type not in FileType.__members__.values():
         file_type = FileType.CSV
+
     service = OdsReportService()
     logger.info(f"Starting process for ods code: {ods_code}")
-    pre_sign_url = service.get_nhs_numbers_by_ods(
-        ods_code,
+    pre_signed_url = service.get_nhs_numbers_by_ods(
+        ods_code=ods_code,
         is_pre_signed_needed=True,
         is_upload_to_s3_needed=True,
         file_type_output=file_type,
     )
     return ApiGatewayResponse(
-        200, json.dumps({"url": pre_sign_url}), "GET"
+        200, json.dumps({"url": pre_signed_url}), "GET"
     ).create_api_gateway_response()
 
 
 def handle_manual_trigger(event):
     ods_codes = event.get("odsCode").split(",")
-    file_type = event.get("fileType")
+    file_type = event.get("outputFileFormat")
     if file_type not in FileType.__members__.values():
         file_type = FileType.CSV
+
     service = OdsReportService()
     for ods_code in ods_codes:
         logger.info(f"Starting process for ods code: {ods_code}")
         service.get_nhs_numbers_by_ods(
-            ods_code, is_upload_to_s3_needed=True, file_type_output=file_type
+            ods_code=ods_code, is_upload_to_s3_needed=True, file_type_output=file_type
         )
     return ApiGatewayResponse(
         200, "Successfully created report", "GET"

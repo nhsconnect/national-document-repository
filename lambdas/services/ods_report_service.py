@@ -148,7 +148,7 @@ class OdsReportService:
         temp_file_path = os.path.join(self.temp_output_dir, file_name)
         match file_type_output:
             case FileType.CSV:
-                self.create_report_csv(temp_file_path, nhs_numbers, ods_code)
+                self.create_csv_report(temp_file_path, nhs_numbers, ods_code)
             case FileType.XLSX:
                 self.create_xlsx_report(temp_file_path, nhs_numbers, ods_code)
             case FileType.PDF:
@@ -164,7 +164,7 @@ class OdsReportService:
             if create_pre_signed_url:
                 return self.get_pre_signed_url(ods_code, file_name)
 
-    def create_report_csv(self, file_name, nhs_numbers, ods_code):
+    def create_csv_report(self, file_name, nhs_numbers, ods_code):
         with open(file_name, "w") as f:
             f.write(
                 f"Total number of patients for ODS code {ods_code}: {len(nhs_numbers)}\n"
