@@ -514,7 +514,7 @@ def get_user_input():
         "--num-files", type=int, default=1, help="Number of files per patient to build."
     )
     parser.add_argument(
-        "--empty_lloydgeorge_store",
+        "--empty-lloydgeorge-store",
         action="store_true",
         help="Remove all files from the LloydGeorge Record Buckets",
     )
