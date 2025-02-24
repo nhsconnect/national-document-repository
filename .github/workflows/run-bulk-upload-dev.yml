@@ -32,3 +32,5 @@ jobs:
       sandbox: "${{ inputs.sandbox }}"
       combi-settings: "${{ inputs.combi-settings }}"
       file-count: "${{ inputs.file-count }}"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
