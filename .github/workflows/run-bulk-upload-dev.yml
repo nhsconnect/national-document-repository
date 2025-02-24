@@ -12,7 +12,7 @@ on:
         description: "Which Sandbox to push to."
         required: true
         type: "string"
-        default: "ndr"
+        default: "ndrd"
       combi-settings:
         description: "Use 300 or 8000 patients"
         required: true
@@ -23,9 +23,11 @@ on:
         required: true
         type: "number"
         default: 1
+  pull_request:
+
 jobs:
   bulk_upload:
-    uses: ./.github/workflows/base-run-bulk-upload.yml
+    uses: ./.github/workflows/base-run-bulk-uploadzzz.yml
     with:
       environment: development
       sandbox: "{{ inputs.sandbox }}"
