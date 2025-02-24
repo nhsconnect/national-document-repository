@@ -105,7 +105,7 @@ jobs:
 
   bulk_upload:
     name: "Run Bulk Upload"
-    if: ${{ inputs.bulk_upload == 'true' }}
+    if: ${{ inputs.bulk_upload }}
     uses: "./.github/workflows/base-run-bulk-upload.yml"
     with:
       environment: ${{ inputs.environment }}
