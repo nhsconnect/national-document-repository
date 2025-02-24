@@ -1,4 +1,4 @@
-import { Input, Table, WarningCallout } from 'nhsuk-react-components';
+import { TextInput, Table, WarningCallout } from 'nhsuk-react-components';
 import React from 'react';
 import {
     DOCUMENT_TYPE,
@@ -37,7 +37,7 @@ const DocumentInputForm = ({
     });
     return (
         <>
-            <Input
+            <TextInput
                 data-testid={`${formType}-input`}
                 id={`${formType}-documents-input`}
                 label="Select file(s)"
