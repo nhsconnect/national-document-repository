@@ -33,7 +33,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
-                cy.getByTestId('header-navigation-link').should('exist');
+                cy.get('nhsuk-navigation-container').should('exist');
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(activePatient);
@@ -83,7 +83,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.getByTestId('logout-btn').click();
                 cy.url({ timeout: 10000 }).should('eq', Cypress.config('baseUrl') + '/');
-                cy.getByTestId('header-navigation-link').should('not.exist');
+                cy.get('nhsuk-navigation-container').should('not.exist');
             },
         );
     });
