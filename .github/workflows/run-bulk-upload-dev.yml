@@ -27,9 +27,13 @@ on:
 
 jobs:
   bulk_upload:
-    uses: ./.github/workflows/base-run-bulk-uploadzzz.yml
-    with:
-      environment: development
-      sandbox: "{{ inputs.sandbox }}"
-      combi-settings: "{{ inputs.combi-settings }}"
-      file-count: "{{ inputs.file-count }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Hello
+        run: echo "Hello"
+      #   uses: ./.github/workflows/base-run-bulk-upload.yml
+  #   with:
+  #     environment: development
+  #     sandbox: "{{ inputs.sandbox }}"
+  #     combi-settings: "{{ inputs.combi-settings }}"
+  #     file-count: "{{ inputs.file-count }}"
