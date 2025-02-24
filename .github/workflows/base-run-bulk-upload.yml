@@ -68,6 +68,7 @@ jobs:
             --build-files \
             --data-file "${{ inputs.combi-settings }}" \
             --upload \
+            --num-files "${{ inputs.file-count }}" \
             --empty-lloydgeorge-store
         working-directory: ./tests/bulk-upload/scripts
 
