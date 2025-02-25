@@ -20,7 +20,9 @@ logger = LoggingService(__name__)
 
 @ensure_environment_variables(
     names=[
+        "PRESIGNED_ASSUME_ROLE",
         "LLOYD_GEORGE_DYNAMODB_NAME",
+        "STATISTICAL_REPORTS_BUCKET",
     ]
 )
 @override_error_check

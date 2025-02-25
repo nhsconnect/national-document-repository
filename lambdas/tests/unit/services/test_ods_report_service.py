@@ -43,7 +43,7 @@ def mock_scan_table_with_filter(mocker, ods_report_service):
 
 @pytest.fixture
 def mock_dynamo_service_scan_table(mocker, ods_report_service):
-    return mocker.patch.object(ods_report_service.dynamo_service, "scan_table")
+    return mocker.patch.object(ods_report_service.dynamo_service, "scan_whole_table")
 
 
 @pytest.fixture
@@ -99,57 +99,28 @@ def test_get_nhs_numbers_by_ods_with_temp_folder(
     assert ods_report_service.temp_output_dir != ""
 
 
-def test_scan_table_with_filter_with_last_eva_key(
+def test_scan_table_with_filter(
     ods_report_service, mocked_context, mock_dynamo_service_scan_table
 ):
-    mock_dynamo_service_scan_table.side_effect = [
-        {
-            "Items": [
-                {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
-                {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
-            ],
-            "LastEvaluatedKey": None,
-        },
-        {
-            "Items": [
-                {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS789"},
-            ],
-        },
+    mock_dynamo_service_scan_table.return_value = [
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS789"},
     ]
 
     results = ods_report_service.scan_table_with_filter("ODS123")
 
     assert len(results) == 3
-    assert mock_dynamo_service_scan_table.call_count == 2
-
-
-def test_scan_table_with_filter_without_last_eva_key(
-    ods_report_service, mocked_context, mock_dynamo_service_scan_table
-):
-    mock_dynamo_service_scan_table.return_value = {
-        "Items": [
-            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
-            {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
-        ],
-    }
-
-    results = ods_report_service.scan_table_with_filter("ODS123")
-
-    assert len(results) == 2
     assert mock_dynamo_service_scan_table.call_count == 1
 
 
 def test_scan_table_with_filter_no_results(
     ods_report_service, mocked_context, mock_dynamo_service_scan_table
 ):
-    mock_dynamo_service_scan_table.return_value = {
-        "Items": [],
-    }
+    mock_dynamo_service_scan_table.return_value = []
 
     with pytest.raises(OdsReportException):
         ods_report_service.scan_table_with_filter("ODS123")
-
-    assert mock_dynamo_service_scan_table.call_count == 1
 
 
 @freeze_time("2024-01-01T12:00:00Z")
@@ -254,7 +225,7 @@ def test_create_report_csv(ods_report_service, tmp_path):
     file_name = tmp_path / "test_report.csv"
     ods_code = "ODS123"
 
-    ods_report_service.create_csv_report(file_name, nhs_numbers, ods_code)
+    ods_report_service.create_csv_report(str(file_name), nhs_numbers, ods_code)
 
     with open(file_name, "r") as f:
         content = f.readlines()
@@ -270,7 +241,7 @@ def test_create_report_csv(ods_report_service, tmp_path):
 
 def test_create_xlsx_report(ods_report_service, tmp_path):
     file_name = "test_report.xlsx"
-    nhs_numbers = ["NHS123456", "NHS654321", "NHS111222"]
+    nhs_numbers = {"NHS123456", "NHS654321", "NHS111222"}
     ods_code = "ODS123"
 
     ods_report_service.create_xlsx_report(file_name, nhs_numbers, ods_code)
@@ -295,7 +266,7 @@ def test_create_xlsx_report(ods_report_service, tmp_path):
 @freeze_time("2024-01-01T12:00:00Z")
 def test_create_pdf_report(ods_report_service):
     file_name = "test_report.pdf"
-    nhs_numbers = ["NHS123456", "NHS654321", "NHS111222"]
+    nhs_numbers = {"NHS123456", "NHS654321", "NHS111222"}
     ods_code = "ODS123"
 
     ods_report_service.create_pdf_report(file_name, nhs_numbers, ods_code)

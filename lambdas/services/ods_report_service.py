@@ -53,7 +53,7 @@ class OdsReportService:
             file_type_output,
         )
 
-    def scan_table_with_filter(self, ods_code):
+    def scan_table_with_filter(self, ods_code: str):
         ods_codes = [ods_code]
         authorization_user = getattr(request_context, "authorization", {})
         if (
@@ -65,21 +65,15 @@ class OdsReportService:
                 PatientOdsInactiveStatus.DECEASED,
             ]
         ods_filter_expression = self.build_filter_expression(ods_codes)
-        results = []
+        field_names_expression = ",".join(DocumentReferenceMetadataFields.list())
 
-        response = self.dynamo_service.scan_table(
+        results = []
+        response = self.dynamo_service.scan_whole_table(
             table_name=self.table_name,
+            project_expression=field_names_expression,
             filter_expression=ods_filter_expression,
         )
-        results += response["Items"]
-
-        while "LastEvaluatedKey" in response:
-            response = self.dynamo_service.scan_table(
-                exclusive_start_key=response["LastEvaluatedKey"],
-                table_name=self.table_name,
-                filter_expression=ods_filter_expression,
-            )
-            results.extend(response.get("Items", []))
+        results.extend(response)
         if not results:
             logger.info("No records found for ODS code {}".format(ods_code))
             raise OdsReportException(404, LambdaError.NoDataFound)
@@ -103,7 +97,7 @@ class OdsReportService:
             .build()
         )
 
-    def query_table_by_index(self, ods_code):
+    def query_table_by_index(self, ods_code: str):
         results = []
 
         response = self.dynamo_service.query_table_by_index(
@@ -129,8 +123,8 @@ class OdsReportService:
 
     def create_and_save_ods_report(
         self,
-        ods_code,
-        nhs_numbers,
+        ods_code: str,
+        nhs_numbers: set[str],
         create_pre_signed_url: bool = False,
         upload_to_s3: bool = False,
         file_type_output: FileType = FileType.CSV,
@@ -164,7 +158,7 @@ class OdsReportService:
             if create_pre_signed_url:
                 return self.get_pre_signed_url(ods_code, file_name)
 
-    def create_csv_report(self, file_name, nhs_numbers, ods_code):
+    def create_csv_report(self, file_name: str, nhs_numbers: set[str], ods_code: str):
         with open(file_name, "w") as f:
             f.write(
                 f"Total number of patients for ODS code {ods_code}: {len(nhs_numbers)}\n"
@@ -172,7 +166,7 @@ class OdsReportService:
             f.write("NHS Numbers:\n")
             f.writelines(f"{nhs_number}\n" for nhs_number in nhs_numbers)
 
-    def create_xlsx_report(self, file_name, nhs_numbers, ods_code):
+    def create_xlsx_report(self, file_name: str, nhs_numbers: set[str], ods_code: str):
         wb = Workbook()
         ws = wb.active
         ws["A1"] = (
@@ -184,7 +178,7 @@ class OdsReportService:
 
         wb.save(file_name)
 
-    def create_pdf_report(self, file_name, nhs_numbers, ods_code):
+    def create_pdf_report(self, file_name: str, nhs_numbers: set[str], ods_code: str):
         c = canvas.Canvas(file_name, pagesize=letter)
         _, height = letter
         c.setFont("Helvetica-Bold", 16)
@@ -207,7 +201,7 @@ class OdsReportService:
 
         c.save()
 
-    def save_report_to_s3(self, ods_code, file_name, temp_file_path):
+    def save_report_to_s3(self, ods_code: str, file_name: str, temp_file_path: str):
         logger.info("Uploading the csv report to S3 bucket...")
         today = datetime.now().date()
         self.s3_service.upload_file(
@@ -216,7 +210,7 @@ class OdsReportService:
             file_name=temp_file_path,
         )
 
-    def get_pre_signed_url(self, ods_code, file_name):
+    def get_pre_signed_url(self, ods_code: str, file_name: str):
         today = datetime.now().date()
         return self.s3_service.create_download_presigned_url(
             s3_bucket_name=self.reports_bucket,
