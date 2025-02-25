@@ -23,8 +23,8 @@ jobs:
   bulk_upload:
     uses: ./.github/workflows/base-run-bulk-upload.yml
     with:
-      environment: test
-      sandbox: "ndr-preprod"
+      environment: pre-prod
+      sandbox: "pre-prod"
       combi-settings: "${{ inputs.combi-settings }}"
       file-count: "${{ inputs.file-count }}"
     secrets:
