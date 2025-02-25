@@ -71,8 +71,11 @@ jobs:
 
       - name: Configure React environment vars
         env:
+          
           AWS_REGION: ${{ vars.AWS_REGION }}
           OIDC_PROVIDER_ID: not provided yet
+          IDENTITY_PROVIDER_POOL_ID: not provided yet
+          MONITOR_ACCOUNT_ID: not provided yet          
           BUILD_ENV: ${{ inputs.environment }}
           IMAGE_VERSION: 'ndr-${{ inputs.sandbox }}-app:${{ github.sha }}'
         run: |
