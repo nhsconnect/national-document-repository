@@ -108,6 +108,11 @@ describe('RecordCard Component', () => {
             });
         });
 
+        it('shows find in pdf text when file url exists', async () => {
+            render(<RecordCard {...props} />);
+            expect(screen.getByTestId('find-in-pdf-text')).toBeInTheDocument();
+        });
+
         it('renders nothing while no cloudFrontUrl', async () => {
             render(<RecordCard {...props} cloudFrontUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
@@ -137,6 +142,7 @@ describe('RecordCard Component', () => {
             render(<RecordCard {...props} cloudFrontUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
             expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('find-in-pdf-text')).not.toBeInTheDocument();
         });
 
         it('does not render the pdf details view when full-screen view is click', async () => {
