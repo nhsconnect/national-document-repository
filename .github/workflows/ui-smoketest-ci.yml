@@ -20,7 +20,7 @@ jobs:
   smoketest:
     uses: ./.github/workflows/base-cypress-smoketest.yml
     with:
-      build_branch: PRMP-1571
+      build_branch: main
       environment: development
       sandbox: ndr-dev
     secrets:
