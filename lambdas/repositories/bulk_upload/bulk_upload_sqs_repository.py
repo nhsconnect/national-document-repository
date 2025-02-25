@@ -1,7 +1,6 @@
 import os
 import uuid
 
-from models.nrl_sqs_message import NrlSqsMessage
 from models.pdf_stitcher_sqs_message import PdfStitcherSqsMessage
 from models.staging_metadata import StagingMetadata
 from services.base.sqs_service import SQSService
@@ -41,15 +40,6 @@ class BulkUploadSqsRepository:
             message_body=sqs_message["body"],
             nhs_number=nhs_number,
             group_id=f"back_to_queue_bulk_upload_{uuid.uuid4()}",
-        )
-
-    def send_message_to_nrl_fifo(
-        self, queue_url: str, message: NrlSqsMessage, group_id: str
-    ):
-        self.sqs_repository.send_message_fifo(
-            queue_url=queue_url,
-            message_body=message.model_dump_json(),
-            group_id=group_id,
         )
 
     def send_message_to_pdf_stitcher_queue(
