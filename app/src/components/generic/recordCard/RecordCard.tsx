@@ -86,6 +86,12 @@ function RecordCard({
                             setStage={setStage}
                             showMenu={showMenu}
                         />
+                        {cloudFrontUrl && (
+                            <p data-testid="find-in-pdf-text">
+                                To search within this record use <strong>Control</strong> and{' '}
+                                <strong>F</strong>
+                            </p>
+                        )}
                     </Card.Content>
                     <div>{children}</div>
                 </Card>
