@@ -9,4 +9,4 @@ class PdfStitcherSqsMessage(BaseModel):
     )
 
     nhs_number: str
-    snomed_code: SnomedCode = SnomedCodes.LLOYD_GEORGE.value
+    snomed_code_doc_type: SnomedCode = SnomedCodes.LLOYD_GEORGE.value
