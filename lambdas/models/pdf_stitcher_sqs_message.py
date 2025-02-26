@@ -6,6 +6,7 @@ from pydantic.alias_generators import to_camel
 class PdfStitcherSqsMessage(BaseModel):
     model_config = ConfigDict(
         alias_generator=AliasGenerator(serialization_alias=to_camel),
+        use_enum_values=True,
     )
 
     nhs_number: str
