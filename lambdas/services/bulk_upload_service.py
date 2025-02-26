@@ -343,7 +343,6 @@ class BulkUploadService:
         self, staging_metadata: StagingMetadata, current_gp_ods: str
     ):
         nhs_number = staging_metadata.nhs_number
-        document_reference = None
         for file_metadata in staging_metadata.files:
             document_reference = self.convert_to_document_reference(
                 file_metadata, nhs_number, current_gp_ods
@@ -357,8 +356,6 @@ class BulkUploadService:
             )
             document_reference.set_uploaded_to_true()
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
-        # returning last document ref until stitching as default is implemented
-        return document_reference
 
     def rollback_transaction(self):
         try:
