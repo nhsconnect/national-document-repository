@@ -83,3 +83,7 @@ class CloudFrontEdgeException(LambdaException):
 
 class NRLGetDocumentReferenceException(LambdaException):
     pass
+
+
+class OdsReportException(LambdaException):
+    pass
