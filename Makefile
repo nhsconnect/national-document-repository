@@ -7,8 +7,8 @@ GITHUB_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_github_runner.txt
 TEST_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_test.txt
 CORE_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_core_lambda_layer.txt
 DATA_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_data_lambda_layer.txt
+REPORTS_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_reports_lambda_layer.txt
 EDGE_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_edge_lambda.txt
-
 LAMBDAS_BUILD_PATH=build/lambdas
 LAMBDA_LAYERS_BUILD_PATH=build/lambda_layers
 LAMBDA_LAYER_PYTHON_PATH=python/lib/python$(PYTHON_VERSION)/site-packages
@@ -47,11 +47,15 @@ sort-requirements:
 	sort -o $(TEST_REQUIREMENTS) $(TEST_REQUIREMENTS)
 	sort -o $(CORE_REQUIREMENTS) $(CORE_REQUIREMENTS)
 	sort -o $(DATA_REQUIREMENTS) $(DATA_REQUIREMENTS)
+	sort -o $(REPORTS_REQUIREMENTS) $(REPORTS_REQUIREMENTS)
+
 
 check-packages:
 	./lambdas/venv/bin/pip-audit -r $(TEST_REQUIREMENTS)
 	./lambdas/venv/bin/pip-audit -r $(CORE_REQUIREMENTS)
 	./lambdas/venv/bin/pip-audit -r $(DATA_REQUIREMENTS)
+	./lambdas/venv/bin/pip-audit -r $(REPORTS_REQUIREMENTS)
+
 
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
@@ -72,6 +76,8 @@ env:
 	./lambdas/venv/bin/pip3 install -r $(TEST_REQUIREMENTS)
 	./lambdas/venv/bin/pip3 install -r $(CORE_REQUIREMENTS)
 	./lambdas/venv/bin/pip3 install -r $(DATA_REQUIREMENTS)
+	./lambdas/venv/bin/pip3 install -r $(REPORTS_REQUIREMENTS)
+
 
 github_env:
 	rm -rf lambdas/venv || true

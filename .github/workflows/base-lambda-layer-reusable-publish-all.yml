@@ -61,3 +61,15 @@ jobs:
       lambda_layer_name: data_lambda_layer
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_reports_lambda_layer:
+    name: Deploy reports_lambda_layer
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_layer_name: reports_lambda_layer
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
