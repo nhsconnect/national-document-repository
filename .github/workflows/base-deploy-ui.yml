@@ -77,7 +77,7 @@ jobs:
             --output text)
           
           echo "Cognito Identity Pool ID: $identity_pool_id"
-          echo "IDENTITY_PROVIDER_POOL_ID=$identity_pool_id" >> $GITHUB_ENV
+          echo "IDENTITY_PROVIDER_POOL_ID=$identity_pool_id" >> $GITHUB_OUTPUT
       
       - name: Get CloudWatch RUM App Monitor ID
         id: rum-app-monitor
@@ -87,7 +87,7 @@ jobs:
             --output text)
       
           echo "RUM App Monitor ID: $app_monitor_id"
-          echo "MONITOR_ACCOUNT_ID=$app_monitor_id" >> $GITHUB_ENV        
+          echo "MONITOR_ACCOUNT_ID=$app_monitor_id" >> $GITHUB_OUTPUT        
 
       - name: Configure React environment vars
         env:
