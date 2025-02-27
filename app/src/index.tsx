@@ -19,7 +19,7 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
             enableXRay: true,
         };
 
-        const APPLICATION_ID: string = process.env.REACT_APP_AWS_ACCOUNT_ID || '';
+        const APPLICATION_ID: string = process.env.REACT_APP_MONITOR_ACCOUNT_ID || '';
         const APPLICATION_VERSION: string = '1.0.0';
         const APPLICATION_REGION: string = process.env.REACT_APP_AWS_REGION || 'eu-west-2';
 
