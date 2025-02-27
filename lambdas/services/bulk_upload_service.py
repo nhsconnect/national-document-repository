@@ -9,7 +9,7 @@ from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
-from models.pdf_stitcher_sqs_message import PdfStitcherSqsMessage
+from models.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -55,7 +55,7 @@ class BulkUploadService:
         self.pdf_content_type = "application/pdf"
         self.unhandled_messages = []
         self.file_path_cache = {}
-        self.pdf_stitcher_queue_url = os.environ["PDF_STITCHER_SQS_URL"]
+        self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -287,13 +287,13 @@ class BulkUploadService:
             patient_ods_code,
         )
 
-        pdf_stitcher_sqs_message = PdfStitcherSqsMessage(
+        pdf_stitching_sqs_message = PdfStitchingSqsMessage(
             nhs_number=staging_metadata.nhs_number,
             snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
         )
-        self.sqs_repository.send_message_to_pdf_stitcher_queue(
-            queue_url=self.pdf_stitcher_queue_url,
-            message=pdf_stitcher_sqs_message,
+        self.sqs_repository.send_message_to_pdf_stitching_queue(
+            queue_url=self.pdf_stitching_queue_url,
+            message=pdf_stitching_sqs_message,
         )
         logger.info(
             f"Message sent to stitching queue for patient {staging_metadata.nhs_number}"

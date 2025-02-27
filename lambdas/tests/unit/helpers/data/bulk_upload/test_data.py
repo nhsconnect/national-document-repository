@@ -5,7 +5,7 @@ from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
 from models.nhs_document_reference import NHSDocumentReference
 from models.nrl_sqs_message import NrlSqsMessage
-from models.pdf_stitcher_sqs_message import PdfStitcherSqsMessage
+from models.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_CURRENT_GP_ODS, TEST_UUID
 
@@ -157,15 +157,15 @@ def build_test_nrl_sqs_fifo_message(nhs_number: str, action: str) -> NrlSqsMessa
     return nrl_sqs_message
 
 
-def build_test_pdf_stitcher_sqs_message(
+def build_test_pdf_stitching_sqs_message(
     nhs_number: str, snomed_code_doc_type
-) -> PdfStitcherSqsMessage:
+) -> PdfStitchingSqsMessage:
     message_body = {
         "nhs_number": nhs_number,
         "snomed_code_doc_type": snomed_code_doc_type,
     }
-    pdf_stitcher_sqs_message = PdfStitcherSqsMessage(**message_body)
-    return pdf_stitcher_sqs_message
+    pdf_stitching_sqs_message = PdfStitchingSqsMessage(**message_body)
+    return pdf_stitching_sqs_message
 
 
 @freeze_time("2024-01-01 12:00:00")
@@ -195,7 +195,7 @@ TEST_NRL_SQS_MESSAGE = build_test_nrl_sqs_fifo_message(
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD, NrlActionTypes.CREATE
 )
 TEST_SNOMED_CODE_FOR_PDF_STITCHING = SnomedCodes.LLOYD_GEORGE.value
-TEST_PDF_STITCHER_SQS_MESSAGE = build_test_pdf_stitcher_sqs_message(
+TEST_PDF_STITCHING_SQS_MESSAGE = build_test_pdf_stitching_sqs_message(
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_SNOMED_CODE_FOR_PDF_STITCHING
 )
 TEST_STAGING_METADATA_WITH_INVALID_FILENAME = build_test_staging_metadata(
