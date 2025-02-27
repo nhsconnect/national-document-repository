@@ -28,7 +28,7 @@ jobs:
       - name: Cypress install
         run: npm install --legacy-peer-deps
         working-directory: ./app
-
+      
       - name: Configure React environment vars
         env:
           ENDPOINT_DOC_STORE_API: http://localhost:3000
