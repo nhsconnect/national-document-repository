@@ -34,9 +34,13 @@ class MNSNotificationService:
                     logger.info("Handling death status notification.")
                     self.handle_death_notification(message)
 
-        except PdsErrorException:
+        except PdsErrorException as e:
             logger.info("An error occurred when calling PDS")
-            self.send_message_back_to_queue(message)
+            logger.info(
+                f"Unable to process message: {message.id}, of type: {message.type}"
+            )
+            logger.info(f"{e}")
+            # self.send_message_back_to_queue(message)
 
         except ClientError as e:
             logger.info(
