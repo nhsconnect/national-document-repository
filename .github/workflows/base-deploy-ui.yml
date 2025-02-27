@@ -75,27 +75,31 @@ jobs:
           identity_pool_id=$(aws cognito-identity list-identity-pools --max-results 50 \
             --query "IdentityPools[?starts_with(IdentityPoolName, '${{ inputs.sandbox }}')].IdentityPoolId" \
             --output text)
-          
           echo "Cognito Identity Pool ID: $identity_pool_id"
           echo "IDENTITY_PROVIDER_POOL_ID=$identity_pool_id" >> $GITHUB_ENV
-      
+          echo "IDENTITY_PROVIDER_POOL_ID=$identity_pool_id" >> $GITHUB_OUTPUT  # <-- Ensure it's set as an output variable
+
       - name: Get CloudWatch RUM App Monitor ID
         id: rum-app-monitor
         run: |
           app_monitor_id=$(aws rum list-app-monitors \
             --query "AppMonitorSummaries[?starts_with(Name, '${{ inputs.sandbox }}')].Id" \
             --output text)
-      
           echo "RUM App Monitor ID: $app_monitor_id"
-          echo "MONITOR_ACCOUNT_ID=$app_monitor_id" >> $GITHUB_ENV        
+          echo "MONITOR_ACCOUNT_ID=$app_monitor_id" >> $GITHUB_ENV   
+          echo "MONITOR_ACCOUNT_ID=$app_monitor_id" >> $GITHUB_OUTPUT  # <-- Ensure it's set as an output variable
+
+      - name: Debug Env Variables
+        run: |
+          echo "MONITOR_ACCOUNT_ID from env: $MONITOR_ACCOUNT_ID"
+          echo "IDENTITY_PROVIDER_POOL_ID from env: $IDENTITY_PROVIDER_POOL_ID"
 
       - name: Configure React environment vars
         env:
-          
           AWS_REGION: ${{ vars.AWS_REGION }}
           OIDC_PROVIDER_ID: not provided yet
-          IDENTITY_PROVIDER_POOL_ID: ${{ env.IDENTITY_PROVIDER_POOL_ID }}
-          MONITOR_ACCOUNT_ID: ${{ env.MONITOR_ACCOUNT_ID }}      
+          IDENTITY_PROVIDER_POOL_ID: ${{ steps.cognito-identity-pool.outputs.IDENTITY_PROVIDER_POOL_ID }} 
+          MONITOR_ACCOUNT_ID: ${{ steps.rum-app-monitor.outputs.MONITOR_ACCOUNT_ID }} 
           BUILD_ENV: ${{ inputs.environment }}
           IMAGE_VERSION: 'ndr-${{ inputs.sandbox }}-app:${{ github.sha }}'
         run: |
