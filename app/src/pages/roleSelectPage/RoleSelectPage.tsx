@@ -36,7 +36,7 @@ function RoleSelectPage() {
     };
 
     return (
-        <div style={{ maxWidth: 730 }}>
+        <div className="role-select-page-div">
             {inputError && (
                 <ErrorBox
                     messageTitle={'There is a problem'}
@@ -61,7 +61,7 @@ function RoleSelectPage() {
                             {...radioProps}
                             id="gp-radio-button"
                         >
-                            <p style={{ margin: 0, fontWeight: 'bold' }}>GP Role</p>
+                            <p className="role-select-page-paragraph">GP Role</p>
                             <p>{'[A9A5A] GP Practice'}</p>
                         </Radios.Radio>
                         <Radios.Radio
@@ -70,7 +70,7 @@ function RoleSelectPage() {
                             {...radioProps}
                             id="pcse-radio-button"
                         >
-                            <p style={{ margin: 0, fontWeight: 'bold' }}>PCSE Role</p>
+                            <p className="role-select-page-paragraph">PCSE Role</p>
                             <p>{'[B9A5A] Primary Care Support England'}</p>
                         </Radios.Radio>
                     </Radios>

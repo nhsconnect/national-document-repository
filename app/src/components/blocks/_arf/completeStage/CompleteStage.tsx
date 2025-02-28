@@ -13,7 +13,7 @@ function CompleteStage({ documents }: Props) {
     return (
         <>
             <UploadSummary documents={documents} />
-            <p style={{ fontWeight: '600' }}>
+            <p className="complete-stage-paragraph">
                 If you want to upload another patient&apos;s health record
             </p>
             <Button

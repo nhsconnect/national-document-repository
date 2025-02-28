@@ -53,7 +53,7 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
                     <ReducedPatientInfo className={'deletion-complete_card_content_subheader'} />
                 </Card.Content>
             </Card>
-            <p style={{ marginTop: 40 }}>
+            <p className="paragraph-top-margin">
                 {isGP ? (
                     <ButtonLink onClick={handleClick} data-testid="lg-return-btn" href="#">
                         Return to patient's Lloyd George record page

@@ -79,8 +79,10 @@ function LloydGeorgeUploadStage({
                 <Table.Head>
                     <Table.Row>
                         <Table.Cell>Filename</Table.Cell>
-                        <Table.Cell style={{ width: '140px' }}>Size</Table.Cell>
-                        <Table.Cell style={{ width: '200px' }}>Upload progress</Table.Cell>
+                        <Table.Cell className="lg-upload-thin-table-cell">Size</Table.Cell>
+                        <Table.Cell className="lg-upload-thick-table-cell">
+                            Upload progress
+                        </Table.Cell>
                     </Table.Row>
                 </Table.Head>
                 <Table.Body>
@@ -103,10 +105,10 @@ function LloydGeorgeUploadStage({
                                         </strong>
                                     )}
                                 </Table.Cell>
-                                <Table.Cell style={{ width: '140px' }}>
+                                <Table.Cell className="lg-upload-thin-table-cell">
                                     {formatFileSize(document.file.size)}
                                 </Table.Cell>
-                                <Table.Cell style={{ width: '200px' }}>
+                                <Table.Cell className="lg-upload-thick-table-cell">
                                     <progress
                                         aria-label={`Uploading ${document.file.name}`}
                                         max="100"
@@ -116,7 +118,7 @@ function LloydGeorgeUploadStage({
                                         {getUploadMessage(document)}
                                     </output>
                                     {uploadFailed && (
-                                        <div style={{ textAlign: 'right' }}>
+                                        <div className="lg-upload-failed-div">
                                             <LinkButton
                                                 onClick={() => {
                                                     if (uploadSession) {

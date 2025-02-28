@@ -1,0 +1,33 @@
+name: Run Bulk Upload - Test
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+on:
+  workflow_dispatch:
+    inputs:
+      combi_settings:
+        description: "Use 300 or 8000 patients"
+        required: true
+        type: choice
+        options:
+          - "combi300"
+          - "combi8000"
+      file_count:
+        description: "How many files per patient"
+        required: true
+        type: "string"
+        default: "1"
+
+jobs:
+  bulk_upload:
+    uses: ./.github/workflows/base-run-bulk-upload.yml
+    with:
+      environment: test
+      sandbox: "ndr-test"
+      combi_settings: "${{ inputs.combi_settings }}"
+      file_count: "${{ inputs.file_count }}"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
