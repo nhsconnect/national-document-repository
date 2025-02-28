@@ -13,7 +13,7 @@ on:
         required: true
         type: "string"
         default: "ndr"
-      build_branch:
+      base_branch:
         description: "Which Feature Branch for the Bulk Upload Script"
         required: false
         type: "string"
