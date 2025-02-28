@@ -75,7 +75,7 @@ function DeleteResultStage({ numberOfFiles, setDownloadStage }: Props) {
                 provides a framework for consistent and effective records management, based on
                 established standards.
             </p>
-            <p style={{ marginTop: 40 }}>
+            <p className="paragraph-top-margin">
                 {isGP ? (
                     <ButtonLink onClick={handleClick} data-testid="lg-return-btn" href="#">
                         Return to patient's Lloyd George record page

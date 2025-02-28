@@ -10,17 +10,10 @@ export type ToggleProps = {
 
 function TestToggle({ id, checked, onChange, label }: ToggleProps) {
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexFlow: 'row nowrap',
-                alignItems: 'center',
-                marginBottom: '12px',
-            }}
-        >
+        <div className="test-toggle-div">
             <Toggle id={id} checked={checked} onChange={onChange} />
-            <label htmlFor={id} style={{ marginLeft: '6px' }}>
-                <p style={{ marginBottom: '0px' }}>{label}</p>
+            <label htmlFor={id} className="test-toggle-label">
+                <p className="test-toggle-paragraph">{label}</p>
             </label>
         </div>
     );

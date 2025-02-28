@@ -74,7 +74,7 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
                     You can upload more files to their record if needed, but you cannot upload
                     duplicate files with the same name as previous uploads.
                 </p>
-                <p style={{ marginBottom: 50 }}>
+                <p className="lg-upload-paragraph">
                     If you need to replace a file, you will need to remove it and re-upload it
                     again.
                 </p>
@@ -93,9 +93,8 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
             </ButtonLink>
 
             <ButtonLink
-                className="nhsuk-button nhsuk-button--secondary"
+                className="nhsuk-button nhsuk-button--secondary small-left-margin"
                 data-testid="search-patient-btn"
-                style={{ marginLeft: 18 }}
                 role="button"
                 href="#"
                 onClick={(e) => {

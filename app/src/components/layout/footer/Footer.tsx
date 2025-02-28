@@ -40,8 +40,7 @@ function Footer() {
                     Service updates
                 </NHSFooter.ListItem>
             </NHSFooter.List>
-            {/* TODO - PRMP-1348: Remove hardcoded styling below if no longer required */}
-            <NHSFooter.Copyright style={{ color: '#231f20' }}>
+            <NHSFooter.Copyright className="footer-copyright-link">
                 &copy; {'NHS England'}
             </NHSFooter.Copyright>
         </NHSFooter>
