@@ -25,7 +25,7 @@ on:
         default: "development"
       combi_settings:
         description: "Use 300 or 8000 patients"
-        required: true
+        required: false
         type: "string"
         default: "combi300"
       file_count:
