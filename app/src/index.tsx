@@ -23,7 +23,7 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
         const APPLICATION_VERSION: string = '1.0.0';
         const APPLICATION_REGION: string = process.env.REACT_APP_AWS_REGION || 'eu-west-2';
 
-        const awsRum: AwsRum = new AwsRum(
+        const awsRum: AwsRum = new AwsRum( // eslint-disable-line
             APPLICATION_ID,
             APPLICATION_VERSION,
             APPLICATION_REGION,
