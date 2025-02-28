@@ -23,12 +23,12 @@ on:
         required: true
         type: "string"
         default: "development"
-      combi-settings:
+      combi_settings:
         description: "Use 300 or 8000 patients"
         required: true
         type: "string"
         default: "combi300"
-      file-count:
+      file_count:
         description: "How many files per patient to generate."
         required: true
         type: "string"
@@ -71,9 +71,9 @@ jobs:
             --delete-table \
             --download-data \
             --build-files \
-            --data-file "${{ inputs.combi-settings }}" \
+            --data-file "${{ inputs.combi_settings }}" \
             --upload \
-            --num-files "${{ inputs.file-count }}" \
+            --num-files "${{ inputs.file_count }}" \
             --empty-lloydgeorge-store
         working-directory: ./tests/bulk-upload/scripts
 

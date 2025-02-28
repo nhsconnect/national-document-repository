@@ -8,14 +8,14 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
-      combi-settings:
+      combi_settings:
         description: "Use 300 or 8000 patients"
         required: true
         type: choice
         options:
           - "combi300"
           - "combi8000"
-      file-count:
+      file_count:
         description: "How many files per patient"
         required: true
         type: "string"
@@ -27,7 +27,7 @@ jobs:
     with:
       environment: pre-prod
       sandbox: "pre-prod"
-      combi-settings: "${{ inputs.combi-settings }}"
-      file-count: "${{ inputs.file-count }}"
+      combi_settings: "${{ inputs.combi_settings }}"
+      file-count: "${{ inputs.file_count }}"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
