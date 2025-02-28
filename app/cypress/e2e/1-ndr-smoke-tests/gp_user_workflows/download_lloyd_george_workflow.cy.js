@@ -34,7 +34,6 @@ describe('GP Workflow: View Lloyd George record', () => {
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
                 cy.get('.nhsuk-navigation-container').should('exist');
-
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
