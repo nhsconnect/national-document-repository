@@ -36,6 +36,9 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
         // eslint-disable-next-line no-console
         console.log(error);
     }
+} else {
+    // eslint-disable-next-line no-console
+    console.log('RUM client not initialized');
 }
 
 function App() {
