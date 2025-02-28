@@ -28,6 +28,6 @@ jobs:
       environment: pre-prod
       sandbox: "pre-prod"
       combi_settings: "${{ inputs.combi_settings }}"
-      file-count: "${{ inputs.file_count }}"
+      file_count: "${{ inputs.file_count }}"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
