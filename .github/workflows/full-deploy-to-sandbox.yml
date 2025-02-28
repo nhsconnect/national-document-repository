@@ -5,7 +5,6 @@ on:
     inputs:
       build_branch:
         description: "Feature branch to push?"
-
         required: true
         type: "string"
         default: "main"
@@ -112,6 +111,7 @@ jobs:
       environment: ${{ inputs.environment }}
       sandbox: ${{ inputs.sandbox }}
       combi-settings: "combi300"
+      base-branch: ${{ inputs.build_branch }}
       file-count: "1"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

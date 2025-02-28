@@ -13,6 +13,11 @@ on:
         required: true
         type: "string"
         default: "ndr"
+      build_branch:
+        description: "Which Feature Branch for the Bulk Upload Script"
+        required: true
+        type: "string"
+        default: "main"
       environment:
         description: "Which Environment settings to use."
         required: true
@@ -21,8 +26,11 @@ on:
       combi-settings:
         description: "Use 300 or 8000 patients"
         required: true
-        type: "string"
-        default: "combi300"
+        default: "combi-300"
+        type: choice
+        options:
+          - "combi300"
+          - "combi8000"
       file-count:
         description: "How many files per patient to generate."
         required: true
