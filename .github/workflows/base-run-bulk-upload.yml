@@ -15,7 +15,7 @@ on:
         default: "ndr"
       build_branch:
         description: "Which Feature Branch for the Bulk Upload Script"
-        required: true
+        required: false
         type: "string"
         default: "main"
       environment:
