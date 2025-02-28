@@ -45,15 +45,7 @@ function Layout({ children }: Props) {
             <SkipLink onClick={focusMainContent}>Skip to main content</SkipLink>
             <Header />
             <PhaseBanner />
-            <div
-                className="nhsuk-width-container"
-                style={{
-                    margin: `0 auto`,
-                    maxWidth: 960,
-                    padding: `0 1.0875rem 1.45rem`,
-                    minHeight: '75vh',
-                }}
-            >
+            <div className="nhsuk-width-container preview">
                 <main
                     className="nhsuk-main-wrapper app-homepage"
                     id="maincontent"

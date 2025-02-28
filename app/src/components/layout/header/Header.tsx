@@ -20,13 +20,14 @@ const Header = (props: Props) => {
                     onClick={navigateHome}
                     className="clickable"
                     data-testid="nhs-header-logo"
+                    tabIndex={0}
                 />
-                <NhsHeader.ServiceName onClick={navigateHome} className="clickable">
+                <NhsHeader.ServiceName onClick={navigateHome} className="clickable" tabIndex={0}>
                     Access and store digital patient documents
                 </NhsHeader.ServiceName>
             </NhsHeader.Container>
 
-            <NavLinks />
+            <NavLinks data-testid="header-navigation-link" />
         </NhsHeader>
     );
 };

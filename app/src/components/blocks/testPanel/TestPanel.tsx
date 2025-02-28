@@ -95,7 +95,7 @@ function TestPanel() {
                         allows for navigating to areas of the app required for developing
                     </p>
                     <h4>Role</h4>
-                    <div style={{ marginBottom: '32px' }}>
+                    <div className="div-bottom-margin">
                         {Object.entries(roleToggles).map(([id, value]) => {
                             const toggleProps: ToggleProps = {
                                 id,
