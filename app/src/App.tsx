@@ -6,7 +6,10 @@ import AppRouter from './router/AppRouter';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
-if (process.env.REACT_APP_ENVIRONMENT === 'development') {
+if (
+    process.env.REACT_APP_ENVIRONMENT !== 'local' &&
+    process.env.REACT_APP_ENVIRONMENT !== 'production'
+) {
     try {
         const config: AwsRumConfig = {
             sessionSampleRate: 1,
@@ -39,6 +42,12 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
 } else {
     // eslint-disable-next-line no-console
     console.log('RUM client not initialized');
+    // eslint-disable-next-line no-console
+    console.log(process.env.REACT_APP_ENVIRONMENT);
+    // eslint-disable-next-line no-console
+    console.log(process.env.REACT_APP_MONITOR_ACCOUNT_ID);
+    // eslint-disable-next-line no-console
+    console.log(process.env.REACT_APP_RUM_IDENTITY_POOL_ID);
 }
 
 function App() {
