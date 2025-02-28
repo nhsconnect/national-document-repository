@@ -30,7 +30,7 @@ on:
         default: "combi300"
       file_count:
         description: "How many files per patient to generate."
-        required: true
+        required: false
         type: "string"
         default: "1"
     secrets:
