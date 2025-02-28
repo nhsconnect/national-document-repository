@@ -58,13 +58,13 @@ describe('Home Page', () => {
                     'have.text',
                     'Access and store digital patient documents',
                 );
-                cy.get('.nhsuk-header__navigation').should('not.exist');
+                cy.get('.nhsuk-navigation-container').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
 
                 cy.login(Roles.GP_CLINICAL, true);
 
                 cy.url().should('eq', baseUrl + patientSearchUrl);
-                cy.get('.nhsuk-header__navigation').should('exist');
+                cy.get('.nhsuk-navigation-container').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
         );
@@ -111,7 +111,7 @@ describe('Home Page', () => {
                         'You’re outside of Birmingham and Solihull (BSOL)',
                     );
 
-                    cy.get('.nhsuk-header__navigation').should('exist');
+                    cy.get('.nhsuk-navigation-container').should('exist');
                     cy.get('.nhsuk-header__navigation-list').should('exist');
                 },
             );
@@ -129,7 +129,7 @@ describe('Home Page', () => {
                     'You’re outside of Birmingham and Solihull (BSOL)',
                 );
 
-                cy.get('.nhsuk-header__navigation').should('exist');
+                cy.get('.nhsuk-navigation-container').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
         );
@@ -157,7 +157,7 @@ describe('Home Page', () => {
 
                 cy.login(Roles.GP_CLINICAL);
 
-                cy.get('.nhsuk-header__navigation').should('exist');
+                cy.get('.nhsuk-navigation-container').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
 
                 cy.intercept('GET', '/Auth/Logout', {

@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
 import BackButton from '../../../generic/backButton/BackButton';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import { Input, Button, Fieldset, InsetText, Table } from 'nhsuk-react-components';
+import { TextInput, Button, Fieldset, InsetText, Table } from 'nhsuk-react-components';
 import { ReactComponent as FileSVG } from '../../../../styles/file-input.svg';
 import {
     DOCUMENT_TYPE,
@@ -181,7 +181,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                         <FileSVG />
                     </div>
                     <div>
-                        <Input
+                        <TextInput
                             data-testid={`button-input`}
                             type="file"
                             multiple={true}
