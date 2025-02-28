@@ -23,9 +23,17 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
         const APPLICATION_VERSION: string = '1.0.0';
         const APPLICATION_REGION: string = process.env.REACT_APP_AWS_REGION || 'eu-west-2';
 
-        new AwsRum(APPLICATION_ID, APPLICATION_VERSION, APPLICATION_REGION, config);
+        const awsRum: AwsRum = new AwsRum(
+            APPLICATION_ID,
+            APPLICATION_VERSION,
+            APPLICATION_REGION,
+            config,
+        ); // eslint-disable-line
+        // eslint-disable-next-line no-console
+        console.log('RUM client initialized');
     } catch (error) {
-        // Ignore errors thrown during CloudWatch RUM web client initialization
+        // eslint-disable-next-line no-console
+        console.log(error);
     }
 }
 
