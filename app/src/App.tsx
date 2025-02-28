@@ -6,10 +6,7 @@ import AppRouter from './router/AppRouter';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
-if (
-    process.env.REACT_APP_ENVIRONMENT !== 'local' &&
-    process.env.REACT_APP_ENVIRONMENT !== 'production'
-) {
+if (process.env.REACT_APP_ENVIRONMENT === 'development') {
     try {
         const config: AwsRumConfig = {
             sessionSampleRate: 1,
@@ -19,7 +16,7 @@ if (
             endpoint: `https://dataplane.rum.eu-west-2.amazonaws.com`,
             telemetries: ['http', 'errors', 'performance'],
             allowCookies: true,
-            enableXRay: true,
+            enableXRay: false,
         };
 
         const APPLICATION_ID: string =
