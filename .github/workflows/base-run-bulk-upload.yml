@@ -26,11 +26,8 @@ on:
       combi-settings:
         description: "Use 300 or 8000 patients"
         required: true
-        default: "combi-300"
-        type: choice
-        options:
-          - "combi300"
-          - "combi8000"
+        type: "string"
+        default: "combi300"
       file-count:
         description: "How many files per patient to generate."
         required: true
