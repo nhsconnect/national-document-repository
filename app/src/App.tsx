@@ -35,6 +35,12 @@ if (
         ); // eslint-disable-line
         // eslint-disable-next-line no-console
         console.log('RUM client initialized');
+        // eslint-disable-next-line no-console
+        console.log(process.env.REACT_APP_ENVIRONMENT);
+        // eslint-disable-next-line no-console
+        console.log(process.env.REACT_APP_MONITOR_ACCOUNT_ID);
+        // eslint-disable-next-line no-console
+        console.log(process.env.REACT_APP_RUM_IDENTITY_POOL_ID);
     } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
