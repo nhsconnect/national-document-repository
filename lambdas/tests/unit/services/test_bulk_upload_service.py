@@ -3,23 +3,17 @@ from copy import copy
 
 import pytest
 from botocore.exceptions import ClientError
-from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
-from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
-from models.fhir.R4.nrl_fhir_document_reference import Attachment
-from models.nrl_sqs_message import NrlSqsMessage
 from models.pds_models import Patient
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (
-    APIM_API_URL,
     MOCK_LG_BUCKET,
     MOCK_STAGING_STORE_BUCKET,
-    NRL_SQS_URL,
     TEST_CURRENT_GP_ODS,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import (
@@ -236,7 +230,7 @@ def test_handle_sqs_message_happy_path(
     mock_pds_validation_strict.assert_called()
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
-    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitching_queue.assert_called()
 
 
 def test_handle_sqs_message_happy_path_single_file(
@@ -250,14 +244,6 @@ def test_handle_sqs_message_happy_path_single_file(
     mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
-    mock_nrl_attachment = Attachment(
-        url=f"{APIM_API_URL}/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{TEST_DOCUMENT_REFERENCE.id}",
-    )
-    mock_nrl_message = NrlSqsMessage(
-        nhs_number=TEST_STAGING_METADATA.nhs_number,
-        action=NrlActionTypes.CREATE,
-        attachment=mock_nrl_attachment,
-    )
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
@@ -277,11 +263,7 @@ def test_handle_sqs_message_happy_path_single_file(
     )
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
-    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_called_with(
-        queue_url=NRL_SQS_URL,
-        message=mock_nrl_message,
-        group_id=f"nrl_sqs_{mock_uuid}",
-    )
+    repo_under_test.sqs_repository.send_message_to_pdf_stitching_queue.assert_called()
 
 
 def set_up_mocks_for_non_ascii_files(
@@ -394,7 +376,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA, UploadStatus.FAILED, str(mocked_error), ""
     )
-    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitching_queue.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
@@ -431,7 +413,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
         str(mocked_error),
         "",
     )
-    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitching_queue.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_is_infected(
@@ -469,7 +451,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     )
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
-    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitching_queue.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_not_exist(
@@ -499,7 +481,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
         "One or more of the files is not accessible from staging bucket",
         "Y12345",
     )
-    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitching_queue.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_formally_deceased(
@@ -685,7 +667,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     mock_report_upload_failure.assert_not_called()
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
-    repo_under_test.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
+    repo_under_test.sqs_repository.send_message_to_pdf_stitching_queue.assert_not_called()
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
@@ -1039,7 +1021,6 @@ def test_handle_sqs_message_lenient_mode_happy_path(
     mock_pds_validation_strict.assert_not_called()
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
-    service.sqs_repository.send_message_to_nrl_fifo.assert_not_called()
 
 
 def test_concatenate_acceptance_reason(repo_under_test):

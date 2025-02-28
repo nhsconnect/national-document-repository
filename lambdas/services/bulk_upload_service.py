@@ -4,14 +4,12 @@ import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
-from enums.nrl_sqs_upload import NrlActionTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
-from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.nhs_document_reference import NHSDocumentReference
-from models.nrl_sqs_message import NrlSqsMessage
+from models.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -57,7 +55,7 @@ class BulkUploadService:
         self.pdf_content_type = "application/pdf"
         self.unhandled_messages = []
         self.file_path_cache = {}
-        self.nrl_queue_url = os.environ["NRL_SQS_URL"]
+        self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -251,9 +249,7 @@ class BulkUploadService:
         )
 
         try:
-            last_document_processed = self.create_lg_records_and_copy_files(
-                staging_metadata, patient_ods_code
-            )
+            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
             logger.info(
                 f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
                 {"Result": "Successful upload"},
@@ -290,28 +286,18 @@ class BulkUploadService:
             accepted_reason,
             patient_ods_code,
         )
-        if len(file_names) == 1:
-            document_api_endpoint = (
-                os.environ.get("APIM_API_URL", "")
-                + "/DocumentReference/"
-                + SnomedCodes.LLOYD_GEORGE.value.code
-                + "~"
-                + last_document_processed.id
-            )
-            doc_details = Attachment(
-                url=document_api_endpoint,
-                content_type="application/pdf",
-            )
-            nrl_sqs_message = NrlSqsMessage(
-                nhs_number=staging_metadata.nhs_number,
-                action=NrlActionTypes.CREATE,
-                attachment=doc_details,
-            )
-            self.sqs_repository.send_message_to_nrl_fifo(
-                queue_url=self.nrl_queue_url,
-                message=nrl_sqs_message,
-                group_id=f"nrl_sqs_{uuid.uuid4()}",
-            )
+
+        pdf_stitching_sqs_message = PdfStitchingSqsMessage(
+            nhs_number=staging_metadata.nhs_number,
+            snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+        )
+        self.sqs_repository.send_message_to_pdf_stitching_queue(
+            queue_url=self.pdf_stitching_queue_url,
+            message=pdf_stitching_sqs_message,
+        )
+        logger.info(
+            f"Message sent to stitching queue for patient {staging_metadata.nhs_number}"
+        )
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
         sample_file_path = staging_metadata.files[0].file_path
@@ -357,7 +343,6 @@ class BulkUploadService:
         self, staging_metadata: StagingMetadata, current_gp_ods: str
     ):
         nhs_number = staging_metadata.nhs_number
-        document_reference = None
         for file_metadata in staging_metadata.files:
             document_reference = self.convert_to_document_reference(
                 file_metadata, nhs_number, current_gp_ods
@@ -371,8 +356,6 @@ class BulkUploadService:
             )
             document_reference.set_uploaded_to_true()
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
-        # returning last document ref until stitching as default is implemented
-        return document_reference
 
     def rollback_transaction(self):
         try:
