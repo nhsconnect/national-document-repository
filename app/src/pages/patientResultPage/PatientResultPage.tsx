@@ -46,7 +46,7 @@ function PatientResultPage() {
     const pageHeader = 'Patient details';
     useTitle({ pageTitle: pageHeader });
     return (
-        <div style={{ maxWidth: 730 }}>
+        <div className="patient-results-paragraph">
             <BackButton toLocation={routes.SEARCH_PATIENT} />
             {inputError && (
                 <ErrorBox
@@ -75,7 +75,7 @@ function PatientResultPage() {
 
             <PatientSummary />
 
-            <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
+            <form onSubmit={handleSubmit(submit)} className="patient-results-form">
                 {isGp && (
                     <>
                         <p id="gp-message">

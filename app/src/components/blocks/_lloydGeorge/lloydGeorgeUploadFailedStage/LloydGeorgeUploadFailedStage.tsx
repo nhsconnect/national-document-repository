@@ -45,9 +45,8 @@ function LloydGeorgeUploadFailedStage({ restartUpload }: Props) {
                     Try upload again
                 </Button>
                 <ButtonLink
-                    className="nhsuk-button nhsuk-button--secondary"
+                    className="nhsuk-button nhsuk-button--secondary small-left-margin"
                     data-testid="search-patient-btn"
-                    style={{ marginLeft: 18 }}
                     role="button"
                     href="#"
                     onClick={(e) => {
