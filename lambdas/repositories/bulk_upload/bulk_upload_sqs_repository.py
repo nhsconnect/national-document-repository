@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from models.pdf_stitching_sqs_message import PdfStitchingSqsMessage
+from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import StagingMetadata
 from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
