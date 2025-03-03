@@ -40,12 +40,14 @@ class MNSNotificationService:
                 f"Unable to process message: {message.id}, of type: {message.type}"
             )
             logger.info(f"{e}")
+            raise (e)
 
         except ClientError as e:
             logger.info(
                 f"Unable to process message: {message.id}, of type: {message.type}"
             )
             logger.info(f"{e}")
+            raise (e)
 
     def handle_gp_change_notification(self, message: MNSSQSMessage):
         patient_document_references = self.get_patient_documents(
