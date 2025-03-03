@@ -18,7 +18,6 @@ from tests.unit.helpers.data.dynamo.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
-from utils.exceptions import PdsErrorException
 
 
 @pytest.fixture
@@ -198,13 +197,3 @@ def test_handle_gp_change_updates_gp_ods_code(mns_service):
         ),
     ]
     mns_service.dynamo_service.update_item.assert_has_calls(calls, any_order=False)
-
-
-def test_messages_is_put_back_on_the_queue_when_pds_error_raised(
-    mns_service, mocker, mock_handle_gp_change
-):
-    mns_service.handle_gp_change_notification.side_effect = PdsErrorException()
-    mocker.patch.object(mns_service, "send_message_back_to_queue")
-    mns_service.handle_mns_notification(gp_change_message)
-
-    mns_service.send_message_back_to_queue.assert_called_with(gp_change_message)

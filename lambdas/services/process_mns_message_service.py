@@ -40,7 +40,6 @@ class MNSNotificationService:
                 f"Unable to process message: {message.id}, of type: {message.type}"
             )
             logger.info(f"{e}")
-            # self.send_message_back_to_queue(message)
 
         except ClientError as e:
             logger.info(
@@ -134,12 +133,6 @@ class MNSNotificationService:
     def get_updated_gp_ods(self, nhs_number: str) -> str:
         patient_details = self.pds_service.fetch_patient_details(nhs_number)
         return patient_details.general_practice_ods
-
-    def send_message_back_to_queue(self, message: MNSSQSMessage):
-        logger.info("Sending message back to queue...")
-        self.sqs_service.send_message_standard(
-            queue_url=self.queue, message_body=message.model_dump_json(by_alias=True)
-        )
 
     def patient_is_present_in_ndr(self, dynamo_response):
         if len(dynamo_response) < 1:
