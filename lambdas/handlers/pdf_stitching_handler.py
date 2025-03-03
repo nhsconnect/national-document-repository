@@ -2,7 +2,7 @@ import json
 
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
-from models.sqs.pdf_stitcher_sqs_message import PdfStitchingSqsMessage
+from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pydantic import ValidationError
 from services.pdf_stitching_service import PdfStitchingService
 from utils.audit_logging_setup import LoggingService
