@@ -8,7 +8,7 @@ from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
-from models.sqs.pdf_stitcher_sqs_message import PdfStitchingSqsMessage
+from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pypdf import PdfReader, PdfWriter
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
