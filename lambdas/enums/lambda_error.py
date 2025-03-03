@@ -449,6 +449,17 @@ class LambdaError(Enum):
         "message": "Invalid reason code",
     }
     """
+       Errors for PDF Stitching lambda 
+    """
+    MultipartError = {
+        "err_code": "PS_4001",
+        "message": "Failed to process multipart",
+    }
+    StitchError = {
+        "err_code": "PS_4002",
+        "message": "Failed to process PDF stitching",
+    }
+    """
         Edge Lambda Errors
     """
     EdgeMalformed = {

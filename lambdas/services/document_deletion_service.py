@@ -11,7 +11,7 @@ from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
-from models.nrl_sqs_message import NrlSqsMessage
+from models.sqs.nrl_sqs_message import NrlSqsMessage
 from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_job_service import LloydGeorgeStitchJobService

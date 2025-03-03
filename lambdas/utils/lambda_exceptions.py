@@ -91,3 +91,7 @@ class OdsReportException(LambdaException):
 
 class AccessAuditException(LambdaException):
     pass
+
+
+class PdfStitchingException(LambdaException):
+    pass
