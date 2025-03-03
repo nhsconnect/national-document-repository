@@ -1,6 +1,6 @@
 import random
 
-from models.statistics import ApplicationData, OrganisationData, RecordStoreData
+from models.report.statistics import ApplicationData, OrganisationData, RecordStoreData
 
 
 def make_random_data(

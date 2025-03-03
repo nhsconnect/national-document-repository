@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import polars as pl
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
-from models.statistics import (
+from models.report.statistics import (
     ApplicationData,
     OrganisationData,
     RecordStoreData,

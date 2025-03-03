@@ -87,3 +87,7 @@ class NRLGetDocumentReferenceException(LambdaException):
 
 class OdsReportException(LambdaException):
     pass
+
+
+class PdfStitchingException(LambdaException):
+    pass
