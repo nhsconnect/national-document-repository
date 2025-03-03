@@ -4,8 +4,8 @@ import os
 
 from boto3.dynamodb.conditions import Attr
 from enums.metadata_report import MetadataReport
-from models.bulk_upload_report import BulkUploadReport
-from models.bulk_upload_report_output import OdsReport, SummaryReport
+from models.report.bulk_upload_report import BulkUploadReport
+from models.report.bulk_upload_report_output import OdsReport, SummaryReport
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service

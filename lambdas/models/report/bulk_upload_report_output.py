@@ -2,7 +2,7 @@ from enums.metadata_report import MetadataReport
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
 from inflection import underscore
-from models.bulk_upload_report import BulkUploadReport
+from models.report.bulk_upload_report import BulkUploadReport
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)

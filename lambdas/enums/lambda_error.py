@@ -442,6 +442,17 @@ class LambdaError(Enum):
         "message": "Failed to process unsupported file type",
     }
     """
+       Errors for PDF Stitching lambda 
+    """
+    MultipartError = {
+        "err_code": "PS_4001",
+        "message": "Failed to process multipart",
+    }
+    StitchError = {
+        "err_code": "PS_4002",
+        "message": "Failed to process PDF stitching",
+    }
+    """
         Edge Lambda Errors
     """
     EdgeMalformed = {
@@ -528,6 +539,10 @@ class LambdaError(Enum):
     DynamoInvalidStreamEvent = {
         "err_code": "DBS_4001",
         "message": "Failed to parse DynamoDb event stream",
+    }
+    SqsInvalidEvent = {
+        "err_code": "SQS_4001",
+        "message": "Failed to parse SQS event",
     }
 
     MockError = {

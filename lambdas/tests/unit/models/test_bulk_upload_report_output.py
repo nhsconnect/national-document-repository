@@ -3,8 +3,8 @@ from datetime import datetime
 from enums.metadata_report import MetadataReport
 from enums.upload_status import UploadStatus
 from freezegun import freeze_time
-from models.bulk_upload_report import BulkUploadReport
-from models.bulk_upload_report_output import OdsReport, ReportBase, SummaryReport
+from models.report.bulk_upload_report import BulkUploadReport
+from models.report.bulk_upload_report_output import OdsReport, ReportBase, SummaryReport
 from tests.unit.helpers.data.bulk_upload.dynamo_responses import (
     MOCK_REPORT_ITEMS_UPLOADER_1,
     MOCK_REPORT_ITEMS_UPLOADER_2,
