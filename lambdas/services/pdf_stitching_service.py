@@ -69,6 +69,7 @@ class PdfStitchingService:
             id=reference_id,
             content_type=document_reference.content_type,
             created=date_now.strftime(DATE_FORMAT),
+            current_gp_ods=document_reference.current_gp_ods,
             deleted="",
             file_location=f"s3://{self.lloyd_george_bucket_name}/{document_reference.nhs_number}/{reference_id}",
             file_name=f"1of1_{stripped_filename}",
@@ -113,24 +114,26 @@ class PdfStitchingService:
     def migrate_multipart_references(
         self, multipart_references: list[DocumentReference]
     ):
-        for reference in multipart_references:
-            try:
+        logger.info("Migrating multipart references")
+        try:
+            for reference in multipart_references:
                 self.dynamo_service.create_item(
                     table_name=self.unstitched_lloyd_george_table_name,
                     item=reference.model_dump_dynamo(),
                 )
-            except ClientError as e:
-                logger.error(f"Failed to migrate multipart references: {e}")
-                raise PdfStitchingException(400, LambdaError.MultipartError)
+        except ClientError as e:
+            logger.error(f"Failed to migrate multipart references: {e}")
+            raise PdfStitchingException(400, LambdaError.MultipartError)
 
-            try:
+        try:
+            for reference in multipart_references:
                 self.dynamo_service.delete_item(
                     table_name=self.lloyd_george_table_name,
-                    key={DocumentReferenceMetadataFields.ID: reference.id},
+                    key={DocumentReferenceMetadataFields.ID.value: reference.id},
                 )
-            except ClientError as e:
-                logger.error(f"Failed to cleanup multipart references: {e}")
-                raise PdfStitchingException(400, LambdaError.MultipartError)
+        except ClientError as e:
+            logger.error(f"Failed to cleanup multipart references: {e}")
+            raise PdfStitchingException(400, LambdaError.MultipartError)
 
     def write_stitching_reference(self):
         try:
