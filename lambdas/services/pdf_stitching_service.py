@@ -44,8 +44,7 @@ class PdfStitchingService:
             )
         )
         if len(document_references) == 0 or "1of1" in [
-            document_references.file_location
-            for document_references in document_references
+            document_references.file_name for document_references in document_references
         ]:
             logger.info("No usable files found for stitching")
             raise PdfStitchingException(400, LambdaError.SqsInvalidEvent)
