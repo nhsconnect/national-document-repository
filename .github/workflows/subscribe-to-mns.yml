@@ -12,6 +12,7 @@ on:
           - ndr-test
           - pre-prod
           - prod
+          - ndrd
       environment:
         description: Which environment settings to use?
         required: true
