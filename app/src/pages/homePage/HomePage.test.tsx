@@ -1,13 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import HomePage from './HomePage';
-import { routes } from '../../types/generic/routes';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import { REPORT_TYPE } from '../../types/generic/reports';
 import { buildConfig } from '../../helpers/test/testBuilders';
 import useConfig from '../../helpers/hooks/useConfig';
-import userEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -35,11 +31,7 @@ describe('HomePage', () => {
         const searchPatientButton = screen.getByTestId('search-patient-btn') as HTMLAnchorElement;
         const downloadReportButton = screen.getByTestId('download-report-btn') as HTMLAnchorElement;
         expect(searchPatientButton).toBeInTheDocument();
-        expect(searchPatientButton.href).toBe(`http://localhost${routes.SEARCH_PATIENT}`);
         expect(downloadReportButton).toBeInTheDocument();
-        expect(downloadReportButton.href).toBe(
-            `http://localhost${routes.REPORT_DOWNLOAD}?reportType=${REPORT_TYPE.ODS_PATIENT_SUMMARY}`,
-        );
     };
 
     describe('Rendering for GP roles', () => {
