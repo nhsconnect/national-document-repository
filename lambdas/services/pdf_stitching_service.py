@@ -43,11 +43,12 @@ class PdfStitchingService:
                 query_filter=UploadCompleted,
             )
         )
-        if len(document_references) == 0 or "1of1" in [
-            document_references.file_name for document_references in document_references
-        ]:
+        if len(document_references) == 0 or any(
+            "1of1" in document_reference.file_name
+            for document_reference in document_references
+        ):
             logger.info("No usable files found for stitching")
-            raise PdfStitchingException(400, LambdaError.SqsInvalidEvent)
+            return
 
         self.create_stitched_reference(document_references[0])
 
