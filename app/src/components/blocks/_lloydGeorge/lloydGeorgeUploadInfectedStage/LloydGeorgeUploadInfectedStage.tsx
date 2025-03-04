@@ -29,7 +29,7 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
                 <p>
                     <strong>Some of your files failed a virus scan:</strong>
                 </p>
-                <ul style={{ listStyle: 'none' }}>
+                <ul className="lg-upload-infected-list">
                     {infectedUploads.map((document) => (
                         <li key={document.id}>
                             <i key={document.id}>{document.file.name}</i>
@@ -62,9 +62,8 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
             </ButtonLink>
 
             <ButtonLink
-                className="nhsuk-button nhsuk-button--secondary"
+                className="nhsuk-button nhsuk-button--secondary small-left-margin"
                 data-testid="search-patient-btn"
-                style={{ marginLeft: 18 }}
                 role="button"
                 href="#"
                 onClick={(e) => {

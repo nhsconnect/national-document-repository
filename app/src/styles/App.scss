@@ -298,7 +298,7 @@ $hunit: '%';
                 }
 
                 p {
-                    margin-bottom: 0;
+                    margin-top: 25px;
                 }
 
                 &-no_record {
@@ -637,6 +637,17 @@ $hunit: '%';
     }
 }
 
+.input-stage-inset-text {
+    max-width: 'unset';
+}
+
+.lg-input-bold {
+    font-size: 1.2rem;
+}
+
+.lg-input-svg-display {
+    margin: '0 2rem';
+}
 //Feedback
 #feedback-form {
     max-width: 800px;
@@ -835,4 +846,142 @@ $hunit: '%';
 
 .feedback-page_inset-text {
     background-color: #fff;
+}
+
+.paragraph-top-margin {
+    margin-top: 40px;
+}
+
+.div-bottom-margin {
+    margin-bottom: 32px;
+}
+
+.lg-input-format-paragraph {
+    font-weight: 600;
+    margin: 20px;
+    margin-right: 0px;
+}
+
+.complete-stage-paragraph {
+    font-weight: '600';
+}
+
+.document-search-table-caption {
+    font-size: 32;
+}
+
+.search-result-spinner-div {
+    display: flex;
+}
+
+.nhsuk-button.nhsuk-button--secondary.left-margin {
+    margin-left: 72;
+}
+
+.nhsuk-button.nhsuk-button--secondary.bottom-margin {
+    margin-bottom: 0px;
+}
+
+.nhsuk-button.nhsuk-button--secondary.small-left-margin {
+    margin-left: 18px;
+}
+
+.nhsuk-button.nhsuk-button--secondary.medium-left-margin {
+    margin-left: 30px;
+}
+
+.table-cell-uploading-cell-thin {
+    width: '140px';
+}
+
+.table-cell-lg-input-cell-border {
+    border: unset;
+}
+
+.table-cell-uploading-cell-wide {
+    width: '200px';
+}
+
+.nhsuk-form-group--error.margin {
+    margin-bottom: 50px;
+}
+
+.details-margin {
+    margin-bottom: 50px;
+}
+
+.upload-callout-warning {
+    margin-top: 75px;
+}
+
+.nhsuk-width-container.preview {
+    margin: 0 auto;
+    max-width: 960px;
+    padding: 0 1.0875rem 1.45rem;
+    min-height: 75vh;
+}
+
+.div-lg-input-cell {
+    padding: 6px 0 12px 0;
+    color: #425563;
+}
+
+.lg-upload-paragraph {
+    margin-bottom: 50px;
+}
+
+.lg-upload-infected-list {
+    list-style: none;
+}
+
+.lg-upload-thin-table-cell {
+    width: 140px;
+}
+
+.lg-upload-thick-table-cell {
+    width: 200px;
+}
+
+.lg-upload-failed-div {
+    text-align: right;
+}
+
+.test-toggle-div {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.test-toggle-label {
+    margin-left: 6px;
+}
+
+.test-toggle-paragraph {
+    margin-bottom: 0px;
+}
+
+.pdf-viewer-div {
+    height: 800px;
+}
+
+.footer-copyright-link {
+    color: '#231f20';
+}
+
+.patient-results-paragraph {
+    max-width: 730px;
+}
+
+.patient-results-form {
+    margin-top: 60px;
+}
+
+.role-select-page-div {
+    max-width: 730px;
+}
+
+.role-select-page-paragraph {
+    margin: 0px;
+    font-weight: 'bold';
 }
