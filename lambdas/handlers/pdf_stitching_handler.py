@@ -22,7 +22,7 @@ logger = LoggingService(__name__)
     names=[
         "LLOYD_GEORGE_BUCKET_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
-        "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME ",
+        "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME",
         "PDF_STITCHING_SQS_URL",
         "NRL_SQS_URL",
     ]
@@ -40,7 +40,7 @@ def lambda_handler(event, context):
     for message in event_message_records:
         try:
             message_body = json.loads(message["body"])
-            stitching_message = PdfStitchingSqsMessage.model_validate(**message_body)
+            stitching_message = PdfStitchingSqsMessage.model_validate(message_body)
             request_context.patient_nhs_no = stitching_message.nhs_number
             pdf_stitching_service.process_message(stitching_message)
         except ValidationError as e:
