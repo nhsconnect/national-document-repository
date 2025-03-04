@@ -472,7 +472,7 @@ $hunit: '%';
     }
 
     &_delete-complete {
-        width: 711px;
+        max-width: 711px;
 
         &_details {
             &-content {
@@ -612,7 +612,7 @@ $hunit: '%';
 .lloydgeorge,
 .report {
     &_download-complete {
-        width: 711px;
+        max-width: 711px;
 
         &_details {
             &-content {
@@ -650,6 +650,25 @@ $hunit: '%';
             font-size: 1.2rem;
             margin-top: 2.4rem;
         }
+    }
+}
+
+@media (max-width: 685px) {
+    .nhsuk-card__heading.report_download-complete_details-content_header,
+    .nhsuk-card__heading.lloydgeorge_download-complete_details-content_header {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 435px) {
+    .nhsuk-card__heading.report_download-complete_details-content_header,
+    .nhsuk-card__heading.lloydgeorge_download-complete_details-content_header {
+        font-size: 1.5rem;
+    }
+
+    .nhsuk-card__description.report_download-complete_details-content_description,
+    .nhsuk-card__description.lloydgeorge_download-complete_details-content_description {
+        font-size: 1.2rem !important;
     }
 }
 
@@ -738,7 +757,7 @@ $hunit: '%';
 }
 
 .deletion-complete {
-    width: 711px;
+    max-width: 711px;
 
     &_card {
         &_content {
