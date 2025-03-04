@@ -1,4 +1,5 @@
-const { Roles } = require('../../../support/roles');
+import { Roles } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 
 const testPatient = '9000000009';
 const patient = {
@@ -13,7 +14,6 @@ const patient = {
 };
 
 const baseUrl = Cypress.config('baseUrl');
-const patientSearchUrl = '/patient/search';
 const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const arfDownloadUrl = '/patient/arf';
@@ -31,11 +31,11 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
 
             cy.login(Roles.GP_CLINICAL);
 
-            cy.url().should('eq', baseUrl + '/home');
+            cy.url().should('eq', baseUrl + routes.home);
 
             cy.navigateToPatientSearchPage();
 
-            cy.url().should('eq', baseUrl + patientSearchUrl);
+            cy.url().should('eq', baseUrl + routes.patientSearch);
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);

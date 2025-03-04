@@ -1,5 +1,6 @@
 import { DynamoDB, S3 } from 'aws-sdk';
 import { Roles, roleIds, roleList } from './roles';
+import { routes } from './routes';
 import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
 import Bluebird from 'cypress/types/bluebird';
 import './aws.commands';
@@ -116,7 +117,7 @@ Cypress.Commands.add('navigateToHomePage', () => {
     const baseUrl = Cypress.config('baseUrl');
 
     cy.getByTestId('home-btn').click();
-    cy.url().should('eq', baseUrl + '/home');
+    cy.url().should('eq', baseUrl + routes.home);
 });
 
 Cypress.Commands.add('navigateToPatientSearchPage', () => {
@@ -126,7 +127,7 @@ Cypress.Commands.add('navigateToPatientSearchPage', () => {
     cy.getByTestId('search-patient-btn').should('exist');
     cy.getByTestId('search-patient-btn').click();
 
-    cy.url().should('eq', baseUrl + '/patient/search');
+    cy.url().should('eq', baseUrl + routes.patientSearch);
 });
 
 Cypress.Commands.add('navigateToDownloadReportPage', () => {
@@ -136,7 +137,7 @@ Cypress.Commands.add('navigateToDownloadReportPage', () => {
     cy.getByTestId('download-report-btn').should('exist');
     cy.getByTestId('download-report-btn').click();
 
-    cy.url().should('eq', baseUrl + '/create-report?reportType=0');
+    cy.url().should('eq', baseUrl + `${routes.createReport}?reportType=0`);
 });
 
 declare global {

@@ -1,10 +1,10 @@
-const { Roles } = require('../../support/roles');
+import { Roles } from '../../support/roles';
+import { routes } from '../../support/routes';
 
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
 
     const startUrl = '/';
-    const homeUrl = '/home';
 
     beforeEach(() => {
         cy.visit(baseUrl + startUrl);
@@ -59,7 +59,7 @@ describe('Home Page', () => {
 
                 cy.login(Roles.GP_CLINICAL, true);
 
-                cy.url().should('eq', baseUrl + homeUrl);
+                cy.url().should('eq', baseUrl + routes.home);
                 cy.get('.nhsuk-navigation-container').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
@@ -74,7 +74,7 @@ describe('Home Page', () => {
                 () => {
                     cy.login(role, true);
 
-                    cy.url().should('eq', baseUrl + homeUrl);
+                    cy.url().should('eq', baseUrl + routes.home);
 
                     cy.get('.nhsuk-navigation-container').should('exist');
                     cy.get('.nhsuk-header__navigation-list').should('exist');
@@ -85,7 +85,7 @@ describe('Home Page', () => {
         it('should display home page when user is PCSE Role', { tags: 'regression' }, () => {
             cy.login(Roles.PCSE);
 
-            cy.url().should('eq', baseUrl + homeUrl);
+            cy.url().should('eq', baseUrl + routes.home);
 
             cy.get('.nhsuk-navigation-container').should('exist');
             cy.get('.nhsuk-header__navigation-list').should('exist');

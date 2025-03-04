@@ -1,9 +1,9 @@
 import { Roles } from '../../support/roles';
 import dbItem from '../../fixtures/dynamo-db-items/active-patient.json';
+import { routes } from '../../support/routes';
 
 const workspace = Cypress.env('WORKSPACE');
 dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace);
-const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 
 const featureFlags = {
     downloadOdsReportEnabled: true,
@@ -11,86 +11,35 @@ const featureFlags = {
 
 describe('GP Workflow: Download Lloyd George summary report', () => {
     context('Download Lloyd George summary report', () => {
-        it(
-            'Authenticated user can download the Lloyd George summary csv',
-            { tags: 'regression', defaultCommandTimeout: 20000 },
-            () => {
-                cy.login(Roles.GP_ADMIN, featureFlags);
-                cy.navigateToDownloadReportPage();
+        const fileTypes = ['csv', 'xlsx', 'pdf'];
+        fileTypes.forEach((fileType) => {
+            it(
+                `Authenticated user can download the Lloyd George summary ${fileType}`,
+                { tags: 'regression', defaultCommandTimeout: 20000 },
+                () => {
+                    cy.login(Roles.GP_ADMIN, featureFlags);
+                    cy.navigateToDownloadReportPage();
 
-                cy.intercept('GET', '/OdsReport*', (req) => {
-                    req.reply({
-                        statusCode: 200,
-                        body: {
-                            url: Cypress.config('baseUrl') + '/browserconfig.xml',
-                        },
-                    });
-                }).as('downloadReportFinished');
+                    cy.intercept('GET', '/OdsReport*', (req) => {
+                        req.reply({
+                            statusCode: 200,
+                            body: {
+                                url: Cypress.config('baseUrl') + '/browserconfig.xml',
+                            },
+                        });
+                    }).as('downloadReportFinished');
 
-                cy.getByTestId('download-csv-button').click();
+                    cy.getByTestId(`download-${fileType}-button`).click();
 
-                cy.wait('@downloadReportFinished', { timeout: 20000 });
+                    cy.wait('@downloadReportFinished', { timeout: 20000 });
 
-                cy.url().should(
-                    'eq',
-                    Cypress.config('baseUrl') + '/create-report/complete?reportType=0',
-                );
-            },
-        );
-
-        it(
-            'Authenticated user can download the Lloyd George summary xlsx',
-            { tags: 'regression', defaultCommandTimeout: 20000 },
-            () => {
-                cy.login(Roles.GP_ADMIN, featureFlags);
-                cy.navigateToDownloadReportPage();
-
-                cy.intercept('GET', '/OdsReport*', (req) => {
-                    req.reply({
-                        statusCode: 200,
-                        body: {
-                            url: Cypress.config('baseUrl') + '/browserconfig.xml',
-                        },
-                    });
-                }).as('downloadReportFinished');
-
-                cy.getByTestId('download-xlsx-button').click();
-
-                cy.wait('@downloadReportFinished', { timeout: 20000 });
-
-                cy.url().should(
-                    'eq',
-                    Cypress.config('baseUrl') + '/create-report/complete?reportType=0',
-                );
-            },
-        );
-
-        it(
-            'Authenticated user can download the Lloyd George summary pdf',
-            { tags: 'regression', defaultCommandTimeout: 20000 },
-            () => {
-                cy.login(Roles.GP_ADMIN, featureFlags);
-                cy.navigateToDownloadReportPage();
-
-                cy.intercept('GET', '/OdsReport*', (req) => {
-                    req.reply({
-                        statusCode: 200,
-                        body: {
-                            url: Cypress.config('baseUrl') + '/browserconfig.xml',
-                        },
-                    });
-                }).as('downloadReportFinished');
-
-                cy.getByTestId('download-pdf-button').click();
-
-                cy.wait('@downloadReportFinished', { timeout: 20000 });
-
-                cy.url().should(
-                    'eq',
-                    Cypress.config('baseUrl') + '/create-report/complete?reportType=0',
-                );
-            },
-        );
+                    cy.url().should(
+                        'eq',
+                        Cypress.config('baseUrl') + `${routes.createReportComplete}?reportType=0`,
+                    );
+                },
+            );
+        });
 
         it(
             'Authenticated user cannot download summary when there are no patients held for their ods',

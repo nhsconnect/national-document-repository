@@ -1,15 +1,11 @@
 import { Roles } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatientLGUpload.json';
 
 const baseUrl = Cypress.config('baseUrl');
-const patientSearchUrl = '/patient/search';
-const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const lloydGeorgeUploadUrl = '/patient/lloyd-george-record/upload';
 const lloydGeorgeInfectedUrl = '/patient/lloyd-george-record/upload/infected';
-const arfDownloadUrl = '/patient/arf';
-const arfUploadUrl = '/patient/arf/upload';
-const unauthorisedUrl = '/unauthorised';
 
 const clickUploadButton = () => {
     cy.get('#upload-button').click();
@@ -18,7 +14,7 @@ const clickUploadButton = () => {
 const testSearchPatientButton = () => {
     cy.getByTestId('search-patient-btn').should('be.visible');
     cy.getByTestId('search-patient-btn').click();
-    cy.url().should('eq', baseUrl + patientSearchUrl);
+    cy.url().should('eq', baseUrl + routes.patientSearch);
 };
 const testViewRecordButton = () => {
     cy.getByTestId('view-record-btn').should('be.visible');
@@ -81,7 +77,7 @@ const mockCreateDocRefHandler = (req) => {
 describe('GP Workflow: Upload Lloyd George record when user is GP admin and patient has no record', () => {
     const beforeEachConfiguration = () => {
         cy.login(Roles.GP_ADMIN);
-        cy.visit(patientSearchUrl);
+        cy.visit(routes.patientSearch);
 
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,

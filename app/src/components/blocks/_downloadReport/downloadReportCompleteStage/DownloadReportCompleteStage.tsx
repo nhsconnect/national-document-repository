@@ -30,7 +30,7 @@ const DownloadReportCompleteStage = (props: Props) => {
                 </Card.Content>
             </Card>
 
-            <h2>Keep this downloaded file safe</h2>
+            <h3>Keep this downloaded file safe</h3>
             <p>
                 Store it in a safe location on your local system and remove it when it is no longer
                 needed.

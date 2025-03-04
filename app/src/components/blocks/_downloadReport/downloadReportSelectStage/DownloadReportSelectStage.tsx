@@ -7,10 +7,9 @@ import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
 import { isMock } from '../../../../helpers/utils/isLocal';
-import { ReactNode } from 'react';
+import { ReactNode, useRef, useState } from 'react';
 import NotificationBanner from '../../../layout/notificationBanner/NotificationBanner';
 import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
-import React from 'react';
 
 type Props = {
     report: ReportData;
@@ -20,8 +19,9 @@ const DownloadReportSelectStage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
-    const [downloading, setDownloading] = React.useState(false);
-    const [downloadError, setDownloadError] = React.useState<ReactNode>(null);
+    const [downloading, setDownloading] = useState(false);
+    const [downloadError, setDownloadError] = useState<ReactNode>(null);
+    const scrollToRef = useRef<HTMLDivElement>(null);
 
     const handleSuccess = () => {
         navigate(`${routeChildren.REPORT_DOWNLOAD_COMPLETE}?reportType=${props.report.reportType}`);
@@ -72,6 +72,7 @@ const DownloadReportSelectStage = (props: Props) => {
     const handleError = (errorCode: number) => {
         const error = errorCode === 404 ? noDataContent() : serverErrorContent();
         setDownloadError(error);
+        scrollToRef.current?.scrollIntoView();
     };
 
     const handleDownload = async (fileType: string) => {
@@ -128,13 +129,16 @@ const DownloadReportSelectStage = (props: Props) => {
                 Return to Home
             </BackLink>
             {downloadError && (
-                <NotificationBanner title="Important" className="download-failed-banner">
+                <NotificationBanner
+                    title="Important"
+                    className="download-failed-banner"
+                    scrollToRef={scrollToRef}
+                    dataTestId="error-notification-banner"
+                >
                     {downloadError}
                 </NotificationBanner>
             )}
-            <h1 data-testid="title" className="nhsuk-">
-                Download the {props.report?.title}
-            </h1>
+            <h1 data-testid="title">Download the {props.report?.title}</h1>
             <div className="mb-7">{<props.report.description />}</div>
             <h2>Choose a file format:</h2>
 

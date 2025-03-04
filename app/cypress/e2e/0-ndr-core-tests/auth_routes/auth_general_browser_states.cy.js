@@ -1,5 +1,6 @@
 import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 import { Roles } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 import dbItem from '../../../fixtures/dynamo-db-items/active-patient.json';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatientLGUpload.json';
 
@@ -46,14 +47,14 @@ describe('Authentication & Authorisation', () => {
 
     context('Unauthorised access redirection', () => {
         const unauthorisedRoutes = [
-            '/home',
-            '/patient/search',
+            routes.home,
+            routes.patientSearch,
             '/patient/verify',
             '/patient/arf',
             '/patient/lloyd-george-record',
             '/patient/lloyd-george-record/upload',
-            '/create-report',
-            '/create-report/complete'
+            routes.createReport,
+            routes.createReportComplete,
         ];
 
         unauthorisedRoutes.forEach((route) => {
@@ -98,14 +99,13 @@ describe('Authentication & Authorisation', () => {
 
         const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
         const verifyUrl = '/patient/verify';
-        const patientSearchUrl = '/patient/search';
 
         it(
             'Refreshing the browser after searching for a patient will return the user to the patient search page',
             { tags: 'regression ', defaultCommandTimeout: 20000 },
             () => {
                 cy.login(Roles.GP_ADMIN);
-                cy.visit(patientSearchUrl);
+                cy.visit(routes.patientSearch);
 
                 cy.intercept('GET', '/SearchPatient*', {
                     statusCode: 200,
@@ -125,7 +125,7 @@ describe('Authentication & Authorisation', () => {
 
                 cy.reload();
 
-                cy.url().should('contain', patientSearchUrl);
+                cy.url().should('contain', routes.patientSearch);
             },
         );
     });

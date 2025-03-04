@@ -1,5 +1,6 @@
 import { Roles } from '../../../support/roles';
 import dbItem from '../../../fixtures/dynamo-db-items/active-patient.json';
+import { routes } from '../../../support/routes';
 
 const workspace = Cypress.env('WORKSPACE');
 dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace);
@@ -24,12 +25,15 @@ describe('GP Workflow: Download Lloyd George summary report', () => {
                 cy.navigateToDownloadReportPage();
 
                 cy.intercept('GET', '/OdsReport*').as('downloadReportFinished');
-                
+
                 cy.getByTestId('download-csv-button').click();
 
-                cy.wait('@downloadReportFinished', {timeout: 20000});
+                cy.wait('@downloadReportFinished', { timeout: 20000 });
 
-                cy.url().should('eq', Cypress.config('baseUrl') + '/create-report/complete?reportType=0');
+                cy.url().should(
+                    'eq',
+                    Cypress.config('baseUrl') + `${routes.createReportComplete}?reportType=0`,
+                );
 
                 cy.getByTestId('logout-btn').click();
                 cy.url({ timeout: 10000 }).should('eq', Cypress.config('baseUrl') + '/');

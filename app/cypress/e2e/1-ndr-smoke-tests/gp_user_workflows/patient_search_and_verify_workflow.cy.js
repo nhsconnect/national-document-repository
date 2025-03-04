@@ -1,5 +1,6 @@
 import { pdsPatients, stubPatients } from '../../../support/patients';
 import { Roles, roleName } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
@@ -9,7 +10,6 @@ describe('GP Workflow: Patient search and verify', () => {
     const workspace = Cypress.env('WORKSPACE');
     const activePatient =
         workspace === 'ndr-dev' ? pdsPatients.activeUpload : stubPatients.activeUpload;
-    const homeUrl = '/home';
     const patientVerifyUrl = '/patient/verify';
     const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
@@ -22,7 +22,7 @@ describe('GP Workflow: Patient search and verify', () => {
             () => {
                 cy.smokeLogin(role);
 
-                cy.url({ timeout: 10000 }).should('eq', baseUrl + homeUrl);
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + routes.home);
 
                 cy.navigateToPatientSearchPage();
 
