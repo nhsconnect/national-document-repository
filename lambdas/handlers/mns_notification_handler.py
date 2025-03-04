@@ -35,7 +35,7 @@ def lambda_handler(event, context):
 
             request_context.patient_nhs_no = mns_message.subject.nhs_number
             logger.info(
-                f"Processing SQS message for nhs number: {mns_message.nhs_number}"
+                f"Processing SQS message for nhs number: {mns_message.subject.nhs_number}"
             )
 
             if mns_message.type in MNSNotificationTypes.__members__.values():
