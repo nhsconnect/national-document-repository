@@ -1,13 +1,18 @@
 import os
 import re
+import uuid
 from datetime import datetime, timezone
 from io import BytesIO
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from enums.nrl_sqs_upload import NrlActionTypes
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.sqs.nrl_sqs_message import NrlSqsMessage
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pypdf import PdfReader, PdfWriter
 from services.base.dynamo_service import DynamoDBService
@@ -50,13 +55,17 @@ class PdfStitchingService:
             logger.info("No usable files found for stitching")
             return
 
-        self.create_stitched_reference(document_references[0])
+        self.create_stitched_reference(document_reference=document_references[0])
 
-        s3_object_keys = self.process_object_keys(document_references)
-        stitching_data_stream = self.process_stitching(s3_object_keys=s3_object_keys)
+        sorted_multipart_keys = self.sort_multipart_object_keys(
+            document_references=document_references
+        )
+        stitching_data_stream = self.process_stitching(
+            s3_object_keys=sorted_multipart_keys
+        )
 
-        self.upload_stitched_file(stitching_data_stream)
-        self.migrate_multipart_references(document_references)
+        self.upload_stitched_file(stitching_data_stream=stitching_data_stream)
+        self.migrate_multipart_references(multipart_references=document_references)
         self.write_stitching_reference()
         self.publish_nrl_message()
 
@@ -90,12 +99,12 @@ class PdfStitchingService:
             )
             data_stream.seek(0)
 
-            pdf_reader = PdfReader(data_stream)
+            pdf_reader = PdfReader(stream=data_stream)
             for page in pdf_reader.pages:
                 pdf_writer.add_page(page)
 
         stitching_data_stream = BytesIO()
-        pdf_writer.write(stitching_data_stream)
+        pdf_writer.write(stream=stitching_data_stream)
         stitching_data_stream.seek(0)
 
         return stitching_data_stream
@@ -146,10 +155,32 @@ class PdfStitchingService:
             raise PdfStitchingException(400, LambdaError.StitchError)
 
     def publish_nrl_message(self):
-        pass
+        document_api_endpoint = (
+            os.environ.get("APIM_API_URL", "")
+            + "/DocumentReference/"
+            + SnomedCodes.LLOYD_GEORGE.value.code
+            + "~"
+            + self.stitched_reference.id
+        )
+        doc_details = Attachment(
+            url=document_api_endpoint,
+            contentType="application/pdf",
+        )
+        nrl_sqs_message = NrlSqsMessage(
+            nhs_number=self.stitched_reference.nhs_number,
+            action=NrlActionTypes.CREATE,
+            attachment=doc_details,
+        )
+        self.sqs_service.send_message_fifo(
+            queue_url=os.environ.get("NRL_SQS_URL"),
+            message_body=nrl_sqs_message.model_dump_json(),
+            group_id=f"nrl_sqs_{uuid.uuid4()}",
+        )
 
     @staticmethod
-    def process_object_keys(document_references: list[DocumentReference]) -> list[str]:
+    def sort_multipart_object_keys(
+        document_references: list[DocumentReference],
+    ) -> list[str]:
         try:
             document_references.sort(
                 key=lambda x: int(re.search(r"(\d+)of(\d+)", x.file_name).group(1))
