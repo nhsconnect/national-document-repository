@@ -6,6 +6,7 @@ from pydantic_core._pydantic_core import ValidationError
 from services.process_mns_message_service import MNSNotificationService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.request_context import request_context
 
@@ -21,6 +22,7 @@ logger = LoggingService(__name__)
         "MNS_NOTIFICATION_QUEUE_URL",
     ]
 )
+@override_error_check
 def lambda_handler(event, context):
     logger.info(f"Received MNS notification event: {event}")
     notification_service = MNSNotificationService()
