@@ -113,7 +113,7 @@ def test_handle_search_patient_request_valid(
     expected_response = (
         '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22","postalCode":"LS1 '
         '6AE","nhsNumber":"9000000009","superseded":false,"restricted":false,'
-        '"active":true}'
+        '"active":true,"deceased":false}'
     )
     mock_pds_service_fetch.return_value = pds_service_response
 
@@ -196,7 +196,7 @@ def test_update_auth_session_with_permitted_search_with_previous_search(
     mock_service, mock_updated_permitted_search_fields
 ):
     mock_service.auth_service.allowed_nhs_numbers = [TEST_NHS_NUMBER]
-    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER)
+    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER, False)
 
     mock_updated_permitted_search_fields.assert_not_called()
     mock_service.db_service.update_item.assert_not_called()
@@ -215,10 +215,12 @@ def test_update_auth_session_with_permitted_search_with_new_search(
         "AllowedNHSNumbers": TEST_NHS_NUMBER
     }
 
-    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER)
+    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER, False)
 
     mock_updated_permitted_search_fields.assert_called_once_with(
-        nhs_number=TEST_NHS_NUMBER, allowed_nhs_numbers=[]
+        field_name="AllowedNHSNumbers",
+        nhs_number=TEST_NHS_NUMBER,
+        allowed_nhs_numbers=[],
     )
     mock_service.db_service.update_item.assert_called_once_with(
         table_name=AUTH_SESSION_TABLE_NAME,
@@ -243,10 +245,12 @@ def test_update_auth_session_with_permitted_search_with_new_search_existing_list
         "AllowedNHSNumbers": expected_list
     }
 
-    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER)
+    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER, False)
 
     mock_updated_permitted_search_fields.assert_called_once_with(
-        nhs_number=TEST_NHS_NUMBER, allowed_nhs_numbers=[existing_nhs_number_search]
+        field_name="AllowedNHSNumbers",
+        nhs_number=TEST_NHS_NUMBER,
+        allowed_nhs_numbers=[existing_nhs_number_search],
     )
     mock_service.db_service.update_item.assert_called_once_with(
         table_name=AUTH_SESSION_TABLE_NAME,
@@ -292,6 +296,8 @@ def test_create_updated_permitted_search_fields(
     mock_service, nhs_number, allowed_nhs_numbers, expected
 ):
     actual = mock_service.create_updated_permitted_search_fields(
-        nhs_number=nhs_number, allowed_nhs_numbers=allowed_nhs_numbers
+        field_name="AllowedNHSNumbers",
+        nhs_number=nhs_number,
+        allowed_nhs_numbers=allowed_nhs_numbers,
     )
     assert actual == expected
