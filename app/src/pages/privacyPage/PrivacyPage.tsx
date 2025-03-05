@@ -45,7 +45,9 @@ function PrivacyPage() {
                     GP practices in England are automatically signed up to the National Data
                     Processing Deed, so you don't need to do anything.
                 </p>
+            </section>
 
+            <section>
                 <h2>Further information</h2>
                 <p>
                     <a
@@ -100,7 +102,9 @@ function PrivacyPage() {
                     .
                 </p>
                 <p>This only applies to information you provide through NHS England.</p>
+            </section>
 
+            <section>
                 <h2>Feedback form privacy notice</h2>
                 <p>
                     When submitting your details using our{' '}
@@ -132,7 +136,7 @@ function PrivacyPage() {
                     .
                 </p>
                 <p>
-                    We use the information you submit to process your request and provide relevant
+                    We use the information you submit to process your feedback and provide relevant
                     information or services you have requested.
                 </p>
                 <p>This will help support us in developing this service.</p>
