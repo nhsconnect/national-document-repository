@@ -35,7 +35,7 @@ class LambdaError(Enum):
     }
     SearchPatientNoAuth = {
         "err_code": "SP_4003",
-        "message": "Patient does not exist for given NHS number",
+        "message": "You do not have access to this patient's record",
     }
     SearchPatientNoId = {
         "err_code": "SP_4004",

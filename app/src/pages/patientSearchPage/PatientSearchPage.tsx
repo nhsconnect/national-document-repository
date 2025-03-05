@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { routes } from '../../types/generic/routes';
 import { FieldValues, useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
@@ -19,6 +19,8 @@ import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import useTitle from '../../helpers/hooks/useTitle';
 import useConfig from '../../helpers/hooks/useConfig';
+import { ErrorResponse } from '../../types/generic/errorResponse';
+import errorCodes from '../../helpers/utils/errorCodes';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
@@ -27,7 +29,7 @@ function PatientSearchPage() {
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
     const [inputError, setInputError] = useState<null | string>(null);
-    const { mockLocal } = useConfig();
+    const { mockLocal, featureFlags } = useConfig();
     const { register, handleSubmit } = useForm({
         reValidateMode: 'onSubmit',
     });
@@ -50,6 +52,11 @@ function PatientSearchPage() {
     const pageTitle = 'Search for a patient';
     useTitle({ pageTitle: pageTitle });
 
+    const setFailedSubmitState = (statusCode: number | null) => {
+        setStatusCode(statusCode);
+        setSubmissionState(SEARCH_STATES.FAILED);
+    };
+
     const handleSearch = async (data: FieldValues) => {
         setSubmissionState(SEARCH_STATES.SEARCHING);
         setInputError(null);
@@ -62,9 +69,20 @@ function PatientSearchPage() {
                 baseUrl,
                 baseHeaders,
             });
+
+            if (
+                !patientDetails.active &&
+                (!featureFlags.uploadArfWorkflowEnabled || !featureFlags.uploadLambdaEnabled)
+            ) {
+                setInputError(errorCodes['SP_4003']);
+                setFailedSubmitState(404);
+                return;
+            }
+
             handleSuccess(patientDetails);
         } catch (e) {
             const error = e as AxiosError;
+            const errorData = error.response?.data as ErrorResponse;
             /* istanbul ignore if */
             if (isMock(error)) {
                 handleSuccess(
@@ -77,12 +95,12 @@ function PatientSearchPage() {
             } else if (error.response?.status === 403) {
                 navigate(routes.SESSION_EXPIRED);
             } else if (error.response?.status === 404) {
-                setInputError('Sorry, patient data not found.');
+                setInputError(errorCodes[errorData?.err_code!] ?? 'Sorry, patient data not found.');
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }
-            setStatusCode(error.response?.status ?? null);
-            setSubmissionState(SEARCH_STATES.FAILED);
+
+            setFailedSubmitState(error.response?.status ?? null);
         }
     };
     const handleError = (fields: FieldValues) => {

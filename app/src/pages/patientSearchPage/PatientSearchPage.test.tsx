@@ -104,6 +104,9 @@ describe('PatientSearchPage', () => {
                 response: {
                     status: 404,
                     message: '404 Not found.',
+                    data: {
+                        err_code: 'SP_4002',
+                    },
                 },
             };
 
@@ -112,7 +115,32 @@ describe('PatientSearchPage', () => {
             renderPatientSearchPage();
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '0987654321');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
-            expect(await screen.findAllByText('Sorry, patient data not found.')).toHaveLength(2);
+            expect(
+                await screen.findAllByText(
+                    'Patient could not be found in the Personal Demographics Service',
+                ),
+            ).toHaveLength(2);
+        });
+
+        it('returns an input error when user does not have access to patient data', async () => {
+            const errorResponse = {
+                response: {
+                    status: 404,
+                    message: '404 Not found.',
+                    data: {
+                        err_code: 'SP_4003',
+                    },
+                },
+            };
+
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            renderPatientSearchPage();
+            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '0987654321');
+            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+            expect(
+                await screen.findAllByText("You do not have access to this patient's record"),
+            ).toHaveLength(2);
         });
 
         it('returns a service error when service is down', async () => {
@@ -243,6 +271,27 @@ describe('PatientSearchPage', () => {
                 );
             });
         });
+
+        it('display input error when patient is inactive and upload feature is disabled', async () => {
+            jest.mock('../../helpers/hooks/useConfig', () => ({
+                useConfig: () => ({
+                    featureFlags: {
+                        uploadArfWorkflowEnabled: false,
+                    },
+                }),
+            }));
+
+            mockedAxios.get.mockImplementation(() =>
+                Promise.resolve({ data: { ...buildPatientDetails(), active: false } }),
+            );
+
+            renderPatientSearchPage();
+            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '0987654321');
+            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+            expect(
+                await screen.findAllByText("You do not have access to this patient's record"),
+            ).toHaveLength(2);
+        });
     });
 
     describe('Validation', () => {
@@ -350,16 +399,13 @@ describe('PatientSearchPage', () => {
         );
 
         it('a defined width class is applied to the NHS number input field', async () => {
-
             const definedWidthClass = 'nhsuk-input--width-10';
 
             renderPatientSearchPage();
 
             const input = screen.getByTestId('nhs-number-input');
             expect(input).toHaveClass(definedWidthClass);
-
         });
-
     });
 });
 
