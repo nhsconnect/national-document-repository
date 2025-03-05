@@ -136,8 +136,8 @@ function PrivacyPage() {
                     .
                 </p>
                 <p>
-                    We use the information you submit to process your feedback and provide relevant
-                    information or services you have requested.
+                    We use the information you submit to process your feedback and provide you with
+                    the relevant information or services you have requested.
                 </p>
                 <p>This will help support us in developing this service.</p>
             </section>

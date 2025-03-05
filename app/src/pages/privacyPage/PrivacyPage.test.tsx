@@ -58,7 +58,7 @@ describe('PrivacyPage', () => {
                 /When submitting your details using our/i,
                 /any personal information you give to us will be processed in accordance with the/i,
                 /We use the information you submit to process your feedback and provide/i,
-                /relevant information or services you have requested/i,
+                /you with the relevant information or services you have requested/i,
                 /This will help support us in developing this service/i,
             ];
             contents.forEach((str) => {
