@@ -20,7 +20,7 @@ const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
-const activePatient = pdsPatients.activeNoUpload;
+const activePatient = workspace === 'ndr-dev' ? pdsPatients.activeNoUpload: stubPatients.activeNoUpload;
 
 describe('GP Workflow: Upload Lloyd George record', () => {
     context('Upload a Lloyd George document', () => {
