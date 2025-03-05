@@ -37,10 +37,10 @@ class SearchPatientDetailsService:
         try:
             pds_service = get_pds_service()
             patient_details = pds_service.fetch_patient_details(nhs_number)
-
-            self.check_if_user_authorise(
-                gp_ods_for_patient=patient_details.general_practice_ods
-            )
+            if not patient_details.deceased:
+                self.check_if_user_authorise(
+                    gp_ods_for_patient=patient_details.general_practice_ods
+                )
 
             logger.audit_splunk_info(
                 "Searched for patient details", {"Result": "Patient found"}
@@ -129,7 +129,7 @@ class SearchPatientDetailsService:
                 existing_nhs_numbers=deceased_nhs_numbers,
                 ndr_session_id=ndr_session_id,
             )
-        elif not deceased or self.user_role == RepositoryRole.PCSE.value:
+        if not deceased or self.user_role == RepositoryRole.PCSE.value:
             self.update_auth_session_table_with_new_nhs_number(
                 field_name=self.permitted_field,
                 nhs_number=nhs_number,
