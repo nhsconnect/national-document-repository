@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
@@ -24,6 +25,7 @@ logger = LoggingService(__name__)
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME",
         "PDF_STITCHING_SQS_URL",
+        "APIM_API_URL",
         "NRL_SQS_URL",
     ]
 )
@@ -39,11 +41,11 @@ def lambda_handler(event, context):
 
     for message in event_message_records:
         try:
-            message_body = json.loads(message["body"])
+            message_body = json.loads(message.get("body", ""))
             stitching_message = PdfStitchingSqsMessage.model_validate(message_body)
             request_context.patient_nhs_no = stitching_message.nhs_number
-            pdf_stitching_service.process_message(stitching_message)
-        except ValidationError as e:
+            pdf_stitching_service.process_message(stitching_message=stitching_message)
+        except (JSONDecodeError, ValidationError) as e:
             logger.error("Malformed PDF Stitching SQS message")
             logger.error(
                 f"Failed to parse PDF stitching from SQS message: {str(e)}",

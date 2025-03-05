@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -119,6 +120,8 @@ APIM_API_URL = "https://apim.api.service.uk"
 PDF_STITCHING_SQS_URL = (
     "https://sqs.us-east-1.amazonaws.com/977715257439/MyPdfStitchingQueue"
 )
+
+TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.fixture

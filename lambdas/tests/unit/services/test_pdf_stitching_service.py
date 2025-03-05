@@ -1,15 +1,20 @@
+import json
 import os
+from io import BytesIO
 from random import shuffle
+from unittest.mock import call
 
 import pytest
 from enums.lambda_error import LambdaError
 from freezegun.api import freeze_time
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pypdf import PdfReader, PdfWriter
-from six import BytesIO
 from tests.unit.conftest import (
     MOCK_CLIENT_ERROR,
     MOCK_LG_BUCKET,
+    MOCK_LG_TABLE_NAME,
+    MOCK_UNSTITCHED_LG_TABLE_NAME,
+    TEST_BASE_DIRECTORY,
     TEST_NHS_NUMBER,
     TEST_UUID,
 )
@@ -42,6 +47,16 @@ def mock_create_stitched_reference(mocker, mock_service):
 
 
 @pytest.fixture
+def mock_sort_multipart_object_keys(mocker, mock_service):
+    return mocker.patch.object(mock_service, "sort_multipart_object_keys")
+
+
+@pytest.fixture
+def mock_process_stitching(mocker, mock_service):
+    return mocker.patch.object(mock_service, "process_stitching")
+
+
+@pytest.fixture
 def mock_upload_stitched_file(mocker, mock_service):
     return mocker.patch.object(mock_service, "upload_stitched_file")
 
@@ -61,14 +76,57 @@ def mock_publish_nrl_message(mocker, mock_service):
     return mocker.patch.object(mock_service, "publish_nrl_message")
 
 
-def test_process_message(mock_service):
-    test_message_body = stitching_queue_message_event["Records"][0]["body"]
-    test_message = PdfStitchingSqsMessage.model_validate(test_message_body)
+@pytest.fixture
+def mock_download_fileobj():
+    def _mock_download_fileobj(
+        s3_object_data: dict[str, BytesIO], Bucket: str, Key: str, Fileobj: BytesIO
+    ):
+        if Key in s3_object_data:
+            Fileobj.write(s3_object_data[Key].read())
+        Fileobj.seek(0)
 
-    mock_service.document_service.fetch_available_document_references_by_type.return_value = [
-        TEST_DOCUMENT_REFERENCES
+    return _mock_download_fileobj
+
+
+def test_process_message(
+    mock_service,
+    mock_create_stitched_reference,
+    mock_sort_multipart_object_keys,
+    mock_process_stitching,
+    mock_upload_stitched_file,
+    mock_migrate_multipart_references,
+    mock_write_stitching_reference,
+    mock_publish_nrl_message,
+):
+    test_message_body = json.loads(stitching_queue_message_event["Records"][0]["body"])
+    test_message = PdfStitchingSqsMessage.model_validate(test_message_body)
+    test_stream = BytesIO()
+    test_sorted_keys = [
+        reference.get_file_key() for reference in TEST_DOCUMENT_REFERENCES
     ]
+
+    mock_sort_multipart_object_keys.return_value = test_sorted_keys
+    mock_process_stitching.return_value = test_stream
+
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = (
+        TEST_DOCUMENT_REFERENCES
+    )
+
     mock_service.process_message(test_message)
+
+    mock_create_stitched_reference.assert_called_once_with(
+        document_reference=TEST_DOCUMENT_REFERENCES[0]
+    )
+    mock_sort_multipart_object_keys.assert_called_once_with(
+        document_references=TEST_DOCUMENT_REFERENCES
+    )
+    mock_process_stitching.assert_called_once_with(s3_object_keys=test_sorted_keys)
+    mock_upload_stitched_file.assert_called_once_with(stitching_data_stream=test_stream)
+    mock_migrate_multipart_references.assert_called_once_with(
+        multipart_references=TEST_DOCUMENT_REFERENCES
+    )
+    mock_write_stitching_reference.assert_called_once()
+    mock_publish_nrl_message.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -81,13 +139,15 @@ def test_process_message(mock_service):
 def test_process_message_handles_singular_or_none_references(
     mock_service,
     mock_create_stitched_reference,
+    mock_sort_multipart_object_keys,
+    mock_process_stitching,
     mock_upload_stitched_file,
     mock_migrate_multipart_references,
     mock_write_stitching_reference,
     mock_publish_nrl_message,
     document_references,
 ):
-    test_message_body = stitching_queue_message_event["Records"][0]["body"]
+    test_message_body = json.loads(stitching_queue_message_event["Records"][0]["body"])
     test_message = PdfStitchingSqsMessage.model_validate(test_message_body)
 
     mock_service.document_service.fetch_available_document_references_by_type.return_value = (
@@ -97,6 +157,8 @@ def test_process_message_handles_singular_or_none_references(
     mock_service.process_message(test_message)
 
     mock_create_stitched_reference.assert_not_called()
+    mock_sort_multipart_object_keys.assert_not_called()
+    mock_process_stitching.assert_not_called()
     mock_upload_stitched_file.assert_not_called()
     mock_migrate_multipart_references.assert_not_called()
     mock_write_stitching_reference.assert_not_called()
@@ -138,10 +200,9 @@ def test_create_stitched_reference(mock_service, mock_uuid, document_reference):
 
 
 def test_process_stitching(mock_service, mock_download_fileobj):
-    test_base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    test_pdf_1 = os.path.join(test_base_dir, "helpers/data/pdf/", "file1.pdf")
-    test_pdf_2 = os.path.join(test_base_dir, "helpers/data/pdf/", "file2.pdf")
-    test_pdf_3 = os.path.join(test_base_dir, "helpers/data/pdf/", "file3.pdf")
+    test_pdf_1 = os.path.join(TEST_BASE_DIRECTORY, "helpers/data/pdf/", "file1.pdf")
+    test_pdf_2 = os.path.join(TEST_BASE_DIRECTORY, "helpers/data/pdf/", "file2.pdf")
+    test_pdf_3 = os.path.join(TEST_BASE_DIRECTORY, "helpers/data/pdf/", "file3.pdf")
 
     with open(test_pdf_1, "rb") as file:
         test_pdf_1_bytes = file.read()
@@ -158,13 +219,13 @@ def test_process_stitching(mock_service, mock_download_fileobj):
         "file3.pdf": BytesIO(test_pdf_3_bytes),
     }
 
-    writer = PdfWriter()
-    writer.add_page(PdfReader(BytesIO(test_pdf_1_bytes)).pages[0])
-    writer.add_page(PdfReader(BytesIO(test_pdf_2_bytes)).pages[0])
-    writer.add_page(PdfReader(BytesIO(test_pdf_3_bytes)).pages[0])
+    expected_writer = PdfWriter()
+    expected_writer.add_page(PdfReader(stream=BytesIO(test_pdf_1_bytes)).pages[0])
+    expected_writer.add_page(PdfReader(stream=BytesIO(test_pdf_2_bytes)).pages[0])
+    expected_writer.add_page(PdfReader(stream=BytesIO(test_pdf_3_bytes)).pages[0])
 
     expected_stream = BytesIO()
-    writer.write(expected_stream)
+    expected_writer.write(expected_stream)
     expected_stream.seek(0)
 
     mock_service.s3_service.client.download_fileobj.side_effect = (
@@ -178,8 +239,17 @@ def test_process_stitching(mock_service, mock_download_fileobj):
     assert actual_stream.read() == expected_stream.read()
 
 
-def test_upload_stitched_file():
-    pass
+def test_upload_stitched_file(mock_service):
+    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+    test_stream = BytesIO()
+
+    mock_service.upload_stitched_file(test_stream)
+
+    mock_service.s3_service.client.upload_fileobj.assert_called_with(
+        Fileobj=test_stream,
+        Bucket=MOCK_LG_BUCKET,
+        Key=f"{TEST_NHS_NUMBER}/test-key-123",
+    )
 
 
 def test_upload_stitched_file_handles_client_error(mock_service, caplog):
@@ -201,8 +271,23 @@ def test_upload_stitched_file_handles_client_error(mock_service, caplog):
 def test_migrate_multipart_references(mock_service):
     mock_service.migrate_multipart_references(TEST_DOCUMENT_REFERENCES)
 
+    expected_create_calls = []
+    expected_delete_calls = []
+    for reference in TEST_DOCUMENT_REFERENCES:
+        expected_create_calls.append(
+            call(
+                table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
+                item=reference.model_dump_dynamo(),
+            )
+        )
+        expected_delete_calls.append(
+            call(table_name=MOCK_LG_TABLE_NAME, key={"ID": reference.id})
+        )
+
     assert mock_service.dynamo_service.create_item.call_count == 3
+    mock_service.dynamo_service.create_item.assert_has_calls(expected_create_calls)
     assert mock_service.dynamo_service.delete_item.call_count == 3
+    mock_service.dynamo_service.delete_item.assert_has_calls(expected_delete_calls)
 
 
 def test_migrate_multipart_references_handles_client_error_on_create(
@@ -239,12 +324,31 @@ def test_migrate_multipart_references_handles_client_error_on_delete(
     assert e.value.error is LambdaError.MultipartError
 
 
-def test_write_stitching_reference():
-    pass
+def test_write_stitching_reference(mock_service):
+    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+
+    mock_service.write_stitching_reference()
+
+    mock_service.dynamo_service.create_item.assert_called_with(
+        table_name=MOCK_LG_TABLE_NAME,
+        item=TEST_1_OF_1_DOCUMENT_REFERENCE.model_dump_dynamo(),
+    )
 
 
-def test_write_stitching_reference_handles_client_error():
-    pass
+def test_write_stitching_reference_handles_client_error(mock_service, caplog):
+    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+    mock_service.dynamo_service.create_item.side_effect = MOCK_CLIENT_ERROR
+    expected_err_msg = (
+        "Failed to create stitching reference: "
+        "An error occurred (500) when calling the Query operation: Test error message"
+    )
+
+    with pytest.raises(PdfStitchingException) as e:
+        mock_service.write_stitching_reference()
+
+    assert caplog.records[-1].msg == expected_err_msg
+    assert caplog.records[-1].levelname == "ERROR"
+    assert e.value.error is LambdaError.StitchError
 
 
 def test_publish_nrl_message():
@@ -255,7 +359,7 @@ def test_publish_nrl_message_handles_error():
     pass
 
 
-def test_process_object_keys_sorts_references_and_returns_keys():
+def test_sort_multipart_object_keys_sorts_references_and_returns_keys():
     test_document_references = TEST_DOCUMENT_REFERENCES
 
     shuffle(test_document_references)
@@ -266,14 +370,14 @@ def test_process_object_keys_sorts_references_and_returns_keys():
         f"{TEST_NHS_NUMBER}/test-key-3",
     ]
 
-    actual = PdfStitchingService.process_object_keys(test_document_references)
+    actual = PdfStitchingService.sort_multipart_object_keys(test_document_references)
 
     assert expected == actual
 
 
-def test_process_object_keys_handles_and_raises_exception():
+def test_sort_multipart_object_keys_handles_and_raises_exception():
     test_document_references = TEST_DOCUMENT_REFERENCES
     test_document_references[0].file_name = "invalid"
 
     with pytest.raises(PdfStitchingException):
-        PdfStitchingService.process_object_keys(test_document_references)
+        PdfStitchingService.sort_multipart_object_keys(test_document_references)
