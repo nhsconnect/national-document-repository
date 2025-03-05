@@ -19,9 +19,10 @@ jest.mock('../../helpers/hooks/usePatient');
 const mockedUseRole = useRole as jest.Mock;
 const mockedUsePatient = usePatient as jest.Mock;
 
-const PAGE_HEADER_TEXT = 'Patient details'
-const PAGE_TEXT = "This page displays the current data recorded in the Patient Demographic Service for this patient."
-const CONFIRM_BUTTON_TEXT = 'Confirm patient details and continue' 
+const PAGE_HEADER_TEXT = 'Patient details';
+const PAGE_TEXT =
+    'This page displays the current data recorded in the Patient Demographic Service for this patient.';
+const CONFIRM_BUTTON_TEXT = 'Confirm patient details and continue';
 
 describe('PatientResultPage', () => {
     beforeEach(() => {
@@ -50,14 +51,11 @@ describe('PatientResultPage', () => {
 
                 render(<PatientResultPage />);
 
-                expect(
-                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-                ).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
                 expect(screen.getByText(familyName)).toBeInTheDocument();
                 expect(
                     screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }),
                 ).toBeInTheDocument();
-
             },
         );
 
@@ -72,14 +70,8 @@ describe('PatientResultPage', () => {
 
                 render(<PatientResultPage />);
 
-                expect(
-                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-                ).toBeInTheDocument();
-                expect(
-                    screen.getByText(
-                       PAGE_TEXT ,
-                    ),
-                ).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
+                expect(screen.getByText(PAGE_TEXT)).toBeInTheDocument();
             },
         );
 
@@ -93,20 +85,14 @@ describe('PatientResultPage', () => {
 
             render(<PatientResultPage />);
 
-            expect(
-                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
 
             expect(screen.queryByText('Select patient status')).not.toBeInTheDocument();
             expect(screen.queryByRole('radio', { name: 'Active patient' })).not.toBeInTheDocument();
             expect(
                 screen.queryByRole('radio', { name: 'Inactive patient' }),
             ).not.toBeInTheDocument();
-            expect(
-                screen.queryByText(
-                   PAGE_TEXT, 
-                ),
-            ).not.toBeInTheDocument();
+            expect(screen.queryByText(PAGE_TEXT)).not.toBeInTheDocument();
         });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
@@ -141,9 +127,7 @@ describe('PatientResultPage', () => {
 
             render(<PatientResultPage />);
 
-            expect(
-                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
             expect(
                 screen.getByText('The NHS number for this patient has changed.'),
             ).toBeInTheDocument();
@@ -160,9 +144,7 @@ describe('PatientResultPage', () => {
 
             render(<PatientResultPage />);
 
-            expect(
-                screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
             expect(
                 screen.getByText(
                     'Certain details about this patient cannot be displayed without the necessary access.',
@@ -183,9 +165,7 @@ describe('PatientResultPage', () => {
 
                 render(<PatientResultPage />);
 
-                expect(
-                    screen.getByRole('heading', { name: PAGE_HEADER_TEXT }),
-                ).toBeInTheDocument();
+                expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
 
                 const results = await runAxeTest(document.body);
                 expect(results).toHaveNoViolations();
@@ -220,27 +200,43 @@ describe('PatientResultPage', () => {
     });
 
     describe('Navigation', () => {
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
-            "navigates to Upload docs page after user selects Inactive patient when role is '%s'",
-            async (role) => {
-                const patient = buildPatientDetails({ active: false });
+        it('navigates to Upload docs page after user selects Inactive patient when role is GP Admin', async () => {
+            const patient = buildPatientDetails({ active: false });
 
-                mockedUsePatient.mockReturnValue(patient);
-                mockedUseRole.mockReturnValue(role);
-                render(<PatientResultPage />);
-                act(() => {
-                    userEvent.click(
-                        screen.getByRole('button', {
-                            name: CONFIRM_BUTTON_TEXT,
-                        }),
-                    );
-                });
+            mockedUsePatient.mockReturnValue(patient);
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            render(<PatientResultPage />);
+            act(() => {
+                userEvent.click(
+                    screen.getByRole('button', {
+                        name: CONFIRM_BUTTON_TEXT,
+                    }),
+                );
+            });
 
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_UPLOAD_DOCUMENTS);
-                });
-            },
-        );
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_UPLOAD_DOCUMENTS);
+            });
+        });
+
+        it('navigates to patient search page after user selects Inactive patient when role is GP Clinical', async () => {
+            const patient = buildPatientDetails({ active: false });
+
+            mockedUsePatient.mockReturnValue(patient);
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+            render(<PatientResultPage />);
+            act(() => {
+                userEvent.click(
+                    screen.getByRole('button', {
+                        name: CONFIRM_BUTTON_TEXT,
+                    }),
+                );
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
+            });
+        });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "navigates to Lloyd George Record page after user selects Active patient, when role is '%s'",
@@ -252,9 +248,7 @@ describe('PatientResultPage', () => {
                 render(<PatientResultPage />);
 
                 act(() => {
-                    userEvent.click(
-                        screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }),
-                    );
+                    userEvent.click(screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }));
                 });
 
                 await waitFor(() => {
