@@ -112,24 +112,43 @@ class SearchPatientDetailsService:
         self, nhs_number: str, deceased: bool
     ):
         ndr_session_id = request_context.authorization.get("ndr_session_id")
-        self.auth_service.find_login_session(ndr_session_id)
+        current_session = self.auth_service.find_login_session(ndr_session_id)
         allowed_nhs_numbers = self.auth_service.allowed_nhs_numbers
-
+        deceased_nhs_numbers = current_session.get(self.deceased_field, False)
         logger.info("Searching Auth session table for existing NHS number")
         if nhs_number in allowed_nhs_numbers:
             logger.info(
                 "Permitted search, NHS number already exists in allowed NHS numbers"
             )
             return
+
         if deceased:
-            field_name = self.deceased_field
-        else:
-            field_name = self.permitted_field
-        logger.info(f"Permitted search, NHS number will be added to {field_name}")
+            self.update_auth_session_table_with_new_nhs_number(
+                field_name=self.deceased_field,
+                nhs_number=nhs_number,
+                existing_nhs_numbers=deceased_nhs_numbers,
+                ndr_session_id=ndr_session_id,
+            )
+        elif not deceased or self.user_role == RepositoryRole.PCSE.value:
+            self.update_auth_session_table_with_new_nhs_number(
+                field_name=self.permitted_field,
+                nhs_number=nhs_number,
+                existing_nhs_numbers=allowed_nhs_numbers,
+                ndr_session_id=ndr_session_id,
+            )
+        logger.info("Permitted search, NHS number will be added")
+
+    def update_auth_session_table_with_new_nhs_number(
+        self,
+        field_name: str,
+        nhs_number: str,
+        existing_nhs_numbers: list,
+        ndr_session_id: str,
+    ):
         updated_fields = self.create_updated_permitted_search_fields(
             field_name=field_name,
             nhs_number=nhs_number,
-            allowed_nhs_numbers=allowed_nhs_numbers,
+            existing_nhs_numbers=existing_nhs_numbers,
         )
 
         self.db_service.update_item(
@@ -138,18 +157,18 @@ class SearchPatientDetailsService:
             updated_fields=updated_fields,
             condition_expression=(
                 f"attribute_not_exists({field_name})"
-                if not allowed_nhs_numbers
+                if not existing_nhs_numbers
                 else None
             ),
         )
 
     def create_updated_permitted_search_fields(
-        self, field_name, nhs_number: str, allowed_nhs_numbers: list[str]
+        self, field_name, nhs_number: str, existing_nhs_numbers: list[str]
     ) -> dict[str, str]:
-        if allowed_nhs_numbers:
-            allowed_nhs_numbers.append(nhs_number)
-            allowed_nhs_numbers_str = ",".join(allowed_nhs_numbers)
-            updated_fields = {field_name: allowed_nhs_numbers_str}
+        if existing_nhs_numbers:
+            existing_nhs_numbers.append(nhs_number)
+            existing_nhs_numbers_str = ",".join(existing_nhs_numbers)
+            updated_fields = {field_name: existing_nhs_numbers_str}
 
         else:
             updated_fields = {field_name: nhs_number}

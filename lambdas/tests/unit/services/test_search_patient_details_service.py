@@ -220,7 +220,7 @@ def test_update_auth_session_with_permitted_search_with_new_search(
     mock_updated_permitted_search_fields.assert_called_once_with(
         field_name="AllowedNHSNumbers",
         nhs_number=TEST_NHS_NUMBER,
-        allowed_nhs_numbers=[],
+        existing_nhs_numbers=[],
     )
     mock_service.db_service.update_item.assert_called_once_with(
         table_name=AUTH_SESSION_TABLE_NAME,
@@ -250,7 +250,7 @@ def test_update_auth_session_with_permitted_search_with_new_search_existing_list
     mock_updated_permitted_search_fields.assert_called_once_with(
         field_name="AllowedNHSNumbers",
         nhs_number=TEST_NHS_NUMBER,
-        allowed_nhs_numbers=[existing_nhs_number_search],
+        existing_nhs_numbers=[existing_nhs_number_search],
     )
     mock_service.db_service.update_item.assert_called_once_with(
         table_name=AUTH_SESSION_TABLE_NAME,
@@ -298,6 +298,6 @@ def test_create_updated_permitted_search_fields(
     actual = mock_service.create_updated_permitted_search_fields(
         field_name="AllowedNHSNumbers",
         nhs_number=nhs_number,
-        allowed_nhs_numbers=allowed_nhs_numbers,
+        existing_nhs_numbers=allowed_nhs_numbers,
     )
     assert actual == expected
