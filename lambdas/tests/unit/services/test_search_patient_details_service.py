@@ -29,9 +29,21 @@ def mock_service(set_env, request, mocker):
 
 @pytest.fixture()
 def mock_pds_service_fetch(mocker):
+    pds_service_response = PatientDetails(
+        givenName=["Jane"],
+        familyName="Smith",
+        birthDate="2010-10-22",
+        postalCode="LS1 6AE",
+        nhsNumber="9000000009",
+        superseded=False,
+        restricted=False,
+        generalPracticeOds="Y12345",
+        active=True,
+    )
     mock_pds_service_fetch = mocker.patch(
         "services.patient_search_service.PatientSearch.fetch_patient_details"
     )
+    mock_pds_service_fetch.return_value = pds_service_response
     yield mock_pds_service_fetch
 
 
