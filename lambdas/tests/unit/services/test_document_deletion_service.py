@@ -2,12 +2,14 @@ from unittest.mock import call
 
 import pytest
 from enums.document_retention import DocumentRetentionDays
+from enums.lambda_error import LambdaError
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_deletion_service import DocumentDeletionService
 from tests.unit.conftest import (
     MOCK_ARF_TABLE_NAME,
     MOCK_BUCKET,
+    MOCK_CLIENT_ERROR,
     MOCK_LG_TABLE_NAME,
     NRL_SQS_URL,
     TEST_FILE_KEY,
@@ -338,6 +340,26 @@ def test_delete_unstitched_reference_does_not_update_empty_dynamo_result(
     mock_deletion_service.delete_unstitched_document_reference(TEST_NHS_NUMBER)
 
     mock_deletion_service.document_service.delete_document_references.assert_not_called()
+
+
+def test_delete_unstitched_reference_handles_client_error(mock_deletion_service):
+    mock_deletion_service.document_service.fetch_documents_from_table_with_nhs_number.side_effect = (
+        MOCK_CLIENT_ERROR
+    )
+
+    with pytest.raises(DocumentDeletionServiceException) as e:
+        mock_deletion_service.delete_unstitched_document_reference(TEST_NHS_NUMBER)
+
+    assert e.value.error == LambdaError.DocDelClient
+
+    mock_deletion_service.document_service.delete_document_references.side_effect = (
+        MOCK_CLIENT_ERROR
+    )
+
+    with pytest.raises(DocumentDeletionServiceException) as e:
+        mock_deletion_service.delete_unstitched_document_reference(TEST_NHS_NUMBER)
+
+    assert e.value.error == LambdaError.DocDelClient
 
 
 def test_handle_object_delete_successfully_deletes_s3_object(
