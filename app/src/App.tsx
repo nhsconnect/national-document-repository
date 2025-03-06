@@ -35,13 +35,17 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
 
 function App() {
     console.log(useSessionContext()); // eslint-disable-line
-    const session = useSessionContext();
 
-    if (session !== null && awsRumInstance !== null) {
-        awsRumInstance.addSessionAttributes({
-            userRole: 'testUser',
-        });
-        console.log(session); // eslint-disable-line
+    const session = sessionStorage.getItem('UserSession');
+    if (session != null) {
+        const data = JSON.parse(session);
+        console.log(data); // eslint-disable-line
+        if (data !== null && awsRumInstance !== null) {
+            awsRumInstance.addSessionAttributes({
+                userRole: data.auth.role,
+            });
+            console.log(data); // eslint-disable-line
+        }
     }
 
     return (
