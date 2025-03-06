@@ -40,7 +40,7 @@ function App() {
     if (session != null) {
         const data = JSON.parse(session);
         console.log(data); // eslint-disable-line
-        if (data !== null && awsRumInstance !== null) {
+        if (data.auth !== null && awsRumInstance !== null) {
             awsRumInstance.addSessionAttributes({
                 userRole: data.auth.role,
             });
