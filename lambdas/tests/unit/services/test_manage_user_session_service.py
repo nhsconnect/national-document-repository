@@ -1,7 +1,6 @@
 from unittest.mock import call
 
 import pytest
-from services.base.dynamo_service import DynamoDBService
 from services.manage_user_session_access import ManageUserSessionAccess
 from tests.unit.conftest import AUTH_SESSION_TABLE_NAME, TEST_NHS_NUMBER, TEST_UUID
 from tests.unit.services.test_authoriser_service import (
@@ -42,25 +41,6 @@ def mock_update_auth_session_table_with_new_nhs_number(mocker, mock_service):
     return mocker.patch.object(
         mock_service, "update_auth_session_table_with_new_nhs_number"
     )
-
-
-@pytest.fixture()
-def mock_dynamo_service(mocker):
-    valid_session_record = {
-        "Count": 1,
-        "Items": [
-            {
-                "NDRSessionId": "test_session_id",
-                "sid": "test_cis2_session_id",
-                "Subject": "test_cis2_user_id",
-                "TimeToExist": 12345678960,
-                "AllowedNHSNumbers": "12,34,12,534",
-            }
-        ],
-    }
-    dynamo_service = mocker.patch.object(DynamoDBService, "query_all_fields")
-    dynamo_service.return_value = valid_session_record
-    yield dynamo_service
 
 
 def test_update_auth_session_with_permitted_search_with_previous_search(
@@ -244,16 +224,29 @@ def test_create_updated_permitted_search_fields(
     assert actual == expected
 
 
-def test_find_login_session(mock_dynamo_service, mock_service):
+def test_find_login_session(mocker, mock_service):
     expected = MOCK_CURRENT_SESSION
+    valid_session_record = {
+        "Count": 1,
+        "Items": [
+            {
+                "NDRSessionId": "test_session_id",
+                "sid": "test_cis2_session_id",
+                "Subject": "test_cis2_user_id",
+                "TimeToExist": 12345678960,
+                "AllowedNHSNumbers": "12,34,12,534",
+            }
+        ],
+    }
+    dynamo_service = mocker.patch.object(mock_service.db_service, "query_all_fields")
+    dynamo_service.return_value = valid_session_record
+
     actual = mock_service.find_login_session(MOCK_SESSION_ID)
 
     assert expected == actual
 
 
-def test_find_login_session_raises_auth_exception(
-    mocker, mock_service, mock_dynamo_service
-):
+def test_find_login_session_raises_auth_exception(mocker, mock_service):
     invalid_session_record = {
         "Count": 1,
     }
