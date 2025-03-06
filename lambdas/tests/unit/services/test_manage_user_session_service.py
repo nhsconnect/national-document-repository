@@ -3,8 +3,11 @@ from unittest.mock import call
 import pytest
 from services.base.dynamo_service import DynamoDBService
 from services.manage_user_session_access import ManageUserSessionAccess
-from unit.conftest import AUTH_SESSION_TABLE_NAME, TEST_NHS_NUMBER, TEST_UUID
-from unit.services.test_authoriser_service import MOCK_CURRENT_SESSION, MOCK_SESSION_ID
+from tests.unit.conftest import AUTH_SESSION_TABLE_NAME, TEST_NHS_NUMBER, TEST_UUID
+from tests.unit.services.test_authoriser_service import (
+    MOCK_CURRENT_SESSION,
+    MOCK_SESSION_ID,
+)
 from utils.exceptions import AuthorisationException
 from utils.request_context import request_context
 
