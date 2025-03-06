@@ -1,4 +1,4 @@
-import { pdsPatients } from '../../../support/patients';
+import { pdsPatients, stubPatients } from '../../../support/patients';
 import { Roles } from '../../../support/roles';
 
 const workspace = Cypress.env('WORKSPACE');
@@ -20,7 +20,8 @@ const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
-const activePatient = workspace === 'ndr-dev' ? pdsPatients.activeNoUpload: stubPatients.activeNoUpload;
+const activePatient =
+    workspace === 'ndr-dev' ? pdsPatients.activeNoUpload : stubPatients.activeNoUpload;
 
 describe('GP Workflow: Upload Lloyd George record', () => {
     context('Upload a Lloyd George document', () => {
