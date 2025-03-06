@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 import polars as pl
-from models.statistics import ApplicationData, OrganisationData, RecordStoreData
+from models.report.statistics import ApplicationData, OrganisationData, RecordStoreData
 
 MOCK_RECORD_STORE_DATA_1 = RecordStoreData(
     statistic_id="e02ec4db-8a7d-4f84-a4b3-875a526b37d4",

@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -24,6 +25,7 @@ MOCK_ARF_TABLE_NAME_ENV_NAME = "DOCUMENT_STORE_DYNAMODB_NAME"
 MOCK_ARF_BUCKET_ENV_NAME = "DOCUMENT_STORE_BUCKET_NAME"
 
 MOCK_LG_TABLE_NAME_ENV_NAME = "LLOYD_GEORGE_DYNAMODB_NAME"
+MOCK_UNSTITCHED_LG_TABLE_ENV_NAME = "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME"
 MOCK_LG_BUCKET_ENV_NAME = "LLOYD_GEORGE_BUCKET_NAME"
 
 MOCK_ZIP_OUTPUT_BUCKET_ENV_NAME = "ZIPPED_STORE_BUCKET_NAME"
@@ -60,6 +62,7 @@ MOCK_STATISTICAL_REPORTS_BUCKET_ENV_NAME = "STATISTICAL_REPORTS_BUCKET"
 
 MOCK_ARF_TABLE_NAME = "test_arf_dynamoDB_table"
 MOCK_LG_TABLE_NAME = "test_lg_dynamoDB_table"
+MOCK_UNSTITCHED_LG_TABLE_NAME = "test_unstitched_lg_table"
 MOCK_BULK_REPORT_TABLE_NAME = "test_report_dynamoDB_table"
 MOCK_ARF_BUCKET = "test_arf_s3_bucket"
 MOCK_LG_BUCKET = "test_lg_s3_bucket"
@@ -118,6 +121,8 @@ PDF_STITCHING_SQS_URL = (
     "https://sqs.us-east-1.amazonaws.com/977715257439/MyPdfStitchingQueue"
 )
 
+TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+
 
 @pytest.fixture
 def set_env(monkeypatch):
@@ -125,6 +130,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_ARF_TABLE_NAME_ENV_NAME, MOCK_ARF_TABLE_NAME)
     monkeypatch.setenv(MOCK_ARF_BUCKET_ENV_NAME, MOCK_ARF_BUCKET)
     monkeypatch.setenv(MOCK_LG_TABLE_NAME_ENV_NAME, MOCK_LG_TABLE_NAME)
+    monkeypatch.setenv(MOCK_UNSTITCHED_LG_TABLE_ENV_NAME, MOCK_UNSTITCHED_LG_TABLE_NAME)
     monkeypatch.setenv(MOCK_LG_BUCKET_ENV_NAME, MOCK_LG_BUCKET)
     monkeypatch.setenv(
         "DYNAMODB_TABLE_LIST", json.dumps([MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME])
