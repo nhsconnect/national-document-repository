@@ -21,6 +21,7 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
         const APPLICATION_ID: string = process.env.REACT_APP_MONITOR_ACCOUNT_ID || '';
         const APPLICATION_VERSION: string = '1.0.0';
         const APPLICATION_REGION: string = process.env.REACT_APP_AWS_REGION || 'eu-west-2';
+        const session = sessionStorage.getItem('UserSession');
 
         awsRumInstance = new AwsRum( // eslint-disable-line
             APPLICATION_ID,
@@ -28,26 +29,22 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
             APPLICATION_REGION,
             config,
         );
+        if (session != null) {
+            const data = JSON.parse(session);
+            console.log(data); // eslint-disable-line
+            if (data.auth !== null && awsRumInstance !== null) {
+                awsRumInstance.addSessionAttributes({
+                    userRole: data.auth.role,
+                });
+                console.log(data); // eslint-disable-line
+            }
+        }
     } catch (error) {
         console.log(error); // eslint-disable-line
     }
 }
 
 function App() {
-    console.log(useSessionContext()); // eslint-disable-line
-
-    const session = sessionStorage.getItem('UserSession');
-    if (session != null) {
-        const data = JSON.parse(session);
-        console.log(data); // eslint-disable-line
-        if (data.auth !== null && awsRumInstance !== null) {
-            awsRumInstance.addSessionAttributes({
-                userRole: data.auth.role,
-            });
-            console.log(data); // eslint-disable-line
-        }
-    }
-
     return (
         <ConfigProvider>
             <SessionProvider>
