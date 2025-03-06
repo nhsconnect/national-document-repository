@@ -30,10 +30,10 @@ describe('PrivacyPage', () => {
 
             const contentHeaders = [
                 'Privacy notice',
-                'What happens with my personal information?',
-                'Feedback form privacy notice',
                 'Our permission to process and store patient data',
                 'Further information',
+                'What happens with my personal information?',
+                'Feedback form privacy notice',
                 'Contact us',
             ];
             contentHeaders.forEach((str) => {
@@ -45,20 +45,20 @@ describe('PrivacyPage', () => {
             render(<PrivacyPage />);
 
             const contents = [
-                /If you use the 'Access and store digital patient documents' service using your/i,
+                /If you sign in to the 'Access and store digital patient documents' service using your/i,
                 /credentials, your NHS Care Identity credentials are managed by NHS England/i,
                 /This means NHS England is the data controller for any personal information/i,
                 /that you provided to get NHS Care Identity credentials/i,
                 /NHS England uses this information only to verify your identity/i,
-                /When verifying your identity, our role is a "processor"/i,
+                /When verifying your identity, we act as the data "processor"/i,
                 /We must act under instructions provided by NHS England \(the "controller"\)/i,
                 /To find out more about NHS England's Privacy Notice/i,
                 /and its Terms and Conditions, view the/i,
                 /This only applies to information you provide through NHS England/i,
                 /When submitting your details using our/i,
                 /any personal information you give to us will be processed in accordance with the/i,
-                /We use the information you submitted to process your request and provide/i,
-                /relevant information or services you have requested/i,
+                /We use the information you submit to process your feedback and provide/i,
+                /you with the relevant information or services you have requested/i,
                 /This will help support us in developing this service/i,
             ];
             contents.forEach((str) => {

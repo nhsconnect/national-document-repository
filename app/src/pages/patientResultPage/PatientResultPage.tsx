@@ -79,8 +79,8 @@ function PatientResultPage() {
                 {isGp && (
                     <>
                         <p id="gp-message">
-                            This page displays the current data recorded in the Patient Demographic
-                            Service for this patient.
+                            This page displays the current data recorded in the Personal
+                            Demographics Service for this patient.
                         </p>
                     </>
                 )}
