@@ -50,7 +50,7 @@ describe('PrivacyPage', () => {
                 /This means NHS England is the data controller for any personal information/i,
                 /that you provided to get NHS Care Identity credentials/i,
                 /NHS England uses this information only to verify your identity/i,
-                /When verifying your identity, our role is a "processor"/i,
+                /When verifying your identity, we act as the data "processor"/i,
                 /We must act under instructions provided by NHS England \(the "controller"\)/i,
                 /To find out more about NHS England's Privacy Notice/i,
                 /and its Terms and Conditions, view the/i,

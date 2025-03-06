@@ -48,21 +48,6 @@ function PrivacyPage() {
             </section>
 
             <section>
-                <h2>Further information</h2>
-                <p>
-                    <a
-                        data-testid="data-controller-link"
-                        target="_blank"
-                        href="https://www.england.nhs.uk/contact-us/privacy-notice/nhs-england-as-a-data-controller/"
-                        rel="noreferrer"
-                        aria-label="(NHS England's role as a data controller - this link will open in a new tab)"
-                    >
-                        NHS England's role as a data controller
-                    </a>{' '}
-                </p>
-            </section>
-
-            <section>
                 <h2>What happens with my personal information?</h2>
                 <p>
                     If you sign in to the 'Access and store digital patient documents' service using
@@ -84,7 +69,7 @@ function PrivacyPage() {
                 </p>
                 <p>NHS England uses this information only to verify your identity.</p>
                 <p>
-                    When verifying your identity, our role is a "processor". We must act under
+                    When verifying your identity, we act as the data "processor". We must act under
                     instructions provided by NHS England (the "controller").
                 </p>
                 <p>
@@ -102,6 +87,21 @@ function PrivacyPage() {
                     .
                 </p>
                 <p>This only applies to information you provide through NHS England.</p>
+            </section>
+
+            <section>
+                <h2>Further information</h2>
+                <p>
+                    <a
+                        data-testid="data-controller-link"
+                        target="_blank"
+                        href="https://www.england.nhs.uk/contact-us/privacy-notice/nhs-england-as-a-data-controller/"
+                        rel="noreferrer"
+                        aria-label="(NHS England's role as a data controller - this link will open in a new tab)"
+                    >
+                        NHS England's role as a data controller
+                    </a>{' '}
+                </p>
             </section>
 
             <section>
