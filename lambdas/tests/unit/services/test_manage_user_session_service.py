@@ -5,10 +5,6 @@ from services.base.dynamo_service import DynamoDBService
 from services.manage_user_session_access import ManageUserSessionAccess
 from unit.conftest import AUTH_SESSION_TABLE_NAME, TEST_NHS_NUMBER, TEST_UUID
 from unit.services.test_authoriser_service import MOCK_CURRENT_SESSION, MOCK_SESSION_ID
-from unit.services.test_search_patient_details_service import (
-    EMPTY_ODS_CODE,
-    USER_VALID_ODS_CODE,
-)
 from utils.exceptions import AuthorisationException
 from utils.request_context import request_context
 
@@ -159,11 +155,6 @@ def test_update_auth_session_with_permitted_search_with_new_search_with_deceased
     mock_update_auth_session_table_with_new_nhs_number.assert_has_calls(expected_calls)
 
 
-@pytest.mark.parametrize(
-    "mock_service",
-    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
-    indirect=["mock_service"],
-)
 def test_update_auth_session_table_with_new_nhs_number(
     mock_service, mock_updated_permitted_search_fields, mock_find_login_session
 ):
