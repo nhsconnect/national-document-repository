@@ -1,0 +1,21 @@
+from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
+from utils.decorators.override_error_check import override_error_check
+from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.decorators.validate_patient_id import validate_patient_id
+from utils.lambda_response import ApiGatewayResponse
+from utils.request_context import request_context
+
+
+@set_request_context_for_logging
+@validate_patient_id
+@override_error_check
+@ensure_environment_variables(names=["AUTH_SESSION_TABLE_NAME"])
+@handle_lambda_exceptions
+def lambda_handler(event, context):
+    event.get("Reasons", [])
+    event.get("OtherReasonText", "")
+    nhs_number = event.get("queryStringParameters", {}).get("patientId")
+    request_context.patient_nhs_no = nhs_number
+
+    return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
