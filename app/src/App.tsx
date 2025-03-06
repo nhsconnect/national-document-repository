@@ -34,9 +34,8 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
 }
 
 function App() {
-    const [session] = useSessionContext();
-
     console.log(useSessionContext()); // eslint-disable-line
+    const session = useSessionContext();
 
     if (session !== null && awsRumInstance !== null) {
         awsRumInstance.addSessionAttributes({
