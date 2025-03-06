@@ -15,8 +15,43 @@ function PrivacyPage() {
         <>
             <section>
                 <h1>{pageHeader}</h1>
+                <h2>Our permission to process and store patient data</h2>
                 <p>
-                    If you use the 'Access and store digital patient documents' service using your{' '}
+                    This service has legal permission to process and store patient data through the
+                    <strong> National Data Processing Deed</strong>.
+                </p>
+                <p>The National Data Processing Deed enables NHS England to: </p>
+                <ul>
+                    <li>act as the data processor for all GP practices in England</li>
+                    <li>
+                        store the digitised Lloyd George records of patients registered at these GP
+                        practices.
+                    </li>
+                </ul>
+                <p>
+                    This deed operates under the{' '}
+                    <a
+                        data-testid="permission-section-gdpr-link"
+                        target="_blank"
+                        href={gdprLink}
+                        rel="noreferrer"
+                        aria-label="(UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab)"
+                    >
+                        UK General Data Protection Regulation (GDPR) 2018
+                    </a>{' '}
+                    .
+                </p>
+                <p>
+                    GP practices in England are automatically signed up to the National Data
+                    Processing Deed, so you don't need to do anything.
+                </p>
+            </section>
+
+            <section>
+                <h2>What happens with my personal information?</h2>
+                <p>
+                    If you sign in to the 'Access and store digital patient documents' service using
+                    your{' '}
                     <a
                         data-testid="cis2-link"
                         target="_blank"
@@ -32,10 +67,9 @@ function PrivacyPage() {
                     This means NHS England is the data controller for any personal information that
                     you provided to get NHS Care Identity credentials.
                 </p>
-                <h2>What happens with my personal information?</h2>
                 <p>NHS England uses this information only to verify your identity.</p>
                 <p>
-                    When verifying your identity, our role is a "processor". We must act under
+                    When verifying your identity, we act as the data "processor". We must act under
                     instructions provided by NHS England (the "controller").
                 </p>
                 <p>
@@ -53,6 +87,24 @@ function PrivacyPage() {
                     .
                 </p>
                 <p>This only applies to information you provide through NHS England.</p>
+            </section>
+
+            <section>
+                <h2>Further information</h2>
+                <p>
+                    <a
+                        data-testid="data-controller-link"
+                        target="_blank"
+                        href="https://www.england.nhs.uk/contact-us/privacy-notice/nhs-england-as-a-data-controller/"
+                        rel="noreferrer"
+                        aria-label="(NHS England's role as a data controller - this link will open in a new tab)"
+                    >
+                        NHS England's role as a data controller
+                    </a>{' '}
+                </p>
+            </section>
+
+            <section>
                 <h2>Feedback form privacy notice</h2>
                 <p>
                     When submitting your details using our{' '}
@@ -84,56 +136,10 @@ function PrivacyPage() {
                     .
                 </p>
                 <p>
-                    We use the information you submitted to process your request and provide
-                    relevant information or services you have requested.
+                    We use the information you submit to process your feedback and provide you with
+                    the relevant information or services you have requested.
                 </p>
                 <p>This will help support us in developing this service.</p>
-            </section>
-
-            <section>
-                <h2>Our permission to process and store patient data</h2>
-                <p>
-                    This service has legal permission to process and store patient data through the
-                    <strong> National Data Processing Deed</strong>.
-                </p>
-                <p>The National Data Processing Deed enables NHS England to: </p>
-                <ul>
-                    <li>act as the data processor for all GP practices in England</li>
-                    <li>
-                        store the digitised Lloyd George records of patients registered at these GP
-                        practices.
-                    </li>
-                </ul>
-                <p>
-                    This deed operates under the{' '}
-                    <a
-                        data-testid="permission-section-gdpr-link"
-                        target="_blank"
-                        href={gdprLink}
-                        rel="noreferrer"
-                        aria-label="(UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab)"
-                    >
-                        UK General Data Protection Regulation (GDPR) 2018
-                    </a>{' '}
-                    .
-                </p>
-                <p>
-                    GP practices in England are automatically signed up to the National Data
-                    Processing Deed, so you don't need to do anything.
-                </p>
-
-                <h2>Further information</h2>
-                <p>
-                    <a
-                        data-testid="data-controller-link"
-                        target="_blank"
-                        href="https://www.england.nhs.uk/contact-us/privacy-notice/nhs-england-as-a-data-controller/"
-                        rel="noreferrer"
-                        aria-label="(NHS England's role as a data controller - this link will open in a new tab)"
-                    >
-                        NHS England's role as a data controller
-                    </a>{' '}
-                </p>
             </section>
 
             <section>
@@ -142,10 +148,10 @@ function PrivacyPage() {
                     If you have any questions about the National Data Processing Deed, or our
                     privacy policy, you can contact the team on{' '}
                     <a
-                        href="mailto:england.prm@nhs.net"
-                        aria-label="Send an email to england.prm@nhs.net"
+                        href="mailto:england.prmteam@nhs.net"
+                        aria-label="Send an email to england.prmteam@nhs.net"
                     >
-                        england.prm@nhs.net
+                        england.prmteam@nhs.net
                     </a>{' '}
                     .
                 </p>
