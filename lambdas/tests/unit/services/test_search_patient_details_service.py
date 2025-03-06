@@ -1,3 +1,5 @@
+from unittest.mock import call
+
 import pytest
 from models.pds_models import PatientDetails
 from services.search_patient_details_service import SearchPatientDetailsService
@@ -64,6 +66,13 @@ def mock_updated_permitted_search_fields(mocker, mock_service):
     return mocker.patch.object(mock_service, "create_updated_permitted_search_fields")
 
 
+@pytest.fixture()
+def mock_update_auth_session_table_with_new_nhs_number(mocker, mock_service):
+    return mocker.patch.object(
+        mock_service, "update_auth_session_table_with_new_nhs_number"
+    )
+
+
 @pytest.mark.parametrize(
     "mock_service",
     (
@@ -111,6 +120,31 @@ def test_handle_search_patient_request_valid(
     mock_check_if_user_authorise,
     mock_permitted_search,
 ):
+
+    expected_response = (
+        '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22","postalCode":"LS1 '
+        '6AE","nhsNumber":"9000000009","superseded":false,"restricted":false,'
+        '"active":true,"deceased":false}'
+    )
+
+    actual_response = mock_service.handle_search_patient_request("9000000009")
+
+    mock_check_if_user_authorise.assert_called()
+    mock_pds_service_fetch.assert_called_with("9000000009")
+    assert actual_response == expected_response
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=True,
+)
+def test_handle_search_patient_request_valid_skip_authorisation_check_when_patient_is_deceased(
+    mock_service,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_permitted_search,
+):
     pds_service_response = PatientDetails(
         givenName=["Jane"],
         familyName="Smith",
@@ -121,16 +155,18 @@ def test_handle_search_patient_request_valid(
         restricted=False,
         generalPracticeOds="Y12345",
         active=True,
+        deceased=True,
     )
     expected_response = (
         '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22","postalCode":"LS1 '
         '6AE","nhsNumber":"9000000009","superseded":false,"restricted":false,'
-        '"active":true,"deceased":false}'
+        '"active":true,"deceased":true}'
     )
     mock_pds_service_fetch.return_value = pds_service_response
 
     actual_response = mock_service.handle_search_patient_request("9000000009")
 
+    mock_check_if_user_authorise.assert_not_called()
     mock_pds_service_fetch.assert_called_with("9000000009")
     assert actual_response == expected_response
 
@@ -216,10 +252,89 @@ def test_update_auth_session_with_permitted_search_with_previous_search(
 
 @pytest.mark.parametrize(
     "mock_service",
+    (("PCSE", USER_VALID_ODS_CODE), ("PCSE", EMPTY_ODS_CODE)),
+    indirect=["mock_service"],
+)
+def test_update_auth_session_with_permitted_search_with_new_search_deceased_patient(
+    mock_service, mock_update_auth_session_table_with_new_nhs_number
+):
+    mock_service.auth_service.allowed_nhs_numbers = []
+    mock_service.auth_service.find_login_session.return_value = {
+        "DeceasedNHSNumbers": []
+    }
+
+    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER, True)
+    expected_calls = [
+        call(
+            field_name="DeceasedNHSNumbers",
+            nhs_number=TEST_NHS_NUMBER,
+            existing_nhs_numbers=[],
+            ndr_session_id=TEST_UUID,
+        ),
+        call(
+            field_name="AllowedNHSNumbers",
+            nhs_number=TEST_NHS_NUMBER,
+            existing_nhs_numbers=[],
+            ndr_session_id=TEST_UUID,
+        ),
+    ]
+    mock_update_auth_session_table_with_new_nhs_number.assert_has_calls(expected_calls)
+
+
+@pytest.mark.parametrize(
+    "mock_service",
     (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
     indirect=["mock_service"],
 )
 def test_update_auth_session_with_permitted_search_with_new_search(
+    mock_service, mock_update_auth_session_table_with_new_nhs_number
+):
+    mock_service.auth_service.allowed_nhs_numbers = []
+
+    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER, False)
+
+    expected_calls = [
+        call(
+            field_name="AllowedNHSNumbers",
+            nhs_number=TEST_NHS_NUMBER,
+            existing_nhs_numbers=[],
+            ndr_session_id=TEST_UUID,
+        )
+    ]
+    mock_update_auth_session_table_with_new_nhs_number.assert_has_calls(expected_calls)
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=["mock_service"],
+)
+def test_update_auth_session_with_permitted_search_with_new_search_with_deceased_patient(
+    mock_service, mock_update_auth_session_table_with_new_nhs_number
+):
+    mock_service.auth_service.find_login_session.return_value = {
+        "DeceasedNHSNumbers": []
+    }
+
+    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER, True)
+
+    expected_calls = [
+        call(
+            field_name="DeceasedNHSNumbers",
+            nhs_number=TEST_NHS_NUMBER,
+            existing_nhs_numbers=[],
+            ndr_session_id=TEST_UUID,
+        )
+    ]
+    mock_update_auth_session_table_with_new_nhs_number.assert_has_calls(expected_calls)
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=["mock_service"],
+)
+def test_update_auth_session_table_with_new_nhs_number(
     mock_service, mock_updated_permitted_search_fields
 ):
     mock_service.auth_service.allowed_nhs_numbers = []
@@ -227,7 +342,9 @@ def test_update_auth_session_with_permitted_search_with_new_search(
         "AllowedNHSNumbers": TEST_NHS_NUMBER
     }
 
-    mock_service.update_auth_session_with_permitted_search(TEST_NHS_NUMBER, False)
+    mock_service.update_auth_session_table_with_new_nhs_number(
+        "AllowedNHSNumbers", TEST_NHS_NUMBER, [], TEST_UUID
+    )
 
     mock_updated_permitted_search_fields.assert_called_once_with(
         field_name="AllowedNHSNumbers",
