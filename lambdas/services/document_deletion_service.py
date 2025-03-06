@@ -149,7 +149,6 @@ class DocumentDeletionService:
                     document_references=unstitched_document_references,
                     document_ttl_days=DocumentRetentionDays.SOFT_DELETE,
                 )
-
         except (ClientError, DynamoServiceException) as e:
             logger.error(
                 f"{LambdaError.DocDelClient.to_str()}: {str(e)}",
