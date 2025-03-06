@@ -73,7 +73,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#gp-message').should('be.visible');
                 cy.get('#gp-message').should(
                     'have.text',
-                    'This page displays the current data recorded in the Patient Demographic Service for this patient.',
+                    'This page displays the current data recorded in the Personal Demographics Service for this patient.',
                 );
                 cy.get('#verify-submit').click();
 
