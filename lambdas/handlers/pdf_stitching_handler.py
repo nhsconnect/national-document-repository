@@ -41,6 +41,7 @@ def lambda_handler(event, context):
 
     for message in event_message_records:
         try:
+            request_context.patient_nhs_no = ""
             message_body = json.loads(message.get("body", ""))
             stitching_message = PdfStitchingSqsMessage.model_validate(message_body)
             request_context.patient_nhs_no = stitching_message.nhs_number
