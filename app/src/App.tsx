@@ -6,7 +6,10 @@ import AppRouter from './router/AppRouter';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
-if (process.env.REACT_APP_ENVIRONMENT === 'development') {
+if (
+    process.env.REACT_APP_ENVIRONMENT === 'development' &&
+    process.env.REACT_APP_MONITOR_ACCOUNT_ID !== 'not provided yet'
+) {
     try {
         const config: AwsRumConfig = {
             sessionSampleRate: 1,
