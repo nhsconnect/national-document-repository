@@ -1,10 +1,10 @@
 import { Roles, roleName } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
 
-    const patientSearchUrl = '/patient/search';
     const patientVerifyUrl = '/patient/verify';
     const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
     const arfUploadUrl = '/patient/arf/upload';
@@ -29,7 +29,7 @@ describe('GP Workflow: Patient search and verify', () => {
         gpRoles.forEach((role) => {
             beforeEach(() => {
                 cy.login(role);
-                cy.visit(patientSearchUrl);
+                cy.visit(routes.patientSearch);
             });
 
             afterEach(() => {
@@ -221,7 +221,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.login(role, true, {
                     uploadArfWorkflowEnabled: false,
                 });
-                cy.visit(patientSearchUrl);
+                cy.visit(routes.patientSearch);
             });
 
             it(
