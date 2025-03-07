@@ -19,6 +19,18 @@ if ('REACT_APP_OIDC_PROVIDER_ID' in process.env) {
     console.log('REACT_APP_OIDC_PROVIDER_ID not set');
 }
 
+if ('REACT_APP_IDENTITY_PROVIDER_POOL_ID') {
+    console.log('REACT_APP_IDENTITY_PROVIDER_POOL_ID is set');
+} else {
+    console.log('REACT_APP_IDENTITY_PROVIDER_POOL_ID not set');
+}
+
+if ('REACT_APP_MONITOR_ACCOUNT_ID') {
+    console.log('REACT_APP_MONITOR_ACCOUNT_ID is set');
+} else {
+    console.log('REACT_APP_MONITOR_ACCOUNT_ID not set');
+}
+
 if ('REACT_APP_ENVIRONMENT' in process.env) {
     console.log('REACT_APP_ENVIRONMENT is set');
 } else {
