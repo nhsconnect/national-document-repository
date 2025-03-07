@@ -6,7 +6,10 @@ from unittest.mock import call
 
 import pytest
 from enums.lambda_error import LambdaError
+from enums.nrl_sqs_upload import NrlActionTypes
 from freezegun.api import freeze_time
+from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.sqs.nrl_sqs_message import NrlSqsMessage
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pypdf import PdfReader, PdfWriter
 from tests.unit.conftest import (
@@ -257,7 +260,7 @@ def test_upload_stitched_file_handles_client_error(mock_service, caplog):
     mock_service.s3_service.client.upload_fileobj.side_effect = MOCK_CLIENT_ERROR
     expected_err_msg = (
         "Failed to upload stitched file to S3: "
-        "An error occurred (500) when calling the Query operation: Test error message"
+        "An error occurred (500) when calling the TEST operation: Test error message"
     )
 
     with pytest.raises(PdfStitchingException) as e:
@@ -296,7 +299,7 @@ def test_migrate_multipart_references_handles_client_error_on_create(
     mock_service.dynamo_service.create_item.side_effect = MOCK_CLIENT_ERROR
     expected_err_msg = (
         "Failed to migrate multipart references: "
-        "An error occurred (500) when calling the Query operation: Test error message"
+        "An error occurred (500) when calling the TEST operation: Test error message"
     )
 
     with pytest.raises(PdfStitchingException) as e:
@@ -313,7 +316,7 @@ def test_migrate_multipart_references_handles_client_error_on_delete(
     mock_service.dynamo_service.delete_item.side_effect = MOCK_CLIENT_ERROR
     expected_err_msg = (
         "Failed to cleanup multipart references: "
-        "An error occurred (500) when calling the Query operation: Test error message"
+        "An error occurred (500) when calling the TEST operation: Test error message"
     )
 
     with pytest.raises(PdfStitchingException) as e:
@@ -340,7 +343,7 @@ def test_write_stitching_reference_handles_client_error(mock_service, caplog):
     mock_service.dynamo_service.create_item.side_effect = MOCK_CLIENT_ERROR
     expected_err_msg = (
         "Failed to create stitching reference: "
-        "An error occurred (500) when calling the Query operation: Test error message"
+        "An error occurred (500) when calling the TEST operation: Test error message"
     )
 
     with pytest.raises(PdfStitchingException) as e:
@@ -351,8 +354,44 @@ def test_write_stitching_reference_handles_client_error(mock_service, caplog):
     assert e.value.error is LambdaError.StitchError
 
 
-def test_publish_nrl_message():
-    pass
+def test_publish_nrl_message(mock_service, mock_uuid):
+    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+
+    expected_apim_attachment = Attachment(
+        url=f"https://apim.api.service.uk/DocumentReference/16521000000101~{mock_service.stitched_reference.id}",
+        contentType="application/pdf",
+    )
+
+    expected_nrl_message = NrlSqsMessage(
+        nhs_number=mock_service.stitched_reference.nhs_number,
+        action=NrlActionTypes.CREATE,
+        attachment=expected_apim_attachment,
+    )
+
+    mock_service.publish_nrl_message()
+
+    mock_service.sqs_service.send_message_fifo.assert_called_once_with(
+        queue_url="https://test-queue.com",
+        message_body=expected_nrl_message.model_dump_json(),
+        group_id=f"nrl_sqs_{TEST_UUID}",
+    )
+
+
+def test_publish_nrl_message_handles_client_error(mock_service, caplog):
+    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+    mock_service.sqs_service.send_message_fifo.side_effect = MOCK_CLIENT_ERROR
+
+    expected_err_msg = (
+        "Failed to publish NRL message onto SQS: "
+        "An error occurred (500) when calling the TEST operation: Test error message"
+    )
+
+    with pytest.raises(PdfStitchingException) as e:
+        mock_service.publish_nrl_message()
+
+    assert caplog.records[-1].msg == expected_err_msg
+    assert caplog.records[-1].levelname == "ERROR"
+    assert e.value.error is LambdaError.StitchError
 
 
 def test_publish_nrl_message_handles_error():
@@ -375,7 +414,7 @@ def test_sort_multipart_object_keys_sorts_references_and_returns_keys():
     assert expected == actual
 
 
-def test_sort_multipart_object_keys_handles_and_raises_exception():
+def test_sort_multipart_object_keys_raises_exception():
     test_document_references = TEST_DOCUMENT_REFERENCES
     test_document_references[0].file_name = "invalid"
 

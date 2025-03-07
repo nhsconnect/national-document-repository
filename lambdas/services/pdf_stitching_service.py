@@ -171,11 +171,16 @@ class PdfStitchingService:
             action=NrlActionTypes.CREATE,
             attachment=doc_details,
         )
-        self.sqs_service.send_message_fifo(
-            queue_url=os.environ.get("NRL_SQS_URL"),
-            message_body=nrl_sqs_message.model_dump_json(),
-            group_id=f"nrl_sqs_{uuid.uuid4()}",
-        )
+
+        try:
+            self.sqs_service.send_message_fifo(
+                queue_url=os.environ.get("NRL_SQS_URL"),
+                message_body=nrl_sqs_message.model_dump_json(),
+                group_id=f"nrl_sqs_{uuid.uuid4()}",
+            )
+        except ClientError as e:
+            logger.error(f"Failed to publish NRL message onto SQS: {e}")
+            raise PdfStitchingException(400, LambdaError.StitchError)
 
     @staticmethod
     def sort_multipart_object_keys(
