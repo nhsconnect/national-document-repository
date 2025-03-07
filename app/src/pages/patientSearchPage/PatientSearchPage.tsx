@@ -21,6 +21,8 @@ import useTitle from '../../helpers/hooks/useTitle';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
 import errorCodes from '../../helpers/utils/errorCodes';
+import useRole from '../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
@@ -30,6 +32,8 @@ function PatientSearchPage() {
     const [statusCode, setStatusCode] = useState<null | number>(null);
     const [inputError, setInputError] = useState<null | string>(null);
     const { mockLocal, featureFlags } = useConfig();
+    const role = useRole();
+    const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
     const { register, handleSubmit } = useForm({
         reValidateMode: 'onSubmit',
     });
@@ -72,7 +76,8 @@ function PatientSearchPage() {
 
             if (
                 !patientDetails.active &&
-                (!featureFlags.uploadArfWorkflowEnabled || !featureFlags.uploadLambdaEnabled)
+                (!featureFlags.uploadArfWorkflowEnabled || !featureFlags.uploadLambdaEnabled) &&
+                !userIsPCSE
             ) {
                 setInputError(errorCodes['SP_4003']);
                 setFailedSubmitState(404);
