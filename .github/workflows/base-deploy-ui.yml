@@ -87,11 +87,6 @@ jobs:
           echo "::add-mask::$app_monitor_id"
           echo "MONITOR_ACCOUNT_ID=$app_monitor_id" >> $GITHUB_OUTPUT  
 
-      - name: Debug Env Variables
-        run: |
-          echo "MONITOR_ACCOUNT_ID from env: $MONITOR_ACCOUNT_ID"
-          echo "IDENTITY_PROVIDER_POOL_ID from env: $IDENTITY_PROVIDER_POOL_ID"
-
       - name: Configure React environment vars
         env:
           AWS_REGION: ${{ vars.AWS_REGION }}
