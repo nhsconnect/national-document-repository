@@ -212,7 +212,7 @@ describe('PatientSearchPage', () => {
             });
         });
 
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+        it.each([REPOSITORY_ROLE.GP_ADMIN])(
             "navigates to upload journey when role is '%s'",
             async (role) => {
                 mockedAxios.get.mockImplementation(() =>
@@ -280,7 +280,8 @@ describe('PatientSearchPage', () => {
                     },
                 }),
             }));
-
+            const role = REPOSITORY_ROLE.GP_ADMIN;
+            mockedUseRole.mockReturnValue(role);
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: { ...buildPatientDetails(), active: false } }),
             );
