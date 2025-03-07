@@ -24,6 +24,7 @@ def mock_service(set_env, request, mocker):
     mocker.patch.object(service, "ssm_service")
     mocker.patch.object(service, "db_service")
     mocker.patch.object(service, "auth_service")
+    mocker.patch.object(service, "feature_flag_service")
     return service
 
 
@@ -73,6 +74,25 @@ def test_check_if_user_authorise_valid(mock_service):
     "mock_service",
     (
         ("GP_ADMIN", USER_VALID_ODS_CODE),
+        ("PCSE", ""),
+    ),
+    indirect=True,
+)
+def test_check_if_user_authorise_valid_when_arf_is_on(mocker, mock_service):
+    try:
+        mock_function = mocker.patch.object(
+            mock_service.feature_flag_service, "get_feature_flags_by_flag"
+        )
+        mock_function.return_value = {"uploadArfWorkflowEnabled": True}
+        mock_service.check_if_user_authorise("SUSP")
+    except UserNotAuthorisedException as e:
+        assert False, e
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (
+        ("GP_ADMIN", USER_VALID_ODS_CODE),
         ("GP_ADMIN", EMPTY_ODS_CODE),
         ("GP_CLINICAL", USER_VALID_ODS_CODE),
         ("GP_CLINICAL", EMPTY_ODS_CODE),
@@ -86,6 +106,27 @@ def test_check_if_user_authorise_valid(mock_service):
 def test_check_if_user_authorise_raise_error(mock_service):
     with pytest.raises(UserNotAuthorisedException):
         mock_service.check_if_user_authorise(PATIENT_VALID_ODS_CODE)
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (
+        ("GP_ADMIN", USER_VALID_ODS_CODE),
+        ("GP_ADMIN", EMPTY_ODS_CODE),
+        ("GP_CLINICAL", USER_VALID_ODS_CODE),
+        ("GP_CLINICAL", EMPTY_ODS_CODE),
+    ),
+    indirect=True,
+)
+def test_check_if_user_authorise_raise_error_arf_off_inactive_patient(
+    mocker, mock_service
+):
+    mock_function = mocker.patch.object(
+        mock_service.feature_flag_service, "get_feature_flags_by_flag"
+    )
+    mock_function.return_value = {"uploadArfWorkflowEnabled": False}
+    with pytest.raises(UserNotAuthorisedException):
+        mock_service.check_if_user_authorise("")
 
 
 @pytest.mark.parametrize(
