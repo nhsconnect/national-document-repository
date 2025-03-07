@@ -80,7 +80,7 @@ describe('NavLinks', () => {
             });
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
             });
         });
 

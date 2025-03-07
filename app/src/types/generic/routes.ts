@@ -24,6 +24,8 @@ export enum routes {
     ARF_UPLOAD_DOCUMENTS = '/patient/arf/upload',
     ARF_UPLOAD_DOCUMENTS_WILDCARD = '/patient/arf/upload/*',
     FEEDBACK_CONFIRMATION = '/feedback/confirmation',
+    REPORT_DOWNLOAD = '/create-report',
+    REPORT_DOWNLOAD_WILDCARD = '/create-report/*',
 }
 
 export enum routeChildren {
@@ -48,6 +50,7 @@ export enum routeChildren {
     ARF_UPLOAD_COMPLETED = '/patient/arf/upload/completed',
     ARF_UPLOAD_FAILED = '/patient/arf/upload/failed',
     ARF_UPLOAD_CONFIRMATION_FAILED = '/patient/arf/upload/confirmation-failed',
+    REPORT_DOWNLOAD_COMPLETE = '/create-report/complete',
 }
 
 export enum ROUTE_TYPE {
