@@ -6,10 +6,11 @@ import AppRouter from './router/AppRouter';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
-if (
-    process.env.REACT_APP_ENVIRONMENT === 'development' &&
-    process.env.REACT_APP_MONITOR_ACCOUNT_ID !== 'not provided yet'
-) {
+const cypress =
+    process.env.REACT_APP_MONITOR_ACCOUNT_ID !== 'not provided yet' &&
+    process.env.REACT_APP_RUM_IDENTITY_POOL_ID !== 'not provided yet';
+
+if (process.env.REACT_APP_ENVIRONMENT === 'development' && !cypress) {
     try {
         const config: AwsRumConfig = {
             sessionSampleRate: 1,
