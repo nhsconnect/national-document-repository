@@ -103,16 +103,20 @@ def mock_get_documents_references_in_storage(mocker, mock_deletion_service):
     )
 
 
+@pytest.fixture
+def mock_delete_documents_references_in_stitch_table(mocker, mock_deletion_service):
+    return mocker.patch.object(
+        mock_deletion_service, "delete_documents_references_in_stitch_table"
+    )
+
+
 def test_handle_delete_for_all_doc_type(
     mock_delete_specific_doc_type,
     mock_deletion_service,
-    mocker,
+    mock_delete_documents_references_in_stitch_table,
     mock_delete_unstitched_document_reference,
 ):
     expected = TEST_DOC_STORE_REFERENCES + TEST_LG_DOC_STORE_REFERENCES
-    mock_deletion_service.delete_documents_references_in_stitch_table = (
-        mocker.MagicMock()
-    )
 
     actual = mock_deletion_service.handle_reference_delete(
         TEST_NHS_NUMBER, [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG]
@@ -134,13 +138,10 @@ def test_handle_delete_for_all_doc_type(
 def test_handle_delete_all_doc_type_when_only_lg_records_available(
     mock_delete_specific_doc_type,
     mock_deletion_service,
-    mocker,
+    mock_delete_documents_references_in_stitch_table,
     mock_delete_unstitched_document_reference,
 ):
     nhs_number = TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD
-    mock_deletion_service.delete_documents_references_in_stitch_table = (
-        mocker.MagicMock()
-    )
 
     expected = TEST_LG_DOC_STORE_REFERENCES
     actual = mock_deletion_service.handle_reference_delete(
@@ -166,12 +167,12 @@ def test_handle_delete_all_doc_type_when_only_lg_records_available(
     ],
 )
 def test_handle_delete_for_one_doc_type(
-    doc_type, expected, mock_delete_specific_doc_type, mock_deletion_service, mocker
+    doc_type,
+    expected,
+    mock_delete_specific_doc_type,
+    mock_deletion_service,
+    mock_delete_documents_references_in_stitch_table,
 ):
-    mock_deletion_service.delete_documents_references_in_stitch_table = (
-        mocker.MagicMock()
-    )
-
     actual = mock_deletion_service.handle_reference_delete(TEST_NHS_NUMBER, [doc_type])
 
     assert actual == expected
@@ -181,12 +182,10 @@ def test_handle_delete_for_one_doc_type(
 
 
 def test_handle_delete_when_no_record_for_patient_return_empty_list(
-    mock_delete_specific_doc_type, mock_deletion_service, mocker
+    mock_delete_specific_doc_type,
+    mock_deletion_service,
+    mock_delete_documents_references_in_stitch_table,
 ):
-    mock_deletion_service.delete_documents_references_in_stitch_table = (
-        mocker.MagicMock()
-    )
-
     expected = []
     actual = mock_deletion_service.handle_reference_delete(
         TEST_NHS_NUMBER_WITH_NO_RECORD,
@@ -210,7 +209,6 @@ def test_delete_specific_doc_type(
     mock_document_query,
     mock_deletion_service,
     mock_get_documents_references_in_storage,
-    mocker,
 ):
     mock_get_documents_references_in_storage.return_value = doc_ref
 
@@ -342,7 +340,9 @@ def test_delete_unstitched_reference_does_not_update_empty_dynamo_result(
     mock_deletion_service.document_service.delete_document_references.assert_not_called()
 
 
-def test_delete_unstitched_reference_handles_client_error(mock_deletion_service):
+def test_delete_unstitched_reference_handles_fetch_documents_client_error(
+    mock_deletion_service,
+):
     mock_deletion_service.document_service.fetch_documents_from_table_with_nhs_number.side_effect = (
         MOCK_CLIENT_ERROR
     )
@@ -352,6 +352,10 @@ def test_delete_unstitched_reference_handles_client_error(mock_deletion_service)
 
     assert e.value.error == LambdaError.DocDelClient
 
+
+def test_delete_unstitched_reference_handles_delete_document_reference__client_error(
+    mock_deletion_service,
+):
     mock_deletion_service.document_service.delete_document_references.side_effect = (
         MOCK_CLIENT_ERROR
     )
