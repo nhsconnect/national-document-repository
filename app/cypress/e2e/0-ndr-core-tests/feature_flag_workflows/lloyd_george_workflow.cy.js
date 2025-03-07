@@ -2,7 +2,8 @@ import { Roles } from '../../../support/roles';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
 
 const beforeEachConfiguration = (role, featureFlags) => {
-    cy.login(role, true, featureFlags);
+    cy.login(role, featureFlags);
+    cy.navigateToPatientSearchPage();
     cy.intercept('GET', '/SearchPatient*', {
         statusCode: 200,
         body: searchPatientPayload,
@@ -13,7 +14,7 @@ const beforeEachConfiguration = (role, featureFlags) => {
 };
 
 describe('Feature flags - Lloyd George Workflow', () => {
-    context('As a GP admin BSOL user visiting Lloyd George record page', () => {
+    context('As a GP admin user visiting Lloyd George record page', () => {
         it(
             'displays upload text and button when both upload feature flags are enabled',
             { tags: 'regression' },
