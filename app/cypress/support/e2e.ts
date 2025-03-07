@@ -1,5 +1,6 @@
 import { DynamoDB, S3 } from 'aws-sdk';
 import { Roles, roleIds, roleList } from './roles';
+import { routes } from './routes';
 import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
 import Bluebird from 'cypress/types/bluebird';
 import './aws.commands';
@@ -12,15 +13,12 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
 });
 
-Cypress.Commands.add('login', (role, isBSOL = true, featureFlags) => {
+Cypress.Commands.add('login', (role, featureFlags) => {
     if (roleIds.includes(role)) {
         const roleName = roleList.find((roleName) => Roles[roleName] === role);
         // Login for regression tests
         const authCallback = '/auth-callback';
-        const fixturePath =
-            [Roles.GP_ADMIN, Roles.GP_CLINICAL].includes(role) && !isBSOL
-                ? 'requests/auth/GET_TokenRequest_' + roleName + '_non_bsol.json'
-                : 'requests/auth/GET_TokenRequest_' + roleName + '.json';
+        const fixturePath = 'requests/auth/GET_TokenRequest_' + roleName + '.json';
 
         cy.intercept('GET', '/Auth/TokenRequest*', {
             statusCode: 200,
@@ -115,6 +113,33 @@ Cypress.Commands.add('downloadIframeReplace', () => {
     });
 });
 
+Cypress.Commands.add('navigateToHomePage', () => {
+    const baseUrl = Cypress.config('baseUrl');
+
+    cy.getByTestId('home-btn').click();
+    cy.url().should('eq', baseUrl + routes.home);
+});
+
+Cypress.Commands.add('navigateToPatientSearchPage', () => {
+    const baseUrl = Cypress.config('baseUrl');
+
+    cy.navigateToHomePage();
+    cy.getByTestId('search-patient-btn').should('exist');
+    cy.getByTestId('search-patient-btn').click();
+
+    cy.url().should('eq', baseUrl + routes.patientSearch);
+});
+
+Cypress.Commands.add('navigateToDownloadReportPage', () => {
+    const baseUrl = Cypress.config('baseUrl');
+
+    cy.navigateToHomePage();
+    cy.getByTestId('download-report-btn').should('exist');
+    cy.getByTestId('download-report-btn').click();
+
+    cy.url().should('eq', baseUrl + `${routes.createReport}?reportType=0`);
+});
+
 declare global {
     namespace Cypress {
         interface Chainable {
@@ -128,10 +153,9 @@ declare global {
             /**
              * Mock user login by intercepting the {baseUrl}/auth-callback request
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
-             * @param {boolean} isBSOL - Whether the user GP is located in BSOL area
              * @param featureFlags - Feature flags values to override the defaults
              */
-            login(role: Roles, isBSOL?: boolean, featureFlags?: FeatureFlags): Chainable<void>;
+            login(role: Roles, featureFlags?: FeatureFlags): Chainable<void>;
 
             /**
              * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
@@ -198,6 +222,9 @@ declare global {
              * Workaround to prevent click on download link from firing a load event and preventing test continuing to run
              */
             downloadIframeReplace(): Chainable<void>;
+            navigateToHomePage(): Chainable<void>;
+            navigateToPatientSearchPage(): Chainable<void>;
+            navigateToDownloadReportPage(): Chainable<void>;
         }
     }
 }

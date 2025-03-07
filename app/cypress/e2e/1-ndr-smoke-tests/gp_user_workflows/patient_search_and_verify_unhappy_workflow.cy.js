@@ -1,4 +1,5 @@
 import { Roles, roleName } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 
 describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient on PDS', () => {
     // env vars
@@ -7,7 +8,6 @@ describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient 
 
     const workspace = Cypress.env('WORKSPACE');
     const activePatient = workspace === 'ndr-dev' ? '9730153817' : '9000000002';
-    const homeUrl = '/patient/search';
 
     gpRoles.forEach((role) => {
         it(
@@ -18,7 +18,9 @@ describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient 
             () => {
                 cy.smokeLogin(role);
 
-                cy.url({ timeout: 10000 }).should('eq', baseUrl + homeUrl);
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + routes.home);
+
+                cy.navigateToPatientSearchPage();
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(activePatient);

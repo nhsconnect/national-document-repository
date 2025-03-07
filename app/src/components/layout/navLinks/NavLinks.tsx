@@ -13,7 +13,7 @@ const NavLinks = () => {
     };
 
     const appLinks = [
-        { href: routes.START, label: 'Home', id: 'home-btn' },
+        { href: routes.HOME, label: 'Home', id: 'home-btn' },
         { href: routes.SEARCH_PATIENT, label: 'Search for a patient', id: 'search-btn' },
         { href: routes.LOGOUT, label: 'Sign out', id: 'logout-btn' },
     ];

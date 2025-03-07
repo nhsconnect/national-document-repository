@@ -16,4 +16,6 @@ export enum endpoints {
     VIRUS_SCAN = '/VirusScan',
     UPLOAD_CONFIRMATION = '/UploadConfirm',
     UPLOAD_DOCUMENT_STATE = '/UploadState',
+
+    ODS_REPORT = '/OdsReport',
 }

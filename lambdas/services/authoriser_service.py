@@ -102,7 +102,7 @@ class AuthoriserService:
                 deny_resource = False
 
             case "/OdsReport":
-                deny_resource = deny_access_to_clinical_role
+                deny_resource = False
             case _:
                 deny_resource = deny_access_to_patient
 

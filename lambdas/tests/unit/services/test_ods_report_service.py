@@ -132,7 +132,7 @@ def test_create_and_save_ods_report_create_csv(
 ):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
+    file_name = "LloydGeorgeSummary_ODS123_2_2024-01-01_12-00.csv"
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     result = ods_report_service.create_and_save_ods_report(
@@ -157,7 +157,7 @@ def test_create_and_save_ods_report_create_pdf(
 ):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00.pdf"
+    file_name = "LloydGeorgeSummary_ODS123_2_2024-01-01_12-00.pdf"
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     ods_report_service.create_and_save_ods_report(
@@ -202,7 +202,7 @@ def test_create_and_save_ods_report_with_pre_sign_url(
 ):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
+    file_name = "LloydGeorgeSummary_ODS123_2_2024-01-01_12-00.csv"
     mock_pre_sign_url = "https://presigned.url"
 
     mock_get_pre_signed_url.return_value = mock_pre_sign_url

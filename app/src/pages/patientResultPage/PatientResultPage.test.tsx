@@ -21,7 +21,7 @@ const mockedUsePatient = usePatient as jest.Mock;
 
 const PAGE_HEADER_TEXT = 'Patient details';
 const PAGE_TEXT =
-    'This page displays the current data recorded in the Patient Demographic Service for this patient.';
+    'This page displays the current data recorded in the Personal Demographics Service for this patient.';
 const CONFIRM_BUTTON_TEXT = 'Confirm patient details and continue';
 
 describe('PatientResultPage', () => {

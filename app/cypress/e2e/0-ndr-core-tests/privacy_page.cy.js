@@ -48,7 +48,7 @@ describe('Privacy Page', () => {
                     .should('have.text', 'Privacy notice');
                 cy.get('.app-homepage-content p', { timeout: 5000 }).should(
                     'include.text',
-                    "If you use the 'Access and store digital patient documents' service using your",
+                    "If you sign in to the 'Access and store digital patient documents' service using your",
                 );
                 cy.getByTestId('cis2-link', { timeout: 5000 })
                     .should('have.attr', 'href')

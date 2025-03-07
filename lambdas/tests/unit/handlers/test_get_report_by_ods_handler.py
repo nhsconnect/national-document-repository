@@ -30,7 +30,7 @@ def mock_service(mocker):
 def mock_lambda_enabled(mocker):
     mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
     mock_upload_lambda_feature_flag = mock_function.return_value = {
-        "odsReportLambdaEnabled": True
+        "downloadOdsReportEnabled": True
     }
     return mock_upload_lambda_feature_flag
 
@@ -39,7 +39,7 @@ def mock_lambda_enabled(mocker):
 def mock_lambda_disabled(mocker):
     mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
     mock_upload_lambda_feature_flag = mock_function.return_value = {
-        "odsReportLambdaEnabled": False
+        "downloadOdsReportEnabled": False
     }
     return mock_upload_lambda_feature_flag
 
@@ -99,7 +99,7 @@ def test_lambda_handler_feature_flag_disabled(
         500, LambdaError.FeatureFlagDisabled.create_error_body(), "GET"
     ).create_api_gateway_response()
 
-    actual = lambda_handler({}, context)
+    actual = lambda_handler({"httpMethod": "GET"}, context)
 
     assert expected == actual
 

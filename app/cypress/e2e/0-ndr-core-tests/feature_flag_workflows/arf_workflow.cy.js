@@ -1,8 +1,8 @@
 import { Roles, roleName } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 
 const baseUrl = Cypress.config('baseUrl');
 
-const patientSearchUrl = '/patient/search';
 const arfUploadUrl = '/patient/arf/upload';
 const unauthorisedUrl = '/unauthorised';
 
@@ -24,7 +24,7 @@ const navigateToUploadPage = () => {
         body: patient,
     }).as('search');
 
-    cy.visit(patientSearchUrl);
+    cy.visit(routes.patientSearch);
     cy.get('#nhs-number-input').click();
     cy.get('#nhs-number-input').type(testPatient);
 

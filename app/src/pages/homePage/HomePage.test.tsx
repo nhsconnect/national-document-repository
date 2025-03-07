@@ -1,127 +1,55 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import HomePage from './HomePage';
-import useIsBSOL from '../../helpers/hooks/useIsBSOL';
-import { routes } from '../../types/generic/routes';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { buildConfig } from '../../helpers/test/testBuilders';
+import useConfig from '../../helpers/hooks/useConfig';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
-jest.mock('../../helpers/hooks/useIsBSOL');
 jest.mock('../../helpers/hooks/useRole');
-const mockUseIsBsol = useIsBSOL as jest.Mock;
+jest.mock('../../helpers/hooks/useConfig');
 const mockUseRole = useRole as jest.Mock;
+const mockUseConfig = useConfig as jest.Mock;
 
 describe('HomePage', () => {
+    beforeEach(() => {
+        mockUseConfig.mockReturnValue(buildConfig());
+    });
     afterEach(() => {
         jest.clearAllMocks();
     });
 
     const gpRoles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL];
 
-    describe('BSOL Rendering for GP roles', () => {
-        beforeEach(() => {
-            mockUseIsBsol.mockReturnValue(true);
-        });
-        it.each(gpRoles)('[%s] redirect user to search patient page', (role) => {
-            mockUseRole.mockReturnValue(role);
+    const validateHomePageRendered = () => {
+        render(<HomePage />);
 
-            render(<HomePage />);
+        const searchPatientButton = screen.getByTestId('search-patient-btn') as HTMLAnchorElement;
+        const downloadReportButton = screen.getByTestId('download-report-btn') as HTMLAnchorElement;
+        expect(searchPatientButton).toBeInTheDocument();
+        expect(downloadReportButton).toBeInTheDocument();
+    };
 
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
-        });
+    describe('Rendering for GP roles', () => {
+        it.each(gpRoles)(
+            '[%s] render home page with patient search and download report',
+            async (role) => {
+                mockUseRole.mockReturnValue(role);
+
+                validateHomePageRendered();
+            },
+        );
     });
 
     describe('PCSE Rendering', () => {
-        beforeEach(() => {
+        it('should render home page with patient search and download report', async () => {
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
-        });
-        it('redirect user to search patient page', () => {
-            render(<HomePage />);
 
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
-        });
-    });
-
-    describe('Non-BSOL Rendering', () => {
-        beforeEach(() => {
-            mockUseIsBsol.mockReturnValue(false);
-        });
-
-        it('renders page content', () => {
-            const contentStrings = [
-                'As you’re outside Birmingham and Solihull, the pilot area for this service, you can use this service to:',
-                'view records if the patient joins your practice',
-                'download records if a patient leaves your practice',
-                'You’ll be asked for patient details, including their:',
-                'name',
-                'date of birth',
-                'NHS number',
-                'Downloading a record will remove it from our storage.',
-                'Get support with the service',
-            ];
-
-            render(<HomePage />);
-
-            contentStrings.forEach((s) => {
-                expect(screen.getByText(s)).toBeInTheDocument();
-            });
-            expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
-            expect(
-                screen.getByRole('link', {
-                    name: /NHS National Service Desk/i,
-                }),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText(/if there is an issue with this service or call 0300 303 5678\./i),
-            ).toBeInTheDocument();
-        });
-
-        it('renders a service link that takes you to service help-desk in a new tab', () => {
-            render(<HomePage />);
-
-            expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
-            const nationalServiceDeskLink = screen.getByRole('link', {
-                name: /NHS National Service Desk/i,
-            });
-            expect(
-                screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
-            ).toBeInTheDocument();
-
-            expect(nationalServiceDeskLink).toHaveAttribute(
-                'href',
-                'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
-            );
-            expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
-        });
-
-        it('pass accessibility checks', async () => {
-            render(<HomePage />);
-
-            expect(
-                screen.getByRole('heading', {
-                    name: 'You’re outside of Birmingham and Solihull (BSOL)',
-                }),
-            ).toBeInTheDocument();
-
-            const results = await runAxeTest(document.body);
-            expect(results).toHaveNoViolations();
-        });
-    });
-
-    describe('Navigation', () => {
-        it('navigates to search page when search patient button is clicked', async () => {
-            render(<HomePage />);
-
-            expect(screen.getByTestId('search-patient-btn')).toBeInTheDocument();
-            screen.getByTestId('search-patient-btn').click();
-            await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
-            });
+            validateHomePageRendered();
         });
     });
 });

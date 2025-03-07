@@ -70,11 +70,11 @@ Cypress.Commands.add('deleteFileFromS3', (bucketName: string, fileName: string) 
         new Cypress.Promise((resolve, reject) => {
             s3.deleteObject(params, (err, data) => {
                 if (err) {
-                    const message = 'Error uploading to S3:' + bucketName;
+                    const message = 'Error deleting object from S3:' + bucketName;
                     console.error(message);
                     reject(message);
                 } else {
-                    console.log('Upload to S3 success:', bucketName);
+                    console.log('Delete object from S3 success:', bucketName);
                     resolve(data);
                 }
             });
@@ -96,11 +96,11 @@ Cypress.Commands.add('deleteItemFromDynamoDb', (tableName: string, itemId: strin
         new Cypress.Promise((resolve, reject) => {
             dynamoDB.deleteItem(params, (err, data) => {
                 if (err) {
-                    const message = 'Error uploading to Dynamo:' + tableName;
+                    const message = 'Error deleting item from Dynamo:' + tableName;
                     console.error(message);
                     reject(message);
                 } else {
-                    console.log('Upload to Dynamo success:', tableName);
+                    console.log('Delete item from Dynamo success:', tableName);
                     resolve(data);
                 }
             });

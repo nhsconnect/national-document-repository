@@ -132,7 +132,7 @@ class OdsReportService:
         now = datetime.now()
         formatted_time = now.strftime("%Y-%m-%d_%H-%M")
         file_name = (
-            "NDR_"
+            "LloydGeorgeSummary_"
             + ods_code
             + f"_{len(nhs_numbers)}_"
             + formatted_time

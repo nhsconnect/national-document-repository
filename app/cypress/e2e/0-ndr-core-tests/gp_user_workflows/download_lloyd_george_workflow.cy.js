@@ -1,10 +1,10 @@
 import viewLloydGeorgePayload from '../../../fixtures/requests/GET_LloydGeorgeStitch.json';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
 import { Roles } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 import { formatNhsNumber } from '../../../../src/helpers/utils/formatNhsNumber';
 
 const baseUrl = Cypress.config('baseUrl');
-const patientSearchUrl = '/patient/search';
 
 const downloadPageTitle =
     'Download the Lloyd George record for this patient - Access and store digital patient documents';
@@ -49,7 +49,7 @@ const singleTestFile = [
 describe('GP Workflow: View Lloyd George record', () => {
     const beforeEachConfiguration = (role) => {
         cy.login(role);
-        cy.visit(patientSearchUrl);
+        cy.visit(routes.patientSearch);
 
         // search patient
         cy.intercept('GET', '/SearchPatient*', {
