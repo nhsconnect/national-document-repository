@@ -7,4 +7,5 @@ export type PatientDetails = {
     superseded: boolean;
     restricted: boolean;
     active: boolean;
+    deceased: boolean;
 };

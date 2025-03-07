@@ -1,7 +1,6 @@
 import pytest
 from enums.repository_role import RepositoryRole
 from services.authoriser_service import AuthoriserService
-from services.base.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:74747474747474:<<restApiId>/dev"
@@ -27,28 +26,10 @@ MOCK_CURRENT_SESSION = {
 
 
 @pytest.fixture(scope="function")
-def mock_auth_service(set_env):
+def mock_auth_service(set_env, mocker):
     mock_test_auth_service = AuthoriserService()
+    mocker.patch.object(mock_test_auth_service, "manage_user_session_service")
     yield mock_test_auth_service
-
-
-@pytest.fixture()
-def mock_dynamo_service(mocker):
-    valid_session_record = {
-        "Count": 1,
-        "Items": [
-            {
-                "NDRSessionId": "test_session_id",
-                "sid": "test_cis2_session_id",
-                "Subject": "test_cis2_user_id",
-                "TimeToExist": 12345678960,
-                "AllowedNHSNumbers": "12,34,12,534",
-            }
-        ],
-    }
-    dynamo_service = mocker.patch.object(DynamoDBService, "query_all_fields")
-    dynamo_service.return_value = valid_session_record
-    yield dynamo_service
 
 
 def build_decoded_token_for_role(role: str) -> dict:
@@ -208,48 +189,6 @@ def test_deny_access_policy_returns_false_for_unrecognised_path(
     assert expected == actual
 
 
-def test_find_login_session(mock_dynamo_service, mock_auth_service: AuthoriserService):
-    expected = MOCK_CURRENT_SESSION
-    actual = mock_auth_service.find_login_session(MOCK_SESSION_ID)
-
-    assert mock_auth_service.allowed_nhs_numbers == ["12", "34", "12", "534"]
-    assert expected == actual
-    mock_auth_service.allowed_nhs_numbers = []
-
-
-def test_find_login_session_without_allowed_nhs_numbers(
-    mock_dynamo_service, mock_auth_service: AuthoriserService
-):
-    expected = MOCK_CURRENT_SESSION
-    MOCK_CURRENT_SESSION.pop("AllowedNHSNumbers")
-    mock_dynamo_service.return_value["Items"][0].pop("AllowedNHSNumbers")
-    actual = mock_auth_service.find_login_session(MOCK_SESSION_ID)
-
-    assert mock_auth_service.allowed_nhs_numbers == []
-    assert expected == actual
-
-
-def test_find_login_session_raises_auth_exception(
-    mocker, mock_auth_service: AuthoriserService
-):
-    invalid_session_record = {
-        "Count": 1,
-    }
-    dynamo_service = mocker.patch.object(DynamoDBService, "query_all_fields")
-    dynamo_service.return_value = invalid_session_record
-
-    with pytest.raises(AuthorisationException):
-        mock_auth_service.find_login_session("test session id")
-
-
-def test_validate_login_session(mocker, mock_auth_service: AuthoriserService):
-    mocker.patch("time.time", return_value=2400000)
-    try:
-        mock_auth_service.validate_login_session(session_expiry_time=3400000)
-    except AuthorisationException:
-        assert False, "test"
-
-
 def test_validate_login_expired_session(mocker, mock_auth_service: AuthoriserService):
     mocker.patch("time.time", return_value=2400000)
     with pytest.raises(AuthorisationException):
@@ -261,11 +200,10 @@ def test_valid_gp_admin_token_returns_allow_policy_true(
     path_test, mock_jwt_decode, mocker, mock_auth_service: AuthoriserService
 ):
     auth_token = "valid_gp_admin_token"
-
-    mock_find_login_session = mocker.patch(
-        "services.authoriser_service.AuthoriserService.find_login_session",
-        return_value=MOCK_CURRENT_SESSION,
+    mock_auth_service.manage_user_session_service.find_login_session.return_value = (
+        MOCK_CURRENT_SESSION
     )
+
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session",
         return_value=True,
@@ -281,7 +219,7 @@ def test_valid_gp_admin_token_returns_allow_policy_true(
         auth_token=auth_token, ssm_public_key_parameter="test public key"
     )
     assert response
-    mock_find_login_session.assert_called_once()
+    mock_auth_service.manage_user_session_service.find_login_session.assert_called_once()
     mock_validate_login_session.assert_called_once()
     mock_deny_access_policy.assert_called_once()
 
@@ -292,10 +230,10 @@ def test_valid_pcse_token_return_allow_policy_true(
 ):
     auth_token = "valid_pcse_token"
 
-    mock_find_login_session = mocker.patch(
-        "services.authoriser_service.AuthoriserService.find_login_session",
-        return_value=MOCK_CURRENT_SESSION,
+    mock_auth_service.manage_user_session_service.find_login_session.return_value = (
+        MOCK_CURRENT_SESSION
     )
+
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session"
     )
@@ -310,7 +248,7 @@ def test_valid_pcse_token_return_allow_policy_true(
         auth_token=auth_token, ssm_public_key_parameter="test public key"
     )
     assert response
-    mock_find_login_session.assert_called_once()
+    mock_auth_service.manage_user_session_service.find_login_session.assert_called_once()
     mock_validate_login_session.assert_called_once()
     mock_deny_access_policy.assert_called_once()
 
@@ -320,11 +258,10 @@ def test_return_deny_policy_when_no_session_found(
     test_path, mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
 ):
     auth_token = "valid_pcse_token"
-
-    mock_find_login_session = mocker.patch(
-        "services.authoriser_service.AuthoriserService.find_login_session",
-        side_effect=AuthorisationException(),
+    mock_auth_service.manage_user_session_service.find_login_session.side_effect = (
+        AuthorisationException()
     )
+
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session"
     )
@@ -337,7 +274,7 @@ def test_return_deny_policy_when_no_session_found(
         mock_jwt_decode.assert_called_with(
             auth_token=auth_token, ssm_public_key_parameter="test public key"
         )
-        mock_find_login_session.assert_called_once()
+        mock_auth_service.manage_user_session_service.find_login_session.assert_called_once()
         mock_validate_login_session.assert_not_called()
         mock_deny_access_policy.assert_not_called()
 
@@ -351,10 +288,10 @@ def test_raise_exception_when_user_session_is_expired(
 ):
     auth_token = "valid_pcse_token"
 
-    mock_find_login_session = mocker.patch(
-        "services.authoriser_service.AuthoriserService.find_login_session",
-        return_value=MOCK_CURRENT_SESSION,
+    mock_auth_service.manage_user_session_service.find_login_session.return_value = (
+        MOCK_CURRENT_SESSION
     )
+
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session",
         side_effect=AuthorisationException(),
@@ -368,7 +305,7 @@ def test_raise_exception_when_user_session_is_expired(
     mock_jwt_decode.assert_called_with(
         auth_token=auth_token, ssm_public_key_parameter="test public key"
     )
-    mock_find_login_session.assert_called_once()
+    mock_auth_service.manage_user_session_service.find_login_session.assert_called_once()
     mock_validate_login_session.assert_called_once()
     mock_deny_access_policy.assert_not_called()
 
@@ -379,9 +316,6 @@ def test_invalid_token_raise_exception(
 ):
     auth_token = "invalid_token"
 
-    mock_find_login_session = mocker.patch(
-        "services.authoriser_service.AuthoriserService.find_login_session"
-    )
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session"
     )
@@ -394,6 +328,14 @@ def test_invalid_token_raise_exception(
     mock_jwt_decode.assert_called_with(
         auth_token=auth_token, ssm_public_key_parameter="test public key"
     )
-    mock_find_login_session.assert_not_called()
+    mock_auth_service.manage_user_session_service.find_login_session.assert_not_called()
     mock_validate_login_session.assert_not_called()
     mock_deny_access_policy.assert_not_called()
+
+
+def test_validate_login_session(mocker, mock_auth_service: AuthoriserService):
+    mocker.patch("time.time", return_value=2400000)
+    try:
+        mock_auth_service.validate_login_session(session_expiry_time=3400000)
+    except AuthorisationException:
+        assert False, "test"

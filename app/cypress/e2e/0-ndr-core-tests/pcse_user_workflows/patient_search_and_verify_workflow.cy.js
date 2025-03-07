@@ -16,6 +16,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         postalCode: 'AA1 1AA',
         superseded: false,
         restricted: false,
+        deceased: false,
     };
 
     beforeEach(() => {
