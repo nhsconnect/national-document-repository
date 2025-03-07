@@ -75,15 +75,21 @@ function PatientSearchPage() {
                 baseHeaders,
             });
 
-            if (
-                (!patientDetails.active &&
-                    (!featureFlags.uploadArfWorkflowEnabled || !featureFlags.uploadLambdaEnabled) &&
-                    userIsGPAdmin) ||
-                userIsGPClinical
-            ) {
-                setInputError(errorCodes['SP_4003']);
-                setFailedSubmitState(404);
-                return;
+            if (!patientDetails.active) {
+                if (
+                    userIsGPAdmin &&
+                    (!featureFlags.uploadArfWorkflowEnabled || !featureFlags.uploadLambdaEnabled)
+                ) {
+                    setInputError(errorCodes['SP_4003']);
+                    setFailedSubmitState(404);
+                    return;
+                }
+
+                if (userIsGPClinical) {
+                    setInputError(errorCodes['SP_4003']);
+                    setFailedSubmitState(404);
+                    return;
+                }
             }
 
             handleSuccess(patientDetails);

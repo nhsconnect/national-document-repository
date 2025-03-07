@@ -19,8 +19,6 @@ const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const arfDownloadUrl = '/patient/arf';
 const forbiddenRoutes = [arfDownloadUrl];
 
-const bsolOptions = [true];
-
 describe('GP Clinical user role has access to the expected GP_CLINICAL workflow paths', () => {
     context(`GP Clinical role has access to expected routes`, () => {
         it('GP Clinical role has access to Lloyd George View', { tags: 'regression' }, () => {
