@@ -1,5 +1,6 @@
 import os
 
+from enums.feature_flags import FeatureFlags
 from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
@@ -7,6 +8,7 @@ from pydantic_core import PydanticSerializationError
 from services.authoriser_service import AuthoriserService
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
+from services.feature_flags_service import FeatureFlagService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     InvalidResourceIdException,
@@ -29,6 +31,8 @@ class SearchPatientDetailsService:
         self.ssm_service = SSMService()
         self.db_service = DynamoDBService()
         self.auth_service = AuthoriserService()
+        self.feature_flag_service = FeatureFlagService()
+
         self.session_table_name = os.getenv("AUTH_SESSION_TABLE_NAME")
         self.permitted_field = "AllowedNHSNumbers"
 
@@ -86,10 +90,17 @@ class SearchPatientDetailsService:
 
     def check_if_user_authorise(self, gp_ods_for_patient):
         patient_is_active = is_ods_code_active(gp_ods_for_patient)
+        upload_flag_name = FeatureFlags.UPLOAD_ARF_WORKFLOW_ENABLED.value
+        upload_lambda_enabled_flag_object = (
+            self.feature_flag_service.get_feature_flags_by_flag(upload_flag_name)
+        )
+        is_arf_journey_on = upload_lambda_enabled_flag_object[upload_flag_name]
         match self.user_role:
             case RepositoryRole.GP_ADMIN.value:
                 # Not raising error here if gp_ods is null / empty
                 if patient_is_active and gp_ods_for_patient != self.user_ods_code:
+                    raise UserNotAuthorisedException
+                elif not patient_is_active and not is_arf_journey_on:
                     raise UserNotAuthorisedException
 
             case RepositoryRole.GP_CLINICAL.value:

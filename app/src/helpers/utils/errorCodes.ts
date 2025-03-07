@@ -37,6 +37,8 @@ const errorCodes: { [key: string]: string } = {
     SFB_5001: feedbackMsg,
     SFB_5002: feedbackMsg,
     LGL_423: 'Record is uploading. Wait a few minutes and try again',
+    SP_4002: 'Patient could not be found in the Personal Demographics Service',
+    SP_4003: "You do not have access to this patient's record",
 };
 
 export default errorCodes;

@@ -37,7 +37,7 @@ describe('downloadReport', () => {
 
     it('should throw an axios error when the request fails', async () => {
         mockedAxios.get.mockImplementation(() => {
-            throw { response: {status: 404 }};
+            throw { response: { status: 404 } };
         });
         const args = {
             report,

@@ -16,7 +16,7 @@ jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/requests/downloadReport', () => {
     return () => {
-        throw { response: {status: 404 }};
+        throw { response: { status: 404 } };
     };
 });
 

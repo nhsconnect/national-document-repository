@@ -200,27 +200,43 @@ describe('PatientResultPage', () => {
     });
 
     describe('Navigation', () => {
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
-            "navigates to Upload docs page after user selects Inactive patient when role is '%s'",
-            async (role) => {
-                const patient = buildPatientDetails({ active: false });
+        it('navigates to Upload docs page after user selects Inactive patient when role is GP Admin', async () => {
+            const patient = buildPatientDetails({ active: false });
 
-                mockedUsePatient.mockReturnValue(patient);
-                mockedUseRole.mockReturnValue(role);
-                render(<PatientResultPage />);
-                act(() => {
-                    userEvent.click(
-                        screen.getByRole('button', {
-                            name: CONFIRM_BUTTON_TEXT,
-                        }),
-                    );
-                });
+            mockedUsePatient.mockReturnValue(patient);
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            render(<PatientResultPage />);
+            act(() => {
+                userEvent.click(
+                    screen.getByRole('button', {
+                        name: CONFIRM_BUTTON_TEXT,
+                    }),
+                );
+            });
 
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_UPLOAD_DOCUMENTS);
-                });
-            },
-        );
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_UPLOAD_DOCUMENTS);
+            });
+        });
+
+        it('navigates to patient search page after user selects Inactive patient when role is GP Clinical', async () => {
+            const patient = buildPatientDetails({ active: false });
+
+            mockedUsePatient.mockReturnValue(patient);
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+            render(<PatientResultPage />);
+            act(() => {
+                userEvent.click(
+                    screen.getByRole('button', {
+                        name: CONFIRM_BUTTON_TEXT,
+                    }),
+                );
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
+            });
+        });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "navigates to Lloyd George Record page after user selects Active patient, when role is '%s'",
