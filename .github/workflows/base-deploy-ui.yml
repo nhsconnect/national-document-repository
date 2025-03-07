@@ -76,7 +76,7 @@ jobs:
             --query "IdentityPools[?starts_with(IdentityPoolName, '${{ inputs.sandbox }}')].IdentityPoolId" \
             --output text)
           echo "::add-mask::$identity_pool_id"
-          echo "IDENTITY_PROVIDER_POOL_ID=$identity_pool_id" >> $GITHUB_OUTPUT  # <-- Ensure it's set as an output variable
+          echo "IDENTITY_PROVIDER_POOL_ID=$identity_pool_id" >> $GITHUB_OUTPUT
 
       - name: Get CloudWatch RUM App Monitor ID
         id: rum-app-monitor
@@ -85,7 +85,7 @@ jobs:
             --query "AppMonitorSummaries[?starts_with(Name, '${{ inputs.sandbox }}')].Id" \
             --output text)
           echo "::add-mask::$app_monitor_id"
-          echo "MONITOR_ACCOUNT_ID=$app_monitor_id" >> $GITHUB_OUTPUT  # <-- Ensure it's set as an output variable
+          echo "MONITOR_ACCOUNT_ID=$app_monitor_id" >> $GITHUB_OUTPUT  
 
       - name: Debug Env Variables
         run: |
