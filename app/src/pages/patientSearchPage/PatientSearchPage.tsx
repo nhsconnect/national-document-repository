@@ -33,7 +33,8 @@ function PatientSearchPage() {
     const [inputError, setInputError] = useState<null | string>(null);
     const { mockLocal, featureFlags } = useConfig();
     const role = useRole();
-    const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
+    const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
+    const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
     const { register, handleSubmit } = useForm({
         reValidateMode: 'onSubmit',
     });
@@ -75,9 +76,10 @@ function PatientSearchPage() {
             });
 
             if (
-                !patientDetails.active &&
-                (!featureFlags.uploadArfWorkflowEnabled || !featureFlags.uploadLambdaEnabled) &&
-                !userIsPCSE
+                (!patientDetails.active &&
+                    (!featureFlags.uploadArfWorkflowEnabled || !featureFlags.uploadLambdaEnabled) &&
+                    userIsGPAdmin) ||
+                userIsGPClinical
             ) {
                 setInputError(errorCodes['SP_4003']);
                 setFailedSubmitState(404);
