@@ -28,7 +28,7 @@ describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient 
                 // Assert
                 cy.get('#nhs-number-input--error-message', { timeout: 20000 }).should(
                     'include.text',
-                    'Sorry, patient data not found.',
+                    "You cannot access this patient's record",
                 );
             },
         );

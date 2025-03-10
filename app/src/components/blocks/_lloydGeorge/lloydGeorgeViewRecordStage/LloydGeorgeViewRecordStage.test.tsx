@@ -62,7 +62,9 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(screen.getByText(`Last updated: ${mockPdf.lastUpdated}`)).toBeInTheDocument();
 
         expect(
-            screen.queryByText('No documents are available for this patient.'),
+            screen.queryByText(
+                'This patient does not have a Lloyd George record stored in this service.',
+            ),
         ).not.toBeInTheDocument();
     });
 
@@ -90,7 +92,11 @@ describe('LloydGeorgeViewRecordStage', () => {
         });
 
         await waitFor(async () => {
-            expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /This patient does not have a Lloyd George record stored in this service/i,
+                ),
+            ).toBeInTheDocument();
         });
     });
 
@@ -387,7 +393,11 @@ describe('LloydGeorgeViewRecordStage', () => {
                 downloadStage: DOWNLOAD_STAGE.NO_RECORDS,
             });
 
-            expect(await screen.findByText(/No documents are available/)).toBeInTheDocument();
+            expect(
+                await screen.findByText(
+                    /This patient does not have a Lloyd George record stored in this service/,
+                ),
+            ).toBeInTheDocument();
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();

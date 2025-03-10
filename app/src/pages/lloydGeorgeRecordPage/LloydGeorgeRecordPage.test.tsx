@@ -94,7 +94,11 @@ describe('LloydGeorgeRecordPage', () => {
         renderPage(history);
 
         await waitFor(async () => {
-            expect(screen.getByText('No documents are available.')).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    'This patient does not have a Lloyd George record stored in this service.',
+                ),
+            ).toBeInTheDocument();
         });
     });
 
@@ -112,7 +116,11 @@ describe('LloydGeorgeRecordPage', () => {
         renderPage(history);
 
         await waitFor(async () => {
-            expect(screen.getByText('No documents are available.')).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    'This patient does not have a Lloyd George record stored in this service.',
+                ),
+            ).toBeInTheDocument();
         });
         expect(screen.queryByTestId('record-menu-card')).not.toBeInTheDocument();
     });

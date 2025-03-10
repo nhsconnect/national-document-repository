@@ -31,45 +31,64 @@ const navigateToUploadPage = () => {
 
     cy.get('#search-submit').click();
     cy.wait('@search');
-
-    cy.get('#verify-submit').click();
 };
 
 const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
 describe('Feature flags - ARF Workflow', () => {
+    it(
+        'for GP admin it displays the page when both feature flags are enabled',
+        { tags: 'regression' },
+        () => {
+            cy.login(Roles.GP_ADMIN);
+            navigateToUploadPage();
+            cy.get('#verify-submit').click();
+
+            cy.url().should('eq', baseUrl + arfUploadUrl);
+            cy.get('h1').should('not.have.text', 'Unauthorised access');
+        },
+    );
+
+    it(
+        'for GP clinical role it does not find patient when both feature flags are enabled',
+        { tags: 'regression' },
+        () => {
+            cy.login(Roles.GP_CLINICAL);
+            navigateToUploadPage();
+            cy.get('#nhs-number-input--error-message').should('be.visible');
+            cy.get('#nhs-number-input--error-message').should(
+                'include.text',
+                "Error: You cannot access this patient's record",
+            );
+            cy.get('#error-box-summary').should('be.visible');
+            cy.get('#error-box-summary').should('have.text', 'There is a problem');
+        },
+    );
     gpRoles.forEach((role) => {
         context(`As a ${roleName(role)} user visiting the ARF page for an inactive patient`, () => {
             it(
-                'displays the page when both feature flags are enabled',
-                { tags: 'regression' },
-                () => {
-                    cy.login(role);
-                    navigateToUploadPage();
-
-                    cy.url().should('eq', baseUrl + arfUploadUrl);
-                    cy.get('h1').should('not.have.text', 'Unauthorised access');
-                },
-            );
-
-            it(
-                'displays the unauthorised page when ARF workflow feature flag is disabled',
+                'displays the error when ARF workflow feature flag is disabled',
                 { tags: 'regression' },
                 () => {
                     const featureFlags = {
                         uploadArfWorkflowEnabled: false,
                         uploadLambdaEnabled: true,
                     };
-                    cy.login(role, true, featureFlags);
+                    cy.login(role, featureFlags);
                     navigateToUploadPage();
 
-                    cy.url().should('eq', baseUrl + unauthorisedUrl);
-                    cy.get('h1').should('have.text', 'Unauthorised access');
+                    cy.get('#nhs-number-input--error-message').should('be.visible');
+                    cy.get('#nhs-number-input--error-message').should(
+                        'include.text',
+                        "Error: You cannot access this patient's record",
+                    );
+                    cy.get('#error-box-summary').should('be.visible');
+                    cy.get('#error-box-summary').should('have.text', 'There is a problem');
                 },
             );
 
             it(
-                'displays the unauthorised page when upload lambda feature flag is disabled',
+                'displays the error page when upload lambda feature flag is disabled',
                 { tags: 'regression' },
                 () => {
                     const featureFlags = {
@@ -77,16 +96,21 @@ describe('Feature flags - ARF Workflow', () => {
                         uploadLambdaEnabled: false,
                     };
 
-                    cy.login(role, true, featureFlags);
+                    cy.login(role, featureFlags);
                     navigateToUploadPage();
 
-                    cy.url().should('eq', baseUrl + unauthorisedUrl);
-                    cy.get('h1').should('have.text', 'Unauthorised access');
+                    cy.get('#nhs-number-input--error-message').should('be.visible');
+                    cy.get('#nhs-number-input--error-message').should(
+                        'include.text',
+                        "Error: You cannot access this patient's record",
+                    );
+                    cy.get('#error-box-summary').should('be.visible');
+                    cy.get('#error-box-summary').should('have.text', 'There is a problem');
                 },
             );
 
             it(
-                'displays the unauthorised page when both upload and ARF workflow feature flag are disabled',
+                'displays the error page when both upload and ARF workflow feature flag are disabled',
                 { tags: 'regression' },
                 () => {
                     const featureFlags = {
@@ -94,11 +118,16 @@ describe('Feature flags - ARF Workflow', () => {
                         uploadLambdaEnabled: false,
                     };
 
-                    cy.login(role, true, featureFlags);
+                    cy.login(role, featureFlags);
                     navigateToUploadPage();
 
-                    cy.url().should('eq', baseUrl + unauthorisedUrl);
-                    cy.get('h1').should('have.text', 'Unauthorised access');
+                    cy.get('#nhs-number-input--error-message').should('be.visible');
+                    cy.get('#nhs-number-input--error-message').should(
+                        'include.text',
+                        "Error: You cannot access this patient's record",
+                    );
+                    cy.get('#error-box-summary').should('be.visible');
+                    cy.get('#error-box-summary').should('have.text', 'There is a problem');
                 },
             );
         });

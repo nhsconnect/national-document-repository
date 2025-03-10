@@ -1,7 +1,9 @@
+from enums.feature_flags import FeatureFlags
 from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
+from services.feature_flags_service import FeatureFlagService
 from services.manage_user_session_access import ManageUserSessionAccess
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
@@ -22,6 +24,7 @@ class SearchPatientDetailsService:
         self.user_role = user_role
         self.user_ods_code = user_ods_code
         self.manage_user_session_service = ManageUserSessionAccess()
+        self.feature_flag_service = FeatureFlagService()
 
     def handle_search_patient_request(self, nhs_number):
         try:
@@ -46,6 +49,7 @@ class SearchPatientDetailsService:
                 by_alias=True,
                 exclude={
                     "death_notification_status",
+                    "deceased",
                     "general_practice_ods",
                 },
             )
@@ -80,10 +84,17 @@ class SearchPatientDetailsService:
 
     def check_if_user_authorise(self, gp_ods_for_patient):
         patient_is_active = is_ods_code_active(gp_ods_for_patient)
+        upload_flag_name = FeatureFlags.UPLOAD_ARF_WORKFLOW_ENABLED.value
+        upload_lambda_enabled_flag_object = (
+            self.feature_flag_service.get_feature_flags_by_flag(upload_flag_name)
+        )
+        is_arf_journey_on = upload_lambda_enabled_flag_object[upload_flag_name]
         match self.user_role:
             case RepositoryRole.GP_ADMIN.value:
                 # Not raising error here if gp_ods is null / empty
                 if patient_is_active and gp_ods_for_patient != self.user_ods_code:
+                    raise UserNotAuthorisedException
+                elif not patient_is_active and not is_arf_journey_on:
                     raise UserNotAuthorisedException
 
             case RepositoryRole.GP_CLINICAL.value:
