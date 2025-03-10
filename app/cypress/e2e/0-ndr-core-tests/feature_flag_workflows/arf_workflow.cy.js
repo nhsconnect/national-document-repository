@@ -56,8 +56,8 @@ describe('Feature flags - ARF Workflow', () => {
             navigateToUploadPage();
             cy.get('#nhs-number-input--error-message').should('be.visible');
             cy.get('#nhs-number-input--error-message').should(
-                'have.text',
-                "Error: You do not have access to this patient's record",
+                'include.text',
+                "Error: You cannot access this patient's record",
             );
             cy.get('#error-box-summary').should('be.visible');
             cy.get('#error-box-summary').should('have.text', 'There is a problem');
@@ -73,13 +73,13 @@ describe('Feature flags - ARF Workflow', () => {
                         uploadArfWorkflowEnabled: false,
                         uploadLambdaEnabled: true,
                     };
-                    cy.login(role, true, featureFlags);
+                    cy.login(role, featureFlags);
                     navigateToUploadPage();
 
                     cy.get('#nhs-number-input--error-message').should('be.visible');
                     cy.get('#nhs-number-input--error-message').should(
-                        'have.text',
-                        "Error: You do not have access to this patient's record",
+                        'include.text',
+                        "Error: You cannot access this patient's record",
                     );
                     cy.get('#error-box-summary').should('be.visible');
                     cy.get('#error-box-summary').should('have.text', 'There is a problem');
@@ -95,13 +95,13 @@ describe('Feature flags - ARF Workflow', () => {
                         uploadLambdaEnabled: false,
                     };
 
-                    cy.login(role, true, featureFlags);
+                    cy.login(role, featureFlags);
                     navigateToUploadPage();
 
                     cy.get('#nhs-number-input--error-message').should('be.visible');
                     cy.get('#nhs-number-input--error-message').should(
-                        'have.text',
-                        "Error: You do not have access to this patient's record",
+                        'include.text',
+                        "Error: You cannot access this patient's record",
                     );
                     cy.get('#error-box-summary').should('be.visible');
                     cy.get('#error-box-summary').should('have.text', 'There is a problem');
@@ -117,13 +117,13 @@ describe('Feature flags - ARF Workflow', () => {
                         uploadLambdaEnabled: false,
                     };
 
-                    cy.login(role, true, featureFlags);
+                    cy.login(role, featureFlags);
                     navigateToUploadPage();
 
                     cy.get('#nhs-number-input--error-message').should('be.visible');
                     cy.get('#nhs-number-input--error-message').should(
-                        'have.text',
-                        "Error: You do not have access to this patient's record",
+                        'include.text',
+                        "Error: You cannot access this patient's record",
                     );
                     cy.get('#error-box-summary').should('be.visible');
                     cy.get('#error-box-summary').should('have.text', 'There is a problem');

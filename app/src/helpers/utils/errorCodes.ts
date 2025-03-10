@@ -37,8 +37,9 @@ const errorCodes: { [key: string]: string } = {
     SFB_5001: feedbackMsg,
     SFB_5002: feedbackMsg,
     LGL_423: 'Record is uploading. Wait a few minutes and try again',
-    SP_4002: 'Patient could not be found in the Personal Demographics Service',
-    SP_4003: "You do not have access to this patient's record",
+    SP_4002: 'The NHS number entered could not be found in the Personal Demographics Service',
+    SP_4003:
+        "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
 };
 
 export default errorCodes;

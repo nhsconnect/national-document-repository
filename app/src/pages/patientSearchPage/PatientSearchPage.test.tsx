@@ -117,7 +117,7 @@ describe('PatientSearchPage', () => {
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
             expect(
                 await screen.findAllByText(
-                    'Patient could not be found in the Personal Demographics Service',
+                    'The NHS number entered could not be found in the Personal Demographics Service',
                 ),
             ).toHaveLength(2);
         });
@@ -139,7 +139,9 @@ describe('PatientSearchPage', () => {
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '0987654321');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
             expect(
-                await screen.findAllByText("You do not have access to this patient's record"),
+                await screen.findAllByText(
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                ),
             ).toHaveLength(2);
         });
 
@@ -290,7 +292,9 @@ describe('PatientSearchPage', () => {
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '0987654321');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
             expect(
-                await screen.findAllByText("You do not have access to this patient's record"),
+                await screen.findAllByText(
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                ),
             ).toHaveLength(2);
         });
     });
