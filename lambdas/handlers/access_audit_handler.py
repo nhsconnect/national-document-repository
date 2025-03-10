@@ -1,3 +1,6 @@
+import json
+
+from services.access_audit_service import AccessAuditService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
@@ -13,9 +16,9 @@ from utils.request_context import request_context
 @ensure_environment_variables(names=["AUTH_SESSION_TABLE_NAME"])
 @handle_lambda_exceptions
 def lambda_handler(event, context):
-    event.get("Reasons", [])
-    event.get("OtherReasonText", "")
     nhs_number = event.get("queryStringParameters", {}).get("patientId")
+    body = json.loads(event.get("body"))
     request_context.patient_nhs_no = nhs_number
-
+    access_audit_service = AccessAuditService()
+    access_audit_service.manage_access_request(nhs_number, body)
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
