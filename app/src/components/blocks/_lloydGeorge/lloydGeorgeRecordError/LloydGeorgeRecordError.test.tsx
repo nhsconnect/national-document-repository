@@ -63,7 +63,11 @@ describe('LloydGeorgeRecordError', () => {
 
             render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
 
-            expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /This patient does not have a Lloyd George record stored in this service/i,
+                ),
+            ).toBeInTheDocument();
             expect(
                 screen.queryByRole('button', { name: 'Upload patient record' }),
             ).not.toBeInTheDocument();
@@ -113,7 +117,11 @@ describe('LloydGeorgeRecordError', () => {
 
             render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
 
-            expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /This patient does not have a Lloyd George record stored in this service/i,
+                ),
+            ).toBeInTheDocument();
             expect(
                 screen.queryByRole('button', { name: 'Upload patient record' }),
             ).not.toBeInTheDocument();
