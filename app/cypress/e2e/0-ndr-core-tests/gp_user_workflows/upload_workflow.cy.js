@@ -19,6 +19,7 @@ const patient = {
     superseded: false,
     restricted: false,
     active: false,
+    deceased: false,
 };
 
 const featureFlags = {

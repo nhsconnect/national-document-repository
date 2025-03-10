@@ -35,6 +35,7 @@ const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) =
         superseded: false,
         restricted: false,
         active: true,
+        deceased: false,
         ...patientDetailsOverride,
     };
 
