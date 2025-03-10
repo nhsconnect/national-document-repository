@@ -33,7 +33,6 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development' && !cypress) {
         );
         if (session != null) {
             const data = JSON.parse(session);
-            console.log(data); // eslint-disable-line
             if (
                 data.auth.authorisation_token !== null &&
                 data.auth.role !== null &&
@@ -53,12 +52,15 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development' && !cypress) {
                     ndr_session_id: string;
                     nhs_user_id: string;
                 };
-                console.log(token_data); // eslint-disable-line
                 awsRum.addSessionAttributes({
-                    userRole: data.auth.role,
-                    odsCode: token_data.selected_organisation.org_ods_code,
+                    ndrUserRole: data.auth.role,
+                    ndrOdsName: token_data.selected_organisation.name,
+                    ndrOdsCode: token_data.selected_organisation.org_ods_code,
+                    ndrRoleCode: token_data.selected_organisation.role_code,
+                    ndrSmartCardRole: token_data.smart_card_role,
+                    ndrIsBSOL: token_data.selected_organisation.is_BSOL,
+                    ndrSessionId: token_data.ndr_session_id,
                 });
-                console.log(data); // eslint-disable-line
             }
         }
     } catch (error) {
