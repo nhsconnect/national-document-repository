@@ -60,6 +60,7 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development' && !cypress) {
                     ndrSmartCardRole: token_data.smart_card_role,
                     ndrIsBSOL: token_data.selected_organisation.is_BSOL,
                     ndrSessionId: token_data.ndr_session_id,
+                    ndrNHSUserId: token_data.nhs_user_id,
                 });
             }
         }
