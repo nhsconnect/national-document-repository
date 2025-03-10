@@ -41,10 +41,12 @@ function StartPage(props: Props) {
                 <li>view a patient record</li>
                 <li>download a patient record</li>
                 <li>remove a patient record</li>
+                <li>download a report on the records held within this service</li>
             </ul>
             <p>If you are managing records on behalf of NHS England, you can:</p>
             <ul>
                 <li>download a patient record</li>
+                <li>download a report on the records held within this service</li>
             </ul>
             <p>Not every patient will have a digital record available.</p>
             <h2>Before you start</h2>

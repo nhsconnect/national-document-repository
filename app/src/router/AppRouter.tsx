@@ -25,6 +25,8 @@ import PrivacyPage from '../pages/privacyPage/PrivacyPage';
 import LloydGeorgeUploadPage from '../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import SessionExpiredErrorPage from '../pages/sessionExpiredErrorPage/SessionExpiredErrorPage';
 import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/FeedbackConfirmationPage';
+import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
+import NonAuthGuard from './guards/notAuthGuard/NonAuthGuard';
 
 const {
     START,
@@ -50,6 +52,8 @@ const {
     ARF_OVERVIEW_WILDCARD,
     ARF_UPLOAD_DOCUMENTS,
     ARF_UPLOAD_DOCUMENTS_WILDCARD,
+    REPORT_DOWNLOAD,
+    REPORT_DOWNLOAD_WILDCARD,
 } = routes;
 
 type Routes = {
@@ -141,12 +145,20 @@ export const childRoutes = [
         route: routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED,
         parent: ARF_UPLOAD_DOCUMENTS,
     },
+    {
+        route: routeChildren.REPORT_DOWNLOAD_COMPLETE,
+        parent: REPORT_DOWNLOAD,
+    },
 ];
 
 export const routeMap: Routes = {
     // Public routes
     [START]: {
-        page: <StartPage />,
+        page: (
+            <NonAuthGuard redirectRoute={routes.HOME}>
+                <StartPage />
+            </NonAuthGuard>
+        ),
         type: ROUTE_TYPE.PUBLIC,
     },
     [AUTH_CALLBACK]: {
@@ -201,6 +213,14 @@ export const routeMap: Routes = {
     },
     [FEEDBACK_CONFIRMATION]: {
         page: <FeedbackConfirmationPage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
+    [REPORT_DOWNLOAD]: {
+        page: <ReportDownloadPage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
+    [REPORT_DOWNLOAD_WILDCARD]: {
+        page: <ReportDownloadPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
     // App guard routes

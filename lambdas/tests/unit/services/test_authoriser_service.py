@@ -74,7 +74,6 @@ def mock_jwt_decode(mocker):
         "/UploadConfirm",
         "/UploadState",
         "/VirusScan",
-        "/OdsReport",
     ],
 )
 def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(

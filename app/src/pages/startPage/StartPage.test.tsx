@@ -44,6 +44,11 @@ describe('StartPage', () => {
         const downloadPatientRecord = screen.getAllByText('download a patient record');
         expect(downloadPatientRecord).toHaveLength(2);
 
+        const downloadOdsReport = screen.getAllByText(
+            'download a report on the records held within this service',
+        );
+        expect(downloadOdsReport).toHaveLength(2);
+
         expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
         expect(
             screen.getByRole('link', {

@@ -437,7 +437,6 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_mns_notification_lambda:
-    if: ${{ ! inputs.is_sandbox }}
     name: Deploy mns notification lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:

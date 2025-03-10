@@ -20,7 +20,8 @@ const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
-const activePatient = pdsPatients.activeNoUploadBsol;
+const activePatient =
+    workspace === 'ndr-dev' ? pdsPatients.activeNoUpload : stubPatients.activeNoUpload;
 
 describe('GP Workflow: Upload Lloyd George record', () => {
     context('Upload a Lloyd George document', () => {
@@ -51,10 +52,12 @@ describe('GP Workflow: Upload Lloyd George record', () => {
         });
 
         it(
-            '[Smoke] BSOL GP ADMIN can upload and then view a Lloyd George record for an active patient with no record',
+            '[Smoke] GP ADMIN can upload and then view a Lloyd George record for an active patient with no record',
             { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN_BSOL);
+
+                cy.navigateToPatientSearchPage();
 
                 cy.get('#nhs-number-input').should('exist');
                 cy.get('#nhs-number-input').click();
