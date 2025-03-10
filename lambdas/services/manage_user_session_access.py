@@ -5,6 +5,7 @@ from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 from utils.request_context import request_context
+from utils.utilities import redact_id_to_last_4_chars
 
 logger = LoggingService(__name__)
 
@@ -19,11 +20,10 @@ class ManageUserSessionAccess:
 
     def find_login_session(self, ndr_session_id: str):
         logger.info(
-            f"Retrieving session for session ID ending in: f{ndr_session_id[:-4]}"
+            f"Retrieving session for session ID ending in: {redact_id_to_last_4_chars(ndr_session_id)}"
         )
-        session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
         query_response = self.db_service.query_all_fields(
-            table_name=session_table_name,
+            table_name=self.session_table_name,
             search_key="NDRSessionId",
             search_condition=ndr_session_id,
         )
@@ -33,7 +33,7 @@ class ManageUserSessionAccess:
             return current_session
         except (KeyError, IndexError):
             raise AuthorisationException(
-                f"Unable to find session for session ID ending in: {ndr_session_id[:-4]}"
+                f"Unable to find session for session ID ending in: {redact_id_to_last_4_chars(ndr_session_id)}"
             )
 
     def update_auth_session_with_permitted_search(
@@ -42,8 +42,8 @@ class ManageUserSessionAccess:
         ndr_session_id = request_context.authorization.get("ndr_session_id")
         current_session = self.find_login_session(ndr_session_id)
 
-        allowed_nhs_numbers = current_session.get(self.permitted_field, False)
-        deceased_nhs_numbers = current_session.get(self.deceased_field, False)
+        allowed_nhs_numbers = current_session.get(self.permitted_field, "")
+        deceased_nhs_numbers = current_session.get(self.deceased_field, "")
         logger.info("Searching Auth session table for existing NHS number")
         if nhs_number in allowed_nhs_numbers:
             logger.info(
