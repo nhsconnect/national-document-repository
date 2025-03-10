@@ -6,7 +6,6 @@ from pydantic_core._pydantic_core import ValidationError
 from services.process_mns_message_service import MNSNotificationService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.request_context import request_context
@@ -24,7 +23,6 @@ logger = LoggingService(__name__)
     ]
 )
 @override_error_check
-@handle_lambda_exceptions
 def lambda_handler(event, context):
     logger.info(f"Received MNS notification event: {event}")
     notification_service = MNSNotificationService()
@@ -38,6 +36,9 @@ def lambda_handler(event, context):
             MNSSQSMessage.model_validate(mns_message)
 
             request_context.patient_nhs_no = mns_message.subject.nhs_number
+            logger.info(
+                f"Processing SQS message for nhs number: {mns_message.subject.nhs_number}"
+            )
 
             if mns_message.type in MNSNotificationTypes.__members__.values():
                 notification_service.handle_mns_notification(mns_message)
@@ -45,6 +46,8 @@ def lambda_handler(event, context):
         except ValidationError as error:
             logger.error("Malformed MNS notification message")
             logger.error(error)
+            raise error
         except Exception as error:
             logger.error(f"Error processing SQS message: {error}.")
+            raise error
         logger.info("Continuing to next message.")

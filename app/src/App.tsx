@@ -5,9 +5,11 @@ import AppRouter from './router/AppRouter';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 
-let awsRumInstance: AwsRum | null = null;
+const cypress =
+    process.env.REACT_APP_MONITOR_ACCOUNT_ID === 'not provided yet' &&
+    process.env.REACT_APP_RUM_IDENTITY_POOL_ID === 'not provided yet';
 
-if (process.env.REACT_APP_ENVIRONMENT === 'development') {
+if (process.env.REACT_APP_ENVIRONMENT === 'development' && !cypress) {
     try {
         const config: AwsRumConfig = {
             sessionSampleRate: 1,
@@ -17,11 +19,12 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
             allowCookies: true,
             enableXRay: false,
         };
+        const session = sessionStorage.getItem('UserSession');
         const APPLICATION_ID: string = process.env.REACT_APP_MONITOR_ACCOUNT_ID || '';
         const APPLICATION_VERSION: string = '1.0.0';
         const APPLICATION_REGION: string = process.env.REACT_APP_AWS_REGION || 'eu-west-2';
-        const session = sessionStorage.getItem('UserSession');
-        awsRumInstance = new AwsRum( // eslint-disable-line
+
+        const awsRum: AwsRum = new AwsRum( // eslint-disable-line
             APPLICATION_ID,
             APPLICATION_VERSION,
             APPLICATION_REGION,
@@ -30,8 +33,8 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development') {
         if (session != null) {
             const data = JSON.parse(session);
             console.log(data); // eslint-disable-line
-            if (data.auth.role !== null && awsRumInstance !== null) {
-                awsRumInstance.addSessionAttributes({
+            if (data.auth.role !== null && awsRum !== null) {
+                awsRum.addSessionAttributes({
                     userRole: data.auth.role,
                 });
                 console.log(data); // eslint-disable-line
