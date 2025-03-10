@@ -4,6 +4,7 @@ import SessionProvider from './providers/sessionProvider/SessionProvider';
 import AppRouter from './router/AppRouter';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
+import { jwtDecode } from 'jwt-decode';
 
 const cypress =
     process.env.REACT_APP_MONITOR_ACCOUNT_ID === 'not provided yet' &&
@@ -33,9 +34,29 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development' && !cypress) {
         if (session != null) {
             const data = JSON.parse(session);
             console.log(data); // eslint-disable-line
-            if (data.auth.role !== null && awsRum !== null) {
+            if (
+                data.auth.authorisation_token !== null &&
+                data.auth.role !== null &&
+                awsRum !== null
+            ) {
+                const token_data = jwtDecode(data.auth.authorisation_token) as {
+                    exp: number;
+                    iss: string;
+                    smart_card_role: string;
+                    selected_organisation: {
+                        name: string;
+                        org_ods_code: string;
+                        role_code: string;
+                        is_BSOL: boolean;
+                    };
+                    repository_role: string;
+                    ndr_session_id: string;
+                    nhs_user_id: string;
+                };
+                console.log(token_data); // eslint-disable-line
                 awsRum.addSessionAttributes({
                     userRole: data.auth.role,
+                    odsCode: token_data.selected_organisation.org_ods_code,
                 });
                 console.log(data); // eslint-disable-line
             }
