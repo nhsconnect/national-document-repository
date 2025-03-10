@@ -63,7 +63,7 @@ describe('LloydGeorgeViewRecordStage', () => {
 
         expect(
             screen.queryByText(
-                'This patient does not have a Lloyd George record stored in this service for this patient.',
+                'This patient does not have a Lloyd George record stored in this service.',
             ),
         ).not.toBeInTheDocument();
     });

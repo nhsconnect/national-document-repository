@@ -118,7 +118,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            'Does not show verify patient view when the user does not have acess to the patient',
+            'Does not show verify patient view when the user does not have access to the patient',
             { tags: 'regression' },
             () => {
                 setup(role);

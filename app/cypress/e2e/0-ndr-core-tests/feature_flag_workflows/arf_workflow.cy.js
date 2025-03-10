@@ -49,7 +49,7 @@ describe('Feature flags - ARF Workflow', () => {
     );
 
     it(
-        'for GP clinical role it not find patient when both feature flags are enabled',
+        'for GP clinical role it does not find patient when both feature flags are enabled',
         { tags: 'regression' },
         () => {
             cy.login(Roles.GP_CLINICAL);
