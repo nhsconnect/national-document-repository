@@ -84,11 +84,6 @@ class ManageUserSessionAccess:
             table_name=self.session_table_name,
             key_pair={"NDRSessionId": ndr_session_id},
             updated_fields=updated_fields,
-            condition_expression=(
-                f"attribute_not_exists({field_name})"
-                if not existing_nhs_numbers
-                else None
-            ),
         )
 
     def create_updated_permitted_search_fields(

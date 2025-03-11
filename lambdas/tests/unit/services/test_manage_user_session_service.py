@@ -150,19 +150,18 @@ def test_update_auth_session_table_with_new_nhs_number(
     }
 
     mock_service.update_auth_session_table_with_new_nhs_number(
-        "AllowedNHSNumbers", TEST_NHS_NUMBER, [], TEST_UUID
+        "AllowedNHSNumbers", TEST_NHS_NUMBER, "", TEST_UUID
     )
 
     mock_updated_permitted_search_fields.assert_called_once_with(
         field_name="AllowedNHSNumbers",
         nhs_number=TEST_NHS_NUMBER,
-        existing_nhs_numbers=[],
+        existing_nhs_numbers="",
     )
     mock_service.db_service.update_item.assert_called_once_with(
         table_name=AUTH_SESSION_TABLE_NAME,
         key_pair={"NDRSessionId": TEST_UUID},
         updated_fields={"AllowedNHSNumbers": TEST_NHS_NUMBER},
-        condition_expression="attribute_not_exists(AllowedNHSNumbers)",
     )
 
 
@@ -194,7 +193,6 @@ def test_update_auth_session_with_permitted_search_with_new_search_existing_list
         updated_fields={
             "AllowedNHSNumbers": f"{existing_nhs_number_search},{TEST_NHS_NUMBER}"
         },
-        condition_expression=None,
     )
 
 
