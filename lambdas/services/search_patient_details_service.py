@@ -49,7 +49,6 @@ class SearchPatientDetailsService:
                 by_alias=True,
                 exclude={
                     "death_notification_status",
-                    "deceased",
                     "general_practice_ods",
                 },
             )

@@ -203,12 +203,12 @@ def test_update_auth_session_with_permitted_search_with_new_search_existing_list
     [
         (
             "9000000001",
-            ["9000000000"],
+            "9000000000",
             {"AllowedNHSNumbers": "9000000000,9000000001"},
         ),
         (
             "9000000000",
-            [],
+            "",
             {"AllowedNHSNumbers": "9000000000"},
         ),
     ],

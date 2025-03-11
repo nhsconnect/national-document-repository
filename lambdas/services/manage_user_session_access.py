@@ -71,7 +71,7 @@ class ManageUserSessionAccess:
         self,
         field_name: str,
         nhs_number: str,
-        existing_nhs_numbers: list,
+        existing_nhs_numbers: str,
         ndr_session_id: str,
     ):
         updated_fields = self.create_updated_permitted_search_fields(
@@ -92,11 +92,10 @@ class ManageUserSessionAccess:
         )
 
     def create_updated_permitted_search_fields(
-        self, field_name, nhs_number: str, existing_nhs_numbers: list[str]
+        self, field_name, nhs_number: str, existing_nhs_numbers: str
     ) -> dict[str, str]:
         if existing_nhs_numbers:
-            existing_nhs_numbers.append(nhs_number)
-            existing_nhs_numbers_str = ",".join(existing_nhs_numbers)
+            existing_nhs_numbers_str = f"{existing_nhs_numbers},{nhs_number}"
             updated_fields = {field_name: existing_nhs_numbers_str}
 
         else:
