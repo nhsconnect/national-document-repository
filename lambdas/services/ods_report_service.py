@@ -37,7 +37,7 @@ class OdsReportService:
         is_upload_to_s3_needed: bool = False,
         file_type_output: FileType = FileType.CSV,
     ):
-        results = self.scan_table_with_filter(ods_code)
+        results = self.query_table_by_index(ods_code)
         nhs_numbers = {
             item.get(DocumentReferenceMetadataFields.NHS_NUMBER.value)
             for item in results
