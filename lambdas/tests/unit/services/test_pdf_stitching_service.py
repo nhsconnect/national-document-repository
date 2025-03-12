@@ -6,6 +6,7 @@ from unittest.mock import call
 
 import pytest
 from enums.lambda_error import LambdaError
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from freezegun.api import freeze_time
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
@@ -277,10 +278,12 @@ def test_migrate_multipart_references(mock_service):
     expected_create_calls = []
     expected_delete_calls = []
     for reference in TEST_DOCUMENT_REFERENCES:
+        expected_item = reference.model_dump_dynamo()
+        expected_item.pop(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value)
         expected_create_calls.append(
             call(
                 table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
-                item=reference.model_dump_dynamo(),
+                item=expected_item,
             )
         )
         expected_delete_calls.append(

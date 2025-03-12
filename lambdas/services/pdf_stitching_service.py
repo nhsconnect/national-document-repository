@@ -126,9 +126,11 @@ class PdfStitchingService:
         logger.info("Migrating multipart references")
         try:
             for reference in multipart_references:
+                dynamo_item = reference.model_dump_dynamo()
+                dynamo_item.pop(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value)
                 self.dynamo_service.create_item(
                     table_name=self.unstitched_lloyd_george_table_name,
-                    item=reference.model_dump_dynamo(),
+                    item=dynamo_item,
                 )
         except ClientError as e:
             logger.error(f"Failed to migrate multipart references: {e}")
