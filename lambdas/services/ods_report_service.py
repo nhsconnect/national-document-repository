@@ -14,6 +14,7 @@ from reportlab.pdfgen import canvas
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import NotDeleted
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import OdsReportException
 from utils.request_context import request_context
@@ -115,6 +116,7 @@ class OdsReportService:
                 index_name="OdsCodeIndex",
                 search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
                 search_condition=ods_code,
+                query_filter=NotDeleted,
             )
             results += response["Items"]
 
@@ -125,6 +127,7 @@ class OdsReportService:
                     exclusive_start_key=response["LastEvaluatedKey"],
                     search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
                     search_condition=ods_code,
+                    query_filter=NotDeleted,
                 )
                 results += response["Items"]
 
