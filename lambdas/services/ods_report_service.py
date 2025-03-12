@@ -98,27 +98,39 @@ class OdsReportService:
         )
 
     def query_table_by_index(self, ods_code: str):
+        ods_codes = [ods_code]
+        authorization_user = getattr(request_context, "authorization", {})
+        if (
+            authorization_user
+            and authorization_user.get("repository_role") == RepositoryRole.PCSE.value
+        ):
+            ods_codes = [
+                PatientOdsInactiveStatus.SUSPENDED,
+                PatientOdsInactiveStatus.DECEASED,
+            ]
         results = []
-
-        response = self.dynamo_service.query_table_by_index(
-            table_name=self.table_name,
-            index_name="OdsCodeIndex",
-            search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
-            search_condition=ods_code,
-        )
-        results += response["Items"]
-
-        if not response["Items"]:
-            logger.info("No records found for ODS code {}".format(ods_code))
-        while "LastEvaluatedKey" in response:
+        for ods_code in ods_codes:
             response = self.dynamo_service.query_table_by_index(
                 table_name=self.table_name,
                 index_name="OdsCodeIndex",
-                exclusive_start_key=response["LastEvaluatedKey"],
                 search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
                 search_condition=ods_code,
             )
             results += response["Items"]
+
+            while "LastEvaluatedKey" in response:
+                response = self.dynamo_service.query_table_by_index(
+                    table_name=self.table_name,
+                    index_name="OdsCodeIndex",
+                    exclusive_start_key=response["LastEvaluatedKey"],
+                    search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+                    search_condition=ods_code,
+                )
+                results += response["Items"]
+
+        if not results:
+            logger.info("No records found for ODS code {}".format(ods_code))
+            raise OdsReportException(404, LambdaError.NoDataFound)
         return results
 
     def create_and_save_ods_report(
