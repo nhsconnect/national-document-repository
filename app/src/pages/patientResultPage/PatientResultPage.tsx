@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router-dom';
-import { routes } from '../../types/generic/routes';
+import { routeChildren, routes } from '../../types/generic/routes';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
@@ -22,24 +22,27 @@ function PatientResultPage() {
     const { handleSubmit } = useForm();
 
     const submit = () => {
-        if (userIsGPAdmin || userIsGPClinical) {
+        if (userIsPCSE) {
+            // Make PDS and Dynamo document store search request to download documents from patient
+            navigate(routes.ARF_OVERVIEW);
+        } else {
             // Make PDS patient search request to upload documents to patient
             if (typeof patientDetails?.active === 'undefined') {
                 setInputError('We cannot determine the active state of this patient');
                 return;
             }
-            if (patientDetails?.active) {
-                navigate(routes.LLOYD_GEORGE);
-            } else if (userIsGPAdmin) {
-                navigate(routes.ARF_UPLOAD_DOCUMENTS);
+
+            if (patientDetails?.deceased) {
+                navigate(routeChildren.PATIENT_ACCESS_AUDIT_DECEASED);
             } else {
-                navigate(routes.SEARCH_PATIENT);
+                if (patientDetails?.active) {
+                    navigate(routes.LLOYD_GEORGE);
+                } else if (userIsGPAdmin) {
+                    navigate(routes.ARF_UPLOAD_DOCUMENTS);
+                } else {
+                    navigate(routes.SEARCH_PATIENT);
+                }
             }
-        }
-        // PCSE Role
-        else if (userIsPCSE) {
-            // Make PDS and Dynamo document store search request to download documents from patient
-            navigate(routes.ARF_OVERVIEW);
         }
     };
     const showWarning = patientDetails?.superseded || patientDetails?.restricted;

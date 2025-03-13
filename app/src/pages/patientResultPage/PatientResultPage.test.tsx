@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import PatientResultPage from './PatientResultPage';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
-import { routes } from '../../types/generic/routes';
+import { routeChildren, routes } from '../../types/generic/routes';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
@@ -269,5 +269,26 @@ describe('PatientResultPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_OVERVIEW);
             });
         });
+
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "navigates to Deceased Patient Access Audit page after user selects Deceased patient, when role is '%s'",
+            async (role) => {
+                const patient = buildPatientDetails({ deceased: true });
+                mockedUseRole.mockReturnValue(role);
+                mockedUsePatient.mockReturnValue(patient);
+
+                render(<PatientResultPage />);
+
+                act(() => {
+                    userEvent.click(screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }));
+                });
+
+                await waitFor(() => {
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(
+                        routeChildren.PATIENT_ACCESS_AUDIT_DECEASED,
+                    );
+                });
+            },
+        );
     });
 });
