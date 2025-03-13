@@ -482,6 +482,8 @@ $hunit: '%';
                 color: #fff;
                 font-size: 1.5rem;
                 white-space: pre-wrap;
+                word-break: break-word;
+                overflow-wrap: break-word;
 
                 &_header {
                     font-weight: 700;
