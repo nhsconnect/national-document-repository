@@ -442,6 +442,13 @@ class LambdaError(Enum):
         "message": "Failed to process unsupported file type",
     }
     """
+       Errors for get access audit lambda 
+    """
+    InvalidReasonInput = {
+        "err_code": "AA_4001",
+        "message": "Invalid reason code",
+    }
+    """
         Edge Lambda Errors
     """
     EdgeMalformed = {
