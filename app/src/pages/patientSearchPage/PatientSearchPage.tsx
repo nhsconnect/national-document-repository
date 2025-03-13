@@ -95,7 +95,11 @@ function PatientSearchPage() {
             /* istanbul ignore if */
             if (isMock(error)) {
                 handleSuccess(
-                    buildPatientDetails({ nhsNumber, active: mockLocal.patientIsActive }),
+                    buildPatientDetails({
+                        nhsNumber,
+                        active: mockLocal.patientIsActive,
+                        deceased: mockLocal.patientIsDeceased,
+                    }),
                 );
                 return;
             }
