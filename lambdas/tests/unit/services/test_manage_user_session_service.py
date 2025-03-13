@@ -52,7 +52,7 @@ def test_update_auth_session_with_permitted_search_with_previous_search(
         "AllowedNHSNumbers": [TEST_NHS_NUMBER],
     }
     mock_service.update_auth_session_with_permitted_search(
-        "GP_ADMIN", TEST_NHS_NUMBER, False
+        TEST_NHS_NUMBER, False, "GP_ADMIN"
     )
 
     mock_updated_permitted_search_fields.assert_not_called()
@@ -70,7 +70,7 @@ def test_update_auth_session_with_permitted_search_with_new_search_deceased_pati
     }
 
     mock_service.update_auth_session_with_permitted_search(
-        "PCSE", TEST_NHS_NUMBER, True
+        TEST_NHS_NUMBER, True, "PCSE"
     )
     expected_calls = [
         call(
@@ -99,7 +99,7 @@ def test_update_auth_session_with_permitted_search_with_new_search(
         "AllowedNHSNumbers": [],
     }
     mock_service.update_auth_session_with_permitted_search(
-        "GP_ADMIN", TEST_NHS_NUMBER, False
+        TEST_NHS_NUMBER, False, "GP_ADMIN"
     )
 
     expected_calls = [
@@ -124,7 +124,7 @@ def test_update_auth_session_with_permitted_search_with_new_search_with_deceased
     }
 
     mock_service.update_auth_session_with_permitted_search(
-        "GP_ADMIN", TEST_NHS_NUMBER, True
+        TEST_NHS_NUMBER, True, "GP_ADMIN"
     )
 
     expected_calls = [
@@ -179,7 +179,7 @@ def test_update_auth_session_with_permitted_search_with_new_search_existing_list
     }
 
     mock_service.update_auth_session_with_permitted_search(
-        "GP_ADMIN", TEST_NHS_NUMBER, False
+        TEST_NHS_NUMBER, False, "GP_ADMIN"
     )
 
     mock_updated_permitted_search_fields.assert_called_once_with(

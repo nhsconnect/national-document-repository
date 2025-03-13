@@ -37,7 +37,10 @@ class ManageUserSessionAccess:
             )
 
     def update_auth_session_with_permitted_search(
-        self, user_role: RepositoryRole, nhs_number: str, deceased: bool
+        self,
+        nhs_number: str,
+        write_to_deceased_column: bool,
+        user_role: RepositoryRole = None,
     ):
         ndr_session_id = request_context.authorization.get("ndr_session_id")
         current_session = self.find_login_session(ndr_session_id)
@@ -51,14 +54,14 @@ class ManageUserSessionAccess:
             )
             return
 
-        if deceased:
+        if write_to_deceased_column:
             self.update_auth_session_table_with_new_nhs_number(
                 field_name=self.deceased_field,
                 nhs_number=nhs_number,
                 existing_nhs_numbers=deceased_nhs_numbers,
                 ndr_session_id=ndr_session_id,
             )
-        if not deceased or user_role == RepositoryRole.PCSE.value:
+        if not write_to_deceased_column or user_role == RepositoryRole.PCSE.value:
             self.update_auth_session_table_with_new_nhs_number(
                 field_name=self.permitted_field,
                 nhs_number=nhs_number,
@@ -92,7 +95,6 @@ class ManageUserSessionAccess:
         if existing_nhs_numbers:
             existing_nhs_numbers_str = f"{existing_nhs_numbers},{nhs_number}"
             updated_fields = {field_name: existing_nhs_numbers_str}
-
         else:
             updated_fields = {field_name: nhs_number}
 
