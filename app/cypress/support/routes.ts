@@ -3,4 +3,5 @@ export enum routes {
     patientSearch = '/patient/search',
     createReport = '/create-report',
     createReportComplete = '/create-report/complete',
+    sessionExpired = '/session-expired',
 }

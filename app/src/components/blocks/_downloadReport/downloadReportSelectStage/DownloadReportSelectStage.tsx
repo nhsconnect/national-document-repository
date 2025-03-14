@@ -70,6 +70,11 @@ const DownloadReportSelectStage = (props: Props) => {
     };
 
     const handleError = (errorCode: number) => {
+        if (errorCode === 403) {
+            navigate(routes.SESSION_EXPIRED);
+            return;
+        }
+
         const error = errorCode === 404 ? noDataContent() : serverErrorContent();
         setDownloadError(error);
         scrollToRef.current?.scrollIntoView();
