@@ -47,7 +47,7 @@ const SelectDownloadPageIndexView = ({
         {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING && (
             <>
                 <h1 id="download-page-title">{PageHeader}</h1>
-                <PatientSummary />
+                <PatientSummary showDeceasedTag />
                 <ProgressBar status="Loading..."></ProgressBar>
             </>
         )}
