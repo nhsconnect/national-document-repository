@@ -139,7 +139,7 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
                     <Fieldset.Legend isPageHeading>
                         You are removing the {recordType} record of:
                     </Fieldset.Legend>
-                    <PatientSimpleSummary separator />
+                    <PatientSimpleSummary separator showDeceasedTag />
 
                     <p>
                         Once you remove these files, you can not access this record using the
