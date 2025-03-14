@@ -151,6 +151,22 @@ describe('PatientResultPage', () => {
                 ),
             ).toBeInTheDocument();
         });
+
+        it('displays a message when NHS number is deceased', async () => {
+            const nhsNumber = '9000000012';
+            const patientDetails = buildPatientDetails({ deceased: true, nhsNumber });
+            mockedUsePatient.mockReturnValue(patientDetails);
+
+            render(<PatientResultPage />);
+
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    'Access to the records of deceased patients is regulated under the Access to Health Records Act',
+                    { exact: false },
+                ),
+            ).toBeInTheDocument();
+        });
     });
 
     describe('Accessibility', () => {

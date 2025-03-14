@@ -107,7 +107,7 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetD
                     .
                 </p>
             </WarningCallout>
-            <PatientSummary />
+            <PatientSummary showDeceasedTag />
 
             {submissionState === SUBMISSION_STATE.PENDING && <ProgressBar status="Loading..." />}
 

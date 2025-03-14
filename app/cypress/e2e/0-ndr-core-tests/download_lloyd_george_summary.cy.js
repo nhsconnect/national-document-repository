@@ -86,5 +86,26 @@ describe('GP Workflow: Download Lloyd George summary report', () => {
                     .should('include.text', 'Download failed');
             },
         );
+
+        it(
+            'Expired authenticated user is navigated to the session expiry screen when they attempt to download',
+            { tags: 'regression', defaultCommandTimeout: 20000 },
+            () => {
+                cy.login(Roles.GP_ADMIN, featureFlags);
+                cy.navigateToDownloadReportPage();
+
+                cy.intercept('GET', '/OdsReport*', (req) => {
+                    req.reply({
+                        statusCode: 403,
+                    });
+                }).as('downloadReportFailed');
+
+                cy.getByTestId('download-csv-button').click();
+
+                cy.wait('@downloadReportFailed', { timeout: 20000 });
+
+                cy.url().should('eq', Cypress.config('baseUrl') + routes.sessionExpired);
+            },
+        );
     });
 });
