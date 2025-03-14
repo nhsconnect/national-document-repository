@@ -482,6 +482,8 @@ $hunit: '%';
                 color: #fff;
                 font-size: 1.5rem;
                 white-space: pre-wrap;
+                word-break: break-word;
+                overflow-wrap: break-word;
 
                 &_header {
                     font-weight: 700;
@@ -524,6 +526,8 @@ $hunit: '%';
                 font-weight: 400;
                 font-size: 1.5rem !important;
                 white-space: pre-wrap;
+                word-break: break-word;
+                overflow-wrap: break-word;
 
                 &_header {
                     font-weight: 700;
@@ -622,6 +626,8 @@ $hunit: '%';
                 color: #fff;
                 font-size: 1.5rem;
                 white-space: pre-wrap;
+                word-break: break-word;
+                overflow-wrap: break-word;
 
                 &_header {
                     font-weight: 700;
@@ -768,6 +774,8 @@ $hunit: '%';
             font-weight: 400;
             font-size: 1.5rem !important;
             white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: break-word;
 
             &_header {
                 font-weight: 700;
