@@ -20,6 +20,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         postalCode: 'AA1 1AA',
         superseded: false,
         restricted: false,
+        deceased: false,
     };
 
     const searchDocumentReferencesResponse = [

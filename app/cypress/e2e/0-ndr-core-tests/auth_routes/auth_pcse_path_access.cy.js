@@ -11,6 +11,7 @@ const patient = {
     superseded: false,
     restricted: false,
     active: false,
+    deceased: false,
 };
 
 const baseUrl = Cypress.config('baseUrl');

@@ -11,6 +11,7 @@ const patient = {
     superseded: false,
     restricted: false,
     active: true,
+    deceased: false,
 };
 
 const baseUrl = Cypress.config('baseUrl');
@@ -18,8 +19,6 @@ const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const arfDownloadUrl = '/patient/arf';
 const forbiddenRoutes = [arfDownloadUrl];
-
-const bsolOptions = [true];
 
 describe('GP Clinical user role has access to the expected GP_CLINICAL workflow paths', () => {
     context(`GP Clinical role has access to expected routes`, () => {
