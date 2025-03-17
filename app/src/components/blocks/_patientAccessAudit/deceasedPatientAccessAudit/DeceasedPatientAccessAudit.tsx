@@ -2,7 +2,7 @@ import { Button, Checkboxes, Textarea } from 'nhsuk-react-components';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { routes } from '../../../../types/generic/routes';
 import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '../../../generic/backButton/BackButton';
@@ -22,9 +22,8 @@ import { InputRef } from '../../../../types/generic/inputRef';
 import { TextAreaRef } from '../../../../types/generic/textareaRef';
 import { usePatientAccessAuditContext } from '../../../../providers/patientAccessAuditProvider/PatientAccessAuditProvider';
 import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
-import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import postPatientAccessAudit from '../../../../helpers/requests/postPatientAccessAudit';
+import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
 type Props = {};
 
@@ -70,13 +69,16 @@ const DeceasedPatientAccessAudit = (props: Props) => {
         },
     });
 
-    const [inputError, setInputError] = useState<undefined | string>(undefined);
+    const [inputErrors, setInputErrors] = useState<undefined | { message: string; id: string }[]>(
+        undefined,
+    );
     const [anotherReasonSelected, setAnotherReasonSelected] = useState<boolean>(
         deceasedPatientAccessAudit?.accessAuditData.Reasons.includes(
             DeceasedAccessAuditReasons.anotherReason,
         ) ?? false,
     );
     const [submitting, setSubmitting] = useState<boolean>(false);
+    const scrollToErrorRef = useRef<HTMLDivElement>(null);
     /* HOOKS */
 
     if (!patientDetails) {
@@ -109,21 +111,26 @@ const DeceasedPatientAccessAudit = (props: Props) => {
 
     const { ref: textareaInputRef, ...textareaProps } = register(FORM_FIELDS.OtherReasonText, {
         validate: (value) => {
-            if (!anotherReasonSelected || value?.length > 0) {
+            if (!anotherReasonSelected) {
                 return true;
             }
 
-            return 'Enter a reason why you need to access this record';
+            if (value?.length > 10000) {
+                return 'Enter your response in 10000 characters or less';
+            }
+
+            return value?.length > 0 ? true : 'Enter a reason why you need to access this record';
         },
     });
 
     const submitForm: SubmitHandler<FormData> = async (formData) => {
         const accessAuditData: AccessAuditData = {
             Reasons: formData.reasons,
-            OtherReasonText: formData.reasons.includes(DeceasedAccessAuditReasons.anotherReason)
-                ? formData.otherReasonText
-                : '',
         };
+
+        if (formData.reasons.includes(DeceasedAccessAuditReasons.anotherReason)) {
+            accessAuditData.OtherReasonText = formData.otherReasonText;
+        }
 
         try {
             setSubmitting(true);
@@ -180,9 +187,16 @@ const DeceasedPatientAccessAudit = (props: Props) => {
 
     const handleError = (fields: FieldValues) => {
         const errorMessages = Object.entries(fields).map(
-            ([k, v]: [string, { message: string }]) => v.message,
+            ([k, v]: [string, { message: string; ref: Element }]) => {
+                return {
+                    message: v.message,
+                    id: v.ref.id,
+                };
+            },
         );
-        setInputError(errorMessages[0]);
+        setInputErrors(errorMessages);
+
+        scrollToErrorRef.current?.scrollIntoView();
     };
 
     const ReasonCheckbox = (reason: DeceasedAccessAuditReasons, label: string) => {
@@ -203,33 +217,24 @@ const DeceasedPatientAccessAudit = (props: Props) => {
 
     return (
         <div className="deceased-patient-access-page">
-            <BackButton toLocation={routes.SEARCH_PATIENT} />
+            <BackButton toLocation={routes.VERIFY_PATIENT} />
 
-            {inputError && (
+            {inputErrors && inputErrors.length > 0 && (
                 <ErrorBox
                     dataTestId="access-reason-error-box"
                     errorBoxSummaryId="access-reason"
                     messageTitle="There is a problem"
-                    errorBody={inputError}
+                    errorInputLink={`#${inputErrors[0].id}`}
+                    messageLinkBody={inputErrors[0].message}
+                    scrollToRef={scrollToErrorRef}
                 />
             )}
 
             <h1 data-testid="title">{pageTitle}</h1>
-            <div className="patient-details">
-                <label>
-                    <strong>
-                        {patientDetails!.familyName}, {patientDetails!.givenName}
-                    </strong>
-                </label>
-                <label data-testid="nhs-number">
-                    NHS number: {formatNhsNumber(patientDetails!.nhsNumber)}
-                </label>
-                <label>
-                    Date of birth: {getFormattedDate(new Date(patientDetails!.birthDate))}
-                </label>
-            </div>
 
-            <h2>Why do you need to access this record</h2>
+            <PatientSimpleSummary />
+
+            <h2>Why do you need to access this record?</h2>
             <form onSubmit={handleSubmit(submitForm, handleError)}>
                 <Checkboxes name="access-reason" id="access-reason" error={errors.reasons?.message}>
                     {ReasonCheckbox(
@@ -257,6 +262,8 @@ const DeceasedPatientAccessAudit = (props: Props) => {
                     {anotherReasonSelected && (
                         <Textarea
                             data-testid={FORM_FIELDS.OtherReasonText}
+                            className="other-reason-text"
+                            hint="Do not include information that could be used to identify any individual."
                             rows={4}
                             error={errors.otherReasonText?.message}
                             textareaRef={textareaInputRef as TextAreaRef}

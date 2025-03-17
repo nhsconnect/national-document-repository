@@ -29,6 +29,7 @@ import { routes, routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
+import usePatient from '../../../../helpers/hooks/usePatient';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -55,6 +56,7 @@ function LloydGeorgeViewRecordStage({
     resetDocState,
 }: Props) {
     const navigate = useNavigate();
+    const patientDetails = usePatient();
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
@@ -126,8 +128,12 @@ function LloydGeorgeViewRecordStage({
                 </BackLink>
             ) : (
                 <BackButton
-                    toLocation={routes.VERIFY_PATIENT}
-                    backLinkText="Go back to Patient details"
+                    toLocation={
+                        patientDetails!.deceased && role !== REPOSITORY_ROLE.PCSE
+                            ? routeChildren.PATIENT_ACCESS_AUDIT_DECEASED
+                            : routes.VERIFY_PATIENT
+                    }
+                    backLinkText="Go back"
                 />
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (

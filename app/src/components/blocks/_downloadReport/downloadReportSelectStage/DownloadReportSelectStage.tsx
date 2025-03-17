@@ -32,8 +32,8 @@ const DownloadReportSelectStage = (props: Props) => {
             <>
                 <h3>Report could not be created</h3>
                 <p>
-                    There are currently no records stored in this service for your
-                    organisation.&nbsp; See our&nbsp;
+                    There are currently no records stored in this service for your organisation. See
+                    our&nbsp;
                     <a
                         href="https://digital.nhs.uk/services/access-and-store-digital-patient-documents/help-and-guidance/problems-with-signing-in"
                         title="https://digital.nhs.uk/services/access-and-store-digital-patient-documents/help-and-guidance/problems-with-signing-in"
@@ -54,9 +54,9 @@ const DownloadReportSelectStage = (props: Props) => {
             <>
                 <h3>Download failed</h3>
                 <p>
-                    The selected report could not be downloaded. Wait a few minutes and try&nbsp;
-                    again. If this problem continues, contact the National Service Desk&nbsp; (NSD)
-                    by calling 0300 303 5035 or by emailing&nbsp;
+                    The selected report could not be downloaded. Wait a few minutes and try again.
+                    If this problem continues, contact the National Service Desk&nbsp;(NSD) by
+                    calling 0300 303 5035 or by emailing&nbsp;
                     <a
                         href="mailto:ssd.nationalservicedesk@nhs.net"
                         title="email ssd.nationalservicedesk@nhs.net"

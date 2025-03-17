@@ -57,7 +57,7 @@ describe('DeceasedPatientAccessAudit', () => {
             const title = screen.getByTestId('title');
             expect(title).toBeInTheDocument();
             expect(title.innerHTML).toContain('Deceased patient record');
-            expect(screen.getByTestId('nhs-number')).toBeInTheDocument();
+            expect(screen.getByTestId('patient-nhs-number')).toBeInTheDocument();
             expect(screen.queryByTestId('access-reason-error-box')).not.toBeInTheDocument();
 
             Object.values(DeceasedAccessAuditReasons).forEach((reason) => {
@@ -159,7 +159,7 @@ describe('DeceasedPatientAccessAudit', () => {
             });
         });
 
-        it('should navigate to Lloyd George when a another reason is selected for active patient', async () => {
+        it('should navigate to Lloyd George when another reason is selected for active patient', async () => {
             const mockPatientDetails = buildPatientDetails();
             mockedUsePatient.mockReturnValue(mockPatientDetails);
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);

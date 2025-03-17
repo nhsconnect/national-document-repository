@@ -1,6 +1,6 @@
 export type AccessAuditData = {
     Reasons: string[];
-    OtherReasonText: string;
+    OtherReasonText?: string;
 };
 
 export enum AccessAuditType {
