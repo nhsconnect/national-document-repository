@@ -28,25 +28,25 @@ def mock_sleep(monkeypatch):
 
 
 def test_lambda_handler_success_on_first_attempt(mock_auth_service, event, context):
-    mock_auth_service.get_new_access_token.return_value = mock_token
+    mock_auth_service.get_nhs_oauth_response.return_value = mock_token
 
     lambda_handler(event, context)
 
-    mock_auth_service.get_new_access_token.assert_called_once()
+    mock_auth_service.get_nhs_oauth_response.assert_called_once()
     mock_auth_service.update_access_token_ssm.assert_called_once_with(
         json.dumps(mock_token)
     )
 
 
 def test_lambda_handler_success_on_retry(mock_auth_service, mock_sleep, event, context):
-    mock_auth_service.get_new_access_token.side_effect = [
+    mock_auth_service.get_nhs_oauth_response.side_effect = [
         OAuthErrorException("Error creating OAuth access token"),
         mock_token,
     ]
 
     lambda_handler(event, context)
 
-    assert mock_auth_service.get_new_access_token.call_count == 2
+    assert mock_auth_service.get_nhs_oauth_response.call_count == 2
     mock_auth_service.update_access_token_ssm.assert_called_once_with(
         json.dumps(mock_token)
     )
@@ -55,7 +55,7 @@ def test_lambda_handler_success_on_retry(mock_auth_service, mock_sleep, event, c
 def test_lambda_handler_fails_after_max_retries(
     mock_auth_service, mock_logger, mock_sleep, event, context
 ):
-    mock_auth_service.get_new_access_token.side_effect = OAuthErrorException(
+    mock_auth_service.get_nhs_oauth_response.side_effect = OAuthErrorException(
         "Error creating OAuth access token"
     )
 
@@ -63,7 +63,7 @@ def test_lambda_handler_fails_after_max_retries(
         event, context
     )  # This will raise an exception but because of the @handle_lambda_exceptions decorator we can't catch it
 
-    assert mock_auth_service.get_new_access_token.call_count == 5
+    assert mock_auth_service.get_nhs_oauth_response.call_count == 5
     mock_auth_service.update_access_token_ssm.assert_not_called()
     mock_logger.error.assert_called_once_with(
         "Failed to refresh the access token after 5 attempts"

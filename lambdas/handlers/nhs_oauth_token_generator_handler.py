@@ -26,7 +26,7 @@ def lambda_handler(event, context):
 
     for attempt_count in range(1, max_retries + 1):
         try:
-            access_token_response = auth_service.get_new_access_token()
+            access_token_response = auth_service.get_nhs_oauth_response()
             auth_service.update_access_token_ssm(json.dumps(access_token_response))
             return
         except OAuthErrorException as e:

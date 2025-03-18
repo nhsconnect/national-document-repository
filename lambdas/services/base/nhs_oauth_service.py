@@ -33,6 +33,9 @@ class NhsOauthService:
         return access_token
 
     def get_new_access_token(self):
+        return self.get_nhs_oauth_response()["access_token"]
+
+    def get_nhs_oauth_response(self):
         logger.info("Getting new OAuth access token")
         try:
             access_token_ssm_parameter = self.get_parameters_for_new_access_token()
@@ -49,7 +52,8 @@ class NhsOauthService:
 
             logger.info("New OAuth access token created successfully")
 
-            return nhs_oauth_response.json()["access_token"]
+            return nhs_oauth_response.json()
+
         except HTTPError as e:
             logger.error(
                 e.response, {"Result": "Issue while creating new OAuth access token"}
