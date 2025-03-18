@@ -1,4 +1,5 @@
-const { Roles } = require('../../../support/roles');
+import { Roles } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 
 const testPatient = '9000000009';
 const patient = {
@@ -10,10 +11,10 @@ const patient = {
     superseded: false,
     restricted: false,
     active: true,
+    deceased: false,
 };
 
 const baseUrl = Cypress.config('baseUrl');
-const patientSearchUrl = '/patient/search';
 const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const arfDownloadUrl = '/patient/arf';
@@ -23,56 +24,49 @@ const forbiddenRoutes = [arfDownloadUrl];
 const bsolOptions = [true];
 
 describe('GP Admin user role has access to the expected GP_ADMIN workflow paths', () => {
-    bsolOptions.forEach((isBSOL) => {
-        const prefix = isBSOL ? '[BSOL]' : '[Non-BSOL]';
-        context(`${prefix} GP Admin role has access to expected routes`, () => {
-            it('GP Admin role has access to Lloyd George View', { tags: 'regression' }, () => {
-                cy.intercept('GET', '/SearchPatient*', {
-                    statusCode: 200,
-                    body: patient,
-                }).as('search');
+    context('GP Admin role has access to expected routes', () => {
+        it('GP Admin role has access to Lloyd George View', { tags: 'regression' }, () => {
+            cy.intercept('GET', '/SearchPatient*', {
+                statusCode: 200,
+                body: patient,
+            }).as('search');
 
-                cy.login(Roles.GP_ADMIN, isBSOL);
+            cy.login(Roles.GP_ADMIN);
 
-                if (!isBSOL) {
-                    cy.getByTestId('search-patient-btn').should('exist');
-                    cy.getByTestId('search-patient-btn').click();
-                }
+            cy.url().should('eq', baseUrl + routes.home);
 
-                cy.url().should('eq', baseUrl + patientSearchUrl);
+            cy.navigateToPatientSearchPage();
 
-                cy.get('#nhs-number-input').click();
-                cy.get('#nhs-number-input').type(testPatient);
-                cy.get('#search-submit').click();
-                cy.wait('@search');
+            cy.url().should('eq', baseUrl + routes.patientSearch);
 
-                cy.url().should('include', 'verify');
-                cy.url().should('eq', baseUrl + patientVerifyUrl);
+            cy.get('#nhs-number-input').click();
+            cy.get('#nhs-number-input').type(testPatient);
+            cy.get('#search-submit').click();
+            cy.wait('@search');
 
-                cy.get('#verify-submit').click();
+            cy.url().should('include', 'verify');
+            cy.url().should('eq', baseUrl + patientVerifyUrl);
 
-                cy.url().should('include', 'lloyd-george-record');
-                cy.url().should('eq', baseUrl + lloydGeorgeViewUrl);
-            });
+            cy.get('#verify-submit').click();
+
+            cy.url().should('include', 'lloyd-george-record');
+            cy.url().should('eq', baseUrl + lloydGeorgeViewUrl);
         });
     });
 });
 
 describe('GP Admin user role cannot access expected forbidden routes', () => {
-    bsolOptions.forEach((isBSOL) => {
-        const prefix = isBSOL ? '[BSOL]' : '[Non-BSOL]';
-        context(`${prefix} GP Admin role has no access to forbidden routes`, () => {
-            forbiddenRoutes.forEach((forbiddenRoute) => {
-                it(
-                    'GP Admin role cannot access route ' + forbiddenRoute,
-                    { tags: 'regression' },
-                    () => {
-                        cy.login(Roles.GP_ADMIN, isBSOL);
-                        cy.visit(forbiddenRoute);
-                        cy.url().should('include', 'unauthorised');
-                    },
-                );
-            });
+    context('GP Admin role has no access to forbidden routes', () => {
+        forbiddenRoutes.forEach((forbiddenRoute) => {
+            it(
+                'GP Admin role cannot access route ' + forbiddenRoute,
+                { tags: 'regression' },
+                () => {
+                    cy.login(Roles.GP_ADMIN);
+                    cy.visit(forbiddenRoute);
+                    cy.url().should('include', 'unauthorised');
+                },
+            );
         });
     });
 });

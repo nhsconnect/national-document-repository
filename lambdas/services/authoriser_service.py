@@ -1,8 +1,7 @@
-import os
 import time
 
 from enums.repository_role import RepositoryRole
-from services.base.dynamo_service import DynamoDBService
+from services.manage_user_session_access import ManageUserSessionAccess
 from services.token_service import TokenService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
@@ -18,6 +17,7 @@ class AuthoriserService:
     def __init__(self):
         self.redact_session_id = ""
         self.allowed_nhs_numbers = []
+        self.manage_user_session_service = ManageUserSessionAccess()
 
     def auth_request(
         self, path, ssm_jwt_public_key_parameter, auth_token, nhs_number: str = None
@@ -35,7 +35,14 @@ class AuthoriserService:
             self.redact_session_id = redact_id_to_last_4_chars(ndr_session_id)
             user_role = decoded_token.get("repository_role")
 
-            current_session = self.find_login_session(ndr_session_id)
+            current_session = self.manage_user_session_service.find_login_session(
+                ndr_session_id
+            )
+            list_of_allowed_nhs_numbers = current_session.get(
+                "AllowedNHSNumbers", False
+            )
+            if list_of_allowed_nhs_numbers:
+                self.allowed_nhs_numbers = list_of_allowed_nhs_numbers.split(",")
             self.validate_login_session(float(current_session["TimeToExist"]))
 
             resource_denied = self.deny_access_policy(path, user_role, nhs_number)
@@ -102,38 +109,13 @@ class AuthoriserService:
                 deny_resource = False
 
             case "/OdsReport":
-                deny_resource = deny_access_to_clinical_role
+                deny_resource = False
             case _:
                 deny_resource = deny_access_to_patient
 
         logger.info("Allow resource: %s" % (not deny_resource))
 
         return bool(deny_resource)
-
-    def find_login_session(self, ndr_session_id: str):
-        logger.info(
-            f"Retrieving session for session ID ending in: f{self.redact_session_id}"
-        )
-        session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
-        db_service = DynamoDBService()
-        query_response = db_service.query_all_fields(
-            table_name=session_table_name,
-            search_key="NDRSessionId",
-            search_condition=ndr_session_id,
-        )
-
-        try:
-            current_session = query_response["Items"][0]
-            list_of_allowed_nhs_numbers = current_session.get(
-                "AllowedNHSNumbers", False
-            )
-            if list_of_allowed_nhs_numbers:
-                self.allowed_nhs_numbers = list_of_allowed_nhs_numbers.split(",")
-            return current_session
-        except (KeyError, IndexError):
-            raise AuthorisationException(
-                f"Unable to find session for session ID ending in: {self.redact_session_id}",
-            )
 
     def validate_login_session(self, session_expiry_time: float):
         time_now = time.time()

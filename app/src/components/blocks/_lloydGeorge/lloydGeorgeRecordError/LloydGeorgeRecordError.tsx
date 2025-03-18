@@ -76,7 +76,7 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
             </span>
         );
     } else if (renderNoRecords) {
-        return <p>No documents are available.</p>;
+        return <p>This patient does not have a Lloyd George record stored in this service.</p>;
     } else if (renderUploadInProgress) {
         return (
             <p>

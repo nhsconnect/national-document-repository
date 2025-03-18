@@ -1,14 +1,10 @@
-const { Roles } = require('../../support/roles');
+import { Roles } from '../../support/roles';
+import { routes } from '../../support/routes';
 
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
 
     const startUrl = '/';
-    const homeUrl = '/home';
-    const patientSearchUrl = '/patient/search';
-    const patientVerifyUrl = '/patient/verify';
-    const lloydGeorgeViewUrl = '/patient/lloyd-george-record/';
-    const arfDownloadUrl = '/patient/download';
 
     beforeEach(() => {
         cy.visit(baseUrl + startUrl);
@@ -61,55 +57,24 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-navigation-container').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
 
-                cy.login(Roles.GP_CLINICAL, true);
+                cy.login(Roles.GP_CLINICAL);
 
-                cy.url().should('eq', baseUrl + patientSearchUrl);
+                cy.url().should('eq', baseUrl + routes.home);
                 cy.get('.nhsuk-navigation-container').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
         );
 
         const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
-        gpRoles.forEach((role) => {
-            it.skip(
-                `should display non-BSOL landing page when user is ${Roles[role]} role in non-BSOL area`,
-                { tags: 'regression' },
-                () => {
-                    cy.login(Roles.GP_ADMIN, false);
-
-                    cy.url().should('eq', baseUrl + homeUrl);
-                    cy.get('h1').should(
-                        'include.text',
-                        'You’re outside of Birmingham and Solihull (BSOL)',
-                    );
-                    cy.title().should(
-                        'eq',
-                        'Access to this service outside of Birmingham and Solihull - Access and store digital patient documents',
-                    );
-                    cy.get('.govuk-warning-text__text').should('exist');
-                    cy.get('.govuk-warning-text__text').should(
-                        'include.text',
-                        'Downloading a record will remove it from our storage.',
-                    );
-
-                    cy.get('.nhsuk-header__navigation').should('exist');
-                    cy.get('.nhsuk-header__navigation-list').should('exist');
-                },
-            );
-        });
 
         gpRoles.forEach((role) => {
             it(
-                `should display patient search page when user is ${Roles[role]} role in BSOL area`,
+                `should display home page when user is ${Roles[role]} role in area`,
                 { tags: 'regression' },
                 () => {
-                    cy.login(role, true);
+                    cy.login(role);
 
-                    cy.url().should('eq', baseUrl + patientSearchUrl);
-                    cy.get('h1').should(
-                        'not.include.text',
-                        'You’re outside of Birmingham and Solihull (BSOL)',
-                    );
+                    cy.url().should('eq', baseUrl + routes.home);
 
                     cy.get('.nhsuk-navigation-container').should('exist');
                     cy.get('.nhsuk-header__navigation-list').should('exist');
@@ -117,22 +82,14 @@ describe('Home Page', () => {
             );
         });
 
-        it(
-            'should display patient search page when user is PCSE Role',
-            { tags: 'regression' },
-            () => {
-                cy.login(Roles.PCSE);
+        it('should display home page when user is PCSE Role', { tags: 'regression' }, () => {
+            cy.login(Roles.PCSE);
 
-                cy.url().should('eq', baseUrl + patientSearchUrl);
-                cy.get('h1').should(
-                    'not.include.text',
-                    'You’re outside of Birmingham and Solihull (BSOL)',
-                );
+            cy.url().should('eq', baseUrl + routes.home);
 
-                cy.get('.nhsuk-navigation-container').should('exist');
-                cy.get('.nhsuk-header__navigation-list').should('exist');
-            },
-        );
+            cy.get('.nhsuk-navigation-container').should('exist');
+            cy.get('.nhsuk-header__navigation-list').should('exist');
+        });
     });
 
     context('Logout tests', () => {

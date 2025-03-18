@@ -30,11 +30,12 @@ function PatientResultPage() {
             }
             if (patientDetails?.active) {
                 navigate(routes.LLOYD_GEORGE);
-            } else {
+            } else if (userIsGPAdmin) {
                 navigate(routes.ARF_UPLOAD_DOCUMENTS);
+            } else {
+                navigate(routes.SEARCH_PATIENT);
             }
         }
-
         // PCSE Role
         else if (userIsPCSE) {
             // Make PDS and Dynamo document store search request to download documents from patient

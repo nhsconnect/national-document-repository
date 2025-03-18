@@ -42,6 +42,11 @@ def mock_scan_table_with_filter(mocker, ods_report_service):
 
 
 @pytest.fixture
+def mock_query_table_by_index(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service, "query_table_by_index")
+
+
+@pytest.fixture
 def mock_dynamo_service_scan_table(mocker, ods_report_service):
     return mocker.patch.object(ods_report_service.dynamo_service, "scan_whole_table")
 
@@ -67,32 +72,32 @@ def mock_get_pre_signed_url(mocker, ods_report_service):
 
 
 def test_get_nhs_numbers_by_ods(
-    ods_report_service, mock_scan_table_with_filter, mock_create_and_save_ods_report
+    ods_report_service, mock_query_table_by_index, mock_create_and_save_ods_report
 ):
-    mock_scan_table_with_filter.return_value = [
+    mock_query_table_by_index.return_value = [
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
     ]
 
     ods_report_service.get_nhs_numbers_by_ods("ODS123")
 
-    mock_scan_table_with_filter.assert_called_once_with("ODS123")
+    mock_query_table_by_index.assert_called_once_with("ODS123")
     mock_create_and_save_ods_report.assert_called_once_with(
         "ODS123", {"NHS123", "NHS456"}, False, False, "csv"
     )
 
 
 def test_get_nhs_numbers_by_ods_with_temp_folder(
-    ods_report_service, mock_scan_table_with_filter, mock_create_and_save_ods_report
+    ods_report_service, mock_query_table_by_index, mock_create_and_save_ods_report
 ):
-    mock_scan_table_with_filter.return_value = [
+    mock_query_table_by_index.return_value = [
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
     ]
 
     ods_report_service.get_nhs_numbers_by_ods("ODS123", is_upload_to_s3_needed=True)
 
-    mock_scan_table_with_filter.assert_called_once_with("ODS123")
+    mock_query_table_by_index.assert_called_once_with("ODS123")
     mock_create_and_save_ods_report.assert_called_once_with(
         "ODS123", {"NHS123", "NHS456"}, False, True, "csv"
     )
@@ -132,7 +137,7 @@ def test_create_and_save_ods_report_create_csv(
 ):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
+    file_name = "LloydGeorgeSummary_ODS123_2_2024-01-01_12-00.csv"
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     result = ods_report_service.create_and_save_ods_report(
@@ -157,7 +162,7 @@ def test_create_and_save_ods_report_create_pdf(
 ):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00.pdf"
+    file_name = "LloydGeorgeSummary_ODS123_2_2024-01-01_12-00.pdf"
     temp_file_path = os.path.join(ods_report_service.temp_output_dir, file_name)
 
     ods_report_service.create_and_save_ods_report(
@@ -202,7 +207,7 @@ def test_create_and_save_ods_report_with_pre_sign_url(
 ):
     ods_code = "ODS123"
     nhs_numbers = {"NHS123", "NHS456"}
-    file_name = "NDR_ODS123_2_2024-01-01_12-00.csv"
+    file_name = "LloydGeorgeSummary_ODS123_2_2024-01-01_12-00.csv"
     mock_pre_sign_url = "https://presigned.url"
 
     mock_get_pre_signed_url.return_value = mock_pre_sign_url

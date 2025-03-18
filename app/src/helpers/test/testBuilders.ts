@@ -35,6 +35,7 @@ const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) =
         superseded: false,
         restricted: false,
         active: true,
+        deceased: false,
         ...patientDetailsOverride,
     };
 
@@ -155,6 +156,7 @@ const buildConfig = (
             uploadLloydGeorgeWorkflowEnabled: false,
             uploadLambdaEnabled: false,
             uploadArfWorkflowEnabled: false,
+            downloadOdsReportEnabled: true,
             ...featureFlagsOverride,
         },
     };

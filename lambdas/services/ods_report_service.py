@@ -14,6 +14,7 @@ from reportlab.pdfgen import canvas
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import NotDeleted
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import OdsReportException
 from utils.request_context import request_context
@@ -37,7 +38,7 @@ class OdsReportService:
         is_upload_to_s3_needed: bool = False,
         file_type_output: FileType = FileType.CSV,
     ):
-        results = self.scan_table_with_filter(ods_code)
+        results = self.query_table_by_index(ods_code)
         nhs_numbers = {
             item.get(DocumentReferenceMetadataFields.NHS_NUMBER.value)
             for item in results
@@ -98,27 +99,41 @@ class OdsReportService:
         )
 
     def query_table_by_index(self, ods_code: str):
+        ods_codes = [ods_code]
+        authorization_user = getattr(request_context, "authorization", {})
+        if (
+            authorization_user
+            and authorization_user.get("repository_role") == RepositoryRole.PCSE.value
+        ):
+            ods_codes = [
+                PatientOdsInactiveStatus.SUSPENDED,
+                PatientOdsInactiveStatus.DECEASED,
+            ]
         results = []
-
-        response = self.dynamo_service.query_table_by_index(
-            table_name=self.table_name,
-            index_name="OdsCodeIndex",
-            search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
-            search_condition=ods_code,
-        )
-        results += response["Items"]
-
-        if not response["Items"]:
-            logger.info("No records found for ODS code {}".format(ods_code))
-        while "LastEvaluatedKey" in response:
+        for ods_code in ods_codes:
             response = self.dynamo_service.query_table_by_index(
                 table_name=self.table_name,
                 index_name="OdsCodeIndex",
-                exclusive_start_key=response["LastEvaluatedKey"],
                 search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
                 search_condition=ods_code,
+                query_filter=NotDeleted,
             )
             results += response["Items"]
+
+            while "LastEvaluatedKey" in response:
+                response = self.dynamo_service.query_table_by_index(
+                    table_name=self.table_name,
+                    index_name="OdsCodeIndex",
+                    exclusive_start_key=response["LastEvaluatedKey"],
+                    search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+                    search_condition=ods_code,
+                    query_filter=NotDeleted,
+                )
+                results += response["Items"]
+
+        if not results:
+            logger.info("No records found for ODS code {}".format(ods_code))
+            raise OdsReportException(404, LambdaError.NoDataFound)
         return results
 
     def create_and_save_ods_report(
@@ -132,7 +147,7 @@ class OdsReportService:
         now = datetime.now()
         formatted_time = now.strftime("%Y-%m-%d_%H-%M")
         file_name = (
-            "NDR_"
+            "LloydGeorgeSummary_"
             + ods_code
             + f"_{len(nhs_numbers)}_"
             + formatted_time

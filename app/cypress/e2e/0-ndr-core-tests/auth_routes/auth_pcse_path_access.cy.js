@@ -1,4 +1,5 @@
-const { Roles } = require('../../../support/roles');
+import { Roles } from '../../../support/roles';
+import { routes } from '../../../support/routes';
 
 const testPatient = '9000000009';
 const patient = {
@@ -10,10 +11,10 @@ const patient = {
     superseded: false,
     restricted: false,
     active: false,
+    deceased: false,
 };
 
 const baseUrl = Cypress.config('baseUrl');
-const patientSearchUrl = '/patient/search';
 const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const arfDownloadUrl = '/patient/arf';
 const arfUploadUrl = '/patient/arf/upload';
@@ -30,7 +31,9 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
 
             cy.login(Roles.PCSE);
 
-            cy.url().should('eq', baseUrl + patientSearchUrl);
+            cy.url().should('eq', baseUrl + routes.home);
+
+            cy.navigateToPatientSearchPage();
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);

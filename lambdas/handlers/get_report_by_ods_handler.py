@@ -29,14 +29,14 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 @set_request_context_for_logging
 def lambda_handler(event, context):
-    feature_flag_service = FeatureFlagService()
-    flag_name = FeatureFlags.ODS_REPORT_LAMBDA_ENABLED.value
-    lambda_enabled_flag = feature_flag_service.get_feature_flags_by_flag(flag_name)
-    if not lambda_enabled_flag.get(flag_name):
-        logger.info("Feature flag not enabled, event will not be processed")
-        raise FeatureFlagsException(500, LambdaError.FeatureFlagDisabled)
-
     if "httpMethod" in event:
+        feature_flag_service = FeatureFlagService()
+        flag_name = FeatureFlags.ODS_REPORT_LAMBDA_ENABLED.value
+        lambda_enabled_flag = feature_flag_service.get_feature_flags_by_flag(flag_name)
+        if not lambda_enabled_flag.get(flag_name):
+            logger.info("Feature flag not enabled, event will not be processed")
+            raise FeatureFlagsException(500, LambdaError.FeatureFlagDisabled)
+
         return handle_api_gateway_request(event)
     else:
         return handle_manual_trigger(event)
