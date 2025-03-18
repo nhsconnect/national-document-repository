@@ -132,6 +132,14 @@ const DeceasedPatientAccessAudit = (props: Props) => {
             accessAuditData.OtherReasonText = formData.otherReasonText;
         }
 
+        if (
+            JSON.stringify(accessAuditData) ===
+            JSON.stringify(deceasedPatientAccessAudit?.accessAuditData)
+        ) {
+            handleSuccess(accessAuditData);
+            return;
+        }
+
         try {
             setSubmitting(true);
 
@@ -235,13 +243,9 @@ const DeceasedPatientAccessAudit = (props: Props) => {
             <PatientSimpleSummary />
 
             <h2>Why do you need to access this record?</h2>
+            <p>Select all options that are relevant.</p>
             <form onSubmit={handleSubmit(submitForm, handleError)}>
-                <Checkboxes
-                    name="access-reason"
-                    id="access-reason"
-                    error={errors.reasons?.message}
-                    hint="You may select multiple options."
-                >
+                <Checkboxes name="access-reason" id="access-reason" error={errors.reasons?.message}>
                     {ReasonCheckbox(
                         DeceasedAccessAuditReasons.medicalRequest,
                         "to respond to a Coroner's or Medical Examiner's request",
@@ -268,7 +272,7 @@ const DeceasedPatientAccessAudit = (props: Props) => {
                         <Textarea
                             data-testid={FORM_FIELDS.OtherReasonText}
                             className="other-reason-text"
-                            label="Please provide your reason"
+                            label="Enter a reason."
                             hint="Do not include information that could be used to identify any individual."
                             rows={4}
                             error={errors.otherReasonText?.message}

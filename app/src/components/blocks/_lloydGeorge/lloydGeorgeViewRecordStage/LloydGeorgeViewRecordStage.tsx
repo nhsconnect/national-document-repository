@@ -129,7 +129,7 @@ function LloydGeorgeViewRecordStage({
             ) : (
                 <BackButton
                     toLocation={
-                        patientDetails!.deceased && role !== REPOSITORY_ROLE.PCSE
+                        patientDetails?.deceased && role !== REPOSITORY_ROLE.PCSE
                             ? routeChildren.PATIENT_ACCESS_AUDIT_DECEASED
                             : routes.VERIFY_PATIENT
                     }
