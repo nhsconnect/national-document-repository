@@ -45,7 +45,9 @@ class AccessAuditService:
             logger.error(e)
             raise AccessAuditException(400, LambdaError.InvalidReasonInput)
 
-        return audit_reason.model_dump(exclude_none=True, by_alias=True)
+        return audit_reason.model_dump(
+            exclude_none=True, by_alias=True, exclude={"request_type"}
+        )
 
     def write_to_access_audit_table(self, audit_access_item):
         self.db_service.create_item(

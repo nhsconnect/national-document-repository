@@ -57,6 +57,7 @@ def test_validate_request_valid_inputs(mock_service, setup_request_context):
 
     assert response["ReasonCodes"] == {DeceasedAccessReason.MEDICAL.additional_value}
     assert response.get("CustomReason") is None
+    assert response.get("RequestType") is None
 
 
 def test_validate_request_with_other_reason(mock_service, setup_request_context):
