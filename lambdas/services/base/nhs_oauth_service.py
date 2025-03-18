@@ -25,14 +25,9 @@ class NhsOauthService:
             + int(access_token_response["issued_at"]) / 1000
         )
 
-        # TODO PRMP-1580 - Do we want to keep/modify the safety margin logic? Perhaps a 5 second gap?
-        # time_safety_margin_seconds = 10
-        # remaining_time_before_expiration = access_token_expiration - time.time()
-        # if remaining_time_before_expiration < time_safety_margin_seconds:
-        #     access_token = self.get_new_access_token()
-
-        # TODO PRMP-1580 - Here's the simplified version. Delete if we opt to keep the safety margin logic.
-        if access_token_expiration <= time.time():
+        time_safety_margin_seconds = 10
+        remaining_time_before_expiration = access_token_expiration - time.time()
+        if remaining_time_before_expiration < time_safety_margin_seconds:
             access_token = self.get_new_access_token()
 
         return access_token

@@ -15,7 +15,7 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @override_error_check
 @handle_lambda_exceptions
-def lambda_handler():
+def lambda_handler(event, context):
     logger.info("Attempting to generate and store new NHS OAuth token via Lambda")
 
     ssm_service = SSMService()
