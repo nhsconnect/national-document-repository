@@ -1,8 +1,11 @@
 import json
+import time
+from unittest.mock import MagicMock
 
 import pytest
 from enums.pds_ssm_parameters import SSMParameter
 from requests import Response
+from requests.exceptions import HTTPError
 from services.base.nhs_oauth_service import NhsOauthService
 from tests.unit.helpers.data.pds.access_token_response import RESPONSE_TOKEN
 from tests.unit.helpers.mock_services import FakeSSMService
@@ -272,3 +275,83 @@ def test_pds_request_expired_token(mocker):
     assert actual == new_mock_access_token
     mock_get_parameters.assert_called_once()
     mock_new_access_token.assert_called_once()
+
+
+def test_get_active_access_token_returns_existing_token_if_not_expired(mocker):
+    mock_ssm_service = MagicMock()
+    mock_token = "test-token"
+    current_time = int(time.time())
+    mock_token_data = json.dumps(
+        {
+            "access_token": mock_token,
+            "expires_in": 1000,  # expires in 1000 seconds
+            "issued_at": str((current_time - 10) * 1000),  # issued 10s ago (in ms)
+        }
+    )
+
+    mock_ssm_service.get_ssm_parameter.return_value = mock_token_data
+    service = NhsOauthService(mock_ssm_service)
+
+    mocker.spy(service, "get_new_access_token")
+
+    access_token = service.get_active_access_token()
+
+    assert access_token == mock_token
+    service.get_new_access_token.assert_not_called()
+
+
+def test_get_active_access_token_fetches_new_token_if_expired(mocker):
+    mock_ssm_service = MagicMock()
+    old_token = "expired-token"
+    new_token = "new-token"
+
+    # Token issued 2 hours ago, valid only for 5 seconds
+    mock_token_data = json.dumps(
+        {
+            "access_token": old_token,
+            "expires_in": 5,
+            "issued_at": str((int(time.time()) - 7200) * 1000),
+        }
+    )
+
+    mock_ssm_service.get_ssm_parameter.return_value = mock_token_data
+
+    service = NhsOauthService(mock_ssm_service)
+    mocker.patch.object(service, "get_new_access_token", return_value=new_token)
+
+    result = service.get_active_access_token()
+
+    assert result == new_token
+    service.get_new_access_token.assert_called_once()
+
+
+def test_get_new_access_token_raises_exception_on_http_error(mocker):
+    mock_ssm_service = MagicMock()
+    service = NhsOauthService(mock_ssm_service)
+
+    mocker.patch.object(
+        service,
+        "get_parameters_for_new_access_token",
+        return_value={
+            SSMParameter.NHS_OAUTH_ENDPOINT.value: "https://oauth.test.nhs.uk/token",
+            SSMParameter.PDS_KID.value: "fake-kid",
+            SSMParameter.NHS_OAUTH_KEY.value: "test-iss",
+            SSMParameter.PDS_API_KEY.value: "fake-secret-key",
+        },
+    )
+
+    mocker.patch.object(
+        service,
+        "create_jwt_token_for_new_access_token_request",
+        return_value="fake.jwt.token",
+    )
+
+    # Simulate a failed HTTP response
+    mock_response = MagicMock()
+    mock_response.raise_for_status.side_effect = HTTPError(
+        response=MagicMock(status=500)
+    )
+    mocker.patch.object(service, "request_new_access_token", return_value=mock_response)
+
+    with pytest.raises(OAuthErrorException):
+        service.get_new_access_token()
