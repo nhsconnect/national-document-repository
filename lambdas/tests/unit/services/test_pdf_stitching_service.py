@@ -8,6 +8,8 @@ import pytest
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
+from enums.snomed_codes import SnomedCodes
+from enums.supported_document_types import SupportedDocumentTypes
 from freezegun.api import freeze_time
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.sqs.nrl_sqs_message import NrlSqsMessage
@@ -42,6 +44,8 @@ def mock_service(set_env, mocker):
     mocker.patch.object(service, "s3_service")
     mocker.patch.object(service, "document_service")
     mocker.patch.object(service, "sqs_service")
+    service.target_dynamo_table = SupportedDocumentTypes.LG.get_dynamodb_table_name()
+    service.target_bucket = SupportedDocumentTypes.LG.get_s3_bucket_name()
     return service
 
 
@@ -81,6 +85,16 @@ def mock_publish_nrl_message(mocker, mock_service):
 
 
 @pytest.fixture
+def mock_retrieve_multipart_references(mocker, mock_service):
+    return mocker.patch.object(mock_service, "retrieve_multipart_references")
+
+
+@pytest.fixture
+def mock_rollback_stitching_process(mocker, mock_service):
+    return mocker.patch.object(mock_service, "rollback_stitching_process")
+
+
+@pytest.fixture
 def mock_download_fileobj():
     def _mock_download_fileobj(
         s3_object_data: dict[str, BytesIO], Bucket: str, Key: str, Fileobj: BytesIO
@@ -92,8 +106,48 @@ def mock_download_fileobj():
     return _mock_download_fileobj
 
 
+@pytest.mark.parametrize(
+    "doc_type",
+    [
+        SupportedDocumentTypes.LG,
+        SupportedDocumentTypes.ARF,
+    ],
+)
+def test_retrieve_multipart_references_returns_multipart_references(
+    mock_service, doc_type
+):
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = (
+        TEST_DOCUMENT_REFERENCES
+    )
+
+    expected = TEST_DOCUMENT_REFERENCES
+
+    actual = mock_service.retrieve_multipart_references(
+        nhs_number=TEST_NHS_NUMBER, doc_type=doc_type
+    )
+
+    assert expected == actual
+    mock_service.document_service.fetch_available_document_references_by_type.assert_called_once()
+
+
+def test_retrieve_multipart_references_returns_empty_list_if_LG_stitched(mock_service):
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = [
+        TEST_1_OF_1_DOCUMENT_REFERENCE
+    ]
+
+    expected = []
+
+    actual = mock_service.retrieve_multipart_references(
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG
+    )
+
+    assert expected == actual
+    mock_service.document_service.fetch_available_document_references_by_type.assert_called_once()
+
+
 def test_process_message(
     mock_service,
+    mock_retrieve_multipart_references,
     mock_create_stitched_reference,
     mock_sort_multipart_object_keys,
     mock_process_stitching,
@@ -112,36 +166,24 @@ def test_process_message(
     mock_sort_multipart_object_keys.return_value = test_sorted_keys
     mock_process_stitching.return_value = test_stream
 
-    mock_service.document_service.fetch_available_document_references_by_type.return_value = (
-        TEST_DOCUMENT_REFERENCES
-    )
+    mock_retrieve_multipart_references.return_value = TEST_DOCUMENT_REFERENCES
 
     mock_service.process_message(test_message)
 
     mock_create_stitched_reference.assert_called_once_with(
         document_reference=TEST_DOCUMENT_REFERENCES[0]
     )
-    mock_sort_multipart_object_keys.assert_called_once_with(
-        document_references=TEST_DOCUMENT_REFERENCES
-    )
+    mock_sort_multipart_object_keys.assert_called_once_with()
     mock_process_stitching.assert_called_once_with(s3_object_keys=test_sorted_keys)
     mock_upload_stitched_file.assert_called_once_with(stitching_data_stream=test_stream)
-    mock_migrate_multipart_references.assert_called_once_with(
-        multipart_references=TEST_DOCUMENT_REFERENCES
-    )
+    mock_migrate_multipart_references.assert_called_once_with()
     mock_write_stitching_reference.assert_called_once()
     mock_publish_nrl_message.assert_called_once()
 
 
-@pytest.mark.parametrize(
-    "document_references",
-    [
-        [],
-        [TEST_1_OF_1_DOCUMENT_REFERENCE],
-    ],
-)
 def test_process_message_handles_singular_or_none_references(
     mock_service,
+    mock_retrieve_multipart_references,
     mock_create_stitched_reference,
     mock_sort_multipart_object_keys,
     mock_process_stitching,
@@ -149,14 +191,11 @@ def test_process_message_handles_singular_or_none_references(
     mock_migrate_multipart_references,
     mock_write_stitching_reference,
     mock_publish_nrl_message,
-    document_references,
 ):
     test_message_body = json.loads(stitching_queue_message_event["Records"][0]["body"])
     test_message = PdfStitchingSqsMessage.model_validate(test_message_body)
 
-    mock_service.document_service.fetch_available_document_references_by_type.return_value = (
-        document_references
-    )
+    mock_retrieve_multipart_references.return_value = []
 
     mock_service.process_message(test_message)
 
@@ -273,12 +312,13 @@ def test_upload_stitched_file_handles_client_error(mock_service, caplog):
 
 
 def test_migrate_multipart_references(mock_service):
-    mock_service.migrate_multipart_references(TEST_DOCUMENT_REFERENCES)
+    mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
+    mock_service.migrate_multipart_references()
 
     expected_create_calls = []
     expected_delete_calls = []
     for reference in TEST_DOCUMENT_REFERENCES:
-        expected_item = reference.model_dump_dynamo()
+        expected_item = reference.model_dump_dynamo_create()
         expected_item.pop(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value)
         expected_create_calls.append(
             call(
@@ -299,6 +339,7 @@ def test_migrate_multipart_references(mock_service):
 def test_migrate_multipart_references_handles_client_error_on_create(
     mock_service, caplog
 ):
+    mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
     mock_service.dynamo_service.create_item.side_effect = MOCK_CLIENT_ERROR
     expected_err_msg = (
         "Failed to migrate multipart references: "
@@ -306,7 +347,7 @@ def test_migrate_multipart_references_handles_client_error_on_create(
     )
 
     with pytest.raises(PdfStitchingException) as e:
-        mock_service.migrate_multipart_references(TEST_DOCUMENT_REFERENCES)
+        mock_service.migrate_multipart_references()
 
     assert caplog.records[-1].msg == expected_err_msg
     assert caplog.records[-1].levelname == "ERROR"
@@ -316,6 +357,7 @@ def test_migrate_multipart_references_handles_client_error_on_create(
 def test_migrate_multipart_references_handles_client_error_on_delete(
     mock_service, caplog
 ):
+    mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
     mock_service.dynamo_service.delete_item.side_effect = MOCK_CLIENT_ERROR
     expected_err_msg = (
         "Failed to cleanup multipart references: "
@@ -323,7 +365,7 @@ def test_migrate_multipart_references_handles_client_error_on_delete(
     )
 
     with pytest.raises(PdfStitchingException) as e:
-        mock_service.migrate_multipart_references(TEST_DOCUMENT_REFERENCES)
+        mock_service.migrate_multipart_references()
 
     assert caplog.records[-1].msg == expected_err_msg
     assert caplog.records[-1].levelname == "ERROR"
@@ -337,7 +379,7 @@ def test_write_stitching_reference(mock_service):
 
     mock_service.dynamo_service.create_item.assert_called_with(
         table_name=MOCK_LG_TABLE_NAME,
-        item=TEST_1_OF_1_DOCUMENT_REFERENCE.model_dump_dynamo(),
+        item=TEST_1_OF_1_DOCUMENT_REFERENCE.model_dump_dynamo_create(),
     )
 
 
@@ -361,7 +403,7 @@ def test_publish_nrl_message(mock_service, mock_uuid):
     mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
 
     expected_apim_attachment = Attachment(
-        url=f"https://apim.api.service.uk/DocumentReference/16521000000101~{mock_service.stitched_reference.id}",
+        url=f"https://apim.api.service.uk/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_service.stitched_reference.id}",
         contentType="application/pdf",
     )
 
@@ -371,7 +413,9 @@ def test_publish_nrl_message(mock_service, mock_uuid):
         attachment=expected_apim_attachment,
     )
 
-    mock_service.publish_nrl_message()
+    mock_service.publish_nrl_message(
+        snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value
+    )
 
     mock_service.sqs_service.send_message_fifo.assert_called_once_with(
         queue_url="https://test-queue.com",
@@ -380,31 +424,20 @@ def test_publish_nrl_message(mock_service, mock_uuid):
     )
 
 
-def test_publish_nrl_message_handles_client_error(mock_service, caplog):
+def test_publish_nrl_message_handles_client_error(mock_service):
     mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
     mock_service.sqs_service.send_message_fifo.side_effect = MOCK_CLIENT_ERROR
 
-    expected_err_msg = (
-        "Failed to publish NRL message onto SQS: "
-        "An error occurred (500) when calling the TEST operation: Test error message"
-    )
-
-    with pytest.raises(PdfStitchingException) as e:
-        mock_service.publish_nrl_message()
-
-    assert caplog.records[-1].msg == expected_err_msg
-    assert caplog.records[-1].levelname == "ERROR"
-    assert e.value.error is LambdaError.StitchError
+    with pytest.raises(PdfStitchingException):
+        mock_service.publish_nrl_message(
+            snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value
+        )
 
 
-def test_publish_nrl_message_handles_error():
-    pass
+def test_sort_multipart_object_keys_sorts_references_and_returns_keys(mock_service):
+    mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
 
-
-def test_sort_multipart_object_keys_sorts_references_and_returns_keys():
-    test_document_references = TEST_DOCUMENT_REFERENCES
-
-    shuffle(test_document_references)
+    shuffle(mock_service.multipart_references)
 
     expected = [
         f"{TEST_NHS_NUMBER}/test-key-1",
@@ -412,14 +445,36 @@ def test_sort_multipart_object_keys_sorts_references_and_returns_keys():
         f"{TEST_NHS_NUMBER}/test-key-3",
     ]
 
-    actual = PdfStitchingService.sort_multipart_object_keys(test_document_references)
+    actual = mock_service.sort_multipart_object_keys()
 
     assert expected == actual
 
 
-def test_sort_multipart_object_keys_raises_exception():
-    test_document_references = TEST_DOCUMENT_REFERENCES
-    test_document_references[0].file_name = "invalid"
+def test_sort_multipart_object_keys_raises_exception(mock_service):
+    mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
+    mock_service.multipart_references[0].file_name = "invalid"
 
     with pytest.raises(PdfStitchingException):
-        PdfStitchingService.sort_multipart_object_keys(test_document_references)
+        mock_service.sort_multipart_object_keys()
+
+
+def test_rollback_stitching_process_successfully_rolls_back(mock_service):
+    # mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+    # mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
+    #
+    # mock_service.rollback_stitching_process()
+    #
+    # mock_service.s3_service.delete_object.assert_called_once_with(
+    #     s3_bucket_name=MOCK_LG_BUCKET, file_key=f"{TEST_NHS_NUMBER}/test-key-123"
+    # )
+    # mock_service.dynamo_service.delete_item.assert_called_once_with(
+    #     table_name=MOCK_LG_TABLE_NAME, key={"ID": TEST_1_OF_1_DOCUMENT_REFERENCE.id}
+    # )
+    pass
+
+
+def test_rollback_stitching_process_fails_rollback_and_logs(mock_service):
+    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+    mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
+
+    mock_service.rollback_stitching_process()

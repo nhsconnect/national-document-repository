@@ -459,6 +459,10 @@ class LambdaError(Enum):
         "err_code": "PS_4002",
         "message": "Failed to process PDF stitching",
     }
+    StitchRollbackError = {
+        "err_code": "PS_5001",
+        "message": "Failed to rollback PDF stitching",
+    }
     """
         Edge Lambda Errors
     """
