@@ -25,8 +25,6 @@ import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
 import postPatientAccessAudit from '../../../../helpers/requests/postPatientAccessAudit';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
-type Props = {};
-
 enum FORM_FIELDS {
     Reasons = 'reasons',
     OtherReasonText = 'otherReasonText',
@@ -36,7 +34,7 @@ type FormData = {
     [FORM_FIELDS.OtherReasonText]: string;
 };
 
-const DeceasedPatientAccessAudit = (props: Props) => {
+const DeceasedPatientAccessAudit = () => {
     /* HOOKS */
     const pageTitle = 'Deceased patient record';
     useTitle({ pageTitle });
@@ -248,7 +246,7 @@ const DeceasedPatientAccessAudit = (props: Props) => {
                 <Checkboxes name="access-reason" id="access-reason" error={errors.reasons?.message}>
                     {ReasonCheckbox(
                         DeceasedAccessAuditReasons.medicalRequest,
-                        "to respond to a Coroner's or Medical Examiner's request",
+                        'to respond to a request from a coroner or medical examiner',
                     )}
                     {ReasonCheckbox(
                         DeceasedAccessAuditReasons.legalRequest,

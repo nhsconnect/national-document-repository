@@ -34,15 +34,20 @@ function PatientResultPage() {
 
             if (patientDetails?.deceased) {
                 navigate(routeChildren.PATIENT_ACCESS_AUDIT_DECEASED);
-            } else {
-                if (patientDetails?.active) {
-                    navigate(routes.LLOYD_GEORGE);
-                } else if (userIsGPAdmin) {
-                    navigate(routes.ARF_UPLOAD_DOCUMENTS);
-                } else {
-                    navigate(routes.SEARCH_PATIENT);
-                }
+                return;
             }
+
+            if (patientDetails?.active) {
+                navigate(routes.LLOYD_GEORGE);
+                return;
+            }
+
+            if (userIsGPAdmin) {
+                navigate(routes.ARF_UPLOAD_DOCUMENTS);
+                return;
+            }
+
+            navigate(routes.SEARCH_PATIENT);
         }
     };
     const showWarning = patientDetails?.superseded || patientDetails?.restricted;

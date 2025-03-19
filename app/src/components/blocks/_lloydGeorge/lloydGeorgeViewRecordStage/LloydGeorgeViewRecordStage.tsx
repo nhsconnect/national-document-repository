@@ -128,6 +128,7 @@ function LloydGeorgeViewRecordStage({
                 </BackLink>
             ) : (
                 <BackButton
+                    dataTestid="go-back-button"
                     toLocation={
                         patientDetails?.deceased && role !== REPOSITORY_ROLE.PCSE
                             ? routeChildren.PATIENT_ACCESS_AUDIT_DECEASED
