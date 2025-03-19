@@ -89,7 +89,7 @@ function PatientResultPage() {
                         <p>
                             Access to the records of deceased patients is regulated under the Access
                             to Health Records Act. You will need to give a reason why you need to
-                            access this record. For more information, read the article&nbsp;
+                            access this record. For more information, read the article{' '}
                             <a
                                 href="https://transform.england.nhs.uk/information-governance/guidance/access-to-the-health-and-care-records-of-deceased-people/"
                                 target="_blank"
