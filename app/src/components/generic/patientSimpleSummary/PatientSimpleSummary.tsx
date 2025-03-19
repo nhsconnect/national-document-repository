@@ -1,12 +1,14 @@
 import usePatient from '../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
+import { Tag } from 'nhsuk-react-components';
 
 type Props = {
     separator?: boolean;
+    showDeceasedTag?: boolean;
 };
 
-const PatientSimpleSummary = ({ separator = false }: Props) => {
+const PatientSimpleSummary = ({ separator = false, showDeceasedTag = false }: Props) => {
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
@@ -20,27 +22,34 @@ const PatientSimpleSummary = ({ separator = false }: Props) => {
     const longname = givenName.length + familyName.length > nameLengthLimit;
 
     return (
-        <div
-            id="patient-info"
-            data-testid="patient-info"
-            className={`lloydgeorge_record-stage_patient-info ${separator ? 'separator' : ''}`}
-        >
-            <p>
-                <span
-                    data-testid="patient-name"
-                    className="nhsuk-u-padding-right-9 nhsuk-u-font-weight-bold"
-                >
-                    {`${patientDetails?.givenName}, ${patientDetails?.familyName}`}
-                </span>
+        <>
+            {showDeceasedTag && patientDetails?.deceased && (
+                <Tag color="blue" className="mb-6" data-testid="deceased-patient-tag">
+                    Deceased patient
+                </Tag>
+            )}
+            <div
+                id="patient-info"
+                data-testid="patient-info"
+                className={`lloydgeorge_record-stage_patient-info ${separator ? 'separator' : ''}`}
+            >
+                <p>
+                    <span
+                        data-testid="patient-name"
+                        className="nhsuk-u-padding-right-9 nhsuk-u-font-weight-bold"
+                    >
+                        {`${patientDetails?.givenName}, ${patientDetails?.familyName}`}
+                    </span>
 
-                {longname && <br />}
+                    {longname && <br />}
 
-                <span data-testid="patient-nhs-number" className="nhsuk-u-padding-right-9">
-                    NHS number: {formattedNhsNumber}
-                </span>
-                <span data-testid="patient-dob">Date of birth: {dob}</span>
-            </p>
-        </div>
+                    <span data-testid="patient-nhs-number" className="nhsuk-u-padding-right-9">
+                        NHS number: {formattedNhsNumber}
+                    </span>
+                    <span data-testid="patient-dob">Date of birth: {dob}</span>
+                </p>
+            </div>
+        </>
     );
 };
 

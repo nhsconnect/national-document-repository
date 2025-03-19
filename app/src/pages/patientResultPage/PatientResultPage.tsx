@@ -50,7 +50,9 @@ function PatientResultPage() {
             navigate(routes.SEARCH_PATIENT);
         }
     };
-    const showWarning = patientDetails?.superseded || patientDetails?.restricted;
+    const showDeceasedWarning = patientDetails?.deceased && !userIsPCSE;
+    const showWarning =
+        patientDetails?.superseded || patientDetails?.restricted || showDeceasedWarning;
     const isGp = userIsGPAdmin || userIsGPClinical;
     const pageHeader = 'Patient details';
     useTitle({ pageTitle: pageHeader });
@@ -69,7 +71,11 @@ function PatientResultPage() {
 
             {showWarning && (
                 <WarningCallout>
-                    <WarningCallout.Label headingLevel="h2">Information</WarningCallout.Label>
+                    <WarningCallout.Label headingLevel="h2">
+                        {showDeceasedWarning
+                            ? 'This record is for a deceased patient'
+                            : 'Information'}
+                    </WarningCallout.Label>
                     {patientDetails.superseded && (
                         <p>The NHS number for this patient has changed.</p>
                     )}
@@ -79,10 +85,26 @@ function PatientResultPage() {
                             necessary access.
                         </p>
                     )}
+                    {showDeceasedWarning && (
+                        <p>
+                            Access to the records of deceased patients is regulated under the Access
+                            to Health Records Act. You will need to give a reason why you need to
+                            access this record. For more information, read the article{' '}
+                            <a
+                                href="https://transform.england.nhs.uk/information-governance/guidance/access-to-the-health-and-care-records-of-deceased-people/"
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="More Information: Access to the health and care records of deceased people"
+                            >
+                                Access to the health and care records of deceased people
+                            </a>
+                            .
+                        </p>
+                    )}
                 </WarningCallout>
             )}
 
-            <PatientSummary />
+            <PatientSummary showDeceasedTag={userIsPCSE} />
 
             <form onSubmit={handleSubmit(submit)} className="patient-results-form">
                 {isGp && (

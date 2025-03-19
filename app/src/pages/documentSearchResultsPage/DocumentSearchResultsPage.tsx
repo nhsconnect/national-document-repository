@@ -138,7 +138,7 @@ const DocumentSearchResultsPageIndex = ({
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
 
-            <PatientSummary />
+            <PatientSummary showDeceasedTag />
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>

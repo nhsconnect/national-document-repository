@@ -217,7 +217,7 @@ function LloydGeorgeViewRecordStage({
             )}
 
             <h1>{pageHeader}</h1>
-            <PatientSimpleSummary />
+            <PatientSimpleSummary showDeceasedTag />
 
             {!fullScreen ? (
                 <div className="lloydgeorge_record-stage_flex">

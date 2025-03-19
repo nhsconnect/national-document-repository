@@ -151,6 +151,37 @@ describe('PatientResultPage', () => {
                 ),
             ).toBeInTheDocument();
         });
+
+        it('displays a message when NHS number is deceased as a GP User', async () => {
+            const nhsNumber = '9000000012';
+            const patientDetails = buildPatientDetails({ deceased: true, nhsNumber });
+            mockedUsePatient.mockReturnValue(patientDetails);
+            const role = REPOSITORY_ROLE.GP_ADMIN;
+            mockedUseRole.mockReturnValue(role);
+
+            render(<PatientResultPage />);
+
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    'Access to the records of deceased patients is regulated under the Access to Health Records Act',
+                    { exact: false },
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it('displays a deceased patient tag for a deceased patient as a PCSE user', async () => {
+            const nhsNumber = '9000000012';
+            const patientDetails = buildPatientDetails({ deceased: true, nhsNumber });
+            mockedUsePatient.mockReturnValue(patientDetails);
+            const role = REPOSITORY_ROLE.PCSE;
+            mockedUseRole.mockReturnValue(role);
+
+            render(<PatientResultPage />);
+
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
+            expect(screen.getByTestId('deceased-patient-tag')).toBeInTheDocument();
+        });
     });
 
     describe('Accessibility', () => {
