@@ -109,7 +109,6 @@ class PdfStitchingService:
             id=reference_id,
             content_type=document_reference.content_type,
             created=date_now.strftime(DATE_FORMAT),
-            current_gp_ods=document_reference.current_gp_ods,
             deleted="",
             file_location=f"s3://{self.target_bucket}/{document_reference.nhs_number}/{reference_id}",
             file_name=f"1of1_{stripped_filename}",
@@ -251,6 +250,12 @@ class PdfStitchingService:
         for reference in self.multipart_references:
             logger.info(reference.model_dump_json(by_alias=True))
 
+        self.rollback_stitched_reference()
+        self.rollback_reference_migration()
+
+        logger.info("Successfully completed stitching process rollback")
+
+    def rollback_stitched_reference(self):
         try:
             if self.stitched_reference:
                 self.dynamo_service.delete_item(
@@ -265,22 +270,19 @@ class PdfStitchingService:
                 )
                 logger.info("Successfully reverted stitched object and reference")
         except Exception as e:
-            logger.error(
-                f"Failed to rollback stitching process for newly stitched reference: {e}"
-            )
+            logger.error(f"Failed to rollback newly stitched object and reference: {e}")
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
 
+    def rollback_reference_migration(self):
         try:
             for document_reference in self.multipart_references:
-                stitched_table = self.dynamo_service.get_table(
-                    table_name=self.target_dynamo_table
-                )
-                stitched_query = stitched_table.get_item(
-                    Key={
+                original_references = self.dynamo_service.get_item(
+                    table_name=self.target_dynamo_table,
+                    key={
                         DocumentReferenceMetadataFields.ID.value: document_reference.id
-                    }
+                    },
                 )
-                if not stitched_query.get("Item"):
+                if not original_references.get("Item"):
                     self.dynamo_service.create_item(
                         table_name=self.target_dynamo_table,
                         item=document_reference.model_dump(
@@ -288,15 +290,13 @@ class PdfStitchingService:
                         ),
                     )
 
-                unstitched_table = self.dynamo_service.get_table(
-                    table_name=self.unstitched_lloyd_george_table_name
-                )
-                unstitched_query = unstitched_table.get_item(
-                    Key={
+                unstitched_references = self.dynamo_service.get_item(
+                    table_name=self.unstitched_lloyd_george_table_name,
+                    key={
                         DocumentReferenceMetadataFields.ID.value: document_reference.id
-                    }
+                    },
                 )
-                if unstitched_query.get("Item"):
+                if unstitched_references.get("Item"):
                     self.dynamo_service.delete_item(
                         table_name=self.unstitched_lloyd_george_table_name,
                         key={
@@ -308,5 +308,3 @@ class PdfStitchingService:
         except Exception as e:
             logger.error(f"Failed to rollback multipart migration process: {e}")
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
-
-        logger.info("Successfully completed stitching process rollback")

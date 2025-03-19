@@ -6,7 +6,6 @@ from unittest.mock import call
 
 import pytest
 from enums.lambda_error import LambdaError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
@@ -92,6 +91,16 @@ def mock_retrieve_multipart_references(mocker, mock_service):
 @pytest.fixture
 def mock_rollback_stitching_process(mocker, mock_service):
     return mocker.patch.object(mock_service, "rollback_stitching_process")
+
+
+@pytest.fixture
+def mock_rollback_stitched_reference(mocker, mock_service):
+    return mocker.patch.object(mock_service, "rollback_stitched_reference")
+
+
+@pytest.fixture
+def mock_rollback_reference_migration(mocker, mock_service):
+    return mocker.patch.object(mock_service, "rollback_reference_migration")
 
 
 @pytest.fixture
@@ -315,17 +324,59 @@ def test_migrate_multipart_references(mock_service):
     mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
     mock_service.migrate_multipart_references()
 
-    expected_create_calls = []
+    expected_create_calls = [
+        call(
+            table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
+            item={
+                "ContentType": "application/pdf",
+                "Created": "2024-01-01T12:00:00.000Z",
+                "Deleted": "",
+                "FileLocation": f"{TEST_DOCUMENT_REFERENCES[0].file_location}",
+                "FileName": f"{TEST_DOCUMENT_REFERENCES[0].file_name}",
+                "ID": f"{TEST_DOCUMENT_REFERENCES[0].id}",
+                "LastUpdated": 1704110400,
+                "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[0].nhs_number}",
+                "Uploaded": True,
+                "Uploading": False,
+                "VirusScannerResult": "Clean",
+            },
+        ),
+        call(
+            table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
+            item={
+                "ContentType": "application/pdf",
+                "Created": "2024-01-01T12:00:00.000Z",
+                "Deleted": "",
+                "FileLocation": f"{TEST_DOCUMENT_REFERENCES[1].file_location}",
+                "FileName": f"{TEST_DOCUMENT_REFERENCES[1].file_name}",
+                "ID": f"{TEST_DOCUMENT_REFERENCES[1].id}",
+                "LastUpdated": 1704110400,
+                "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[1].nhs_number}",
+                "Uploaded": True,
+                "Uploading": False,
+                "VirusScannerResult": "Clean",
+            },
+        ),
+        call(
+            table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
+            item={
+                "ContentType": "application/pdf",
+                "Created": "2024-01-01T12:00:00.000Z",
+                "Deleted": "",
+                "FileLocation": f"{TEST_DOCUMENT_REFERENCES[2].file_location}",
+                "FileName": f"{TEST_DOCUMENT_REFERENCES[2].file_name}",
+                "ID": f"{TEST_DOCUMENT_REFERENCES[2].id}",
+                "LastUpdated": 1704110400,
+                "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[2].nhs_number}",
+                "Uploaded": True,
+                "Uploading": False,
+                "VirusScannerResult": "Clean",
+            },
+        ),
+    ]
+
     expected_delete_calls = []
     for reference in TEST_DOCUMENT_REFERENCES:
-        expected_item = reference.model_dump_dynamo_create()
-        expected_item.pop(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value)
-        expected_create_calls.append(
-            call(
-                table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
-                item=expected_item,
-            )
-        )
         expected_delete_calls.append(
             call(table_name=MOCK_LG_TABLE_NAME, key={"ID": reference.id})
         )
@@ -372,14 +423,27 @@ def test_migrate_multipart_references_handles_client_error_on_delete(
     assert e.value.error is LambdaError.MultipartError
 
 
-def test_write_stitching_reference(mock_service):
-    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+@freeze_time("2024-01-01T12:00:00Z")
+def test_write_stitching_reference(mock_service, mock_uuid):
+    mock_service.create_stitched_reference(TEST_1_OF_1_DOCUMENT_REFERENCE)
 
     mock_service.write_stitching_reference()
 
-    mock_service.dynamo_service.create_item.assert_called_with(
+    mock_service.dynamo_service.create_item.assert_called_once_with(
         table_name=MOCK_LG_TABLE_NAME,
-        item=TEST_1_OF_1_DOCUMENT_REFERENCE.model_dump_dynamo_create(),
+        item={
+            "ContentType": "application/pdf",
+            "Created": "2024-01-01T12:00:00.000000Z",
+            "Deleted": "",
+            "FileLocation": f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/{TEST_UUID}",
+            "FileName": f"{TEST_1_OF_1_DOCUMENT_REFERENCE.file_name}",
+            "ID": f"{TEST_UUID}",
+            "LastUpdated": TEST_1_OF_1_DOCUMENT_REFERENCE.last_updated,
+            "NhsNumber": f"{TEST_1_OF_1_DOCUMENT_REFERENCE.nhs_number}",
+            "Uploaded": True,
+            "Uploading": False,
+            "VirusScannerResult": "Clean",
+        },
     )
 
 
@@ -458,23 +522,129 @@ def test_sort_multipart_object_keys_raises_exception(mock_service):
         mock_service.sort_multipart_object_keys()
 
 
-def test_rollback_stitching_process_successfully_rolls_back(mock_service):
-    # mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
-    # mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
-    #
-    # mock_service.rollback_stitching_process()
-    #
-    # mock_service.s3_service.delete_object.assert_called_once_with(
-    #     s3_bucket_name=MOCK_LG_BUCKET, file_key=f"{TEST_NHS_NUMBER}/test-key-123"
-    # )
-    # mock_service.dynamo_service.delete_item.assert_called_once_with(
-    #     table_name=MOCK_LG_TABLE_NAME, key={"ID": TEST_1_OF_1_DOCUMENT_REFERENCE.id}
-    # )
-    pass
-
-
-def test_rollback_stitching_process_fails_rollback_and_logs(mock_service):
+def test_rollback_stitching_process_successfully_rolls_back(
+    mock_service, mock_rollback_stitched_reference, mock_rollback_reference_migration
+):
     mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
     mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
 
     mock_service.rollback_stitching_process()
+
+    mock_rollback_stitched_reference.assert_called_once()
+    mock_rollback_reference_migration.assert_called_once()
+
+
+def test_rollback_stitched_reference(mock_service):
+    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+
+    mock_service.rollback_stitched_reference()
+
+    mock_service.dynamo_service.delete_item.assert_called_once_with(
+        table_name=MOCK_LG_TABLE_NAME, key={"ID": TEST_1_OF_1_DOCUMENT_REFERENCE.id}
+    )
+    mock_service.s3_service.delete_object.assert_called_once_with(
+        s3_bucket_name=MOCK_LG_BUCKET, file_key=f"{TEST_NHS_NUMBER}/test-key-123"
+    )
+
+
+def test_rollback_stitched_reference_handles_exception(mock_service):
+    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
+    mock_service.dynamo_service.delete_item.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(PdfStitchingException):
+        mock_service.rollback_stitched_reference()
+
+
+def test_rollback_reference_migration(mock_service):
+    mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
+    mock_service.dynamo_service.get_item.side_effect = (
+        {},
+        {"Item": {"ID": "123"}},
+        {},
+        {"Item": {"ID": "234"}},
+        {},
+        {"Item": {"ID": "567"}},
+    )
+
+    mock_service.rollback_reference_migration()
+
+    mock_service.dynamo_service.create_item.assert_has_calls(
+        [
+            call(
+                table_name=MOCK_LG_TABLE_NAME,
+                item={
+                    "ContentType": "application/pdf",
+                    "Created": TEST_DOCUMENT_REFERENCES[0].created,
+                    "CurrentGpOds": TEST_DOCUMENT_REFERENCES[0].current_gp_ods,
+                    "Deleted": "",
+                    "FileLocation": f"{TEST_DOCUMENT_REFERENCES[0].file_location}",
+                    "FileName": f"{TEST_DOCUMENT_REFERENCES[0].file_name}",
+                    "ID": f"{TEST_DOCUMENT_REFERENCES[0].id}",
+                    "LastUpdated": 1704110400,
+                    "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[0].nhs_number}",
+                    "Uploaded": True,
+                    "Uploading": False,
+                    "VirusScannerResult": "Clean",
+                },
+            ),
+            call(
+                table_name=MOCK_LG_TABLE_NAME,
+                item={
+                    "ContentType": "application/pdf",
+                    "Created": TEST_DOCUMENT_REFERENCES[1].created,
+                    "CurrentGpOds": TEST_DOCUMENT_REFERENCES[1].current_gp_ods,
+                    "Deleted": "",
+                    "FileLocation": f"{TEST_DOCUMENT_REFERENCES[1].file_location}",
+                    "FileName": f"{TEST_DOCUMENT_REFERENCES[1].file_name}",
+                    "ID": f"{TEST_DOCUMENT_REFERENCES[1].id}",
+                    "LastUpdated": 1704110400,
+                    "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[1].nhs_number}",
+                    "Uploaded": True,
+                    "Uploading": False,
+                    "VirusScannerResult": "Clean",
+                },
+            ),
+            call(
+                table_name=MOCK_LG_TABLE_NAME,
+                item={
+                    "ContentType": "application/pdf",
+                    "Created": TEST_DOCUMENT_REFERENCES[2].created,
+                    "CurrentGpOds": TEST_DOCUMENT_REFERENCES[2].current_gp_ods,
+                    "Deleted": "",
+                    "FileLocation": f"{TEST_DOCUMENT_REFERENCES[2].file_location}",
+                    "FileName": f"{TEST_DOCUMENT_REFERENCES[2].file_name}",
+                    "ID": f"{TEST_DOCUMENT_REFERENCES[2].id}",
+                    "LastUpdated": 1704110400,
+                    "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[2].nhs_number}",
+                    "Uploaded": True,
+                    "Uploading": False,
+                    "VirusScannerResult": "Clean",
+                },
+            ),
+        ]
+    )
+
+    mock_service.dynamo_service.delete_item.assert_has_calls(
+        [
+            call(
+                table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
+                key={"ID": TEST_DOCUMENT_REFERENCES[0].id},
+            ),
+            call(
+                table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
+                key={"ID": TEST_DOCUMENT_REFERENCES[1].id},
+            ),
+            call(
+                table_name=MOCK_UNSTITCHED_LG_TABLE_NAME,
+                key={"ID": TEST_DOCUMENT_REFERENCES[2].id},
+            ),
+        ]
+    )
+
+
+def test_rollback_reference_migration_handles_exception(mock_service):
+    mock_service.multipart_references = TEST_DOCUMENT_REFERENCES
+    mock_service.dynamo_service.get_item.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(PdfStitchingException):
+        mock_service.rollback_reference_migration()

@@ -98,27 +98,6 @@ class DocumentReference(BaseModel):
         three_minutes_ago = datetime.now(timezone.utc).timestamp() - 60 * 3
         return self.last_updated >= three_minutes_ago
 
-    def model_dump_dynamo_create(self):
-        dynamo_model = {
-            DocumentReferenceMetadataFields.ID.value: self.id,
-            DocumentReferenceMetadataFields.CONTENT_TYPE.value: self.content_type,
-            DocumentReferenceMetadataFields.CREATED.value: self.created,
-            DocumentReferenceMetadataFields.DELETED.value: self.deleted,
-            DocumentReferenceMetadataFields.FILE_LOCATION.value: self.file_location,
-            DocumentReferenceMetadataFields.FILE_NAME.value: self.file_name,
-            DocumentReferenceMetadataFields.NHS_NUMBER.value: self.nhs_number,
-            DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value: self.virus_scanner_result,
-            DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: self.current_gp_ods,
-            DocumentReferenceMetadataFields.UPLOADED.value: self.uploaded,
-            DocumentReferenceMetadataFields.UPLOADING.value: self.uploading,
-            DocumentReferenceMetadataFields.LAST_UPDATED.value: self.last_updated,
-        }
-
-        if self.ttl is not None:
-            dynamo_model[DocumentReferenceMetadataFields.TTL.value] = self.ttl
-
-        return dynamo_model
-
     def __eq__(self, other):
         if isinstance(other, DocumentReference):
             return (
