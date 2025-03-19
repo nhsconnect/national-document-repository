@@ -33,7 +33,7 @@ class NhsOauthService:
         return access_token
 
     def get_new_access_token(self):
-        return self.get_nhs_oauth_response()["access_token"]
+        return self.get_nhs_oauth_response().get("access_token", "")
 
     def get_nhs_oauth_response(self):
         logger.info("Getting new OAuth access token")

@@ -4,7 +4,6 @@ import time
 from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import OAuthErrorException
@@ -14,7 +13,6 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @override_error_check
-@handle_lambda_exceptions
 def lambda_handler(event, context):
     logger.info("Attempting to generate and store new NHS OAuth token via Lambda")
 

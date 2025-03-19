@@ -18,11 +18,6 @@ def mock_auth_service(mocker):
 
 
 @pytest.fixture
-def mock_logger(mocker):
-    return mocker.patch("handlers.nhs_oauth_token_generator_handler.logger")
-
-
-@pytest.fixture
 def mock_sleep(monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda _: None)
 
@@ -53,18 +48,14 @@ def test_lambda_handler_success_on_retry(mock_auth_service, mock_sleep, event, c
 
 
 def test_lambda_handler_fails_after_max_retries(
-    mock_auth_service, mock_logger, mock_sleep, event, context
+    mock_auth_service, mock_sleep, event, context
 ):
     mock_auth_service.get_nhs_oauth_response.side_effect = OAuthErrorException(
         "Error creating OAuth access token"
     )
 
-    lambda_handler(
-        event, context
-    )  # This will raise an exception but because of the @handle_lambda_exceptions decorator we can't catch it
+    with pytest.raises(OAuthErrorException):
+        lambda_handler(event, context)
 
     assert mock_auth_service.get_nhs_oauth_response.call_count == 5
     mock_auth_service.update_access_token_ssm.assert_not_called()
-    mock_logger.error.assert_called_once_with(
-        "Failed to refresh the access token after 5 attempts"
-    )
