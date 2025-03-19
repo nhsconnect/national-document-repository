@@ -320,6 +320,11 @@ def mock_uuid(mocker):
     yield TEST_UUID
 
 
+@pytest.fixture
+def mock_sleep(mocker):
+    return mocker.patch("time.sleep")
+
+
 @contextmanager
 def expect_not_to_raise(exception, message_when_fail=""):
     try:

@@ -28,14 +28,11 @@ class NhsOauthService:
         time_safety_margin_seconds = 10
         remaining_time_before_expiration = access_token_expiration - time.time()
         if remaining_time_before_expiration < time_safety_margin_seconds:
-            access_token = self.get_new_access_token()
+            access_token = self.get_new_access_token().get("access_token", "")
 
         return access_token
 
     def get_new_access_token(self):
-        return self.get_nhs_oauth_response().get("access_token", "")
-
-    def get_nhs_oauth_response(self):
         logger.info("Getting new OAuth access token")
         try:
             access_token_ssm_parameter = self.get_parameters_for_new_access_token()
