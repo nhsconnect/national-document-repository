@@ -1,5 +1,8 @@
+import datetime
+
 import pytest
 from botocore.exceptions import ClientError
+from freezegun import freeze_time
 from services.base.s3_service import S3Service
 from tests.unit.conftest import (
     MOCK_BUCKET,
@@ -25,11 +28,15 @@ MOCK_EVENT_BODY = {
 }
 
 
+@freeze_time("2023-10-30T10:25:00")
 @pytest.fixture
 def mock_service(mocker, set_env):
     mocker.patch("boto3.client")
     mocker.patch("services.base.iam_service.IAMService")
     service = S3Service(custom_aws_role="mock_arn_custom_role")
+    service.expiration_time = datetime.datetime.now(
+        datetime.timezone.utc
+    ) + datetime.timedelta(hours=1)
     yield service
     S3Service._instance = None
 
@@ -52,19 +59,30 @@ def mock_list_objects_paginate(mock_client):
     return mock_paginator_method
 
 
-def test_create_upload_presigned_url(mock_service, mock_custom_client):
+def test_create_upload_presigned_url(mock_service, mocker, mock_custom_client):
     mock_custom_client.generate_presigned_post.return_value = (
         MOCK_PRESIGNED_URL_RESPONSE
     )
+
+    mock_service.iam_service = mocker.MagicMock()
+    mock_service.iam_service.assume_role.return_value = (
+        mock_custom_client,
+        mock_service.expiration_time,
+    )
+
     response = mock_service.create_upload_presigned_url(MOCK_BUCKET, TEST_UUID)
 
     assert response == MOCK_PRESIGNED_URL_RESPONSE
     mock_custom_client.generate_presigned_post.assert_called_once()
 
 
-def test_create_download_presigned_url(mock_service, mock_custom_client):
+def test_create_download_presigned_url(mock_service, mocker, mock_custom_client):
     mock_custom_client.generate_presigned_url.return_value = MOCK_PRESIGNED_URL_RESPONSE
-
+    mock_service.iam_service = mocker.MagicMock()
+    mock_service.iam_service.assume_role.return_value = (
+        mock_custom_client,
+        mock_service.expiration_time,
+    )
     response = mock_service.create_download_presigned_url(MOCK_BUCKET, TEST_FILE_KEY)
 
     assert response == MOCK_PRESIGNED_URL_RESPONSE
@@ -286,6 +304,7 @@ def test_not_created_custom_client_without_client_role(mocker):
     assert mock_service.custom_client is None
 
 
+@freeze_time("2023-10-30T10:25:00")
 def test_created_custom_client_when_client_role_is_passed(mocker):
     S3Service._instance = None
 
@@ -294,9 +313,12 @@ def test_created_custom_client_when_client_role_is_passed(mocker):
     iam_service = mocker.patch(
         "services.base.s3_service.IAMService", return_value=iam_service_instance
     )
-
+    mock_expiration_time = datetime.datetime.now(datetime.timezone.utc)
     custom_client_mock = mocker.MagicMock()
-    iam_service_instance.assume_role.return_value = custom_client_mock
+    iam_service_instance.assume_role.return_value = (
+        custom_client_mock,
+        mock_expiration_time,
+    )
 
     mock_service = S3Service(custom_aws_role="test")
 

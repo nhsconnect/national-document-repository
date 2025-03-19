@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping
 
 import boto3
@@ -21,25 +22,33 @@ class S3Service:
 
     def __init__(self, custom_aws_role=None):
         if not self.initialised:
-            config = BotoConfig(
+            self.config = BotoConfig(
                 retries={"max_attempts": 3, "mode": "standard"},
                 s3={"addressing_style": "virtual"},
                 signature_version="s3v4",
             )
             self.presigned_url_expiry = 1800
-            self.client = boto3.client("s3", config=config)
+            self.client = boto3.client("s3", config=self.config)
             self.initialised = True
             self.custom_client = None
+            self.custom_aws_role = custom_aws_role
             if custom_aws_role:
-                iam_service = IAMService()
-                self.custom_client = iam_service.assume_role(
-                    custom_aws_role, "s3", config=config
+                self.iam_service = IAMService()
+                self.custom_client, self.expiration_time = self.iam_service.assume_role(
+                    self.custom_aws_role, "s3", config=self.config
                 )
 
     # S3 Location should be a minimum of a s3_object_key but can also be a directory location in the form of
     # {{directory}}/{{s3_object_key}}
     def create_upload_presigned_url(self, s3_bucket_name: str, s3_object_location: str):
         if self.custom_client:
+            if datetime.now(timezone.utc) > self.expiration_time - timedelta(
+                minutes=10
+            ):
+                logger.info("Expired session, creating a new role session")
+                self.custom_client, self.expiration_time = self.iam_service.assume_role(
+                    self.custom_aws_role, "s3", config=self.config
+                )
             return self.custom_client.generate_presigned_post(
                 s3_bucket_name,
                 s3_object_location,
@@ -50,6 +59,13 @@ class S3Service:
 
     def create_download_presigned_url(self, s3_bucket_name: str, file_key: str):
         if self.custom_client:
+            if datetime.now(timezone.utc) > self.expiration_time - timedelta(
+                minutes=10
+            ):
+                logger.info("Expired session, creating a new role session")
+                self.custom_client, self.expiration_time = self.iam_service.assume_role(
+                    self.custom_aws_role, "s3", config=self.config
+                )
             logger.info("Generating presigned URL")
             return self.custom_client.generate_presigned_url(
                 "get_object",
