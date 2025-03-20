@@ -1,9 +1,9 @@
-type Props = { status: string };
+type Props = { status: string; className?: string };
 
 const ProgressBar = (props: Props) => {
-    const { status, ...elementProps } = props;
+    const { status, className, ...elementProps } = props;
     return (
-        <div {...elementProps}>
+        <div className={className} {...elementProps}>
             <progress className={'progress-bar'} aria-label={status} />
             <p role="status">{status}</p>
         </div>

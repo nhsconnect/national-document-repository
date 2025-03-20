@@ -251,8 +251,6 @@ $hunit: '%';
 // Lloyd George
 .lloydgeorge {
     &_record-stage {
-        max-width: 960px;
-
         &_links,
         a {
             padding-right: 30px;
@@ -951,6 +949,101 @@ $hunit: '%';
     max-width: 960px;
     padding: 0 1.0875rem 1.45rem;
     min-height: 75vh;
+
+    &.fullscreen {
+        max-width: unset;
+        padding: 0;
+
+        .nhsuk-main-wrapper {
+            padding: 0;
+        }
+
+        .lloydgeorge_record-stage {
+            height: calc(100vh - 93px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+
+            .header {
+                background-color: #005eb8;
+                padding: 15px 0;
+
+                @media (max-width: 990px) {
+                    padding: 15px 0 15px 15px;
+                }
+
+                .header-items {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin: 0 auto;
+                    max-width: 960px;
+                    color: white;
+                    flex-wrap: wrap;
+
+                    .exit-fullscreen-button {
+                        background-color: white;
+                        color: black;
+                        padding: 0 15px;
+                        display: flex;
+                        align-items: center;
+
+                        svg {
+                            fill: black;
+                        }
+                    }
+
+                    .title {
+                        font-size: 22px;
+                        font-weight: 400;
+                        margin: 0 auto 0 3rem;
+
+                        @media (max-width: 564px) {
+                            margin: 5px 0 0 0;
+                        }
+                    }
+
+                    .sign-out-link {
+                        color: white;
+                    }
+
+                    > * {
+                        margin-bottom: 0;
+                    }
+                }
+            }
+
+            &_links {
+                max-width: 960px;
+                margin: 0 auto 1rem auto;
+            }
+
+            .main-content {
+                padding: 0 1.0875rem 1.45rem;
+                justify-self: stretch;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+
+                .pdf-viewer-div {
+                    height: unset;
+                    flex: 1;
+                }
+            }
+
+            .top-info,
+            .loading-bar {
+                width: 960px;
+                margin: 1rem auto 0 auto;
+
+                @media (max-width: 960px) {
+                    max-width: 960px;
+                    width: unset;
+                    margin: 1rem 0 0 0;
+                }
+            }
+        }
+    }
 }
 
 .div-lg-input-cell {
@@ -1075,5 +1168,13 @@ $hunit: '%';
     .button-container {
         display: flex;
         align-items: baseline;
+    }
+}
+
+.nhsuk-footer-container {
+    padding-bottom: 0;
+
+    .nhsuk-footer {
+        margin-bottom: 0;
     }
 }
