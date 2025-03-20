@@ -13,27 +13,29 @@ export type Session = {
     auth: UserAuth | null;
     isLoggedIn: boolean;
     sessionOverride?: Partial<Session>;
+    isFullscreen?: boolean;
 };
 
 export type SessionContext = [Session, Dispatch<SetStateAction<Session>> | SetSessionOverride];
 
 const UserSessionContext = createContext<SessionContext | null>(null);
 const SessionProvider = ({ children, sessionOverride, setSessionOverride }: Props) => {
-    const emptyAuth = useMemo(
-        () => ({ auth: null, isLoggedIn: false, ...sessionOverride }),
+    const emptySession = useMemo(
+        () => ({ auth: null, isLoggedIn: false, ...sessionOverride, isFullscreen: false }),
         [sessionOverride],
     );
 
-    const storedAuth = sessionStorage.getItem('UserSession');
-    const auth: Session = storedAuth ? JSON.parse(storedAuth) : emptyAuth;
+    const userSessionValue = sessionStorage.getItem('UserSession');
+    const userSession: Session = userSessionValue ? JSON.parse(userSessionValue) : emptySession;
     const [session, setSession] = useState<Session>({
-        ...auth,
+        ...userSession,
         sessionOverride,
+        isFullscreen: false,
     });
 
     useEffect(() => {
-        sessionStorage.setItem('UserSession', JSON.stringify(session) ?? emptyAuth);
-    }, [session, emptyAuth]);
+        sessionStorage.setItem('UserSession', JSON.stringify(session) ?? emptySession);
+    }, [session, emptySession]);
 
     return (
         <UserSessionContext.Provider value={[session, setSessionOverride ?? setSession]}>
