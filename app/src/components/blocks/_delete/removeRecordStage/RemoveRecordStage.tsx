@@ -23,6 +23,8 @@ import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import BackButton from '../../../generic/backButton/BackButton';
+import useRole from '../../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 
 export type Props = {
     numberOfFiles: number;
@@ -35,6 +37,8 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetD
     useTitle({ pageTitle: 'Remove record' });
     const patientDetails = usePatient();
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.PENDING);
+
+    const role = useRole();
 
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
@@ -92,21 +96,26 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetD
         <>
             <BackButton />
             <h1>Remove this {recordType} record</h1>
-            <WarningCallout>
-                <WarningCallout.Label>Before removing</WarningCallout.Label>
-                <p data-testid="remove-record-warning-text">
-                    Only permanently remove this patient record if you have a valid reason to. For
-                    example, you confirmed these files have reached the end of their{' '}
-                    <a
-                        href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code/records-management-code-of-practice/#appendix-ii-retention-schedule"
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        retention period
-                    </a>
-                    .
-                </p>
-            </WarningCallout>
+
+            {role !== REPOSITORY_ROLE.PCSE && (
+                <WarningCallout>
+                    <WarningCallout.Label>Before removing</WarningCallout.Label>
+                    <p data-testid="remove-record-warning-text">
+                        Only permanently remove this patient record if you have a valid reason to.
+                        For example, you confirmed these files have reached the end of their{' '}
+                        <a
+                            href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code/records-management-code-of-practice/#appendix-ii-retention-schedule"
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label="Retention schedule - this link will open in a new tab"
+                        >
+                            retention period
+                        </a>
+                        .
+                    </p>
+                </WarningCallout>
+            )}
+
             <PatientSummary showDeceasedTag />
 
             {submissionState === SUBMISSION_STATE.PENDING && <ProgressBar status="Loading..." />}
@@ -190,7 +199,7 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetD
                         <DeleteSubmitStage
                             docType={DOCUMENT_TYPE.LLOYD_GEORGE}
                             numberOfFiles={numberOfFiles}
-                            recordType="ARF"
+                            recordType="Lloyd George"
                             resetDocState={resetDocState}
                         />
                     }

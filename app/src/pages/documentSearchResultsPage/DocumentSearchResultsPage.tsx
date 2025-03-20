@@ -1,7 +1,7 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
-import { Link, Outlet, Route, Routes, useNavigate } from 'react-router-dom';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
@@ -74,7 +74,7 @@ function DocumentSearchResultsPage() {
             void onPageLoad();
         }
     }, [nhsNumber, navigate, baseUrl, baseHeaders, config]);
-    const pageHeader = 'Download electronic health records and attachments';
+    const pageHeader = 'Manage this Lloyd George record';
     useTitle({ pageTitle: pageHeader });
 
     return (
@@ -98,7 +98,7 @@ function DocumentSearchResultsPage() {
                         path={getLastURLPath(routeChildren.ARF_DELETE) + '/*'}
                         element={
                             <DeleteSubmitStage
-                                recordType="ARF"
+                                recordType="Lloyd George"
                                 numberOfFiles={searchResults.length}
                                 docType={DOCUMENT_TYPE.ALL}
                                 resetDocState={() => null}
@@ -129,8 +129,6 @@ const DocumentSearchResultsPageIndex = ({
     nhsNumber,
     setDownloadState,
 }: PageIndexArgs) => {
-    const navigate = useNavigate();
-
     return (
         <>
             <h1 id="download-page-title">{pageHeader}</h1>
@@ -177,22 +175,6 @@ const DocumentSearchResultsPageIndex = ({
                     messageBody={'An error has occurred while preparing your download'}
                     errorBoxSummaryId={'error-box-summary'}
                 />
-            )}
-
-            {(submissionState === SUBMISSION_STATE.FAILED ||
-                submissionState === SUBMISSION_STATE.SUCCEEDED) && (
-                <p>
-                    <Link
-                        id="start-again-link"
-                        to=""
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate(routes.START);
-                        }}
-                    >
-                        Start Again
-                    </Link>
-                </p>
             )}
         </>
     );

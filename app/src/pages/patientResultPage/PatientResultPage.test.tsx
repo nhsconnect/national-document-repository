@@ -92,7 +92,6 @@ describe('PatientResultPage', () => {
             expect(
                 screen.queryByRole('radio', { name: 'Inactive patient' }),
             ).not.toBeInTheDocument();
-            expect(screen.queryByText(PAGE_TEXT)).not.toBeInTheDocument();
         });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(

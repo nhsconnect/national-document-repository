@@ -70,10 +70,6 @@ const DocumentSearchResultsOptions = (props: Props) => {
 
     return (
         <>
-            <p>
-                Only permanently delete all documents for this patient if you have a valid reason
-                to. For example, if the retention period of these documents has been reached.
-            </p>
             <div className="search-result-spinner-div">
                 {props.downloadState === SUBMISSION_STATE.PENDING ? (
                     <SpinnerButton
@@ -83,7 +79,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                     />
                 ) : (
                     <Button type="button" id="download-documents" onClick={downloadAll}>
-                        Download All Documents
+                        Download all documents
                     </Button>
                 )}
                 <a
@@ -100,7 +96,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                     data-testid="delete-all-documents-btn"
                     onClick={deleteAllDocuments}
                 >
-                    Delete All Documents
+                    Remove all documents
                 </Button>
             </div>
             {props.downloadState === SUBMISSION_STATE.SUCCEEDED && (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router-dom';
 import { routeChildren, routes } from '../../types/generic/routes';
@@ -16,7 +16,6 @@ function PatientResultPage() {
     const patientDetails = usePatient();
     const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
     const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
-    const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
     const { handleSubmit } = useForm();
@@ -53,7 +52,6 @@ function PatientResultPage() {
     const showDeceasedWarning = patientDetails?.deceased && !userIsPCSE;
     const showWarning =
         patientDetails?.superseded || patientDetails?.restricted || showDeceasedWarning;
-    const isGp = userIsGPAdmin || userIsGPClinical;
     const pageHeader = 'Patient details';
     useTitle({ pageTitle: pageHeader });
     return (
@@ -94,7 +92,7 @@ function PatientResultPage() {
                                 href="https://transform.england.nhs.uk/information-governance/guidance/access-to-the-health-and-care-records-of-deceased-people/"
                                 target="_blank"
                                 rel="noreferrer"
-                                aria-label="More Information: Access to the health and care records of deceased people"
+                                aria-label="Access to the health and care records of deceased people - this link will open in a new tab"
                             >
                                 Access to the health and care records of deceased people
                             </a>
@@ -107,14 +105,10 @@ function PatientResultPage() {
             <PatientSummary showDeceasedTag={userIsPCSE} />
 
             <form onSubmit={handleSubmit(submit)} className="patient-results-form">
-                {isGp && (
-                    <>
-                        <p id="gp-message">
-                            This page displays the current data recorded in the Personal
-                            Demographics Service for this patient.
-                        </p>
-                    </>
-                )}
+                <p id="gp-message">
+                    This page displays the current data recorded in the Personal Demographics
+                    Service for this patient.
+                </p>
                 <Button type="submit" id="verify-submit" className="nhsuk-u-margin-top-6">
                     Confirm patient details and continue
                 </Button>

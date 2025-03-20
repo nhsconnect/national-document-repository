@@ -57,7 +57,7 @@ describe('<DocumentSearchResultsPage />', () => {
 
             expect(
                 screen.getByRole('heading', {
-                    name: 'Download electronic health records and attachments',
+                    name: 'Manage this Lloyd George record',
                 }),
             ).toBeInTheDocument();
 
@@ -66,8 +66,6 @@ describe('<DocumentSearchResultsPage />', () => {
                     screen.queryByRole('progressbar', { name: 'Loading...' }),
                 ).not.toBeInTheDocument();
             });
-
-            expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
         });
 
         it('displays a progress bar when the document search results are being requested', async () => {
@@ -100,11 +98,9 @@ describe('<DocumentSearchResultsPage />', () => {
             });
 
             expect(
-                screen.queryByRole('button', { name: 'Download All Documents' }),
+                screen.queryByRole('button', { name: 'Download all documents' }),
             ).not.toBeInTheDocument();
-            expect(
-                screen.queryByRole('button', { name: 'Delete All Documents' }),
-            ).not.toBeInTheDocument();
+            expect(screen.queryByTestId('delete-all-documents-btn')).not.toBeInTheDocument();
         });
 
         it('displays a error messages when the call to document manifest fails', async () => {
@@ -122,22 +118,21 @@ describe('<DocumentSearchResultsPage />', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             await waitFor(() => {
-                screen.getByRole('button', { name: 'Download All Documents' });
+                screen.getByRole('button', { name: 'Download all documents' });
             });
             act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+                userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
             });
 
             expect(
                 await screen.findByText('An error has occurred while preparing your download'),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Download All Documents' }),
+                screen.getByRole('button', { name: 'Download all documents' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Delete All Documents' }),
+                screen.getByRole('button', { name: 'Remove all documents' }),
             ).toBeInTheDocument();
-            expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
         });
 
         it('displays a error messages when the call to document manifest return 400', async () => {
@@ -155,21 +150,18 @@ describe('<DocumentSearchResultsPage />', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             await waitFor(() => {
-                screen.getByRole('button', { name: 'Download All Documents' });
+                screen.getByRole('button', { name: 'Download all documents' });
             });
             act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+                userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
             });
             expect(
                 await screen.findByText('An error has occurred while preparing your download'),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Download All Documents' }),
+                screen.getByRole('button', { name: 'Download all documents' }),
             ).toBeInTheDocument();
-            expect(
-                screen.getByRole('button', { name: 'Delete All Documents' }),
-            ).toBeInTheDocument();
-            expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
+            expect(screen.getByTestId('delete-all-documents-btn')).toBeInTheDocument();
         });
 
         it('displays a message when a document search return 423 locked error', async () => {
@@ -226,7 +218,7 @@ describe('<DocumentSearchResultsPage />', () => {
             renderPage(history);
 
             const downloadButton = await screen.findByRole('button', {
-                name: 'Download All Documents',
+                name: 'Download all documents',
             });
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
             act(() => {
@@ -246,23 +238,6 @@ describe('<DocumentSearchResultsPage />', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to Start page when user clicks on start again button', async () => {
-            mockedAxios.get.mockImplementation(() =>
-                Promise.resolve({ data: [buildSearchResult()] }),
-            );
-
-            renderPage(history);
-
-            await waitFor(() => {
-                expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
-            });
-
-            userEvent.click(screen.getByRole('link', { name: 'Start Again' }));
-
-            await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
-            });
-        });
         it('navigates to Error page when call to doc manifest return 500', async () => {
             mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
             const errorResponse = {
@@ -275,10 +250,6 @@ describe('<DocumentSearchResultsPage />', () => {
 
             act(() => {
                 renderPage(history);
-            });
-
-            await waitFor(() => {
-                expect(screen.queryByRole('link', { name: 'Start Again' })).not.toBeInTheDocument();
             });
 
             await waitFor(() => {
