@@ -69,6 +69,11 @@ class PdfStitchingService:
             == SnomedCodes.LLOYD_GEORGE.value.code
             else SupportedDocumentTypes.ARF
         )
+
+        if doc_type != SupportedDocumentTypes.LG:
+            logger.info("Other document types have not been implemented yet")
+            raise PdfStitchingException(400, LambdaError.StitchError)
+
         self.target_dynamo_table = doc_type.get_dynamodb_table_name()
         self.target_bucket = doc_type.get_s3_bucket_name()
 
@@ -283,6 +288,7 @@ class PdfStitchingService:
                     },
                 )
                 if not original_references.get("Item"):
+                    logger.info("Reverting original multipart references deletion")
                     self.dynamo_service.create_item(
                         table_name=self.target_dynamo_table,
                         item=document_reference.model_dump(
@@ -297,6 +303,7 @@ class PdfStitchingService:
                     },
                 )
                 if unstitched_references.get("Item"):
+                    logger.info("Reverting multipart references creation")
                     self.dynamo_service.delete_item(
                         table_name=self.unstitched_lloyd_george_table_name,
                         key={

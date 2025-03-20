@@ -213,8 +213,8 @@ class DynamoDBService:
     def get_item(self, table_name: str, key: dict):
         try:
             table = self.get_table(table_name)
-            table.get_item(Key=key)
             logger.info(f"Retrieving item from table: {table_name}")
+            return table.get_item(Key=key)
         except ClientError as e:
             logger.error(
                 str(e), {"Result": f"Unable to retrieve item from table: {table_name}"}
