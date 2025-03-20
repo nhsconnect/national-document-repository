@@ -126,7 +126,7 @@ def test_get_new_access_token_raises_OAuthErrorException(mocker):
             "services.base.nhs_oauth_service.NhsOauthService.update_access_token_ssm"
         )
 
-        nhs_oauth_service.get_new_access_token()
+        nhs_oauth_service.get_new_access_token_response()
 
         mock_create_jwt.assert_called_with(
             {SSMParameter.NHS_OAUTH_ENDPOINT.value: mock_nhs_oauth_endpoint}
@@ -155,7 +155,7 @@ def test_get_new_access_token_returns_token_response(mocker):
     )
     expected = RESPONSE_TOKEN
 
-    actual = nhs_oauth_service.get_new_access_token()
+    actual = nhs_oauth_service.get_new_access_token_response()
 
     mock_create_jwt.assert_called_with(
         {SSMParameter.NHS_OAUTH_ENDPOINT.value: mock_nhs_oauth_endpoint}
@@ -176,7 +176,7 @@ def test_pds_request_not_refresh_token_if_more_than_10_seconds_before_expiry(moc
         return_value=json.dumps(mock_response_token),
     )
     mock_new_access_token = mocker.patch(
-        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token"
+        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token_response"
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
 
@@ -201,7 +201,7 @@ def test_pds_request_refresh_token_9_seconds_before_expiration(
         return_value=json.dumps(mock_response_token),
     )
     mock_new_access_token = mocker.patch(
-        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token",
+        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token_response",
         return_value=new_mock_access_token_response,
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
@@ -225,7 +225,7 @@ def test_pds_request_refresh_token_if_already_expired(mocker):
         return_value=json.dumps(mock_response_token),
     )
     mock_new_access_token = mocker.patch(
-        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token",
+        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token_response",
         return_value=new_mock_access_token_response,
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
@@ -249,7 +249,7 @@ def test_pds_request_refresh_token_if_already_expired_11_seconds_ago(mocker):
         return_value=json.dumps(mock_response_token),
     )
     mock_new_access_token = mocker.patch(
-        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token",
+        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token_response",
         return_value=new_mock_access_token_response,
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
@@ -269,7 +269,7 @@ def test_pds_request_expired_token(mocker):
     )
     mocker.patch("time.time", return_value=1700000000.953031)
     mock_new_access_token = mocker.patch(
-        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token",
+        "services.base.nhs_oauth_service.NhsOauthService.get_new_access_token_response",
         return_value=new_mock_access_token_response,
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
