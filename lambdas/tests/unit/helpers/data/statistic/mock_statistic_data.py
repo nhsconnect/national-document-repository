@@ -157,6 +157,7 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountViewed": 35,
         "DailyCountDownloaded": 4,
         "DailyCountDeleted": 1,
+        "DailyCountUsersAccessingDeceased": 12,
         "StatisticID": "OrganisationData#5acda4bf-8b93-4ba0-8410-789aac4fcbae",
     },
     {
@@ -168,6 +169,7 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountViewed": 15,
         "DailyCountDownloaded": 1,
         "DailyCountDeleted": 1,
+        "DailyCountUsersAccessingDeceased": 22,
         "StatisticID": "OrganisationData#9ee2c3d1-97b9-4c34-b75c-83e7d1b442f4",
     },
     {
@@ -179,6 +181,7 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountViewed": 30,
         "DailyCountDownloaded": 5,
         "DailyCountDeleted": 1,
+        "DailyCountUsersAccessingDeceased": 9,
         "StatisticID": "OrganisationData#3f54cfe3-6c84-4bb2-b5b4-b786aa03b9c7",
     },
 ]
