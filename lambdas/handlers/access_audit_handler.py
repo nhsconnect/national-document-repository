@@ -2,6 +2,7 @@ import json
 
 from enums.lambda_error import LambdaError
 from services.access_audit_service import AccessAuditService
+from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
@@ -10,6 +11,8 @@ from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_exceptions import AccessAuditException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+
+logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
@@ -28,4 +31,5 @@ def lambda_handler(event, context):
     request_context.patient_nhs_no = nhs_number
     access_audit_service = AccessAuditService()
     access_audit_service.manage_access_request(nhs_number, body, request_type)
+    logger.info("Successful processed access request to view deceased patient")
     return ApiGatewayResponse(200, "", "POST").create_api_gateway_response()

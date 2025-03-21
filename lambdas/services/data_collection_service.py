@@ -18,6 +18,7 @@ from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
+    CountUsersAccessedDeceasedPatient,
     LloydGeorgeRecordsDeleted,
     LloydGeorgeRecordsDownloaded,
     LloydGeorgeRecordsSearched,
@@ -194,7 +195,9 @@ class DataCollectionService:
         daily_count_searched = self.get_cloud_watch_query_result(
             LloydGeorgeRecordsSearched, start_date, end_date
         )
-
+        daily_count_deceased = self.get_cloud_watch_query_result(
+            CountUsersAccessedDeceasedPatient, start_date, end_date
+        )
         joined_query_result = self.join_results_by_ods_code(
             [
                 number_of_patients,
@@ -204,6 +207,7 @@ class DataCollectionService:
                 daily_count_deleted,
                 daily_count_stored,
                 daily_count_searched,
+                daily_count_deceased,
             ]
         )
 

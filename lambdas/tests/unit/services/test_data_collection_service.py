@@ -40,6 +40,7 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     HASHED_USER_ID_1_WITH_ADMIN_ROLE,
     HASHED_USER_ID_1_WITH_PCSE_ROLE,
     HASHED_USER_ID_2_WITH_CLINICAL_ROLE,
+    MOCK_DECEASED_ACCESS,
     MOCK_LG_DELETED,
     MOCK_LG_DOWNLOADED,
     MOCK_LG_STORED,
@@ -49,6 +50,7 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
 )
 from utils.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
+    CountUsersAccessedDeceasedPatient,
     LloydGeorgeRecordsDeleted,
     LloydGeorgeRecordsDownloaded,
     LloydGeorgeRecordsSearched,
@@ -108,6 +110,8 @@ def mock_query_logs(mocker):
             return MOCK_UNIQUE_ACTIVE_USER_IDS
         elif query_params == LloydGeorgeRecordsSearched:
             return MOCK_PATIENT_SEARCHED
+        elif query_params == CountUsersAccessedDeceasedPatient:
+            return MOCK_DECEASED_ACCESS
 
     patched_instance = mocker.patch(
         "services.data_collection_service.CloudwatchService",
