@@ -551,6 +551,10 @@ class LambdaError(Enum):
         "err_code": "DBS_4001",
         "message": "Failed to parse DynamoDb event stream",
     }
+    SqsInvalidEvent = {
+        "err_code": "SQS_4001",
+        "message": "Failed to parse SQS event",
+    }
 
     MockError = {
         "message": "Client error",
