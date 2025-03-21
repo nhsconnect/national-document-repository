@@ -6,7 +6,7 @@ from enums.death_notification_status import DeathNotificationStatus
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.mns_notification_types import MNSNotificationTypes
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
-from models.mns_sqs_message import MNSSQSMessage
+from models.sqs.mns_sqs_message import MNSSQSMessage
 from services.base.dynamo_service import DynamoDBService
 from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService

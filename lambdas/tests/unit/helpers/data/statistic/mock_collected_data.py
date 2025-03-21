@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from models.statistics import (
+from models.report.statistics import (
     ApplicationData,
     OrganisationData,
     RecordStoreData,

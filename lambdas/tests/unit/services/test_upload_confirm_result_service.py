@@ -6,7 +6,7 @@ from enums.supported_document_types import SupportedDocumentTypes
 from enums.virus_scan_result import VirusScanResult
 from models.document_reference import DocumentReference
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
-from models.nrl_sqs_message import NrlSqsMessage
+from models.sqs.nrl_sqs_message import NrlSqsMessage
 from services.upload_confirm_result_service import UploadConfirmResultService
 from tests.unit.conftest import (
     APIM_API_URL,

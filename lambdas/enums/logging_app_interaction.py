@@ -10,6 +10,8 @@ class LoggingAppInteraction(Enum):
     DOWNLOAD_RECORD = "Download a record"
     DELETE_RECORD = "Delete a record"
     UPLOAD_RECORD = "Upload a record"
+    STITCH_RECORD = "Stitch a record"
+    ODS_REPORT = "Download an ODS report"
     LOGOUT = "Logout"
     SEND_FEEDBACK = "Send feedback"
     FEATURE_FLAGS = "Feature flags"

@@ -3,6 +3,7 @@ import json
 from enums.feature_flags import FeatureFlags
 from enums.file_type import FileType
 from enums.lambda_error import LambdaError
+from enums.logging_app_interaction import LoggingAppInteraction
 from services.feature_flags_service import FeatureFlagService
 from services.ods_report_service import OdsReportService
 from utils.audit_logging_setup import LoggingService
@@ -29,6 +30,8 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 @set_request_context_for_logging
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.ODS_REPORT.value
+
     if "httpMethod" in event:
         feature_flag_service = FeatureFlagService()
         flag_name = FeatureFlags.ODS_REPORT_LAMBDA_ENABLED.value

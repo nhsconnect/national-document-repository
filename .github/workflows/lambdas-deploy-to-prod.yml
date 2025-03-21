@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_version:
-        description: "What tagged verison do you want to push to prod?"
+        description: "Which tagged version do you want to push to prod?"
         required: true
         type: "string"
 

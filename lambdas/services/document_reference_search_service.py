@@ -6,7 +6,8 @@ from botocore.exceptions import ClientError
 from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from models.document_reference import DocumentReference
+from inflection import underscore
+from models.document_reference import DocumentReference, SearchDocumentReference
 from pydantic import ValidationError
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
@@ -48,24 +49,34 @@ class DocumentReferenceSearchService(DocumentService):
                     raise DocumentRefSearchException(
                         423, LambdaError.UploadInProgressError
                     )
-                results.extend(
-                    {
+                for document in documents:
+                    document_model = {
                         **document.model_dump(
                             include={
-                                "file_name",
-                                "created",
-                                "virus_scanner_result",
-                                "id",
-                            },
-                            by_alias=True,
-                        ),
-                        "fileSize": self.s3_service.get_file_size(
-                            s3_bucket_name=document.get_file_bucket(),
-                            object_key=document.get_file_key(),
-                        ),
+                                underscore(DocumentReferenceMetadataFields.ID.value),
+                                underscore(
+                                    DocumentReferenceMetadataFields.FILE_NAME.value
+                                ),
+                                underscore(
+                                    DocumentReferenceMetadataFields.CREATED.value
+                                ),
+                                underscore(
+                                    DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value
+                                ),
+                            }
+                        )
                     }
-                    for document in documents
-                )
+                    document_model.update(
+                        {
+                            "file_size": self.s3_service.get_file_size(
+                                s3_bucket_name=document.get_file_bucket(),
+                                object_key=document.get_file_key(),
+                            )
+                        }
+                    )
+
+                    search_result = SearchDocumentReference(**document_model)
+                    results.append(search_result.model_dump(by_alias=True))
             return results
         except (
             JSONDecodeError,
