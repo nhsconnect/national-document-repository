@@ -1,8 +1,6 @@
 import { Card } from 'nhsuk-react-components';
 import { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from 'react';
 import PdfViewer from '../pdfViewer/PdfViewer';
-import useRole from '../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LGRecordActionLink } from '../../../types/blocks/lloydGeorgeActions';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import RecordMenuCard from '../recordMenuCard/RecordMenuCard';
@@ -32,8 +30,6 @@ function RecordCard({
     setStage = () => {},
     showMenu = false,
 }: Props) {
-    const role = useRole();
-    const userIsGpClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
     const mounted = useRef(false);
 
     useEffect(() => {
@@ -53,7 +49,12 @@ function RecordCard({
 
     const RecordLayout = ({ children }: { children: ReactNode }) => {
         if (isFullScreen) {
-            return <div>{children}</div>;
+            return (
+                <>
+                    {detailsElement}
+                    {children}
+                </>
+            );
         } else {
             return (
                 <Card className="lloydgeorge_record-stage_pdf">
@@ -61,7 +62,7 @@ function RecordCard({
                         data-testid="pdf-card"
                         className="lloydgeorge_record-stage_pdf-content"
                     >
-                        {cloudFrontUrl && !userIsGpClinical && (
+                        {cloudFrontUrl && (
                             <button
                                 className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
                                 data-testid="full-screen-btn"
