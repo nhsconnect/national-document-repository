@@ -92,6 +92,7 @@ MOCK_ORGANISATION_DATA_1 = OrganisationData(
     daily_count_viewed=35,
     daily_count_downloaded=4,
     daily_count_deleted=1,
+    daily_count_users_accessing_deceased=12,
 )
 MOCK_ORGANISATION_DATA_2 = OrganisationData(
     statistic_id="9ee2c3d1-97b9-4c34-b75c-83e7d1b442f4",
@@ -103,6 +104,7 @@ MOCK_ORGANISATION_DATA_2 = OrganisationData(
     daily_count_viewed=15,
     daily_count_downloaded=1,
     daily_count_deleted=1,
+    daily_count_users_accessing_deceased=22,
 )
 MOCK_ORGANISATION_DATA_3 = OrganisationData(
     statistic_id="3f54cfe3-6c84-4bb2-b5b4-b786aa03b9c7",
@@ -114,6 +116,7 @@ MOCK_ORGANISATION_DATA_3 = OrganisationData(
     daily_count_viewed=30,
     daily_count_downloaded=5,
     daily_count_deleted=1,
+    daily_count_users_accessing_deceased=9,
 )
 
 EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
@@ -125,6 +128,7 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_downloaded": 4,
             "weekly_count_deleted": 1,
             "weekly_count_searched": 0,
+            "weekly_count_users_accessing_deceased": 12,
             "average_records_per_patient": 4.5,
             "number_of_patients": 4,
         },
@@ -135,6 +139,7 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_downloaded": 1 + 5,
             "weekly_count_deleted": 1 + 1,
             "weekly_count_searched": 0,
+            "weekly_count_users_accessing_deceased": 31,
             "average_records_per_patient": (3.51 + 2.78) / 2,
             "number_of_patients": 10,
         },
@@ -299,6 +304,7 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Weekly count downloaded": 4,
             "Weekly count searched": 0,
             "Weekly count stored": 0,
+            "Weekly count users accessing deceased": 12,
             "Weekly count viewed": 35,
         },
         {
@@ -322,6 +328,7 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Weekly count downloaded": 1 + 5,
             "Weekly count searched": 0,
             "Weekly count stored": 0 + 2,
+            "Weekly count users accessing deceased": 31,
             "Weekly count viewed": 15 + 30,
         },
     ]
