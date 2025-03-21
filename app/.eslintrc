@@ -4,7 +4,7 @@
         "es6": true,
         "node": true
     },
-    "plugins": ["unused-imports", "cypress"],
+    "plugins": ["unused-imports", "cypress", "import"],
     "extends": [
         "react-app",
         "react-app/jest",
