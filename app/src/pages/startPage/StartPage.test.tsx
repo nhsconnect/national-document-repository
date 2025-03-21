@@ -56,7 +56,7 @@ describe('StartPage', () => {
             }),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/if there is an issue with this service or call 0300 303 5678\./i),
+            screen.getByText(/if there is an issue with this service or call 0300 303 5035\./i),
         ).toBeInTheDocument();
     });
 
@@ -68,7 +68,7 @@ describe('StartPage', () => {
             name: /NHS National Service Desk/i,
         });
         expect(
-            screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
+            screen.getByText(/if there is an issue with this service or call 0300 303 5035/i),
         ).toBeInTheDocument();
 
         expect(nationalServiceDeskLink).toHaveAttribute(

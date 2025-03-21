@@ -60,7 +60,7 @@ const ServerErrorPage = () => {
                 >
                     Contact the NHS National Service Desk
                 </a>{' '}
-                or call 0300 303 5678
+                or call 0300 303 5035
             </p>
 
             <p>
