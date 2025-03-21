@@ -17,6 +17,7 @@ class AuthoriserService:
     def __init__(self):
         self.redact_session_id = ""
         self.allowed_nhs_numbers = []
+        self.deceased_nhs_numbers = []
         self.manage_user_session_service = ManageUserSessionAccess()
 
     def auth_request(
@@ -38,11 +39,17 @@ class AuthoriserService:
             current_session = self.manage_user_session_service.find_login_session(
                 ndr_session_id
             )
-            list_of_allowed_nhs_numbers = current_session.get(
-                "AllowedNHSNumbers", False
+            self.allowed_nhs_numbers = (
+                current_session.get("AllowedNHSNumbers", "").split(",")
+                if current_session.get("AllowedNHSNumbers")
+                else []
             )
-            if list_of_allowed_nhs_numbers:
-                self.allowed_nhs_numbers = list_of_allowed_nhs_numbers.split(",")
+            self.deceased_nhs_numbers = (
+                current_session.get("DeceasedNHSNumbers", "").split(",")
+                if current_session.get("DeceasedNHSNumbers")
+                else []
+            )
+
             self.validate_login_session(float(current_session["TimeToExist"]))
 
             resource_denied = self.deny_access_policy(path, user_role, nhs_number)
@@ -64,10 +71,16 @@ class AuthoriserService:
         deny_access_to_patient = (
             nhs_number not in self.allowed_nhs_numbers if nhs_number else False
         )
+        deny_access_to_deceased_patient = (
+            nhs_number not in self.deceased_nhs_numbers if nhs_number else False
+        )
         deny_access_to_clinical_role = user_role == RepositoryRole.GP_CLINICAL.value
         deny_access_to_pcse_role = user_role == RepositoryRole.PCSE.value
 
         match path:
+            case "/AccessAudit":
+                deny_resource = deny_access_to_deceased_patient
+
             case "/DocumentDelete":
                 deny_resource = deny_access_to_patient or deny_access_to_clinical_role
 
@@ -83,6 +96,12 @@ class AuthoriserService:
 
             case "/LloydGeorgeStitch":
                 deny_resource = deny_access_to_patient or deny_access_to_pcse_role
+
+            case "/OdsReport":
+                deny_resource = False
+
+            case "/SearchPatient":
+                deny_resource = False
 
             case "/UploadConfirm":
                 deny_resource = (
@@ -105,11 +124,6 @@ class AuthoriserService:
                     or deny_access_to_pcse_role
                 )
 
-            case "/SearchPatient":
-                deny_resource = False
-
-            case "/OdsReport":
-                deny_resource = False
             case _:
                 deny_resource = deny_access_to_patient
 

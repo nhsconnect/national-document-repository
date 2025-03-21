@@ -82,7 +82,7 @@ function SelectStage({ setDocuments, documents, startUpload }: Readonly<Props>) 
                 >
                     Upload documents
                 </Fieldset.Legend>
-                <PatientSummary />
+                <PatientSummary showDeceasedTag />
 
                 <Fieldset>
                     <h2>Electronic health records</h2>

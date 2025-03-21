@@ -1,5 +1,5 @@
 import { ErrorSummary } from 'nhsuk-react-components';
-import { MouseEvent } from 'react';
+import { LegacyRef, MouseEvent } from 'react';
 import { UploadFilesErrors } from '../../../types/pages/UploadDocumentsPage/types';
 import { groupUploadErrorsByType } from '../../../helpers/utils/fileUploadErrorMessages';
 
@@ -13,6 +13,7 @@ type Props = {
     dataTestId?: string;
     errorOnClick?: () => void;
     errorMessageList?: UploadFilesErrors[];
+    scrollToRef?: LegacyRef<HTMLDivElement>;
 };
 
 type UploadErrorMessagesProps = {
@@ -51,12 +52,13 @@ const ErrorBox = ({
     errorMessageList,
     errorOnClick,
     dataTestId,
+    scrollToRef,
 }: Props) => {
     const hasInputLink = errorInputLink && messageLinkBody;
     const hasOnClick = errorOnClick && messageLinkBody;
 
     return (
-        <div id="error-box" data-testid={dataTestId}>
+        <div id="error-box" data-testid={dataTestId} ref={scrollToRef}>
             <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
                 <ErrorSummary.Title id={errorBoxSummaryId}>{messageTitle}</ErrorSummary.Title>
                 <ErrorSummary.Body>
