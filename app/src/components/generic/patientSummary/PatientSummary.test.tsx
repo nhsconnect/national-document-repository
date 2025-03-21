@@ -41,4 +41,37 @@ describe('PatientSummary', () => {
         const expectedGivenName = 'Comfort Zulu';
         expect(screen.getByText(expectedGivenName)).toBeInTheDocument();
     });
+
+    it('renders deceased patient tag for a deceased patient when tag is enabled', () => {
+        const mockDetails = buildPatientDetails({
+            deceased: true,
+        });
+
+        mockedUsePatient.mockReturnValue(mockDetails);
+        render(<PatientSummary showDeceasedTag />);
+
+        expect(screen.getByTestId('deceased-patient-tag')).toBeInTheDocument();
+    });
+
+    it('does not render deceased patient tag for a deceased patient when tag is disabled', () => {
+        const mockDetails = buildPatientDetails({
+            deceased: true,
+        });
+
+        mockedUsePatient.mockReturnValue(mockDetails);
+        render(<PatientSummary />);
+
+        expect(screen.queryByTestId('deceased-patient-tag')).not.toBeInTheDocument();
+    });
+
+    it('does not render deceased patient tag for a none deceased patient when tag is enabled', () => {
+        const mockDetails = buildPatientDetails({
+            deceased: false,
+        });
+
+        mockedUsePatient.mockReturnValue(mockDetails);
+        render(<PatientSummary />);
+
+        expect(screen.queryByTestId('deceased-patient-tag')).not.toBeInTheDocument();
+    });
 });

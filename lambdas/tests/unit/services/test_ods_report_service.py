@@ -293,6 +293,7 @@ def test_create_pdf_report(ods_report_service):
 
 @freeze_time("2024-01-01T12:00:00Z")
 def test_save_report_to_s3(ods_report_service, mocker):
+    ods_report_service.s3_service = mocker.Mock()
     mocker.patch.object(ods_report_service.s3_service, "upload_file")
 
     ods_report_service.save_report_to_s3("ODS123", "test_report.csv", "path/to/file")
@@ -306,6 +307,7 @@ def test_save_report_to_s3(ods_report_service, mocker):
 
 @freeze_time("2024-01-01T12:00:00Z")
 def test_get_pre_signed_url(ods_report_service, mocker):
+    ods_report_service.s3_service = mocker.Mock()
     mocker.patch.object(ods_report_service.s3_service, "create_download_presigned_url")
 
     ods_report_service.get_pre_signed_url("ODS123", "test_report.csv")

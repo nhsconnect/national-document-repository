@@ -19,6 +19,7 @@ jest.mock('react-router-dom', () => ({
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/useRole');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockUseNavigate = jest.fn();
