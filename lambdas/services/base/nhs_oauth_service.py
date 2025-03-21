@@ -24,14 +24,15 @@ class NhsOauthService:
             int(access_token_response["expires_in"])
             + int(access_token_response["issued_at"]) / 1000
         )
+
         time_safety_margin_seconds = 10
         remaining_time_before_expiration = access_token_expiration - time.time()
         if remaining_time_before_expiration < time_safety_margin_seconds:
-            access_token = self.get_new_access_token()
+            access_token = self.get_new_access_token_response().get("access_token", "")
 
         return access_token
 
-    def get_new_access_token(self):
+    def get_new_access_token_response(self):
         logger.info("Getting new OAuth access token")
         try:
             access_token_ssm_parameter = self.get_parameters_for_new_access_token()
@@ -45,14 +46,16 @@ class NhsOauthService:
                 jwt_token, nhs_oauth_endpoint
             )
             nhs_oauth_response.raise_for_status()
-            token_access_response = nhs_oauth_response.json()
-            self.update_access_token_ssm(json.dumps(token_access_response))
+
+            logger.info("New OAuth access token created successfully")
+
+            return nhs_oauth_response.json()
+
         except HTTPError as e:
             logger.error(
-                e.response, {"Result": "Issue while creating new access token"}
+                e.response, {"Result": "Issue while creating new OAuth access token"}
             )
-            raise OAuthErrorException("Error creating oauth access token")
-        return token_access_response["access_token"]
+            raise OAuthErrorException("Error creating OAuth access token")
 
     def get_parameters_for_new_access_token(self):
         parameters = [
@@ -70,6 +73,7 @@ class NhsOauthService:
             parameter_value=parameter_value,
             parameter_type="SecureString",
         )
+        logger.info("New NHS OAuth token stored on SSM")
 
     def get_current_access_token(self):
         parameter = SSMParameter.PDS_API_ACCESS_TOKEN.value
