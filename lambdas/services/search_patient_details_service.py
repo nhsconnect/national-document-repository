@@ -42,7 +42,7 @@ class SearchPatientDetailsService:
             self.manage_user_session_service.update_auth_session_with_permitted_search(
                 user_role=self.user_role,
                 nhs_number=nhs_number,
-                deceased=patient_details.deceased,
+                write_to_deceased_column=patient_details.deceased,
             )
 
             response = patient_details.model_dump_json(
