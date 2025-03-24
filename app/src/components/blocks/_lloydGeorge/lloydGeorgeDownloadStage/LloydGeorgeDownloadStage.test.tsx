@@ -146,7 +146,7 @@ describe('LloydGeorgeDownloadStage', () => {
 
         jest.useFakeTimers();
 
-        renderComponent(history, { deleteAfterDownload: true });
+        renderComponent(history);
 
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
@@ -223,7 +223,6 @@ describe('LloydGeorgeDownloadStage', () => {
 
 const renderComponent = (history: MemoryHistory, propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
-        deleteAfterDownload: false,
         ...propsOverride,
         numberOfFiles: mockPdf.numberOfFiles,
     };

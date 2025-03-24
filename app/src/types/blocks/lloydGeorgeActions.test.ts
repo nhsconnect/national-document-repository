@@ -1,12 +1,7 @@
 import { REPOSITORY_ROLE } from '../generic/authRole';
-import {
-    getBSOLUserRecordActionLinks,
-    getNonBSOLUserRecordActionLinks,
-    LGRecordActionLink,
-    RECORD_ACTION,
-} from './lloydGeorgeActions';
+import { getUserRecordActionLinks, LGRecordActionLink, RECORD_ACTION } from './lloydGeorgeActions';
 
-describe('getBSOLUserRecordActionLinks', () => {
+describe('getUserRecordActionLinks', () => {
     describe('When role = GP_ADMIN', () => {
         it('returns record links for remove record and download record', () => {
             const role = REPOSITORY_ROLE.GP_ADMIN;
@@ -24,7 +19,7 @@ describe('getBSOLUserRecordActionLinks', () => {
                 }),
             ]);
 
-            const actual = getBSOLUserRecordActionLinks({
+            const actual = getUserRecordActionLinks({
                 role,
                 hasRecordInStorage: hasRecordInRepo,
             });
@@ -35,7 +30,7 @@ describe('getBSOLUserRecordActionLinks', () => {
             const role = REPOSITORY_ROLE.GP_ADMIN;
             const hasRecordInRepo = false;
             const expectedOutput: Array<LGRecordActionLink> = [];
-            const actual = getBSOLUserRecordActionLinks({
+            const actual = getUserRecordActionLinks({
                 role,
                 hasRecordInStorage: hasRecordInRepo,
             });
@@ -48,65 +43,8 @@ describe('getBSOLUserRecordActionLinks', () => {
         it('returns an empty array in any case', () => {
             const role = REPOSITORY_ROLE.GP_CLINICAL;
 
-            expect(getBSOLUserRecordActionLinks({ role, hasRecordInStorage: true })).toEqual([]);
-            expect(getBSOLUserRecordActionLinks({ role, hasRecordInStorage: false })).toEqual([]);
-        });
-    });
-});
-
-describe('getNonBSOLUserRecordActionLinks', () => {
-    const mockDownloadAndRemoveOnClick = jest.fn();
-    describe('When role = GP_ADMIN', () => {
-        it('returns record links for "download and remove"', () => {
-            const role = REPOSITORY_ROLE.GP_ADMIN;
-            const hasRecordInRepo = true;
-            const expectedOutput = expect.arrayContaining([
-                expect.objectContaining({
-                    label: 'Download and remove files',
-                    key: 'download-and-remove-record-btn',
-                    type: RECORD_ACTION.DOWNLOAD,
-                    onClick: mockDownloadAndRemoveOnClick,
-                }),
-            ]);
-
-            const actual = getNonBSOLUserRecordActionLinks({
-                role,
-                hasRecordInStorage: hasRecordInRepo,
-                onClickFunctionForDownloadAndRemove: mockDownloadAndRemoveOnClick,
-            });
-
-            expect(actual).toEqual(expectedOutput);
-        });
-
-        it('returns an empty array if no record in repo (aka nothing to download or remove)', () => {
-            const role = REPOSITORY_ROLE.GP_ADMIN;
-            const hasRecordInRepo = false;
-            const expectedOutput: Array<LGRecordActionLink> = [];
-            const actual = getNonBSOLUserRecordActionLinks({
-                role,
-                hasRecordInStorage: hasRecordInRepo,
-                onClickFunctionForDownloadAndRemove: mockDownloadAndRemoveOnClick,
-            });
-
-            expect(actual).toEqual(expectedOutput);
-        });
-    });
-
-    describe('When role = GP_CLINICAL', () => {
-        const args = {
-            role: REPOSITORY_ROLE.GP_CLINICAL,
-            onClickFunctionForDownloadAndRemove: mockDownloadAndRemoveOnClick,
-        };
-        it('returns an empty array in any case', () => {
-            expect(getNonBSOLUserRecordActionLinks({ ...args, hasRecordInStorage: true })).toEqual(
-                [],
-            );
-            expect(
-                getNonBSOLUserRecordActionLinks({
-                    ...args,
-                    hasRecordInStorage: false,
-                }),
-            ).toEqual([]);
+            expect(getUserRecordActionLinks({ role, hasRecordInStorage: true })).toEqual([]);
+            expect(getUserRecordActionLinks({ role, hasRecordInStorage: false })).toEqual([]);
         });
     });
 });

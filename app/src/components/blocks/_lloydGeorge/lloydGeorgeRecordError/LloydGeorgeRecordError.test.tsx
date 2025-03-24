@@ -5,12 +5,10 @@ import { LinkProps } from 'react-router-dom';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import { routeChildren, routes } from '../../../../types/generic/routes';
-import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { buildConfig } from '../../../../helpers/test/testBuilders';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
-jest.mock('../../../../helpers/hooks/useIsBSOL');
 jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/useConfig');
 jest.mock('react-router-dom', () => ({
@@ -19,7 +17,6 @@ jest.mock('react-router-dom', () => ({
 }));
 
 const mockUseRole = useRole as jest.Mock;
-const mockIsBSOL = useIsBSOL as jest.Mock;
 const mockUseConfig = useConfig as jest.Mock;
 const mockNavigate = jest.fn();
 
@@ -57,21 +54,6 @@ describe('LloydGeorgeRecordError', () => {
             ).toBeInTheDocument();
         });
 
-        it("renders a message  when the document download status is 'No records' and user is non BSOL", () => {
-            const timeoutStatus = DOWNLOAD_STAGE.NO_RECORDS;
-            mockIsBSOL.mockReturnValue(false);
-
-            render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
-
-            expect(
-                screen.getByText(
-                    /This patient does not have a Lloyd George record stored in this service/i,
-                ),
-            ).toBeInTheDocument();
-            expect(
-                screen.queryByRole('button', { name: 'Upload patient record' }),
-            ).not.toBeInTheDocument();
-        });
         it("renders a message  when the document download status is 'Uploading'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.UPLOADING;
 
@@ -87,9 +69,8 @@ describe('LloydGeorgeRecordError', () => {
             ).not.toBeInTheDocument();
         });
 
-        it("renders a message and upload button when the document download status is 'No records', user is admin BSOL and upload flags are enabled", () => {
+        it("renders a message and upload button when the document download status is 'No records', user is admin and upload flags are enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
-            mockIsBSOL.mockReturnValue(true);
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             mockUseConfig.mockReturnValue(
                 buildConfig(
@@ -109,10 +90,9 @@ describe('LloydGeorgeRecordError', () => {
             ).toBeInTheDocument();
         });
 
-        it("renders a message but no upload button when the document download status is 'No records', user is admin BSOL and upload flags are not enabled", () => {
+        it("renders a message but no upload button when the document download status is 'No records', user is admin and upload flags are not enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
 
-            mockIsBSOL.mockReturnValue(true);
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
             render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
@@ -143,8 +123,7 @@ describe('LloydGeorgeRecordError', () => {
             expect(results).toHaveNoViolations();
         });
 
-        it('pass accessibility checks for DOWNLOAD_STAGE.NO_RECORDS when user is GP_ADMIN in BSOL', async () => {
-            mockIsBSOL.mockReturnValue(true);
+        it('pass accessibility checks for DOWNLOAD_STAGE.NO_RECORDS when user is GP_ADMIN', async () => {
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             mockUseConfig.mockReturnValue(
                 buildConfig(
@@ -237,9 +216,8 @@ describe('LloydGeorgeRecordError', () => {
             expect(mockNavigate).toBeCalledWith(routes.UNAUTHORISED);
         });
 
-        it("navigates to upload page, when the document download status is 'No records', user is admin BSOL and upload flags are enabled", () => {
+        it("navigates to upload page, when the document download status is 'No records', user is admin and upload flags are enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
-            mockIsBSOL.mockReturnValue(true);
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             mockUseConfig.mockReturnValue(
                 buildConfig(

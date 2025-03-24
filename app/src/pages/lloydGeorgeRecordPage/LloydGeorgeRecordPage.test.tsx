@@ -21,7 +21,6 @@ jest.mock('../../helpers/hooks/usePatient');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/useRole');
-jest.mock('../../helpers/hooks/useIsBSOL');
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatientDetails = buildPatientDetails();
