@@ -104,7 +104,13 @@ describe('GP Workflow: View Lloyd George record', () => {
                     cy.getByTestId('pdf-viewer').should('be.visible');
 
                     // Act - open full screen view
-                    cy.getByTestId('full-screen-btn').realClick();
+                    if (Cypress.isBrowser('firefox')) {
+                        cy.getByTestId('full-screen-btn').then((el) => {
+                            el.trigger('click');
+                        });
+                    } else {
+                        cy.getByTestId('full-screen-btn').realClick();
+                    }
 
                     // Assert
                     assertPatientInfo();
