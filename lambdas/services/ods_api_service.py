@@ -66,15 +66,15 @@ class OdsApiService:
 
         if gpp_org is not None:
             logger.info(f"ODS code {ods_code} is a GPP, returning org data")
-            icb_ods = find_icb_for_user(org_data["Organisation"])
-            response = parse_ods_response(org_data, gpp_org, icb_ods)
+            icb_ods_code = find_icb_for_user(org_data["Organisation"])
+            response = parse_ods_response(org_data, gpp_org, icb_ods_code)
             return response
 
         logger.info(f"ODS code {ods_code} is not a GPP or PCSE, returning empty list")
         return {}
 
 
-def parse_ods_response(org_data, role_code, icb_ods) -> dict:
+def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
     org_name = org_data["Organisation"]["Name"]
     org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
 
@@ -82,7 +82,7 @@ def parse_ods_response(org_data, role_code, icb_ods) -> dict:
         "name": org_name,
         "org_ods_code": org_ods_code,
         "role_code": role_code,
-        "icb_ods": icb_ods,
+        "icb_ods_code": icb_ods_code,
     }
     logger.info(f"Response: {response_dictionary}")
 

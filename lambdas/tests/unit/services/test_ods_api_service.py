@@ -74,7 +74,7 @@ def test_parse_ods_response_extracts_data_and_includes_role_code_passed_as_arg(
         "name": "Primary Care Support England",
         "org_ods_code": "X4S4L",
         "role_code": role_code,
-        "icb_ods": "Test_icb_code",
+        "icb_ods_code": "Test_icb_code",
     }
 
     assert actual == expected
@@ -94,7 +94,7 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
         "name": "Primary Care Support England",
         "org_ods_code": pcse_ods,
         "role_code": "",
-        "icb_ods": "PCSE",
+        "icb_ods_code": "PCSE",
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
@@ -121,7 +121,7 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
         "name": "Mock GP Practice",
         "org_ods_code": "A9A5A",
         "role_code": "RO76",
-        "icb_ods": "No ICB code found",
+        "icb_ods_code": "No ICB code found",
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
