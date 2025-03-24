@@ -2,7 +2,7 @@ import pytest
 from enums.snomed_codes import SnomedCodes
 from handlers.manage_nrl_pointer_handler import lambda_handler
 from models.fhir.R4.nrl_fhir_document_reference import Attachment
-from models.nrl_sqs_message import NrlSqsMessage
+from models.sqs.nrl_sqs_message import NrlSqsMessage
 from utils.exceptions import NrlApiException
 
 

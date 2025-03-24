@@ -4,7 +4,7 @@ from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
-from pydantic import AliasGenerator, BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel, to_pascal
 from utils.exceptions import InvalidDocumentReferenceException
 
@@ -19,11 +19,21 @@ class UploadDocumentReferences(BaseModel):
     files: list[UploadDocumentReference] = Field(...)
 
 
+class SearchDocumentReference(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+    id: str
+    created: str
+    file_name: str
+    virus_scanner_result: str
+    file_size: int
+
+
 class DocumentReference(BaseModel):
     model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_pascal, serialization_alias=to_camel
-        ),
+        alias_generator=to_pascal,
         use_enum_values=True,
         populate_by_name=True,
     )

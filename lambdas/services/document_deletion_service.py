@@ -10,8 +10,9 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
+from inflection import underscore
 from models.document_reference import DocumentReference
-from models.nrl_sqs_message import NrlSqsMessage
+from models.sqs.nrl_sqs_message import NrlSqsMessage
 from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_job_service import LloydGeorgeStitchJobService
@@ -88,7 +89,10 @@ class DocumentDeletionService:
             self.document_service.dynamo_service.update_item(
                 table_name=self.stitch_service.stitch_trace_table,
                 key_pair={DocumentReferenceMetadataFields.ID.value: record.id},
-                updated_fields=record.model_dump(by_alias=True, include={"deleted"}),
+                updated_fields=record.model_dump(
+                    by_alias=True,
+                    include={underscore(DocumentReferenceMetadataFields.DELETED.value)},
+                ),
             )
 
     def delete_specific_doc_type(
