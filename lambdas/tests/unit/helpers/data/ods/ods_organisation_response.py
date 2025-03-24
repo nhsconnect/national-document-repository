@@ -38,9 +38,9 @@ BSOL_ORGANISATION_RESPONSE = {
                         "assigningAuthorityName": "HSCIC",
                         "extension": OrganisationRelationship.BSOL_ORG_ID.value,
                     },
-                    "PrimaryRoleId": {"id": "RO197", "uniqueRoleId": 131575},
+                    "PrimaryRoleId": {"id": "RO98", "uniqueRoleId": 131575},
                 },
-                "id": OrganisationRelationship.BSOL_REL_ID.value,
+                "id": OrganisationRelationship.COMMISSIONED_BY.value,
                 "uniqueRelId": 719187,
             }
         ]

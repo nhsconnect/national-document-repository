@@ -59,22 +59,22 @@ class OdsApiService:
 
         if pcse_ods is not None:
             logger.info(f"ODS code {ods_code} is a PCSE, returning org data")
-            response = parse_ods_response(org_data, "", False)
+            response = parse_ods_response(org_data, "", "PCSE")
             return response
 
         gpp_org = find_and_get_gpp_org_code(org_data)
 
         if gpp_org is not None:
             logger.info(f"ODS code {ods_code} is a GPP, returning org data")
-            is_bsol = find_org_relationship(org_data["Organisation"])
-            response = parse_ods_response(org_data, gpp_org, is_bsol)
+            icb_ods = find_icb_for_user(org_data["Organisation"])
+            response = parse_ods_response(org_data, gpp_org, icb_ods)
             return response
 
         logger.info(f"ODS code {ods_code} is not a GPP or PCSE, returning empty list")
         return {}
 
 
-def parse_ods_response(org_data, role_code, is_bsol) -> dict:
+def parse_ods_response(org_data, role_code, icb_ods) -> dict:
     org_name = org_data["Organisation"]["Name"]
     org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
 
@@ -82,7 +82,7 @@ def parse_ods_response(org_data, role_code, is_bsol) -> dict:
         "name": org_name,
         "org_ods_code": org_ods_code,
         "role_code": role_code,
-        "is_BSOL": is_bsol,
+        "icb_ods": icb_ods,
     }
     logger.info(f"Response: {response_dictionary}")
 
@@ -107,18 +107,20 @@ def find_and_get_pcse_ods(ods_code):
     return None
 
 
-def find_org_relationship(org_data):
+def find_icb_for_user(org_data):
     logger.info("Checking relationships")
     try:
         relationships: List[Dict] = org_data["Rels"]["Rel"]
         for rel in relationships:
             if (
                 rel["Status"] == "Active"
-                and rel["id"] == OrganisationRelationship.BSOL_REL_ID.value
-                and rel["Target"]["OrgId"]["extension"]
-                == OrganisationRelationship.BSOL_ORG_ID.value
+                and rel["id"] == OrganisationRelationship.COMMISSIONED_BY
+                and rel["Target"]["PrimaryRoleId"]["id"]
+                == OrganisationRelationship.CLINICAL_COMMISSIONING_GROUP
             ):
-                return True
+                icb_ods_code = rel["Target"]["OrgId"]["extension"]
+                logger.info(f"Found ICB code for user: {icb_ods_code}")
+                return icb_ods_code
     except (KeyError, TypeError):
         logger.info("Failure fetching relationships")
-    return False
+    return "No ICB code found"
