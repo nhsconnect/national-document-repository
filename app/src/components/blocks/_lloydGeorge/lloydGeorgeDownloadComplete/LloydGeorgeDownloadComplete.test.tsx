@@ -35,7 +35,7 @@ describe('LloydGeorgeDownloadComplete', () => {
         jest.clearAllMocks();
     });
 
-    describe('LloydGeorgeDownloadComplete  journeys', () => {
+    describe('LloydGeorgeDownloadComplete journeys', () => {
         it('renders the download complete screen for download all journey', () => {
             render(
                 <LgDownloadComplete
@@ -106,9 +106,9 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     describe('Accessibility', () => {
-        it('pass accessibility checks', () => {
+        it('passes accessibility checks', async () => {
             render(<LloydGeorgeDownloadComplete numberOfFiles={numberOfFiles} />);
-            const results = runAxeTest(document.body);
+            const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
         });
     });

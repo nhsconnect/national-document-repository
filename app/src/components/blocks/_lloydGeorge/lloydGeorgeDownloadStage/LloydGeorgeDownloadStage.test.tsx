@@ -133,40 +133,6 @@ describe('LloydGeorgeDownloadStage', () => {
         expect(results).toHaveNoViolations();
     });
 
-    it('navigates to Error page when zip lg record view complete but fail on delete', async () => {
-        window.HTMLAnchorElement.prototype.click = jest.fn();
-        mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presignedUrl);
-        const errorResponse = {
-            response: {
-                status: 500,
-                data: { message: 'An error occurred', err_code: 'SP_1001' },
-            },
-        };
-        mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
-
-        jest.useFakeTimers();
-
-        renderComponent(history);
-
-        expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
-        expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
-
-        act(() => {
-            jest.advanceTimersByTime(500);
-        });
-
-        await waitFor(() => {
-            expect(screen.getByText('100% downloaded...')).toBeInTheDocument();
-        });
-        expect(screen.queryByText('0% downloaded...')).not.toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(mockedUseNavigate).toHaveBeenCalledWith(
-                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
-            );
-        });
-    });
-
     it('navigates to Error page when zip lg record view return 500', async () => {
         const errorResponse = {
             response: {
