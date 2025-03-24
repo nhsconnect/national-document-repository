@@ -58,7 +58,7 @@ class OdsApiService:
         pcse_ods = find_and_get_pcse_ods(ods_code)
 
         if pcse_ods is not None:
-            logger.info(f"ODS code {ods_code} is a PCSE, returning org data")
+            logger.info(f"ODS code {ods_code} is PCSE, returning org data")
             response = parse_ods_response(org_data, "", "PCSE")
             return response
 
