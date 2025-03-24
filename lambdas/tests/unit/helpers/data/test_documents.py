@@ -20,21 +20,40 @@ def create_test_doc_store_refs():
     ]
 
 
+def create_singular_test_lloyd_george_doc_store_ref(
+    override: Optional[Dict] = None,
+) -> DocumentReference:
+    ref = DocumentReference.model_validate(MOCK_SEARCH_RESPONSE["Items"][0])
+    filename = (
+        f"1of1_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
+    )
+    ref.file_name = filename
+    if override:
+        ref = ref.model_copy(update=override)
+    return ref
+
+
 def create_test_lloyd_george_doc_store_refs(
     override: Optional[Dict] = None,
 ) -> List[DocumentReference]:
     refs = create_test_doc_store_refs()
 
-    filename_1 = "1of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf"
-    filename_2 = "2of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf"
-    filename_3 = "3of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf"
+    filename_1 = (
+        f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
+    )
+    filename_2 = (
+        f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
+    )
+    filename_3 = (
+        f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
+    )
 
     refs[0].file_name = filename_1
-    refs[0].file_location = f"s3://{MOCK_LG_BUCKET}/test-key-423"
+    refs[0].file_location = f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/test-key-1"
     refs[1].file_name = filename_2
-    refs[1].file_location = f"s3://{MOCK_LG_BUCKET}/test-key-523"
+    refs[1].file_location = f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/test-key-2"
     refs[2].file_name = filename_3
-    refs[2].file_location = f"s3://{MOCK_LG_BUCKET}/test-key-623"
+    refs[2].file_location = f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/test-key-3"
 
     if override:
         refs = [doc_ref.model_copy(update=override) for doc_ref in refs]

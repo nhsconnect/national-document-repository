@@ -2,7 +2,7 @@ MOCK_SEARCH_RESPONSE = {
     "Items": [
         {
             "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
-            "ContentType": "type",
+            "ContentType": "application/pdf",
             "Created": "2024-01-01T12:00:00.000Z",
             "Deleted": "",
             "FileLocation": "s3://test-s3-bucket/9000000009/test-key-123",
@@ -16,7 +16,7 @@ MOCK_SEARCH_RESPONSE = {
         },
         {
             "ID": "4d8683b9-1665-40d2-8499-6e8302d507ff",
-            "ContentType": "type",
+            "ContentType": "application/pdf",
             "Created": "2024-01-01T12:00:00.000Z",
             "Deleted": "",
             "FileLocation": "s3://test-s3-bucket/9000000009/test-key-223",
@@ -30,7 +30,7 @@ MOCK_SEARCH_RESPONSE = {
         },
         {
             "ID": "5d8683b9-1665-40d2-8499-6e8302d507ff",
-            "ContentType": "type",
+            "ContentType": "application/pdf",
             "Created": "2024-01-01T12:00:00.000Z",
             "Deleted": "",
             "FileLocation": "s3://test-s3-bucket/9000000009/test-key-323",

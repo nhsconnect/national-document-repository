@@ -4,8 +4,8 @@ from enums.snomed_codes import SnomedCodes
 from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
 from models.nhs_document_reference import NHSDocumentReference
-from models.nrl_sqs_message import NrlSqsMessage
-from models.pdf_stitching_sqs_message import PdfStitchingSqsMessage
+from models.sqs.nrl_sqs_message import NrlSqsMessage
+from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_CURRENT_GP_ODS, TEST_UUID
 

@@ -2,8 +2,8 @@ import os
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.upload_status import UploadStatus
-from models.bulk_upload_report import BulkUploadReport
 from models.nhs_document_reference import NHSDocumentReference
+from models.report.bulk_upload_report import BulkUploadReport
 from models.staging_metadata import StagingMetadata
 from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
