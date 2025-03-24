@@ -104,21 +104,19 @@ describe('GP Workflow: View Lloyd George record', () => {
                     cy.getByTestId('pdf-viewer').should('be.visible');
 
                     // Act - open full screen view
-                    if (role !== Roles.GP_CLINICAL) {
-                        cy.getByTestId('full-screen-btn').click();
+                    cy.getByTestId('full-screen-btn').realClick();
 
-                        // Assert
-                        assertPatientInfo();
-                        cy.getByTestId('pdf-card').should('not.exist');
-                        cy.getByTestId('pdf-viewer').should('be.visible');
+                    // Assert
+                    assertPatientInfo();
+                    cy.getByTestId('pdf-card').should('not.exist');
+                    cy.getByTestId('pdf-viewer').should('be.visible');
 
-                        //  Act - close full screen view
-                        cy.getByTestId('back-link').click();
+                    //  Act - close full screen view
+                    cy.getByTestId('back-link').click();
 
-                        // Assert
-                        cy.getByTestId('pdf-card').should('be.visible');
-                        cy.getByTestId('pdf-viewer').should('be.visible');
-                    }
+                    // Assert
+                    cy.getByTestId('pdf-card').should('be.visible');
+                    cy.getByTestId('pdf-viewer').should('be.visible');
                 },
             );
 

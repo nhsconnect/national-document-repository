@@ -45,17 +45,15 @@ function LloydGeorgeViewRecordStage({
     const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
 
     const setFullScreen = (isFullscreen: boolean) => {
-        setUserSession({ ...session, isFullscreen });
-
         if (isFullscreen) {
             if (document.fullscreenEnabled) {
                 document.documentElement.requestFullscreen?.();
             }
-
-            return;
+        } else if (document.fullscreenElement !== null) {
+            document.exitFullscreen?.();
         }
 
-        document.exitFullscreen?.();
+        setUserSession({ ...session, isFullscreen });
     };
 
     let recordLinksToShow = getBSOLUserRecordActionLinks({ role, hasRecordInStorage }).map(
