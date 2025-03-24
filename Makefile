@@ -126,9 +126,6 @@ clean-install:
 start:
 	npm --prefix ./app start
 
-storybook:
-	npm --prefix ./app run storybook
-
 test-ui:
 	npm --prefix ./app run test-all
 
