@@ -46,6 +46,16 @@ function LloydGeorgeViewRecordStage({
 
     const setFullScreen = (isFullscreen: boolean) => {
         setUserSession({ ...session, isFullscreen });
+
+        if (isFullscreen) {
+            if (document.fullscreenEnabled) {
+                document.documentElement.requestFullscreen?.();
+            }
+
+            return;
+        }
+
+        document.exitFullscreen?.();
     };
 
     let recordLinksToShow = getBSOLUserRecordActionLinks({ role, hasRecordInStorage }).map(
