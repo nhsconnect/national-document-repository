@@ -1,7 +1,6 @@
 import json
 
 import pytest
-from enums.repository_role import OrganisationRelationship
 from requests import Response
 from services.ods_api_service import (
     OdsApiService,
@@ -10,9 +9,8 @@ from services.ods_api_service import (
 )
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from tests.unit.helpers.data.ods.ods_organisation_response import (
-    BSOL_ORGANISATION_RESPONSE,
     NO_RELS_RESPONSE,
-    NON_BSOL_ORGANISATION_RESPONSE,
+    ORGANISATION_RESPONSE,
     RE6_REL_ID_RESPONSE,
 )
 from tests.unit.helpers.data.ods.utils import load_ods_response_data
@@ -167,10 +165,9 @@ def test_fetch_org_with_permitted_role_raises_exception_if_more_than_one_org_for
 @pytest.mark.parametrize(
     ["org_data", "expected"],
     [
-        (NON_BSOL_ORGANISATION_RESPONSE, "No ICB code found"),
         (RE6_REL_ID_RESPONSE, "No ICB code found"),
         (NO_RELS_RESPONSE, "No ICB code found"),
-        (BSOL_ORGANISATION_RESPONSE, OrganisationRelationship.BSOL_ORG_ID),
+        (ORGANISATION_RESPONSE, "ICB_ODS_CODE"),
     ],
 )
 def test_find_org_relationship_icb_responses(org_data, expected):

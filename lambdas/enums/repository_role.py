@@ -15,5 +15,4 @@ class RepositoryRole(Enum):
 
 class OrganisationRelationship(StrEnum):
     COMMISSIONED_BY = "RE4"
-    BSOL_ORG_ID = "15E"
     CLINICAL_COMMISSIONING_GROUP = "RO98"
