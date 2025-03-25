@@ -39,6 +39,7 @@ Cypress.Commands.add('login', (role, featureFlags) => {
 
         cy.visit(authCallback);
         cy.wait('@auth');
+        cy.url().should('eq', Cypress.config('baseUrl') + routes.home);
     } else {
         throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
     }
