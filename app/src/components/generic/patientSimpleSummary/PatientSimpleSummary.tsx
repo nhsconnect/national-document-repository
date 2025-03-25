@@ -30,7 +30,7 @@ const PatientSimpleSummary = ({ separator = false }: Props) => {
                     data-testid="patient-name"
                     className="nhsuk-u-padding-right-9 nhsuk-u-font-weight-bold"
                 >
-                    {`${patientDetails?.givenName}, ${patientDetails?.familyName}`}
+                    {`${givenName}, ${familyName}`}
                 </span>
 
                 {longname && <br />}
