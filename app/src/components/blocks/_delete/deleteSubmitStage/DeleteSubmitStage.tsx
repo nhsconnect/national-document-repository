@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
-import { BackLink, Button, Fieldset, Radios } from 'nhsuk-react-components';
+import { BackLink, Button, Fieldset, Radios, WarningCallout } from 'nhsuk-react-components';
 import deleteAllDocuments, {
     DeleteResponse,
 } from '../../../../helpers/requests/deleteAllDocuments';
@@ -119,6 +119,10 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
             }
         }
     };
+
+    const pageTitle = `You are removing the ${recordType} record of`;
+    useTitle({ pageTitle });
+
     return (
         <>
             <BackLink onClick={handleNoOption} href="#">
@@ -136,10 +140,28 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
             )}
             <form onSubmit={handleSubmit(submit)}>
                 <Fieldset id="radio-selection">
-                    <Fieldset.Legend isPageHeading>
-                        You are removing the {recordType} record of:
-                    </Fieldset.Legend>
-                    <PatientSimpleSummary separator />
+                    <Fieldset.Legend isPageHeading>{pageTitle}:</Fieldset.Legend>
+                    <PatientSimpleSummary separator showDeceasedTag />
+
+                    {!userIsGP && (
+                        <WarningCallout>
+                            <WarningCallout.Label>Before removing</WarningCallout.Label>
+                            <p data-testid="remove-record-warning-text">
+                                Only permanently remove this patient record if you have a valid
+                                reason to. For example, you confirmed these files have reached the
+                                end of their{' '}
+                                <a
+                                    href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code/records-management-code-of-practice/#appendix-ii-retention-schedule"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    aria-label="Retention schedule - this link will open in a new tab"
+                                >
+                                    retention period
+                                </a>
+                                .
+                            </p>
+                        </WarningCallout>
+                    )}
 
                     <p>
                         Once you remove these files, you can not access this record using the
@@ -199,7 +221,7 @@ function DeleteSubmitStage({
     recordType,
     resetDocState,
 }: Props) {
-    useTitle({ pageTitle: 'Delete files' });
+    useTitle({ pageTitle: `You are removing the ${recordType} record of:` });
 
     return (
         <>

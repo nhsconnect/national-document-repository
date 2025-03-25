@@ -6,9 +6,10 @@ import { useNavigate } from 'react-router-dom';
 interface BackButtonProps {
     toLocation?: string;
     backLinkText?: string;
+    dataTestid?: string;
 }
 
-const BackButton = ({ toLocation, backLinkText = 'Go back' }: BackButtonProps) => {
+const BackButton = ({ toLocation, dataTestid, backLinkText = 'Go back' }: BackButtonProps) => {
     const navigate = useNavigate();
 
     const onBack = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -19,7 +20,7 @@ const BackButton = ({ toLocation, backLinkText = 'Go back' }: BackButtonProps) =
     };
 
     return (
-        <BackLink onClick={onBack} href="#">
+        <BackLink onClick={onBack} href="#" data-testid={dataTestid}>
             {backLinkText}
         </BackLink>
     );

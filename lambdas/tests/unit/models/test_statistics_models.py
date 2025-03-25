@@ -1,6 +1,10 @@
 import pydantic
 import pytest
-from models.statistics import ApplicationData, RecordStoreData, load_from_dynamodb_items
+from models.report.statistics import (
+    ApplicationData,
+    RecordStoreData,
+    load_from_dynamodb_items,
+)
 from tests.unit.helpers.data.statistic.mock_statistic_data import (
     MOCK_APPLICATION_DATA_1,
     MOCK_APPLICATION_DATA_2,

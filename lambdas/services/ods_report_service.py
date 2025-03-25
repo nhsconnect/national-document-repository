@@ -24,12 +24,11 @@ logger = LoggingService(__name__)
 
 class OdsReportService:
     def __init__(self):
-        download_report_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
-        self.s3_service = S3Service(custom_aws_role=download_report_aws_role_arn)
         self.dynamo_service = DynamoDBService()
         self.table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.reports_bucket = os.getenv("STATISTICAL_REPORTS_BUCKET")
         self.temp_output_dir = ""
+        self.s3_service = None
 
     def get_nhs_numbers_by_ods(
         self,
@@ -168,6 +167,8 @@ class OdsReportService:
             f"Query completed. {len(nhs_numbers)} items written to {file_name}."
         )
         if upload_to_s3:
+            download_report_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
+            self.s3_service = S3Service(custom_aws_role=download_report_aws_role_arn)
             self.save_report_to_s3(ods_code, file_name, temp_file_path)
 
             if create_pre_signed_url:

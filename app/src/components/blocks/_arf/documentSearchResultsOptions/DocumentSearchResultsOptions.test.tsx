@@ -39,16 +39,10 @@ describe('DocumentSearchResultsOptions', () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
             expect(
-                screen.getByText(
-                    'Only permanently delete all documents for this patient if you have a valid reason to. For example, if the retention period of these documents has been reached.',
-                ),
-            ).toBeInTheDocument();
-
-            expect(
-                screen.getByRole('button', { name: 'Download All Documents' }),
+                screen.getByRole('button', { name: 'Download all documents' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Delete All Documents' }),
+                screen.getByRole('button', { name: 'Remove all documents' }),
             ).toBeInTheDocument();
         });
 
@@ -59,7 +53,7 @@ describe('DocumentSearchResultsOptions', () => {
             mockGetPresignedUrlForZip.mockResolvedValue('test-presigned-url');
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
-            userEvent.click(await screen.findByRole('button', { name: 'Download All Documents' }));
+            userEvent.click(await screen.findByRole('button', { name: 'Download all documents' }));
             await waitFor(() => {
                 expect(updateDownloadState).toHaveBeenCalledWith(SUBMISSION_STATE.SUCCEEDED);
             });
@@ -83,13 +77,13 @@ describe('DocumentSearchResultsOptions', () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
             expect(
-                screen.getByRole('button', { name: 'Download All Documents' }),
+                screen.getByRole('button', { name: 'Download all documents' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Delete All Documents' }),
+                screen.getByRole('button', { name: 'Remove all documents' }),
             ).toBeInTheDocument();
 
-            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+            userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
 
             expect(updateDownloadState).toHaveBeenCalledWith(SUBMISSION_STATE.PENDING);
         });
@@ -104,7 +98,7 @@ describe('DocumentSearchResultsOptions', () => {
             });
 
             expect(
-                screen.queryByRole('button', { name: 'Download All Documents' }),
+                screen.queryByRole('button', { name: 'Download all documents' }),
             ).not.toBeInTheDocument();
         });
 
@@ -119,7 +113,7 @@ describe('DocumentSearchResultsOptions', () => {
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
-            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+            userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
 
             await waitFor(() => {
                 expect(updateDownloadState).toHaveBeenCalledWith(SUBMISSION_STATE.FAILED);
@@ -129,7 +123,7 @@ describe('DocumentSearchResultsOptions', () => {
         it('calls delete all documents function when Delete button is clicked', async () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
-            userEvent.click(screen.getByRole('button', { name: 'Delete All Documents' }));
+            userEvent.click(screen.getByRole('button', { name: 'Remove all documents' }));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
@@ -175,7 +169,7 @@ describe('DocumentSearchResultsOptions', () => {
 
             expect(history.location.pathname).toBe('/example');
 
-            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+            userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
@@ -192,7 +186,7 @@ describe('DocumentSearchResultsOptions', () => {
             mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
-            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+            userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
@@ -206,7 +200,7 @@ describe('DocumentSearchResultsOptions', () => {
             mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(mockError));
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
-            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+            userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
