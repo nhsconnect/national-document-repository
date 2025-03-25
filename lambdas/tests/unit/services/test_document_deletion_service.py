@@ -320,11 +320,11 @@ def test_delete_unstitched_document_reference_updates_correct_dynamo_table(
 
     mock_deletion_service.delete_unstitched_document_reference(TEST_NHS_NUMBER)
     mock_deletion_service.document_service.fetch_documents_from_table_with_nhs_number.assert_called_once_with(
-        nhs_number=TEST_NHS_NUMBER, table="UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME"
+        nhs_number=TEST_NHS_NUMBER, table="test_unstitched_lg_table"
     )
 
     mock_deletion_service.document_service.delete_document_references.assert_called_with(
-        table_name="UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME",
+        table_name="test_unstitched_lg_table",
         document_references=TEST_LG_DOC_STORE_REFERENCES,
         document_ttl_days=DocumentRetentionDays.SOFT_DELETE,
     )
