@@ -295,6 +295,20 @@ jobs:
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+      
+  deploy_nhs_oauth_token_generator_lambda:
+    name: Deploy nhs_oauth_token_generator_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: nhs_oauth_token_generator_handler
+      lambda_aws_name: NhsOauthTokenGeneratorLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_feature_flags_lambda:
     name: Deploy feature flags lambda
@@ -461,6 +475,34 @@ jobs:
       lambda_handler_name: get_report_by_ods_handler
       lambda_aws_name: GetReportByODS
       lambda_layer_names: 'core_lambda_layer,reports_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_access_audit_lambda:
+    name: Deploy access audit lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: access_audit_handler
+      lambda_aws_name: AccessAuditLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_pdf_stitching_lambda:
+    name: Deploy PDF Stitching lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: pdf_stitching_handler
+      lambda_aws_name: PdfStitchingLambda
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 

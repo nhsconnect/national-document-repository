@@ -25,6 +25,7 @@ logger = LoggingService(__name__)
     names=[
         "DOCUMENT_STORE_DYNAMODB_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
+        "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME",
     ]
 )
 @override_error_check

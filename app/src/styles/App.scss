@@ -1045,3 +1045,41 @@ $hunit: '%';
 .home-action-card-content {
     padding-right: 115px;
 }
+
+.deceased-patient-access-page {
+    #error-box {
+        background-color: white;
+        max-width: 650px;
+
+        .nhsuk-error-summary:focus {
+            border-color: #d5281b;
+            box-shadow: none;
+        }
+    }
+
+    .patient-details {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    #access-reason {
+        .nhsuk-form-group {
+            margin-left: 17px;
+            padding-left: 30px;
+
+            &:not(.nhsuk-form-group--error) {
+                border-left: 4px solid #b0b4b5;
+            }
+        }
+
+        .other-reason-text {
+            resize: none;
+        }
+    }
+
+    .button-container {
+        display: flex;
+        align-items: baseline;
+    }
+}

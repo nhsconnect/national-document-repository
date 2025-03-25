@@ -26,6 +26,8 @@ export enum routes {
     FEEDBACK_CONFIRMATION = '/feedback/confirmation',
     REPORT_DOWNLOAD = '/create-report',
     REPORT_DOWNLOAD_WILDCARD = '/create-report/*',
+    PATIENT_ACCESS_AUDIT = '/patient/access-audit',
+    PATIENT_ACCESS_AUDIT_WILDCARD = '/patient/access-audit/*',
 }
 
 export enum routeChildren {
@@ -51,6 +53,7 @@ export enum routeChildren {
     ARF_UPLOAD_FAILED = '/patient/arf/upload/failed',
     ARF_UPLOAD_CONFIRMATION_FAILED = '/patient/arf/upload/confirmation-failed',
     REPORT_DOWNLOAD_COMPLETE = '/create-report/complete',
+    PATIENT_ACCESS_AUDIT_DECEASED = '/patient/access-audit/deceased',
 }
 
 export enum ROUTE_TYPE {

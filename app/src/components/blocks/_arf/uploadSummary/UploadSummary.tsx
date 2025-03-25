@@ -114,7 +114,7 @@ const UploadSummary = ({ documents }: Props) => {
                     </Details.Text>
                 </Details>
             )}
-            <PatientSummary />
+            <PatientSummary showDeceasedTag />
 
             <WarningCallout className="upload-callout-warning" id="close-page-warning">
                 <WarningCallout.Label>Before you close this page</WarningCallout.Label>
