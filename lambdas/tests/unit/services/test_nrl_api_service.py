@@ -11,32 +11,141 @@ ACCESS_TOKEN = "Sr5PGv19wTEHJdDr2wx2f7IGd0cw"
 
 @pytest.fixture
 def nrl_service(set_env, mocker):
-
     fake_ssm_service = FakeSSMService()
     fake_auth_service = FakOAuthService(fake_ssm_service)
-
     nrl_service = NrlApiService(fake_ssm_service, fake_auth_service)
     mocker.patch.object(nrl_service, "session")
     yield nrl_service
 
 
-def test_create_new_pointer(nrl_service):
+def test_create_new_pointer(nrl_service, mocker):
+    nrl_service.get_pointer = mocker.MagicMock(return_value={})
+    nrl_service.session.post = mocker.MagicMock()
+    nrl_service.session.post.return_value.status_code = 201
+    nrl_service.session.post.return_value.json = mocker.MagicMock(return_value={})
+
+    nrl_service.create_new_pointer("123456789", {}, SnomedCodes.LLOYD_GEORGE.value)
+
+    nrl_service.session.post.assert_called_once_with(
+        url=nrl_service.endpoint, headers=nrl_service.headers, json={}
+    )
+
+
+def test_create_new_pointer_already_exists(nrl_service, mocker):
+    nrl_service.get_pointer = mocker.MagicMock(return_value={"entry": [{}]})
+
+    with pytest.raises(NrlApiException, match="Pointer already exists"):
+        nrl_service.create_new_pointer("123456789", {}, SnomedCodes.LLOYD_GEORGE.value)
+    nrl_service.session.post.assert_not_called()
+
+
+def test_create_new_pointer_raise_error(nrl_service, mocker):
     mock_body = {"test": "tests"}
-
-    nrl_service.create_new_pointer(mock_body)
-
-    nrl_service.session.post.assert_called_once()
-
-
-def test_create_new_pointer_raise_error(nrl_service):
-    mock_body = {"test": "tests"}
+    nrl_service.get_pointer = mocker.MagicMock(return_value={})
     response = Response()
     response._content = b"{}"
     response.status_code = 400
     nrl_service.session.post.return_value = response
-    pytest.raises(NrlApiException, nrl_service.create_new_pointer, mock_body)
-
+    with pytest.raises(NrlApiException, match="Error while creating new NRL Pointer"):
+        nrl_service.create_new_pointer(
+            "123456789", mock_body, SnomedCodes.LLOYD_GEORGE.value
+        )
     nrl_service.session.post.assert_called_once()
+
+
+def test_create_new_pointer_existing_pointer_same_details(nrl_service, mocker):
+    nhs_number = "123456789"
+    body = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [{"attachment": {"contentType": "application/pdf"}}],
+    }
+    existing_pointer = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [{"attachment": {"contentType": "application/pdf"}}],
+    }
+    nrl_service.get_pointer = mocker.MagicMock(
+        return_value={"entry": [{"resource": existing_pointer}]}
+    )
+
+    with pytest.raises(
+        NrlApiException, match="Pointer already exists with the same details"
+    ):
+        nrl_service.create_new_pointer(nhs_number, body, SnomedCodes.LLOYD_GEORGE.value)
+
+    nrl_service.get_pointer.assert_called_once_with(
+        nhs_number, SnomedCodes.LLOYD_GEORGE.value
+    )
+
+
+def test_create_new_pointer_existing_pointer_different_details(nrl_service, mocker):
+    nhs_number = "123456789"
+    body = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [{"attachment": {"contentType": "application/pdf"}}],
+    }
+    existing_pointer = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [{"attachment": {"contentType": "application/xml"}}],
+    }
+    nrl_service.get_pointer = mocker.MagicMock(
+        return_value={"entry": [{"resource": existing_pointer}]}
+    )
+
+    with pytest.raises(
+        NrlApiException, match="Pointer already exists with different details"
+    ):
+        nrl_service.create_new_pointer(nhs_number, body, SnomedCodes.LLOYD_GEORGE.value)
+
+    nrl_service.get_pointer.assert_called_once_with(
+        nhs_number, SnomedCodes.LLOYD_GEORGE.value
+    )
+
+
+def test_create_new_pointer_success(nrl_service, mocker):
+    nhs_number = "123456789"
+    body = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [{"attachment": {"contentType": "application/pdf"}}],
+    }
+    nrl_service.get_pointer = mocker.MagicMock(return_value={})
+    nrl_service.session.post = mocker.MagicMock()
+    nrl_service.session.post.return_value.status_code = 201
+    nrl_service.session.post.return_value.json = mocker.MagicMock(return_value={})
+
+    nrl_service.create_new_pointer(nhs_number, body, SnomedCodes.LLOYD_GEORGE.value)
+
+    nrl_service.session.post.assert_called_once_with(
+        url=nrl_service.endpoint, headers=nrl_service.headers, json=body
+    )
+
+
+def test_create_new_pointer_retry_on_expired_token(nrl_service, mocker):
+    nhs_number = "123456789"
+    body = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "content": [{"attachment": {"contentType": "application/pdf"}}],
+    }
+    nrl_service.get_pointer = mocker.MagicMock(return_value={})
+    response = Response()
+    response.status_code = 401
+    response._content = b"{}"
+    nrl_service.session.post.side_effect = [
+        response,
+        mocker.MagicMock(status_code=201, json=mocker.MagicMock(return_value={})),
+    ]
+
+    nrl_service.create_new_pointer(nhs_number, body, SnomedCodes.LLOYD_GEORGE.value)
+
+    assert nrl_service.session.post.call_count == 2
+    nrl_service.session.post.assert_called_with(
+        url=nrl_service.endpoint, headers=nrl_service.headers, json=body
+    )
 
 
 def test_get_end_user_ods_code(nrl_service):
@@ -47,7 +156,6 @@ def test_get_end_user_ods_code(nrl_service):
 def test_get_pointer_with_record_type(mocker, nrl_service):
     mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
-
     mock_params = {
         "subject:identifier": f"https://fhir.nhs.uk/Id/nhs-number|{TEST_NHS_NUMBER}",
         "type": f"http://snomed.info/sct|{mock_type.code}",
@@ -59,7 +167,6 @@ def test_get_pointer_with_record_type(mocker, nrl_service):
         "X-Request-ID": "test_uuid",
     }
     nrl_service.get_pointer(TEST_NHS_NUMBER, mock_type)
-
     nrl_service.session.get.assert_called_with(
         params=mock_params, url=FAKE_URL, headers=mock_headers
     )
@@ -84,7 +191,6 @@ def test_get_pointer_with_record_type_no_retry(mocker, nrl_service):
     nrl_service.session.get.return_value = response
     with pytest.raises(NrlApiException):
         nrl_service.get_pointer(TEST_NHS_NUMBER, mock_type, retry_on_expired=False)
-
     nrl_service.session.get.assert_called_with(
         params=mock_params, url=FAKE_URL, headers=mock_headers
     )
@@ -110,7 +216,6 @@ def test_get_pointer_with_record_type_with_retry(mocker, nrl_service):
     nrl_service.session.get.return_value = response
     with pytest.raises(NrlApiException):
         nrl_service.get_pointer(TEST_NHS_NUMBER, mock_type, retry_on_expired=True)
-
     nrl_service.session.get.assert_called_with(
         params=mock_params, url=FAKE_URL, headers=mock_headers
     )
@@ -121,19 +226,15 @@ def test_get_pointer_raise_error(nrl_service):
     response = Response()
     response.status_code = 400
     response._content = b"{}"
-
     mock_type = SnomedCodes.LLOYD_GEORGE.value
-
     nrl_service.session.get.return_value = response
     pytest.raises(NrlApiException, nrl_service.get_pointer, TEST_NHS_NUMBER, mock_type)
-
     nrl_service.session.get.assert_called_once()
 
 
 def test_delete_pointer_with_record_type_no_record(mocker, nrl_service):
     mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
-
     nrl_response = {
         "resourceType": "Bundle",
         "type": "searchset",
@@ -142,7 +243,6 @@ def test_delete_pointer_with_record_type_no_record(mocker, nrl_service):
     }
     nrl_service.get_pointer = mocker.MagicMock(return_value=nrl_response)
     nrl_service.delete_pointer(TEST_NHS_NUMBER, mock_type)
-
     nrl_service.session.delete.assert_not_called()
 
 
@@ -171,7 +271,6 @@ def test_delete_pointer_with_record_type_one_record(mocker, nrl_service):
     }
     nrl_service.get_pointer = mocker.MagicMock(return_value=nrl_response)
     nrl_service.delete_pointer(TEST_NHS_NUMBER, mock_type)
-
     nrl_service.session.delete.assert_called_with(
         url=FAKE_URL + "/" + mock_pointer_id, headers=mock_headers
     )
@@ -181,7 +280,6 @@ def test_delete_pointer_with_record_type_more_than_one_record(mocker, nrl_servic
     mock_type = SnomedCodes.LLOYD_GEORGE.value
     mocker.patch("uuid.uuid4", return_value="test_uuid")
     mock_pointer_id = "ODSCODE-1111bfb1-1111-2222-3333-4444555c666"
-
     nrl_response = {
         "resourceType": "Bundle",
         "type": "searchset",
@@ -203,7 +301,6 @@ def test_delete_pointer_with_record_type_more_than_one_record(mocker, nrl_servic
     }
     nrl_service.get_pointer = mocker.MagicMock(return_value=nrl_response)
     nrl_service.delete_pointer(TEST_NHS_NUMBER, mock_type)
-
     assert nrl_service.session.delete.call_count == 2
 
 

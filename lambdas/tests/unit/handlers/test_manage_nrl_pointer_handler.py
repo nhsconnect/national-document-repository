@@ -33,7 +33,6 @@ def build_test_sqs_message(action="create"):
 
 def test_process_event_with_one_message(mock_service, context, set_env):
     event = {"Records": [build_test_sqs_message("create")]}
-
     lambda_handler(event, context)
 
     mock_service.create_new_pointer.assert_called_once()
@@ -41,9 +40,7 @@ def test_process_event_with_one_message(mock_service, context, set_env):
 
 def test_process_delete_event_with_one_message(mock_service, context, set_env):
     event = {"Records": [build_test_sqs_message("delete")]}
-
     lambda_handler(event, context)
-
     mock_service.delete_pointer.assert_called_once()
 
 
@@ -51,9 +48,7 @@ def test_process_event_with_multiple_messages(mock_service, context, set_env):
     event = {
         "Records": [build_test_sqs_message("create"), build_test_sqs_message("delete")]
     }
-
     lambda_handler(event, context)
-
     mock_service.create_new_pointer.assert_called_once()
     mock_service.delete_pointer.assert_called_once()
 
@@ -62,10 +57,17 @@ def test_failed_to_create_a_pointer(mock_service, context, set_env, caplog):
     event = {"Records": [build_test_sqs_message("create")]}
     expected_log = "Failed to process current message due to error: test exception"
     mock_service.create_new_pointer.side_effect = NrlApiException("test exception")
-
     with pytest.raises(NrlApiException):
         lambda_handler(event, context)
-
     actual_log = caplog.records[-2].msg
     assert actual_log == expected_log
     mock_service.create_new_pointer.assert_called_once()
+
+
+def test_process_event_with_invalid_action(mock_service, context, set_env, caplog):
+    event = {"Records": [build_test_sqs_message("invalid_action")]}
+
+    lambda_handler(event, context)
+
+    mock_service.create_new_pointer.assert_not_called()
+    mock_service.delete_pointer.assert_not_called()
