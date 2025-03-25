@@ -954,6 +954,16 @@ $hunit: '%';
         max-width: unset;
         padding: 0;
 
+        @media (max-width: 640px) {
+            height: 100vh;
+        }
+        @media (max-width: 512px) {
+            height: 125vh;
+        }
+        @media (max-width: 400px) {
+            height: 175vh;
+        }
+
         .nhsuk-main-wrapper {
             padding: 0;
         }
@@ -963,6 +973,16 @@ $hunit: '%';
             position: relative;
             display: flex;
             flex-direction: column;
+
+            @media (max-width: 640px) {
+                height: 100vh;
+            }
+            @media (max-width: 512px) {
+                height: 125vh;
+            }
+            @media (max-width: 400px) {
+                height: 175vh;
+            }
 
             .header {
                 background-color: #005eb8;
