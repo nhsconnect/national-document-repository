@@ -1,8 +1,8 @@
 import json
 
 from enums.mns_notification_types import MNSNotificationTypes
-from models.mns_sqs_message import MNSSQSMessage
-from pydantic_core._pydantic_core import ValidationError
+from models.sqs.mns_sqs_message import MNSSQSMessage
+from pydantic import ValidationError
 from services.process_mns_message_service import MNSNotificationService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
