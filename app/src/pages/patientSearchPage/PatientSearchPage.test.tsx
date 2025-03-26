@@ -145,6 +145,44 @@ describe('PatientSearchPage', () => {
             ).toHaveLength(2);
         });
 
+        it('returns patient info when patient is inactive and deceased', async () => {
+            const patientDetails = buildPatientDetails({
+                active: false,
+                deceased: true,
+            });
+
+            mockedAxios.get.mockImplementation(() => Promise.resolve({ data: patientDetails }));
+
+            renderPatientSearchPage();
+            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000000');
+            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
+            });
+        });
+
+        it('returns an error when patient is inactive and not deceased and user is clinical', async () => {
+            const patientDetails = buildPatientDetails({
+                active: false,
+                deceased: false,
+            });
+
+            mockedAxios.get.mockImplementation(() => Promise.resolve({ data: patientDetails }));
+
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+
+            renderPatientSearchPage();
+            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000000');
+            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+            expect(
+                await screen.findAllByText(
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                ),
+            ).toHaveLength(2);
+        });
+
         it('returns a service error when service is down', async () => {
             const errorResponse = {
                 response: {
