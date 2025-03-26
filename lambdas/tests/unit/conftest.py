@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -24,6 +25,7 @@ MOCK_ARF_TABLE_NAME_ENV_NAME = "DOCUMENT_STORE_DYNAMODB_NAME"
 MOCK_ARF_BUCKET_ENV_NAME = "DOCUMENT_STORE_BUCKET_NAME"
 
 MOCK_LG_TABLE_NAME_ENV_NAME = "LLOYD_GEORGE_DYNAMODB_NAME"
+MOCK_UNSTITCHED_LG_TABLE_ENV_NAME = "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME"
 MOCK_LG_BUCKET_ENV_NAME = "LLOYD_GEORGE_BUCKET_NAME"
 
 MOCK_ZIP_OUTPUT_BUCKET_ENV_NAME = "ZIPPED_STORE_BUCKET_NAME"
@@ -60,6 +62,7 @@ MOCK_STATISTICAL_REPORTS_BUCKET_ENV_NAME = "STATISTICAL_REPORTS_BUCKET"
 
 MOCK_ARF_TABLE_NAME = "test_arf_dynamoDB_table"
 MOCK_LG_TABLE_NAME = "test_lg_dynamoDB_table"
+MOCK_UNSTITCHED_LG_TABLE_NAME = "test_unstitched_lg_table"
 MOCK_BULK_REPORT_TABLE_NAME = "test_report_dynamoDB_table"
 MOCK_ARF_BUCKET = "test_arf_s3_bucket"
 MOCK_LG_BUCKET = "test_lg_s3_bucket"
@@ -80,7 +83,6 @@ TEST_DOCUMENT_LOCATION = f"s3://{MOCK_BUCKET}/{TEST_FILE_KEY}"
 TEST_CURRENT_GP_ODS = "Y12345"
 
 AUTH_STATE_TABLE_NAME = "test_state_table"
-NRL_SQS_URL = "https://test-queue.com"
 AUTH_SESSION_TABLE_NAME = "test_session_table"
 FAKE_URL = "https://fake-url.com"
 OIDC_CALLBACK_URL = FAKE_URL
@@ -111,12 +113,14 @@ MOCK_PRESIGNED_URL_ROLE_ARN_KEY = "PRESIGNED_ASSUME_ROLE"
 MOCK_PRESIGNED_URL_ROLE_ARN_VALUE = "arn:aws:iam::test123"
 
 STITCH_METADATA_DYNAMODB_NAME_VALUE = "test_stitch_metadata"
-NRL_SQS_URL = "https://sqs.us-east-1.amazonaws.com/177715257436/MyQueue"
+NRL_SQS_URL = "https://test-queue.com"
 APIM_API_URL = "https://apim.api.service.uk"
 
 PDF_STITCHING_SQS_URL = (
     "https://sqs.us-east-1.amazonaws.com/977715257439/MyPdfStitchingQueue"
 )
+
+TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.fixture
@@ -125,6 +129,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_ARF_TABLE_NAME_ENV_NAME, MOCK_ARF_TABLE_NAME)
     monkeypatch.setenv(MOCK_ARF_BUCKET_ENV_NAME, MOCK_ARF_BUCKET)
     monkeypatch.setenv(MOCK_LG_TABLE_NAME_ENV_NAME, MOCK_LG_TABLE_NAME)
+    monkeypatch.setenv(MOCK_UNSTITCHED_LG_TABLE_ENV_NAME, MOCK_UNSTITCHED_LG_TABLE_NAME)
     monkeypatch.setenv(MOCK_LG_BUCKET_ENV_NAME, MOCK_LG_BUCKET)
     monkeypatch.setenv(
         "DYNAMODB_TABLE_LIST", json.dumps([MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME])
@@ -186,6 +191,9 @@ def set_env(monkeypatch):
     monkeypatch.setenv("NRL_SQS_QUEUE_URL", NRL_SQS_URL)
     monkeypatch.setenv("APIM_API_URL", APIM_API_URL)
     monkeypatch.setenv("CLOUDFRONT_URL", "mock-cloudfront-url.com")
+    monkeypatch.setenv(
+        "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME", MOCK_UNSTITCHED_LG_TABLE_NAME
+    )
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
@@ -305,7 +313,7 @@ class MockError(Enum):
 
 
 MOCK_CLIENT_ERROR = ClientError(
-    {"Error": {"Code": 500, "Message": "Test error message"}}, "Query"
+    {"Error": {"Code": 500, "Message": "Test error message"}}, "TEST"
 )
 
 
@@ -320,6 +328,11 @@ def mock_temp_folder(mocker):
 def mock_uuid(mocker):
     mocker.patch("uuid.uuid4", return_value=TEST_UUID)
     yield TEST_UUID
+
+
+@pytest.fixture
+def mock_sleep(mocker):
+    return mocker.patch("time.sleep")
 
 
 @contextmanager

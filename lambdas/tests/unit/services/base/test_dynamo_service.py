@@ -265,6 +265,25 @@ def test_delete_item_client_error_raises_exception(mock_service, mock_table):
     assert expected_response == actual_response.value
 
 
+def test_get_item_is_called_with_correct_parameters(mock_service, mock_table):
+    mock_service.get_item(MOCK_TABLE_NAME, {"NhsNumber": TEST_NHS_NUMBER})
+
+    mock_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_table.return_value.get_item.assert_called_once_with(
+        Key={"NhsNumber": TEST_NHS_NUMBER}
+    )
+
+
+def test_get_item_client_error_raises_exception(mock_service, mock_table):
+    expected_response = MOCK_CLIENT_ERROR
+    mock_table.return_value.get_item.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(ClientError) as actual_response:
+        mock_service.get_item(MOCK_TABLE_NAME, {"NhsNumber": TEST_NHS_NUMBER})
+
+    assert expected_response == actual_response.value
+
+
 def test_update_item_is_called_with_correct_parameters(mock_service, mock_table):
     update_key = {"ID": "9000000009"}
     expected_update_expression = (
