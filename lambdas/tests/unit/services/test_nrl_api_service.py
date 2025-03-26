@@ -53,7 +53,7 @@ def test_create_new_pointer_raise_error(nrl_service, mocker):
     nrl_service.session.post.assert_called_once()
 
 
-def test_create_new_pointer_existing_pointer_same_details(nrl_service, mocker):
+def test_create_new_pointer_existing_pointer(nrl_service, mocker):
     nhs_number = "123456789"
     body = {
         "resourceType": "DocumentReference",
@@ -69,35 +69,7 @@ def test_create_new_pointer_existing_pointer_same_details(nrl_service, mocker):
         return_value={"entry": [{"resource": existing_pointer}]}
     )
 
-    with pytest.raises(
-        NrlApiException, match="Pointer already exists with the same details"
-    ):
-        nrl_service.create_new_pointer(nhs_number, body, SnomedCodes.LLOYD_GEORGE.value)
-
-    nrl_service.get_pointer.assert_called_once_with(
-        nhs_number, SnomedCodes.LLOYD_GEORGE.value
-    )
-
-
-def test_create_new_pointer_existing_pointer_different_details(nrl_service, mocker):
-    nhs_number = "123456789"
-    body = {
-        "resourceType": "DocumentReference",
-        "status": "current",
-        "content": [{"attachment": {"contentType": "application/pdf"}}],
-    }
-    existing_pointer = {
-        "resourceType": "DocumentReference",
-        "status": "current",
-        "content": [{"attachment": {"contentType": "application/xml"}}],
-    }
-    nrl_service.get_pointer = mocker.MagicMock(
-        return_value={"entry": [{"resource": existing_pointer}]}
-    )
-
-    with pytest.raises(
-        NrlApiException, match="Pointer already exists with different details"
-    ):
+    with pytest.raises(NrlApiException, match="Pointer already exists"):
         nrl_service.create_new_pointer(nhs_number, body, SnomedCodes.LLOYD_GEORGE.value)
 
     nrl_service.get_pointer.assert_called_once_with(

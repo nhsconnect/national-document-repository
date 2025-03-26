@@ -51,24 +51,9 @@ class NrlApiService:
         try:
             search_results = self.get_pointer(nhs_number, record_type).get("entry", [])
             if search_results:
-                existing_pointer = search_results[0].get("resource", {})
-                existing_pointer.pop("id", None)
+                logger.info(f"Pointer already exists for NHS Number: {nhs_number} .")
+                raise NrlApiException("Pointer already exists with the same details")
 
-                if existing_pointer == body:
-                    logger.info(
-                        f"Pointer already exists for NHS Number: {nhs_number} with the same details."
-                    )
-                    raise NrlApiException(
-                        "Pointer already exists with the same details"
-                    )
-                else:
-                    logger.info(
-                        f"Pointer already exists for NHS Number: {nhs_number}, "
-                        f"Record Type: {record_type}, but with different details."
-                    )
-                    raise NrlApiException(
-                        "Pointer already exists with different details"
-                    )
             self.set_x_request_id()
             response = self.session.post(
                 url=self.endpoint, headers=self.headers, json=body
