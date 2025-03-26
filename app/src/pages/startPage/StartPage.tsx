@@ -62,7 +62,7 @@ function StartPage(props: Props) {
             <p>
                 {'Contact the '}
                 <ServiceDeskLink />
-                {' if there is an issue with this service or call 0300 303 5678.'}
+                {' if there is an issue with this service or call 0300 303 5035.'}
             </p>
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
