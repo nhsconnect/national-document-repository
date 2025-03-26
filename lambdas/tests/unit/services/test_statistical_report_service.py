@@ -5,7 +5,7 @@ from unittest.mock import call
 import polars as pl
 import pytest
 from freezegun import freeze_time
-from models.statistics import ApplicationData
+from models.report.statistics import ApplicationData
 from polars.testing import assert_frame_equal
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service

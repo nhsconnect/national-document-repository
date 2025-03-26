@@ -57,7 +57,7 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-navigation-container').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
 
-                cy.login(Roles.GP_CLINICAL, true);
+                cy.login(Roles.GP_CLINICAL);
 
                 cy.url().should('eq', baseUrl + routes.home);
                 cy.get('.nhsuk-navigation-container').should('exist');
@@ -72,7 +72,7 @@ describe('Home Page', () => {
                 `should display home page when user is ${Roles[role]} role in area`,
                 { tags: 'regression' },
                 () => {
-                    cy.login(role, true);
+                    cy.login(role);
 
                     cy.url().should('eq', baseUrl + routes.home);
 

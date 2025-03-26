@@ -10,8 +10,9 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
+from inflection import underscore
 from models.document_reference import DocumentReference
-from models.nrl_sqs_message import NrlSqsMessage
+from models.sqs.nrl_sqs_message import NrlSqsMessage
 from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_job_service import LloydGeorgeStitchJobService
@@ -34,9 +35,11 @@ class DocumentDeletionService:
     ) -> list[DocumentReference]:
         files_deleted = []
         for doc_type in doc_types:
+
             files_deleted += self.delete_specific_doc_type(nhs_number, doc_type)
         self.delete_documents_references_in_stitch_table(nhs_number)
         if SupportedDocumentTypes.LG in doc_types:
+            self.delete_unstitched_document_reference(nhs_number)
             self.send_sqs_message_to_remove_pointer(nhs_number)
         return files_deleted
 
@@ -88,7 +91,10 @@ class DocumentDeletionService:
             self.document_service.dynamo_service.update_item(
                 table_name=self.stitch_service.stitch_trace_table,
                 key_pair={DocumentReferenceMetadataFields.ID.value: record.id},
-                updated_fields=record.model_dump(by_alias=True, include={"deleted"}),
+                updated_fields=record.model_dump(
+                    by_alias=True,
+                    include={underscore(DocumentReferenceMetadataFields.DELETED.value)},
+                ),
             )
 
     def delete_specific_doc_type(
@@ -131,3 +137,25 @@ class DocumentDeletionService:
             message_body=delete_nrl_message.model_dump_json(exclude_unset=True),
             group_id=sqs_group_id,
         )
+
+    def delete_unstitched_document_reference(self, nhs_number: str):
+        try:
+            unstitched_document_references = (
+                self.document_service.fetch_documents_from_table_with_nhs_number(
+                    nhs_number=nhs_number,
+                    table=os.environ["UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME"],
+                )
+            )
+
+            if unstitched_document_references:
+                self.document_service.delete_document_references(
+                    table_name=os.environ["UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME"],
+                    document_references=unstitched_document_references,
+                    document_ttl_days=DocumentRetentionDays.SOFT_DELETE,
+                )
+        except (ClientError, DynamoServiceException) as e:
+            logger.error(
+                f"{LambdaError.DocDelClient.to_str()}: {str(e)}",
+                {"Results": "Failed to delete documents"},
+            )
+            raise DocumentDeletionServiceException(500, LambdaError.DocDelClient)

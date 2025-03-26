@@ -14,6 +14,11 @@ import moment from 'moment';
 import { GlobalConfig, LocalFlags } from '../../providers/configProvider/ConfigProvider';
 import { FeatureFlags } from '../../types/generic/featureFlags';
 import { UploadSession } from '../../types/generic/uploadResult';
+import {
+    AccessAuditType,
+    DeceasedAccessAuditReasons,
+    PatientAccessAudit,
+} from '../../types/generic/accessAudit';
 
 const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
     const auth: UserAuth = {
@@ -35,6 +40,7 @@ const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) =
         superseded: false,
         restricted: false,
         active: true,
+        deceased: false,
         ...patientDetailsOverride,
     };
 
@@ -163,6 +169,27 @@ const buildConfig = (
     return globalConfig;
 };
 
+const buildPatientAccessAudit = (): PatientAccessAudit[] => {
+    return [
+        {
+            accessAuditData: {
+                Reasons: [DeceasedAccessAuditReasons.familyRequest],
+                OtherReasonText: '',
+            },
+            accessAuditType: AccessAuditType.deceasedPatient,
+            nhsNumber: '4857773457',
+        },
+        {
+            accessAuditData: {
+                Reasons: [DeceasedAccessAuditReasons.anotherReason],
+                OtherReasonText: 'Another reason',
+            },
+            accessAuditType: AccessAuditType.deceasedPatient,
+            nhsNumber: '4857773458',
+        },
+    ];
+};
+
 export {
     buildPatientDetails,
     buildTextFile,
@@ -173,4 +200,5 @@ export {
     buildLgFile,
     buildConfig,
     buildUploadSession,
+    buildPatientAccessAudit,
 };

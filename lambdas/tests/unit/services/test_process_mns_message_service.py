@@ -5,7 +5,7 @@ import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from freezegun import freeze_time
-from models.mns_sqs_message import MNSSQSMessage
+from models.sqs.mns_sqs_message import MNSSQSMessage
 from services.process_mns_message_service import MNSNotificationService
 from tests.unit.conftest import TEST_CURRENT_GP_ODS
 from tests.unit.handlers.test_mns_notification_handler import (

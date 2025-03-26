@@ -216,7 +216,7 @@ const LloydGeorgeSelectSearchResults = ({
                 />
             )}
             <h1 id="download-page-title">{pageHeader}</h1>
-            <PatientSummary />
+            <PatientSummary showDeceasedTag />
             <AvailableFilesTable
                 tableCaption={tableCaption}
                 searchResults={orderedResults}

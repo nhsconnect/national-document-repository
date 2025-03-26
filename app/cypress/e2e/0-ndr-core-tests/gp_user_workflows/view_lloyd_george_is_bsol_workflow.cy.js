@@ -9,7 +9,10 @@ const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 describe('GP Workflow: View Lloyd George record', () => {
     const assertEmptyLloydGeorgeCard = () => {
         cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
-        cy.getByTestId('pdf-card').should('include.text', 'No documents are available');
+        cy.getByTestId('pdf-card').should(
+            'include.text',
+            'This patient does not have a Lloyd George record stored in this service',
+        );
         cy.getByTestId('pdf-card').contains('Control and F').should('not.exist');
     };
 

@@ -13,6 +13,8 @@ from services.patient_search_service import PatientSearch
 from services.pds_api_service import PdsApiService
 from utils.exceptions import InvalidResourceIdException
 
+DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+
 
 def validate_nhs_number(patient_id: str) -> bool:
     pattern = re.compile("^\\d{10}$")

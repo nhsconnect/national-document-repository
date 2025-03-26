@@ -42,6 +42,11 @@ def mock_scan_table_with_filter(mocker, ods_report_service):
 
 
 @pytest.fixture
+def mock_query_table_by_index(mocker, ods_report_service):
+    return mocker.patch.object(ods_report_service, "query_table_by_index")
+
+
+@pytest.fixture
 def mock_dynamo_service_scan_table(mocker, ods_report_service):
     return mocker.patch.object(ods_report_service.dynamo_service, "scan_whole_table")
 
@@ -67,32 +72,32 @@ def mock_get_pre_signed_url(mocker, ods_report_service):
 
 
 def test_get_nhs_numbers_by_ods(
-    ods_report_service, mock_scan_table_with_filter, mock_create_and_save_ods_report
+    ods_report_service, mock_query_table_by_index, mock_create_and_save_ods_report
 ):
-    mock_scan_table_with_filter.return_value = [
+    mock_query_table_by_index.return_value = [
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
     ]
 
     ods_report_service.get_nhs_numbers_by_ods("ODS123")
 
-    mock_scan_table_with_filter.assert_called_once_with("ODS123")
+    mock_query_table_by_index.assert_called_once_with("ODS123")
     mock_create_and_save_ods_report.assert_called_once_with(
         "ODS123", {"NHS123", "NHS456"}, False, False, "csv"
     )
 
 
 def test_get_nhs_numbers_by_ods_with_temp_folder(
-    ods_report_service, mock_scan_table_with_filter, mock_create_and_save_ods_report
+    ods_report_service, mock_query_table_by_index, mock_create_and_save_ods_report
 ):
-    mock_scan_table_with_filter.return_value = [
+    mock_query_table_by_index.return_value = [
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS123"},
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
     ]
 
     ods_report_service.get_nhs_numbers_by_ods("ODS123", is_upload_to_s3_needed=True)
 
-    mock_scan_table_with_filter.assert_called_once_with("ODS123")
+    mock_query_table_by_index.assert_called_once_with("ODS123")
     mock_create_and_save_ods_report.assert_called_once_with(
         "ODS123", {"NHS123", "NHS456"}, False, True, "csv"
     )
@@ -288,6 +293,7 @@ def test_create_pdf_report(ods_report_service):
 
 @freeze_time("2024-01-01T12:00:00Z")
 def test_save_report_to_s3(ods_report_service, mocker):
+    ods_report_service.s3_service = mocker.Mock()
     mocker.patch.object(ods_report_service.s3_service, "upload_file")
 
     ods_report_service.save_report_to_s3("ODS123", "test_report.csv", "path/to/file")
@@ -301,6 +307,7 @@ def test_save_report_to_s3(ods_report_service, mocker):
 
 @freeze_time("2024-01-01T12:00:00Z")
 def test_get_pre_signed_url(ods_report_service, mocker):
+    ods_report_service.s3_service = mocker.Mock()
     mocker.patch.object(ods_report_service.s3_service, "create_download_presigned_url")
 
     ods_report_service.get_pre_signed_url("ODS123", "test_report.csv")

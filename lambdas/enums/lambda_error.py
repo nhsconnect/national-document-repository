@@ -35,7 +35,7 @@ class LambdaError(Enum):
     }
     SearchPatientNoAuth = {
         "err_code": "SP_4003",
-        "message": "Patient does not exist for given NHS number",
+        "message": "You do not have access to this patient's record",
     }
     SearchPatientNoId = {
         "err_code": "SP_4004",
@@ -442,6 +442,28 @@ class LambdaError(Enum):
         "message": "Failed to process unsupported file type",
     }
     """
+       Errors for get access audit lambda 
+    """
+    InvalidReasonInput = {
+        "err_code": "AA_4001",
+        "message": "Invalid reason code",
+    }
+    """
+       Errors for PDF Stitching lambda 
+    """
+    MultipartError = {
+        "err_code": "PS_4001",
+        "message": "Failed to process multipart",
+    }
+    StitchError = {
+        "err_code": "PS_4002",
+        "message": "Failed to process PDF stitching",
+    }
+    StitchRollbackError = {
+        "err_code": "PS_5001",
+        "message": "Failed to rollback PDF stitching",
+    }
+    """
         Edge Lambda Errors
     """
     EdgeMalformed = {
@@ -528,6 +550,10 @@ class LambdaError(Enum):
     DynamoInvalidStreamEvent = {
         "err_code": "DBS_4001",
         "message": "Failed to parse DynamoDb event stream",
+    }
+    SqsInvalidEvent = {
+        "err_code": "SQS_4001",
+        "message": "Failed to parse SQS event",
     }
 
     MockError = {

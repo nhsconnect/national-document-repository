@@ -13,7 +13,7 @@ import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import LloydGeorgeViewRecordStage, { Props } from './LloydGeorgeViewRecordStage';
 import { createMemoryHistory } from 'history';
@@ -62,7 +62,9 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(screen.getByText(`Last updated: ${mockPdf.lastUpdated}`)).toBeInTheDocument();
 
         expect(
-            screen.queryByText('No documents are available for this patient.'),
+            screen.queryByText(
+                'This patient does not have a Lloyd George record stored in this service.',
+            ),
         ).not.toBeInTheDocument();
     });
 
@@ -90,7 +92,11 @@ describe('LloydGeorgeViewRecordStage', () => {
         });
 
         await waitFor(async () => {
-            expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /This patient does not have a Lloyd George record stored in this service/i,
+                ),
+            ).toBeInTheDocument();
         });
     });
 
@@ -387,7 +393,11 @@ describe('LloydGeorgeViewRecordStage', () => {
                 downloadStage: DOWNLOAD_STAGE.NO_RECORDS,
             });
 
-            expect(await screen.findByText(/No documents are available/)).toBeInTheDocument();
+            expect(
+                await screen.findByText(
+                    /This patient does not have a Lloyd George record stored in this service/,
+                ),
+            ).toBeInTheDocument();
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
@@ -414,6 +424,40 @@ describe('LloydGeorgeViewRecordStage', () => {
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
+        });
+    });
+
+    describe('Go back link', () => {
+        it('should navigate to the deceased access audit screen for a deceased patient as a GP User', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            mockedUsePatient.mockReturnValue(buildPatientDetails({ deceased: true }));
+
+            renderComponent();
+
+            act(() => {
+                userEvent.click(screen.getByTestId('go-back-button'));
+            });
+
+            await waitFor(() => {
+                expect(mockNavigate).toHaveBeenCalledWith(
+                    routeChildren.PATIENT_ACCESS_AUDIT_DECEASED,
+                );
+            });
+        });
+
+        it('should navigate to the verify patient screen for a deceased patient as a PCSE user', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
+            mockedUsePatient.mockReturnValue(buildPatientDetails({ deceased: true }));
+
+            renderComponent();
+
+            act(() => {
+                userEvent.click(screen.getByTestId('go-back-button'));
+            });
+
+            await waitFor(() => {
+                expect(mockNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
+            });
         });
     });
 });

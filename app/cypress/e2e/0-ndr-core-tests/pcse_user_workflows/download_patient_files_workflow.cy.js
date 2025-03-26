@@ -20,6 +20,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         postalCode: 'AA1 1AA',
         superseded: false,
         restricted: false,
+        deceased: false,
     };
 
     const searchDocumentReferencesResponse = [
@@ -284,9 +285,7 @@ describe('PCSE Workflow: Access and download found files', () => {
                 cy.getByTestId('delete-submit-btn').click();
 
                 // assert user is returned to download documents page
-                cy.contains('Download electronic health records and attachments').should(
-                    'be.visible',
-                );
+                cy.contains('Manage this Lloyd George record').should('be.visible');
             },
         );
 

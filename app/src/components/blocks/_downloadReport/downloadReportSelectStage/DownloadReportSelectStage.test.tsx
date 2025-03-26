@@ -5,6 +5,10 @@ import { LinkProps } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { routes } from '../../../../types/generic/routes';
+import downloadReport from '../../../../helpers/requests/downloadReport';
+
+const mockDownloadReport = downloadReport as jest.MockedFunction<typeof downloadReport>;
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -14,11 +18,10 @@ jest.mock('react-router-dom', () => ({
 }));
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/requests/downloadReport', () => {
-    return () => {
-        throw { response: {status: 404 }};
-    };
-});
+jest.mock('../../../../helpers/requests/downloadReport');
+jest.mock('../../../../helpers/utils/isLocal', () => ({
+    isMock: () => false,
+}));
 
 describe('DownloadReportSelectStage', () => {
     beforeEach(() => {
@@ -43,6 +46,13 @@ describe('DownloadReportSelectStage', () => {
         });
 
         it('should render error notification when download fails', async () => {
+            const errorResponse = {
+                response: {
+                    status: 404,
+                },
+            };
+            mockDownloadReport.mockImplementation(() => Promise.reject(errorResponse));
+
             const report = getReportByType(REPORT_TYPE.ODS_PATIENT_SUMMARY);
 
             const setDownloadError = jest.fn();
@@ -54,7 +64,33 @@ describe('DownloadReportSelectStage', () => {
                 screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
             );
 
-            expect(setDownloadError).toHaveBeenCalledTimes(3);
+            expect(setDownloadError).toHaveBeenCalledTimes(1);
+        });
+
+        it('should navigate to session expired when receiving a 403', async () => {
+            const errorResponse = {
+                response: {
+                    status: 403,
+                },
+            };
+            mockDownloadReport.mockImplementation(() => Promise.reject(errorResponse));
+
+            const report = getReportByType(REPORT_TYPE.ODS_PATIENT_SUMMARY);
+
+            const setDownloadError = jest.fn();
+            jest.spyOn(React, 'useState').mockImplementation(() => ['', setDownloadError]);
+
+            render(<DownloadReportSelectStage report={report!} />);
+
+            act(() => {
+                userEvent.click(
+                    screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
+                );
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+            });
         });
     });
 });

@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import PatientResultPage from './PatientResultPage';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
-import { routes } from '../../types/generic/routes';
+import { routeChildren, routes } from '../../types/generic/routes';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
@@ -92,7 +92,6 @@ describe('PatientResultPage', () => {
             expect(
                 screen.queryByRole('radio', { name: 'Inactive patient' }),
             ).not.toBeInTheDocument();
-            expect(screen.queryByText(PAGE_TEXT)).not.toBeInTheDocument();
         });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
@@ -151,6 +150,37 @@ describe('PatientResultPage', () => {
                 ),
             ).toBeInTheDocument();
         });
+
+        it('displays a message when NHS number is deceased as a GP User', async () => {
+            const nhsNumber = '9000000012';
+            const patientDetails = buildPatientDetails({ deceased: true, nhsNumber });
+            mockedUsePatient.mockReturnValue(patientDetails);
+            const role = REPOSITORY_ROLE.GP_ADMIN;
+            mockedUseRole.mockReturnValue(role);
+
+            render(<PatientResultPage />);
+
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    'Access to the records of deceased patients is regulated under the Access to Health Records Act',
+                    { exact: false },
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it('displays a deceased patient tag for a deceased patient as a PCSE user', async () => {
+            const nhsNumber = '9000000012';
+            const patientDetails = buildPatientDetails({ deceased: true, nhsNumber });
+            mockedUsePatient.mockReturnValue(patientDetails);
+            const role = REPOSITORY_ROLE.PCSE;
+            mockedUseRole.mockReturnValue(role);
+
+            render(<PatientResultPage />);
+
+            expect(screen.getByRole('heading', { name: PAGE_HEADER_TEXT })).toBeInTheDocument();
+            expect(screen.getByTestId('deceased-patient-tag')).toBeInTheDocument();
+        });
     });
 
     describe('Accessibility', () => {
@@ -200,27 +230,43 @@ describe('PatientResultPage', () => {
     });
 
     describe('Navigation', () => {
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
-            "navigates to Upload docs page after user selects Inactive patient when role is '%s'",
-            async (role) => {
-                const patient = buildPatientDetails({ active: false });
+        it('navigates to Upload docs page after user selects Inactive patient when role is GP Admin', async () => {
+            const patient = buildPatientDetails({ active: false });
 
-                mockedUsePatient.mockReturnValue(patient);
-                mockedUseRole.mockReturnValue(role);
-                render(<PatientResultPage />);
-                act(() => {
-                    userEvent.click(
-                        screen.getByRole('button', {
-                            name: CONFIRM_BUTTON_TEXT,
-                        }),
-                    );
-                });
+            mockedUsePatient.mockReturnValue(patient);
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            render(<PatientResultPage />);
+            act(() => {
+                userEvent.click(
+                    screen.getByRole('button', {
+                        name: CONFIRM_BUTTON_TEXT,
+                    }),
+                );
+            });
 
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_UPLOAD_DOCUMENTS);
-                });
-            },
-        );
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_UPLOAD_DOCUMENTS);
+            });
+        });
+
+        it('navigates to patient search page after user selects Inactive patient when role is GP Clinical', async () => {
+            const patient = buildPatientDetails({ active: false });
+
+            mockedUsePatient.mockReturnValue(patient);
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+            render(<PatientResultPage />);
+            act(() => {
+                userEvent.click(
+                    screen.getByRole('button', {
+                        name: CONFIRM_BUTTON_TEXT,
+                    }),
+                );
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
+            });
+        });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "navigates to Lloyd George Record page after user selects Active patient, when role is '%s'",
@@ -253,5 +299,26 @@ describe('PatientResultPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_OVERVIEW);
             });
         });
+
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "navigates to Deceased Patient Access Audit page after user selects Deceased patient, when role is '%s'",
+            async (role) => {
+                const patient = buildPatientDetails({ deceased: true });
+                mockedUseRole.mockReturnValue(role);
+                mockedUsePatient.mockReturnValue(patient);
+
+                render(<PatientResultPage />);
+
+                act(() => {
+                    userEvent.click(screen.getByRole('button', { name: CONFIRM_BUTTON_TEXT }));
+                });
+
+                await waitFor(() => {
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(
+                        routeChildren.PATIENT_ACCESS_AUDIT_DECEASED,
+                    );
+                });
+            },
+        );
     });
 });

@@ -26,6 +26,9 @@ class IAMService:
             response = self.sts_client.assume_role(
                 RoleArn=assume_role_arn, RoleSessionName=str(uuid.uuid4())
             )
+            expiration = response.get("Credentials", {}).get("Expiration")
+            logger.info(f"This role will expire in {expiration}")
+
             temp_credentials = response["Credentials"]
             aws_client = boto3.client(
                 resource_name,
@@ -34,7 +37,7 @@ class IAMService:
                 aws_session_token=temp_credentials["SessionToken"],
                 config=config,
             )
-            return aws_client
+            return aws_client, expiration
         except ClientError as error:
             logger.error(
                 f"Couldn't assume role {assume_role_arn}"

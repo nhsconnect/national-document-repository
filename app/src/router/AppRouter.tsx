@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Outlet, Route, Routes as Switch } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { route, ROUTE_TYPE, routeChildren, routes } from '../types/generic/routes';
@@ -27,6 +26,7 @@ import SessionExpiredErrorPage from '../pages/sessionExpiredErrorPage/SessionExp
 import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/FeedbackConfirmationPage';
 import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
 import NonAuthGuard from './guards/notAuthGuard/NonAuthGuard';
+import PatientAccessAuditPage from '../pages/patientAccessAuditPage/PatientAccessAuditPage';
 
 const {
     START,
@@ -54,6 +54,8 @@ const {
     ARF_UPLOAD_DOCUMENTS_WILDCARD,
     REPORT_DOWNLOAD,
     REPORT_DOWNLOAD_WILDCARD,
+    PATIENT_ACCESS_AUDIT,
+    PATIENT_ACCESS_AUDIT_WILDCARD,
 } = routes;
 
 type Routes = {
@@ -148,6 +150,10 @@ export const childRoutes = [
     {
         route: routeChildren.REPORT_DOWNLOAD_COMPLETE,
         parent: REPORT_DOWNLOAD,
+    },
+    {
+        route: routeChildren.PATIENT_ACCESS_AUDIT_DECEASED,
+        parent: PATIENT_ACCESS_AUDIT,
     },
 ];
 
@@ -267,6 +273,14 @@ export const routeMap: Routes = {
         page: <ArfUploadDocumentsPage />,
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],
+    },
+    [PATIENT_ACCESS_AUDIT]: {
+        page: <PatientAccessAuditPage />,
+        type: ROUTE_TYPE.PATIENT,
+    },
+    [PATIENT_ACCESS_AUDIT_WILDCARD]: {
+        page: <PatientAccessAuditPage />,
+        type: ROUTE_TYPE.PATIENT,
     },
 };
 

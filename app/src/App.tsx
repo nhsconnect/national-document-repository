@@ -5,6 +5,7 @@ import SessionProvider from './providers/sessionProvider/SessionProvider';
 import AppRouter from './router/AppRouter';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
 import { AwsRum, AwsRumConfig } from 'aws-rum-web';
+import PatientAccessAuditProvider from './providers/patientAccessAuditProvider/PatientAccessAuditProvider';
 
 const cypress =
     process.env.REACT_APP_MONITOR_ACCOUNT_ID === 'not provided yet' &&
@@ -41,7 +42,9 @@ function App() {
         <ConfigProvider>
             <SessionProvider>
                 <PatientDetailsProvider>
-                    <AppRouter />
+                    <PatientAccessAuditProvider>
+                        <AppRouter />
+                    </PatientAccessAuditProvider>
                 </PatientDetailsProvider>
             </SessionProvider>
         </ConfigProvider>

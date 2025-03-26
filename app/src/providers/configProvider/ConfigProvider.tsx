@@ -17,6 +17,7 @@ export type LocalFlags = {
     recordUploaded?: boolean;
     userRole?: REPOSITORY_ROLE;
     patientIsActive?: boolean;
+    patientIsDeceased?: boolean;
     uploading?: boolean;
 };
 
@@ -46,6 +47,7 @@ const ConfigProvider = ({ children, configOverride, setConfigOverride }: Props) 
               isBsol: true,
               recordUploaded: true,
               patientIsActive: true,
+              patientIsDeceased: false,
               userRole: REPOSITORY_ROLE.GP_ADMIN,
           }
         : null;
