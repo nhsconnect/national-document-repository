@@ -45,9 +45,11 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     MOCK_LG_DOWNLOADED,
     MOCK_LG_STORED,
     MOCK_LG_VIEWED,
+    MOCK_ODS_REPORT_REQUESTED,
     MOCK_PATIENT_SEARCHED,
     MOCK_UNIQUE_ACTIVE_USER_IDS,
 )
+from unit.helpers.data.statistic.mock_logs_query_results import MOCK_ODS_REPORT_CREATED
 from utils.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
     CountUsersAccessedDeceasedPatient,
@@ -56,6 +58,8 @@ from utils.cloudwatch_logs_query import (
     LloydGeorgeRecordsSearched,
     LloydGeorgeRecordsStored,
     LloydGeorgeRecordsViewed,
+    OdsReportsCreated,
+    OdsReportsRequested,
     UniqueActiveUserIds,
 )
 from utils.common_query_filters import UploadCompleted
@@ -112,6 +116,10 @@ def mock_query_logs(mocker):
             return MOCK_PATIENT_SEARCHED
         elif query_params == CountUsersAccessedDeceasedPatient:
             return MOCK_DECEASED_ACCESS
+        elif query_params == OdsReportsRequested:
+            return MOCK_ODS_REPORT_REQUESTED
+        elif query_params == OdsReportsCreated:
+            return MOCK_ODS_REPORT_CREATED
 
     patched_instance = mocker.patch(
         "services.data_collection_service.CloudwatchService",

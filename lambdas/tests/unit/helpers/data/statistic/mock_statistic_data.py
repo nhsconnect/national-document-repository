@@ -93,6 +93,8 @@ MOCK_ORGANISATION_DATA_1 = OrganisationData(
     daily_count_downloaded=4,
     daily_count_deleted=1,
     daily_count_users_accessing_deceased=12,
+    daily_count_ods_report_requested=10,
+    daily_count_ods_report_created=0,
 )
 MOCK_ORGANISATION_DATA_2 = OrganisationData(
     statistic_id="9ee2c3d1-97b9-4c34-b75c-83e7d1b442f4",
@@ -105,6 +107,8 @@ MOCK_ORGANISATION_DATA_2 = OrganisationData(
     daily_count_downloaded=1,
     daily_count_deleted=1,
     daily_count_users_accessing_deceased=22,
+    daily_count_ods_report_requested=2,
+    daily_count_ods_report_created=2,
 )
 MOCK_ORGANISATION_DATA_3 = OrganisationData(
     statistic_id="3f54cfe3-6c84-4bb2-b5b4-b786aa03b9c7",
@@ -117,6 +121,8 @@ MOCK_ORGANISATION_DATA_3 = OrganisationData(
     daily_count_downloaded=5,
     daily_count_deleted=1,
     daily_count_users_accessing_deceased=9,
+    daily_count_ods_report_requested=0,
+    daily_count_ods_report_created=0,
 )
 
 EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
@@ -129,6 +135,8 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_deleted": 1,
             "weekly_count_searched": 0,
             "weekly_count_users_accessing_deceased": 12,
+            "weekly_count_ods_report_requested": 10,
+            "weekly_count_ods_report_created": 0,
             "average_records_per_patient": 4.5,
             "number_of_patients": 4,
         },
@@ -140,6 +148,8 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_deleted": 1 + 1,
             "weekly_count_searched": 0,
             "weekly_count_users_accessing_deceased": 31,
+            "weekly_count_ods_report_requested": 2,
+            "weekly_count_ods_report_created": 2,
             "average_records_per_patient": (3.51 + 2.78) / 2,
             "number_of_patients": 10,
         },
@@ -158,6 +168,7 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountDownloaded": 4,
         "DailyCountDeleted": 1,
         "DailyCountUsersAccessingDeceased": 12,
+        "DailyCountOdsReportRequested": 10,
         "StatisticID": "OrganisationData#5acda4bf-8b93-4ba0-8410-789aac4fcbae",
     },
     {
@@ -170,6 +181,8 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountDownloaded": 1,
         "DailyCountDeleted": 1,
         "DailyCountUsersAccessingDeceased": 22,
+        "DailyCountOdsReportRequested": 2,
+        "DailyCountOdsReportCreated": 2,
         "StatisticID": "OrganisationData#9ee2c3d1-97b9-4c34-b75c-83e7d1b442f4",
     },
     {
@@ -182,6 +195,8 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountDownloaded": 5,
         "DailyCountDeleted": 1,
         "DailyCountUsersAccessingDeceased": 9,
+        "DailyCountOdsReportRequested": 2,
+        "DailyCountOdsReportCreated": 2,
         "StatisticID": "OrganisationData#3f54cfe3-6c84-4bb2-b5b4-b786aa03b9c7",
     },
 ]
@@ -301,6 +316,8 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Weekly count downloaded": 4,
             "Weekly count stored": 0,
             "Weekly count deleted": 1,
+            "Weekly count ods report requested": 10,
+            "Weekly count ods report created": 0,
             "Active users count": 1,
             "Unique active user ids hashed": str(
                 [str(SERIALISED_APPLICATION_DATA[0]["ActiveUserIdsHashed"][0])]
@@ -321,6 +338,8 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Weekly count downloaded": 1 + 5,
             "Weekly count stored": 0 + 2,
             "Weekly count deleted": 1 + 1,
+            "Weekly count ods report requested": 2,
+            "Weekly count ods report created": 2,
             "Active users count": 3,
             "Unique active user ids hashed": str(
                 [
