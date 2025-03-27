@@ -1002,11 +1002,13 @@ $hunit: '%';
                     flex-wrap: wrap;
 
                     .exit-fullscreen-button {
-                        background-color: white;
-                        color: black;
-                        padding: 0 15px;
+                        padding: 0 10px;
                         display: flex;
                         align-items: center;
+
+                        &:active svg {
+                            fill: white;
+                        }
 
                         svg {
                             fill: black;

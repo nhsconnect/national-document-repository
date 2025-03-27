@@ -34,18 +34,18 @@ function RecordMenuCard({
     }
     return (
         <div className={className} data-testid="record-menu-card">
-            {updateActions.length > 0 && (
-                <LinkSection
-                    actionLinks={updateActions}
-                    heading="Update record"
-                    setStage={setStage}
-                />
-            )}
-
             {downloadActions.length > 0 && (
                 <LinkSection
                     actionLinks={downloadActions}
                     heading="Download record"
+                    setStage={setStage}
+                />
+            )}
+
+            {updateActions.length > 0 && (
+                <LinkSection
+                    actionLinks={updateActions}
+                    heading="Update record"
                     setStage={setStage}
                 />
             )}

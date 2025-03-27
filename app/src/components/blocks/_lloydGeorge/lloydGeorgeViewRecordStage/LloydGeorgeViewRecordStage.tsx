@@ -82,6 +82,7 @@ function LloydGeorgeViewRecordStage({
                 <div className="header">
                     <div className="header-items">
                         <Button
+                            reverse
                             data-testid="back-link"
                             className="exit-fullscreen-button"
                             onClick={() => {
