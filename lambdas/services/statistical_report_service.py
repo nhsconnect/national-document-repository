@@ -212,8 +212,8 @@ class StatisticalReportService:
             "weekly_count_downloaded",
             "weekly_count_stored",
             "weekly_count_deleted",
-            "sum_ods_report_requested",
-            "sum_ods_report_created",
+            "weekly_count_ods_report_requested",
+            "weekly_count_ods_report_created",
             "active_users_count",
             "unique_active_user_ids_hashed",
         ]
