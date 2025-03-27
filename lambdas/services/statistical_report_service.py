@@ -208,6 +208,7 @@ class StatisticalReportService:
             "number_of_patients",
             "total_number_of_records",
             "weekly_count_searched",
+            "weekly_count_users_accessing_deceased",
             "weekly_count_viewed",
             "weekly_count_downloaded",
             "weekly_count_stored",
@@ -217,9 +218,14 @@ class StatisticalReportService:
             "active_users_count",
             "unique_active_user_ids_hashed",
         ]
-        other_columns = sorted(set(all_columns_names) - set(columns_to_go_first))
+        filter_first_columns_in_dataframe = [
+            col for col in columns_to_go_first if col in all_columns_names
+        ]
+        other_columns = sorted(
+            set(all_columns_names) - set(filter_first_columns_in_dataframe)
+        )
         with_columns_reordered = joined_data.select(
-            *columns_to_go_first, *other_columns
+            *filter_first_columns_in_dataframe, *other_columns
         )
         return with_columns_reordered
 
