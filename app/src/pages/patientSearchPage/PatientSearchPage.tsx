@@ -75,7 +75,7 @@ function PatientSearchPage() {
                 baseHeaders,
             });
 
-            if (!patientDetails.active) {
+            if (!patientDetails.active && !patientDetails.deceased) {
                 if (
                     userIsGPClinical ||
                     (userIsGPAdmin &&

@@ -281,7 +281,20 @@ jobs:
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-
+ 
+  deploy_nhs_oauth_token_generator_lambda:
+    name: Deploy nhs_oauth_token_generator_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: nhs_oauth_token_generator_handler
+      lambda_aws_name: NhsOauthTokenGeneratorLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_feature_flags_lambda:
     name: Deploy feature flags lambda
