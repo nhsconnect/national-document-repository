@@ -23,6 +23,8 @@ from utils.cloudwatch_logs_query import (
     LloydGeorgeRecordsSearched,
     LloydGeorgeRecordsStored,
     LloydGeorgeRecordsViewed,
+    OdsReportsCreated,
+    OdsReportsRequested,
     UniqueActiveUserIds,
 )
 from utils.common_query_filters import UploadCompleted
@@ -194,7 +196,12 @@ class DataCollectionService:
         daily_count_searched = self.get_cloud_watch_query_result(
             LloydGeorgeRecordsSearched, start_date, end_date
         )
-
+        daily_count_ods_report_requested = self.get_cloud_watch_query_result(
+            OdsReportsRequested, start_date, end_date
+        )
+        daily_count_ods_report_created = self.get_cloud_watch_query_result(
+            OdsReportsCreated, start_date, end_date
+        )
         joined_query_result = self.join_results_by_ods_code(
             [
                 number_of_patients,
@@ -204,6 +211,8 @@ class DataCollectionService:
                 daily_count_deleted,
                 daily_count_stored,
                 daily_count_searched,
+                daily_count_ods_report_requested,
+                daily_count_ods_report_created,
             ]
         )
 

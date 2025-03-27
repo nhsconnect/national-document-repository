@@ -57,6 +57,8 @@ class OrganisationData(StatisticData):
     daily_count_downloaded: int = 0
     daily_count_deleted: int = 0
     daily_count_searched: int = 0
+    daily_count_ods_report_requested: int = 0
+    daily_count_ods_report_created: int = 0
 
 
 class ApplicationData(StatisticData):
