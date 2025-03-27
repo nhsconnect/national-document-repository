@@ -45,11 +45,11 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     MOCK_LG_DOWNLOADED,
     MOCK_LG_STORED,
     MOCK_LG_VIEWED,
+    MOCK_ODS_REPORT_CREATED,
     MOCK_ODS_REPORT_REQUESTED,
     MOCK_PATIENT_SEARCHED,
     MOCK_UNIQUE_ACTIVE_USER_IDS,
 )
-from unit.helpers.data.statistic.mock_logs_query_results import MOCK_ODS_REPORT_CREATED
 from utils.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
     CountUsersAccessedDeceasedPatient,

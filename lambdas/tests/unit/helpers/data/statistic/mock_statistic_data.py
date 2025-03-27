@@ -121,8 +121,8 @@ MOCK_ORGANISATION_DATA_3 = OrganisationData(
     daily_count_downloaded=5,
     daily_count_deleted=1,
     daily_count_users_accessing_deceased=9,
-    daily_count_ods_report_requested=0,
-    daily_count_ods_report_created=0,
+    daily_count_ods_report_requested=2,
+    daily_count_ods_report_created=2,
 )
 
 EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
@@ -148,8 +148,8 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_deleted": 1 + 1,
             "weekly_count_searched": 0,
             "weekly_count_users_accessing_deceased": 31,
-            "weekly_count_ods_report_requested": 2,
-            "weekly_count_ods_report_created": 2,
+            "weekly_count_ods_report_requested": 4,
+            "weekly_count_ods_report_created": 4,
             "average_records_per_patient": (3.51 + 2.78) / 2,
             "number_of_patients": 10,
         },
@@ -338,8 +338,8 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
             "Weekly count downloaded": 1 + 5,
             "Weekly count stored": 0 + 2,
             "Weekly count deleted": 1 + 1,
-            "Weekly count ods report requested": 2,
-            "Weekly count ods report created": 2,
+            "Weekly count ods report requested": 4,
+            "Weekly count ods report created": 4,
             "Active users count": 3,
             "Unique active user ids hashed": str(
                 [
