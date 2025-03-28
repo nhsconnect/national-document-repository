@@ -1,41 +1,25 @@
-import { Dispatch, SetStateAction, useState } from 'react';
-import {
-    BackLink,
-    Button,
-    Checkboxes,
-    Fieldset,
-    InsetText,
-    WarningCallout,
-} from 'nhsuk-react-components';
+import { Dispatch, SetStateAction } from 'react';
+import { Button, ChevronLeftIcon } from 'nhsuk-react-components';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
 import useRole from '../../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
-import WarningText from '../../../generic/warningText/WarningText';
-import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import { useForm } from 'react-hook-form';
-import { InputRef } from '../../../../types/generic/inputRef';
 import BackButton from '../../../generic/backButton/BackButton';
-import {
-    getBSOLUserRecordActionLinks,
-    getNonBSOLUserRecordActionLinks,
-} from '../../../../types/blocks/lloydGeorgeActions';
+import { getBSOLUserRecordActionLinks } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routes, routeChildren } from '../../../../types/generic/routes';
-import { useNavigate } from 'react-router-dom';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import usePatient from '../../../../helpers/hooks/usePatient';
+import { useSessionContext } from '../../../../providers/sessionProvider/SessionProvider';
+import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
+import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
     lastUpdated: string;
-    numberOfFiles: number;
-    totalFileSizeInBytes: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     stage: LG_RECORD_STAGE;
     refreshRecord: () => void;
@@ -47,53 +31,40 @@ export type Props = {
 function LloydGeorgeViewRecordStage({
     downloadStage,
     lastUpdated,
-    numberOfFiles,
-    totalFileSizeInBytes,
     setStage,
     refreshRecord,
     cloudFrontUrl,
     showMenu,
     resetDocState,
 }: Props) {
-    const navigate = useNavigate();
     const patientDetails = usePatient();
-    const [fullScreen, setFullScreen] = useState(false);
-    const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
-    const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
-        reValidateMode: 'onSubmit',
-    });
-    const { ref: inputRef, ...checkboxProps } = register('confirmDownloadRemove', {
-        required: true,
-    });
+    const [session, setUserSession] = useSessionContext();
 
-    const handleDownloadAndRemoveRecordButton = () => {
-        if (downloadRemoveButtonClicked) {
-            setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
-        }
-        setFocus('confirmDownloadRemove');
-        setDownloadRemoveButtonClicked(true);
-    };
     const role = useRole();
-    const isBSOL = useIsBSOL();
-    const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
     const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
 
-    const recordLinksToShow = isBSOL
-        ? getBSOLUserRecordActionLinks({ role, hasRecordInStorage })
-        : getNonBSOLUserRecordActionLinks({
-              role,
-              hasRecordInStorage,
-              onClickFunctionForDownloadAndRemove: handleDownloadAndRemoveRecordButton,
-          });
-    // @ts-ignore
-    const handleConfirmDownloadAndRemoveButton = () => {
-        navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
+    const setFullScreen = (isFullscreen: boolean) => {
+        if (isFullscreen) {
+            if (document.fullscreenEnabled) {
+                document.documentElement.requestFullscreen?.();
+            }
+        } else if (document.fullscreenElement !== null) {
+            document.exitFullscreen?.();
+        }
+
+        setUserSession({ ...session, isFullscreen });
     };
-    const handleCancelButton = () => {
-        setDownloadRemoveButtonClicked(false);
-        clearErrors('confirmDownloadRemove');
-    };
+
+    let recordLinksToShow = getBSOLUserRecordActionLinks({ role, hasRecordInStorage }).map(
+        (link) => {
+            link.onClick = () => {
+                setFullScreen(false);
+            };
+
+            return link;
+        },
+    );
 
     const recordDetailsProps: RecordDetailsProps = {
         downloadStage,
@@ -107,150 +78,93 @@ function LloydGeorgeViewRecordStage({
 
     return (
         <div className="lloydgeorge_record-stage">
-            {formState.errors.confirmDownloadRemove && (
-                <ErrorBox
-                    dataTestId="confirm-download-and-remove-error"
-                    errorBoxSummaryId="confirm-download-and-remove"
-                    messageTitle="There is a problem"
-                    errorBody="You must confirm if you want to download and remove this record"
-                />
-            )}
-            {fullScreen ? (
-                <BackLink
-                    data-testid="back-link"
-                    href="#"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        setFullScreen(false);
-                    }}
-                >
-                    Exit full screen
-                </BackLink>
-            ) : (
-                <BackButton
-                    dataTestid="go-back-button"
-                    toLocation={
-                        patientDetails?.deceased && role !== REPOSITORY_ROLE.PCSE
-                            ? routeChildren.PATIENT_ACCESS_AUDIT_DECEASED
-                            : routes.VERIFY_PATIENT
-                    }
-                    backLinkText="Go back"
-                />
-            )}
-            {!fullScreen && userIsGpAdminNonBSOL && (
-                <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
-                    <WarningCallout
-                        id="before-downloading-warning"
-                        data-testid="before-downloading-warning"
-                    >
-                        <WarningCallout.Label headingLevel="h2">
-                            Before downloading
-                        </WarningCallout.Label>
-                        <p>
-                            If you download this record it will be removed from our storage. You
-                            will not be able to access it here.
-                        </p>
-                        <p>
-                            Once downloaded, it is your responsibility to keep this patient’s
-                            information safe. You must store the record securely, and ensure it’s
-                            transferred safely to other practices if the patient moves.
-                        </p>
-                        {downloadRemoveButtonClicked && (
-                            <InsetText className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text">
-                                <form onSubmit={handleSubmit(handleConfirmDownloadAndRemoveButton)}>
-                                    <Fieldset
-                                        aria-describedby="download-and-remove-prompt"
-                                        data-testid="fieldset"
-                                    >
-                                        <h3
-                                            className="nhsuk-heading-s"
-                                            id="download-and-remove-prompt"
-                                        >
-                                            Are you sure you want to download and remove this
-                                            record?
-                                        </h3>
-                                        <WarningText
-                                            text="If you download this record, it removes from our storage.
-                                            You must keep the patient's record safe."
-                                        />
-                                        <Checkboxes
-                                            data-testid="confirm-download-and-remove-checkbox"
-                                            className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_checkbox"
-                                            name="confirm-download-remove"
-                                            id="confirm-download-remove"
-                                            error={
-                                                formState.errors.confirmDownloadRemove
-                                                    ? 'Confirm if you want to download and remove this record'
-                                                    : undefined
-                                            }
-                                        >
-                                            <Checkboxes.Box
-                                                value="confirm-download-remove"
-                                                inputRef={inputRef as InputRef}
-                                                {...checkboxProps}
-                                            >
-                                                I understand that downloading this record removes it
-                                                from storage.
-                                            </Checkboxes.Box>
-                                        </Checkboxes>
-                                    </Fieldset>
-                                    <Button
-                                        data-testid="confirm-download-and-remove-btn"
-                                        type="submit"
-                                        id="confirm-download-remove"
-                                        className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_confirm-download-remove-button"
-                                    >
-                                        Yes, download and remove
-                                    </Button>
-                                    <Button
-                                        onClick={handleCancelButton}
-                                        className="nhsuk-button nhsuk-button--secondary medium-left-margin"
-                                        type="button"
-                                    >
-                                        Cancel
-                                    </Button>
-                                </form>
-                            </InsetText>
-                        )}
-                    </WarningCallout>
+            {session.isFullscreen && (
+                <div className="header">
+                    <div className="header-items">
+                        <Button
+                            reverse
+                            data-testid="back-link"
+                            className="exit-fullscreen-button"
+                            onClick={() => {
+                                setFullScreen(false);
+                            }}
+                        >
+                            <ChevronLeftIcon className="mr-2" />
+                            Exit full screen
+                        </Button>
+                        <h1 className="title">Lloyd George record</h1>
+                        <a
+                            className="sign-out-link"
+                            href={routes.LOGOUT}
+                            onClick={() => {
+                                setFullScreen(false);
+                            }}
+                        >
+                            Sign out
+                        </a>
+                    </div>
                 </div>
             )}
 
-            <h1>{pageHeader}</h1>
-            <PatientSimpleSummary showDeceasedTag />
+            <div className="main-content">
+                <div className="top-info">
+                    {!session.isFullscreen && (
+                        <>
+                            <BackButton
+                                dataTestid="go-back-button"
+                                toLocation={
+                                    patientDetails?.deceased && role !== REPOSITORY_ROLE.PCSE
+                                        ? routeChildren.PATIENT_ACCESS_AUDIT_DECEASED
+                                        : routes.VERIFY_PATIENT
+                                }
+                                backLinkText="Go back"
+                            />
+                            <h1>{pageHeader}</h1>
+                        </>
+                    )}
 
-            {!fullScreen ? (
-                <div className="lloydgeorge_record-stage_flex">
-                    <div
-                        className={`lloydgeorge_record-stage_flex-row lloydgeorge_record-stage_flex-row${menuClass}`}
-                    >
-                        <RecordCard
-                            heading="Lloyd George record"
-                            fullScreenHandler={setFullScreen}
-                            detailsElement={<RecordDetails {...recordDetailsProps} />}
-                            isFullScreen={fullScreen}
-                            refreshRecord={refreshRecord}
-                            cloudFrontUrl={cloudFrontUrl}
-                            resetDocStage={resetDocState}
+                    <PatientSimpleSummary showDeceasedTag />
+
+                    {session.isFullscreen && (
+                        <RecordMenuCard
                             recordLinks={recordLinksToShow}
                             setStage={setStage}
                             showMenu={showMenu}
                         />
-                    </div>
+                    )}
                 </div>
-            ) : (
-                <div className="lloydgeorge_record-stage_fs">
+
+                {!session.isFullscreen ? (
+                    <div className="lloydgeorge_record-stage_flex">
+                        <div
+                            className={`lloydgeorge_record-stage_flex-row lloydgeorge_record-stage_flex-row${menuClass}`}
+                        >
+                            <RecordCard
+                                heading="Lloyd George record"
+                                fullScreenHandler={setFullScreen}
+                                detailsElement={<RecordDetails {...recordDetailsProps} />}
+                                isFullScreen={session.isFullscreen!}
+                                refreshRecord={refreshRecord}
+                                cloudFrontUrl={cloudFrontUrl}
+                                resetDocStage={resetDocState}
+                                recordLinks={recordLinksToShow}
+                                setStage={setStage}
+                                showMenu={showMenu}
+                            />
+                        </div>
+                    </div>
+                ) : (
                     <RecordCard
                         heading="Lloyd George record"
                         fullScreenHandler={setFullScreen}
                         detailsElement={<RecordDetails {...recordDetailsProps} />}
-                        isFullScreen={fullScreen}
+                        isFullScreen={session.isFullscreen!}
                         refreshRecord={refreshRecord}
                         cloudFrontUrl={cloudFrontUrl}
                         resetDocStage={resetDocState}
                     />
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
@@ -258,17 +172,25 @@ function LloydGeorgeViewRecordStage({
 type RecordDetailsProps = Pick<Props, 'downloadStage' | 'lastUpdated'>;
 
 const RecordDetails = ({ downloadStage, lastUpdated }: RecordDetailsProps) => {
+    const [{ isFullscreen }] = useSessionContext();
+
     switch (downloadStage) {
         case DOWNLOAD_STAGE.INITIAL:
         case DOWNLOAD_STAGE.PENDING:
         case DOWNLOAD_STAGE.REFRESH:
-            return <ProgressBar status="Loading..." />;
+            return <ProgressBar status="Loading..." className="loading-bar" />;
+
         case DOWNLOAD_STAGE.SUCCEEDED: {
+            if (isFullscreen) {
+                return <></>;
+            }
+
             const detailsProps = {
                 lastUpdated,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         }
+
         default:
             return <LloydGeorgeRecordError downloadStage={downloadStage} />;
     }

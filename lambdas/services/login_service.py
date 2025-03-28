@@ -128,11 +128,8 @@ class LoginService:
             user_id,
         )
 
-        is_bsol = True
-
         logger.info("Returning authentication details")
         response = {
-            "isBSOL": is_bsol,
             "role": repository_role.value,
             "authorisation_token": authorisation_token,
         }

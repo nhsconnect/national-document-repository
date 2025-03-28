@@ -34,18 +34,18 @@ function RecordMenuCard({
     }
     return (
         <div className={className} data-testid="record-menu-card">
-            {updateActions.length > 0 && (
-                <LinkSection
-                    actionLinks={updateActions}
-                    heading="Update record"
-                    setStage={setStage}
-                />
-            )}
-
             {downloadActions.length > 0 && (
                 <LinkSection
                     actionLinks={downloadActions}
                     heading="Download record"
+                    setStage={setStage}
+                />
+            )}
+
+            {updateActions.length > 0 && (
+                <LinkSection
+                    actionLinks={updateActions}
+                    heading="Update record"
                     setStage={setStage}
                 />
             )}
@@ -57,7 +57,7 @@ const LinkSection = ({ actionLinks, setStage }: SubSectionProps) => {
     return (
         <>
             {actionLinks.map((link) => (
-                <LinkItem key={link.key} link={link} setStage={setStage} />
+                <LinkItem key={link.key} link={link} setStage={setStage} onClick={link.onClick} />
             ))}
         </>
     );
@@ -66,9 +66,10 @@ const LinkSection = ({ actionLinks, setStage }: SubSectionProps) => {
 type LinkItemProps = {
     link: LGRecordActionLink;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    onClick: (() => void) | undefined;
 };
 
-const LinkItem = ({ link, setStage }: LinkItemProps) => {
+const LinkItem = ({ link, setStage, onClick }: LinkItemProps) => {
     const navigate = useNavigate();
 
     if (link.href || link.stage) {
@@ -77,6 +78,9 @@ const LinkItem = ({ link, setStage }: LinkItemProps) => {
                 to="#placeholder"
                 onClick={(e) => {
                     e.preventDefault();
+                    if (onClick) {
+                        onClick();
+                    }
                     if (link.href) navigate(link.href);
                     else if (link.stage) setStage(link.stage);
                 }}

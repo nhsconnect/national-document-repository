@@ -160,11 +160,14 @@ export const childRoutes = [
 export const routeMap: Routes = {
     // Public routes
     [START]: {
-        page: (
-            <NonAuthGuard redirectRoute={routes.HOME}>
+        page:
+            process.env.REACT_APP_ENVIRONMENT === 'development' ? (
+                <NonAuthGuard redirectRoute={routes.HOME}>
+                    <StartPage />
+                </NonAuthGuard>
+            ) : (
                 <StartPage />
-            </NonAuthGuard>
-        ),
+            ),
         type: ROUTE_TYPE.PUBLIC,
     },
     [AUTH_CALLBACK]: {
