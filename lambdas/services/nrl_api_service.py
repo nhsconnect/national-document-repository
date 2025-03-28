@@ -43,7 +43,7 @@ class NrlApiService:
 
     def create_new_pointer(
         self,
-        nhs_number,
+        nhs_number: str,
         body: dict,
         record_type: SnomedCode = None,
         retry_on_expired: bool = True,
@@ -76,7 +76,10 @@ class NrlApiService:
                 raise NrlApiException("Error while creating new NRL Pointer")
 
     def get_pointer(
-        self, nhs_number, record_type: SnomedCode = None, retry_on_expired: bool = True
+        self,
+        nhs_number: str,
+        record_type: SnomedCode = None,
+        retry_on_expired: bool = True,
     ):
         try:
             self.set_x_request_id()
@@ -112,7 +115,7 @@ class NrlApiService:
             else:
                 raise NrlApiException("Error while getting NRL Pointer")
 
-    def delete_pointer(self, nhs_number, record_type: SnomedCode = None):
+    def delete_pointer(self, nhs_number: str, record_type: SnomedCode = None):
         search_results = self.get_pointer(nhs_number, record_type).get("entry", [])
         for entry in search_results:
             self.set_x_request_id()

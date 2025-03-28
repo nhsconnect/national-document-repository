@@ -18,15 +18,20 @@ def nrl_service(set_env, mocker):
     yield nrl_service
 
 
-def test_create_new_pointer(nrl_service, mocker):
-    nrl_service.get_pointer = mocker.MagicMock(return_value={})
+@pytest.fixture
+def mock_session_post(nrl_service, mocker):
     nrl_service.session.post = mocker.MagicMock()
     nrl_service.session.post.return_value.status_code = 201
     nrl_service.session.post.return_value.json = mocker.MagicMock(return_value={})
+    yield nrl_service.session.post
+
+
+def test_create_new_pointer(nrl_service, mock_session_post, mocker):
+    nrl_service.get_pointer = mocker.MagicMock(return_value={})
 
     nrl_service.create_new_pointer("123456789", {}, SnomedCodes.LLOYD_GEORGE.value)
 
-    nrl_service.session.post.assert_called_once_with(
+    mock_session_post.assert_called_once_with(
         url=nrl_service.endpoint, headers=nrl_service.headers, json={}
     )
 
@@ -77,7 +82,7 @@ def test_create_new_pointer_existing_pointer(nrl_service, mocker):
     )
 
 
-def test_create_new_pointer_success(nrl_service, mocker):
+def test_create_new_pointer_success(nrl_service, mocker, mock_session_post):
     nhs_number = "123456789"
     body = {
         "resourceType": "DocumentReference",
@@ -85,18 +90,17 @@ def test_create_new_pointer_success(nrl_service, mocker):
         "content": [{"attachment": {"contentType": "application/pdf"}}],
     }
     nrl_service.get_pointer = mocker.MagicMock(return_value={})
-    nrl_service.session.post = mocker.MagicMock()
-    nrl_service.session.post.return_value.status_code = 201
-    nrl_service.session.post.return_value.json = mocker.MagicMock(return_value={})
 
     nrl_service.create_new_pointer(nhs_number, body, SnomedCodes.LLOYD_GEORGE.value)
 
-    nrl_service.session.post.assert_called_once_with(
+    mock_session_post.assert_called_once_with(
         url=nrl_service.endpoint, headers=nrl_service.headers, json=body
     )
 
 
-def test_create_new_pointer_retry_on_expired_token(nrl_service, mocker):
+def test_create_new_pointer_retry_on_expired_token(
+    nrl_service, mocker, mock_session_post
+):
     nhs_number = "123456789"
     body = {
         "resourceType": "DocumentReference",
@@ -107,15 +111,15 @@ def test_create_new_pointer_retry_on_expired_token(nrl_service, mocker):
     response = Response()
     response.status_code = 401
     response._content = b"{}"
-    nrl_service.session.post.side_effect = [
+    mock_session_post.side_effect = [
         response,
         mocker.MagicMock(status_code=201, json=mocker.MagicMock(return_value={})),
     ]
 
     nrl_service.create_new_pointer(nhs_number, body, SnomedCodes.LLOYD_GEORGE.value)
 
-    assert nrl_service.session.post.call_count == 2
-    nrl_service.session.post.assert_called_with(
+    assert mock_session_post.call_count == 2
+    mock_session_post.assert_called_with(
         url=nrl_service.endpoint, headers=nrl_service.headers, json=body
     )
 
