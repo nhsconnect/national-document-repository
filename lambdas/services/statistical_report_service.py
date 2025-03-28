@@ -202,10 +202,28 @@ class StatisticalReportService:
 
     def reorder_columns(self, joined_data: pl.DataFrame) -> pl.DataFrame:
         all_columns_names = joined_data.columns
-        columns_to_go_first = ["date", "ods_code"]
-        other_columns = sorted(set(all_columns_names) - set(columns_to_go_first))
+        columns_to_go_first = [
+            "date",
+            "ods_code",
+            "number_of_patients",
+            "total_number_of_records",
+            "weekly_count_searched",
+            "weekly_count_users_accessing_deceased",
+            "weekly_count_viewed",
+            "weekly_count_downloaded",
+            "weekly_count_stored",
+            "weekly_count_deleted",
+            "active_users_count",
+            "unique_active_user_ids_hashed",
+        ]
+        filter_first_columns_in_dataframe = [
+            col for col in columns_to_go_first if col in all_columns_names
+        ]
+        other_columns = sorted(
+            set(all_columns_names) - set(filter_first_columns_in_dataframe)
+        )
         with_columns_reordered = joined_data.select(
-            *columns_to_go_first, *other_columns
+            *filter_first_columns_in_dataframe, *other_columns
         )
         return with_columns_reordered
 
