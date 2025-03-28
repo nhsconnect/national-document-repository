@@ -831,6 +831,10 @@ $hunit: '%';
 
 // Helper
 
+#pdf-viewer {
+    height: 75vh;
+}
+
 @-moz-document url-prefix() {
     #pdf-viewer {
         margin-top: 6px;
@@ -953,6 +957,11 @@ $hunit: '%';
     &.fullscreen {
         max-width: unset;
         padding: 0;
+
+        #pdf-viewer {
+            flex: 1;
+            height: unset;
+        }
 
         @media (max-width: 640px) {
             height: 100vh;
