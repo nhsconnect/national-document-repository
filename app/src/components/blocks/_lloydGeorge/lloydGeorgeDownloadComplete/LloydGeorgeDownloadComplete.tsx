@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import { Button, Card } from 'nhsuk-react-components';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import useTitle from '../../../../helpers/hooks/useTitle';
@@ -7,23 +7,14 @@ import { routes } from '../../../../types/generic/routes';
 import DocumentsListView from '../../../generic/documentsListView/DocumentsListView';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import { GenericDocument } from '../../../../types/generic/genericDocument';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
-    deleteAfterDownload: boolean;
     numberOfFiles: number;
     selectedDocuments?: Array<string>;
     searchResults?: Array<SearchResult>;
-    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
-function LloydGeorgeDownloadComplete({
-    deleteAfterDownload,
-    numberOfFiles,
-    selectedDocuments,
-    searchResults,
-    setDownloadStage,
-}: Props) {
+function LloydGeorgeDownloadComplete({ numberOfFiles, selectedDocuments, searchResults }: Props) {
     const navigate = useNavigate();
 
     const selectedFilesDownload = !!selectedDocuments?.length;
@@ -31,9 +22,6 @@ function LloydGeorgeDownloadComplete({
     useTitle({ pageTitle: pageHeader });
 
     const handleReturnButtonClick = () => {
-        if (deleteAfterDownload) {
-            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
-        }
         navigate(routes.LLOYD_GEORGE);
     };
 
@@ -100,34 +88,6 @@ function LloydGeorgeDownloadComplete({
                         documentsList={documentsList}
                         ariaLabel={'selected-document-list'}
                     />
-                </>
-            )}
-            {deleteAfterDownload && (
-                <>
-                    <p>This record has been removed from our storage.</p>
-                    <p className="lloydgeorge_download-complete_paragraph-headers">
-                        Keep this patient's record safe
-                    </p>
-                    <ol>
-                        <li>
-                            Store the record in an accessible and recoverable format within a secure
-                            network folder
-                        </li>
-                        <li>
-                            Ensure all access to the record is auditable, so information can be
-                            provided about who accessed the record
-                        </li>
-                        <li>
-                            If the patient moves practice, you must make sure the patient record
-                            safely transfers to their new practice
-                        </li>
-                        <li>
-                            Follow data protection principles outlined in{' '}
-                            <a href="https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-protection-principles/a-guide-to-the-data-protection-principles/">
-                                UK General Data Protection Regulation (UK GDPR)
-                            </a>
-                        </li>
-                    </ol>
                 </>
             )}
             <h2 className="nhsuk-heading-l">Your responsibilities with this record</h2>

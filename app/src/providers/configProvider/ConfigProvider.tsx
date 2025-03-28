@@ -13,7 +13,6 @@ type Props = {
 };
 
 export type LocalFlags = {
-    isBsol?: boolean;
     recordUploaded?: boolean;
     userRole?: REPOSITORY_ROLE;
     patientIsActive?: boolean;
@@ -44,7 +43,6 @@ const ConfigProvider = ({ children, configOverride, setConfigOverride }: Props) 
     );
     const defaultMockLocals = isLocal
         ? {
-              isBsol: true,
               recordUploaded: true,
               patientIsActive: true,
               patientIsDeceased: false,

@@ -22,7 +22,6 @@ import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownlo
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
-    deleteAfterDownload?: boolean;
     numberOfFiles: number;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
@@ -62,11 +61,7 @@ const SelectDownloadPageIndexView = ({
             )}
     </>
 );
-function LloydGeorgeSelectDownloadStage({
-    setDownloadStage,
-    numberOfFiles,
-    deleteAfterDownload = false,
-}: Props) {
+function LloydGeorgeSelectDownloadStage({ setDownloadStage, numberOfFiles }: Props) {
     const mounted = useRef(false);
     const navigate = useNavigate();
     const patientDetails = usePatient();
@@ -152,7 +147,6 @@ function LloydGeorgeSelectDownloadStage({
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS)}
                     element={
                         <LloydGeorgeDownloadStage
-                            deleteAfterDownload={deleteAfterDownload}
                             selectedDocuments={selectedDocuments}
                             numberOfFiles={numberOfFilesForDownload}
                         />
@@ -162,11 +156,9 @@ function LloydGeorgeSelectDownloadStage({
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE)}
                     element={
                         <LgDownloadComplete
-                            deleteAfterDownload={deleteAfterDownload}
                             numberOfFiles={numberOfFilesForDownload}
                             selectedDocuments={selectedDocuments}
                             searchResults={searchResults}
-                            setDownloadStage={setDownloadStage}
                         />
                     }
                 />

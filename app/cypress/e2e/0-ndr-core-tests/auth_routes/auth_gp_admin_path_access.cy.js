@@ -21,8 +21,6 @@ const arfDownloadUrl = '/patient/arf';
 
 const forbiddenRoutes = [arfDownloadUrl];
 
-const bsolOptions = [true];
-
 describe('GP Admin user role has access to the expected GP_ADMIN workflow paths', () => {
     context('GP Admin role has access to expected routes', () => {
         it('GP Admin role has access to Lloyd George View', { tags: 'regression' }, () => {

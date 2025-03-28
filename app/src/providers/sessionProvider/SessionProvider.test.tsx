@@ -27,7 +27,6 @@ describe('SessionProvider', () => {
         });
 
         expect(screen.getByText('isLoggedIn - true')).toBeInTheDocument();
-        expect(screen.getByText('isBsol - false')).toBeInTheDocument();
 
         expect(
             screen.getByText(`authCode - ${loggedIn.auth.authorisation_token}`),
@@ -40,7 +39,6 @@ describe('SessionProvider', () => {
             userEvent.click(screen.getByText('Log in'));
         });
         expect(screen.getByText('isLoggedIn - true')).toBeInTheDocument();
-        expect(screen.getByText('isBsol - false')).toBeInTheDocument();
 
         expect(
             screen.getByText(`authCode - ${loggedIn.auth.authorisation_token}`),
@@ -68,7 +66,6 @@ const TestApp = () => {
             <div>
                 <h1>Details</h1>
                 <span>isLoggedIn - {`${session.isLoggedIn}`}</span>
-                <span>isBsol - {`${session.auth?.isBSOL}`}</span>
                 <span>authCode - {`${session.auth?.authorisation_token}`}</span>
             </div>
         </>

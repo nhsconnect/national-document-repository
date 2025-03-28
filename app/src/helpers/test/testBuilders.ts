@@ -23,7 +23,6 @@ import {
 const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
     const auth: UserAuth = {
         role: REPOSITORY_ROLE.GP_ADMIN,
-        isBSOL: false,
         authorisation_token: '111xxx222',
         ...userAuthOverride,
     };
@@ -152,7 +151,6 @@ const buildConfig = (
 ) => {
     const globalConfig: GlobalConfig = {
         mockLocal: {
-            isBsol: true,
             recordUploaded: true,
             userRole: REPOSITORY_ROLE.GP_ADMIN,
             ...localFlagsOverride,

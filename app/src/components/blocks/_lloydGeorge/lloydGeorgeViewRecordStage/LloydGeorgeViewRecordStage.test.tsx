@@ -6,7 +6,6 @@ import {
     buildPatientDetails,
 } from '../../../../helpers/test/testBuilders';
 import useRole from '../../../../helpers/hooks/useRole';
-import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
@@ -24,7 +23,6 @@ const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('../../../../helpers/hooks/useIsBSOL');
 jest.mock('../../../../helpers/hooks/useConfig');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -38,7 +36,6 @@ jest.mock('react-router-dom', () => ({
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
-const mockedIsBSOL = useIsBSOL as jest.Mock;
 const mockSetStage = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
 
@@ -145,9 +142,8 @@ describe('LloydGeorgeViewRecordStage', () => {
         });
     });
 
-    it('does not render warning callout or button when user is GP admin and BSOL', async () => {
+    it('does not render warning callout or button when user is GP admin', async () => {
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-        mockedIsBSOL.mockReturnValue(true);
 
         renderComponent();
 
@@ -157,9 +153,8 @@ describe('LloydGeorgeViewRecordStage', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('does not render warning callout or button when user is GP clinical and BSOL', async () => {
+    it('does not render warning callout or button when user is GP clinical', async () => {
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
-        mockedIsBSOL.mockReturnValue(true);
 
         renderComponent();
 
@@ -169,7 +164,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         ).not.toBeInTheDocument();
     });
 
-    describe('Accessibility (in BSOL)', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks when no LG record are displayed', async () => {
             renderComponent({
                 downloadStage: DOWNLOAD_STAGE.NO_RECORDS,

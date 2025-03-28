@@ -68,7 +68,7 @@ const AuthCallbackPage = (props: Props) => {
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    const { isBsol, userRole } = mockLocal;
+                    const { userRole } = mockLocal;
                     const mockFeatureFlags = Object.entries(defaultFeatureFlags).reduce(
                         (acc, [k, v]) => ({
                             ...acc,
@@ -76,10 +76,7 @@ const AuthCallbackPage = (props: Props) => {
                         }),
                         {} as FeatureFlags,
                     );
-                    handleSuccess(
-                        buildUserAuth({ isBSOL: !!isBsol, role: userRole }),
-                        mockFeatureFlags,
-                    );
+                    handleSuccess(buildUserAuth({ role: userRole }), mockFeatureFlags);
                 } else {
                     handleError(error);
                 }

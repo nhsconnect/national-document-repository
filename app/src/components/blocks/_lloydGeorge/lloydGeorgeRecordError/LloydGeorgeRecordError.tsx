@@ -5,7 +5,6 @@ import ServiceError from '../../../layout/serviceErrorBox/ServiceErrorBox';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import { routeChildren, routes } from '../../../../types/generic/routes';
-import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import { ButtonLink } from 'nhsuk-react-components';
 import useConfig from '../../../../helpers/hooks/useConfig';
 
@@ -16,18 +15,17 @@ type Props = {
 function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
     const role = useRole();
     const navigate = useNavigate();
-    const isBSOL = useIsBSOL();
     const { featureFlags } = useConfig();
 
-    const isAdminBsol = role === REPOSITORY_ROLE.GP_ADMIN && isBSOL;
+    const isAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
     const uploadJourneyEnabled =
         featureFlags.uploadLloydGeorgeWorkflowEnabled && featureFlags.uploadLambdaEnabled;
 
     const renderTimeout = downloadStage === DOWNLOAD_STAGE.TIMEOUT;
     const renderUploadPath =
-        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && isAdminBsol && uploadJourneyEnabled;
+        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && isAdmin && uploadJourneyEnabled;
     const renderNoRecords =
-        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && (!isAdminBsol || !uploadJourneyEnabled);
+        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && (!isAdmin || !uploadJourneyEnabled);
     const renderUploadInProgress = downloadStage === DOWNLOAD_STAGE.UPLOADING;
 
     if (renderTimeout) {

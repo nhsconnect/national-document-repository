@@ -5,7 +5,6 @@ import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlF
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../../helpers/hooks/usePatient';
-import deleteAllDocuments from '../../../../helpers/requests/deleteAllDocuments';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { useNavigate, Link } from 'react-router-dom';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
@@ -17,7 +16,6 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 const FakeProgress = require('fake-progress');
 
 export type Props = {
-    deleteAfterDownload: boolean;
     selectedDocuments?: Array<string>;
     numberOfFiles: number;
 };
@@ -27,11 +25,7 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadStage({
-    deleteAfterDownload = false,
-    selectedDocuments,
-    numberOfFiles,
-}: Props) {
+function LloydGeorgeDownloadStage({ selectedDocuments, numberOfFiles }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
@@ -109,19 +103,6 @@ function LloydGeorgeDownloadStage({
                 });
 
                 const filename = `patient-record-${nhsNumber}`;
-                if (deleteAfterDownload) {
-                    try {
-                        await deleteAllDocuments({
-                            docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-                            nhsNumber: nhsNumber,
-                            baseUrl,
-                            baseHeaders,
-                        });
-                    } catch (e) {
-                        const error = e as AxiosError;
-                        onFail(error);
-                    } // This is fail and forget at this point in time.
-                }
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
             } catch (e) {
                 const error = e as AxiosError;
@@ -143,7 +124,6 @@ function LloydGeorgeDownloadStage({
         intervalTimer,
         nhsNumber,
         progressTimer,
-        deleteAfterDownload,
         navigate,
         mockLocal,
         selectedDocuments,
