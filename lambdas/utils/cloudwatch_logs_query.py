@@ -61,6 +61,7 @@ CountUsersAccessedDeceasedPatient = CloudwatchLogsQueryParams(
         | stats count_distinct(user_id) AS daily_count_users_accessing_deceased BY ods_code
     """,
 )
+
 OdsReportsRequested = CloudwatchLogsQueryParams(
     lambda_name="GetReportByODS",
     query_string="""

@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import List
 
 
@@ -13,6 +13,6 @@ class RepositoryRole(Enum):
         return [str(item.value) for item in RepositoryRole]
 
 
-class OrganisationRelationship(Enum):
-    BSOL_REL_ID = "RE4"
-    BSOL_ORG_ID = "15E"
+class OrganisationRelationship(StrEnum):
+    COMMISSIONED_BY = "RE4"
+    CLINICAL_COMMISSIONING_GROUP = "RO98"
