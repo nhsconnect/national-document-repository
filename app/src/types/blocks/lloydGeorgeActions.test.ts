@@ -8,12 +8,12 @@ describe('getUserRecordActionLinks', () => {
             const hasRecordInRepo = true;
             const expectedOutput = expect.arrayContaining([
                 expect.objectContaining({
-                    label: 'Remove files',
+                    label: 'Remove record',
                     key: 'delete-all-files-link',
                     type: RECORD_ACTION.UPDATE,
                 }),
                 expect.objectContaining({
-                    label: 'Download files',
+                    label: 'Download record',
                     key: 'download-all-files-link',
                     type: RECORD_ACTION.DOWNLOAD,
                 }),

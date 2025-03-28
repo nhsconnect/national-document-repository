@@ -46,12 +46,7 @@ function LloydGeorgeRecordPage() {
     };
 
     const refreshRecord = async () => {
-        const onSuccess = (
-            filesCount: number,
-            updatedDate: string,
-            fileSize: number,
-            presignedUrl: string,
-        ) => {
+        const onSuccess = (filesCount: number, updatedDate: string, presignedUrl: string) => {
             setNumberOfFiles(filesCount);
             setLastUpdated(getFormattedDatetime(new Date(updatedDate)));
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
@@ -64,7 +59,7 @@ function LloydGeorgeRecordPage() {
 
             if (isMock(error)) {
                 if (!!config.mockLocal.recordUploaded) {
-                    onSuccess(1, moment().format(), 59000, '/dev/testFile.pdf');
+                    onSuccess(1, moment().format(), '/dev/testFile.pdf');
                 } else {
                     setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
                 }
@@ -90,14 +85,13 @@ function LloydGeorgeRecordPage() {
 
         const nhsNumber: string = patientDetails?.nhsNumber ?? '';
         try {
-            const { numberOfFiles, totalFileSizeInBytes, lastUpdated, presignedUrl } =
-                await getLloydGeorgeRecord({
-                    nhsNumber,
-                    baseUrl,
-                    baseHeaders,
-                });
+            const { numberOfFiles, lastUpdated, presignedUrl } = await getLloydGeorgeRecord({
+                nhsNumber,
+                baseUrl,
+                baseHeaders,
+            });
 
-            onSuccess(numberOfFiles, lastUpdated, totalFileSizeInBytes, presignedUrl);
+            onSuccess(numberOfFiles, lastUpdated, presignedUrl);
         } catch (e) {
             onError(e as AxiosError);
         }

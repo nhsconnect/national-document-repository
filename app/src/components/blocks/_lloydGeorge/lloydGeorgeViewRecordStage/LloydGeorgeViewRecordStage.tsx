@@ -1,12 +1,10 @@
-import { Dispatch, SetStateAction, useState } from 'react';
-import { BackLink } from 'nhsuk-react-components';
+import { Dispatch, SetStateAction } from 'react';
+import { Button, ChevronLeftIcon } from 'nhsuk-react-components';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
 import useRole from '../../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-
 import BackButton from '../../../generic/backButton/BackButton';
 import { getUserRecordActionLinks } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
@@ -15,6 +13,9 @@ import { routes, routeChildren } from '../../../../types/generic/routes';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import usePatient from '../../../../helpers/hooks/usePatient';
+import { useSessionContext } from '../../../../providers/sessionProvider/SessionProvider';
+import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
+import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -37,10 +38,32 @@ function LloydGeorgeViewRecordStage({
     resetDocState,
 }: Props) {
     const patientDetails = usePatient();
-    const [fullScreen, setFullScreen] = useState(false);
+    const [session, setUserSession] = useSessionContext();
+
     const role = useRole();
+
     const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
-    const recordLinksToShow = getUserRecordActionLinks({ role, hasRecordInStorage });
+
+    const setFullScreen = (isFullscreen: boolean) => {
+        if (isFullscreen) {
+            if (document.fullscreenEnabled) {
+                document.documentElement.requestFullscreen?.();
+            }
+        } else if (document.fullscreenElement !== null) {
+            document.exitFullscreen?.();
+        }
+
+        setUserSession({ ...session, isFullscreen });
+    };
+
+    let recordLinksToShow = getUserRecordActionLinks({ role, hasRecordInStorage }).map((link) => {
+        link.onClick = () => {
+            setFullScreen(false);
+        };
+
+        return link;
+    });
+
     const recordDetailsProps: RecordDetailsProps = {
         downloadStage,
         lastUpdated,
@@ -53,64 +76,93 @@ function LloydGeorgeViewRecordStage({
 
     return (
         <div className="lloydgeorge_record-stage">
-            {fullScreen ? (
-                <BackLink
-                    data-testid="back-link"
-                    href="#"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        setFullScreen(false);
-                    }}
-                >
-                    Exit full screen
-                </BackLink>
-            ) : (
-                <BackButton
-                    dataTestid="go-back-button"
-                    toLocation={
-                        patientDetails?.deceased && role !== REPOSITORY_ROLE.PCSE
-                            ? routeChildren.PATIENT_ACCESS_AUDIT_DECEASED
-                            : routes.VERIFY_PATIENT
-                    }
-                    backLinkText="Go back"
-                />
+            {session.isFullscreen && (
+                <div className="header">
+                    <div className="header-items">
+                        <Button
+                            reverse
+                            data-testid="back-link"
+                            className="exit-fullscreen-button"
+                            onClick={() => {
+                                setFullScreen(false);
+                            }}
+                        >
+                            <ChevronLeftIcon className="mr-2" />
+                            Exit full screen
+                        </Button>
+                        <h1 className="title">Lloyd George record</h1>
+                        <a
+                            className="sign-out-link"
+                            href={routes.LOGOUT}
+                            onClick={() => {
+                                setFullScreen(false);
+                            }}
+                        >
+                            Sign out
+                        </a>
+                    </div>
+                </div>
             )}
 
-            <h1>{pageHeader}</h1>
-            <PatientSimpleSummary showDeceasedTag />
+            <div className="main-content">
+                <div className="top-info">
+                    {!session.isFullscreen && (
+                        <>
+                            <BackButton
+                                dataTestid="go-back-button"
+                                toLocation={
+                                    patientDetails?.deceased && role !== REPOSITORY_ROLE.PCSE
+                                        ? routeChildren.PATIENT_ACCESS_AUDIT_DECEASED
+                                        : routes.VERIFY_PATIENT
+                                }
+                                backLinkText="Go back"
+                            />
+                            <h1>{pageHeader}</h1>
+                        </>
+                    )}
 
-            {!fullScreen ? (
-                <div className="lloydgeorge_record-stage_flex">
-                    <div
-                        className={`lloydgeorge_record-stage_flex-row lloydgeorge_record-stage_flex-row${menuClass}`}
-                    >
-                        <RecordCard
-                            heading="Lloyd George record"
-                            fullScreenHandler={setFullScreen}
-                            detailsElement={<RecordDetails {...recordDetailsProps} />}
-                            isFullScreen={fullScreen}
-                            refreshRecord={refreshRecord}
-                            cloudFrontUrl={cloudFrontUrl}
-                            resetDocStage={resetDocState}
+                    <PatientSimpleSummary showDeceasedTag />
+
+                    {session.isFullscreen && (
+                        <RecordMenuCard
                             recordLinks={recordLinksToShow}
                             setStage={setStage}
                             showMenu={showMenu}
                         />
-                    </div>
+                    )}
                 </div>
-            ) : (
-                <div className="lloydgeorge_record-stage_fs">
+
+                {!session.isFullscreen ? (
+                    <div className="lloydgeorge_record-stage_flex">
+                        <div
+                            className={`lloydgeorge_record-stage_flex-row lloydgeorge_record-stage_flex-row${menuClass}`}
+                        >
+                            <RecordCard
+                                heading="Lloyd George record"
+                                fullScreenHandler={setFullScreen}
+                                detailsElement={<RecordDetails {...recordDetailsProps} />}
+                                isFullScreen={session.isFullscreen!}
+                                refreshRecord={refreshRecord}
+                                cloudFrontUrl={cloudFrontUrl}
+                                resetDocStage={resetDocState}
+                                recordLinks={recordLinksToShow}
+                                setStage={setStage}
+                                showMenu={showMenu}
+                            />
+                        </div>
+                    </div>
+                ) : (
                     <RecordCard
                         heading="Lloyd George record"
                         fullScreenHandler={setFullScreen}
                         detailsElement={<RecordDetails {...recordDetailsProps} />}
-                        isFullScreen={fullScreen}
+                        isFullScreen={session.isFullscreen!}
                         refreshRecord={refreshRecord}
                         cloudFrontUrl={cloudFrontUrl}
                         resetDocStage={resetDocState}
                     />
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
@@ -118,17 +170,25 @@ function LloydGeorgeViewRecordStage({
 type RecordDetailsProps = Pick<Props, 'downloadStage' | 'lastUpdated'>;
 
 const RecordDetails = ({ downloadStage, lastUpdated }: RecordDetailsProps) => {
+    const [{ isFullscreen }] = useSessionContext();
+
     switch (downloadStage) {
         case DOWNLOAD_STAGE.INITIAL:
         case DOWNLOAD_STAGE.PENDING:
         case DOWNLOAD_STAGE.REFRESH:
-            return <ProgressBar status="Loading..." />;
+            return <ProgressBar status="Loading..." className="loading-bar" />;
+
         case DOWNLOAD_STAGE.SUCCEEDED: {
+            if (isFullscreen) {
+                return <></>;
+            }
+
             const detailsProps = {
                 lastUpdated,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         }
+
         default:
             return <LloydGeorgeRecordError downloadStage={downloadStage} />;
     }

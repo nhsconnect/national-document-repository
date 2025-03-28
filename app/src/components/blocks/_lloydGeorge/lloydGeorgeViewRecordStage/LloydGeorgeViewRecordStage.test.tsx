@@ -18,6 +18,7 @@ import LloydGeorgeViewRecordStage, { Props } from './LloydGeorgeViewRecordStage'
 import { createMemoryHistory } from 'history';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import * as ReactRouter from 'react-router-dom';
+import SessionProvider from '../../../../providers/sessionProvider/SessionProvider';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../../helpers/hooks/useRole');
@@ -111,7 +112,7 @@ describe('LloydGeorgeViewRecordStage', () => {
             userEvent.click(screen.getByText('View in full screen'));
         });
         await waitFor(() => {
-            expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
+            expect(screen.queryByText('View in full screen')).not.toBeInTheDocument();
         });
         expect(screen.getByText('Exit full screen')).toBeInTheDocument();
         expect(screen.getByText(patientName)).toBeInTheDocument();
@@ -129,7 +130,7 @@ describe('LloydGeorgeViewRecordStage', () => {
             userEvent.click(screen.getByText('View in full screen'));
         });
         await waitFor(() => {
-            expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
+            expect(screen.queryByText('View in full screen')).not.toBeInTheDocument();
         });
 
         act(() => {
@@ -137,7 +138,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         });
 
         await waitFor(() => {
-            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+            expect(screen.getByText('View in full screen')).toBeInTheDocument();
         });
     });
 
@@ -264,5 +265,9 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
         resetDocState: jest.fn(),
         ...propsOverride,
     };
-    render(<TestApp {...props} />);
+    render(
+        <SessionProvider sessionOverride={{ isLoggedIn: true }}>
+            <TestApp {...props} />
+        </SessionProvider>,
+    );
 };
