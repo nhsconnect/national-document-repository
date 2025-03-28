@@ -4,6 +4,7 @@ import { routes } from './routes';
 import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
 import Bluebird from 'cypress/types/bluebird';
 import './aws.commands';
+import 'cypress-real-events';
 
 /// <reference types="cypress" />
 const registerCypressGrep = require('@cypress/grep');
