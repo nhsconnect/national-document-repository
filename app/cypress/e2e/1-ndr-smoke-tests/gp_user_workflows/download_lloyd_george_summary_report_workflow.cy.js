@@ -22,6 +22,7 @@ describe('GP Workflow: Download Lloyd George summary report', () => {
             { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
+
                 cy.navigateToDownloadReportPage();
 
                 cy.intercept('GET', '/OdsReport*').as('downloadReportFinished');

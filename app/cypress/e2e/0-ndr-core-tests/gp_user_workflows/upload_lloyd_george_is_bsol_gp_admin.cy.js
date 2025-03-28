@@ -92,6 +92,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
         cy.wait('@search');
         cy.get('#verify-submit').click();
         cy.wait('@stitch');
+        // Try to wait for feature flag response before searching and trying to click on the button below.
         cy.getByTestId('upload-patient-record-button').click();
         cy.url().should('include', 'upload');
         cy.url().should('eq', baseUrl + lloydGeorgeUploadUrl);
