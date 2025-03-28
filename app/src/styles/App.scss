@@ -270,6 +270,12 @@ $hunit: '%';
         &_patient-info {
             p {
                 font-size: 1.2rem;
+                word-break: break-word;
+                overflow-wrap: break-word;
+            }
+            span {
+                overflow-wrap: break-word;
+                word-break: break-word;
             }
         }
 
