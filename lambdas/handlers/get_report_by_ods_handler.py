@@ -58,13 +58,14 @@ def handle_api_gateway_request(event):
         file_type = FileType.CSV
 
     service = OdsReportService()
-    logger.info(f"Starting process for ods code: {ods_code}")
+    logger.info(f"Received a request to create a report for ODS code: {ods_code}")
     pre_signed_url = service.get_nhs_numbers_by_ods(
         ods_code=ods_code,
         is_pre_signed_needed=True,
         is_upload_to_s3_needed=True,
         file_type_output=file_type,
     )
+    logger.info("A report has been successfully created.")
     return ApiGatewayResponse(
         200, json.dumps({"url": pre_signed_url}), "GET"
     ).create_api_gateway_response()
