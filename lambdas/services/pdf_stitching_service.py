@@ -114,6 +114,7 @@ class PdfStitchingService:
             id=reference_id,
             content_type=document_reference.content_type,
             created=date_now.strftime(DATE_FORMAT),
+            current_gp_ods=document_reference.current_gp_ods,
             deleted="",
             file_location=f"s3://{self.target_bucket}/{document_reference.nhs_number}/{reference_id}",
             file_name=f"1of1_{stripped_filename}",

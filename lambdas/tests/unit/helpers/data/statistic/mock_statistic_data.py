@@ -92,6 +92,7 @@ MOCK_ORGANISATION_DATA_1 = OrganisationData(
     daily_count_viewed=35,
     daily_count_downloaded=4,
     daily_count_deleted=1,
+    daily_count_users_accessing_deceased=12,
 )
 MOCK_ORGANISATION_DATA_2 = OrganisationData(
     statistic_id="9ee2c3d1-97b9-4c34-b75c-83e7d1b442f4",
@@ -103,6 +104,7 @@ MOCK_ORGANISATION_DATA_2 = OrganisationData(
     daily_count_viewed=15,
     daily_count_downloaded=1,
     daily_count_deleted=1,
+    daily_count_users_accessing_deceased=22,
 )
 MOCK_ORGANISATION_DATA_3 = OrganisationData(
     statistic_id="3f54cfe3-6c84-4bb2-b5b4-b786aa03b9c7",
@@ -114,6 +116,7 @@ MOCK_ORGANISATION_DATA_3 = OrganisationData(
     daily_count_viewed=30,
     daily_count_downloaded=5,
     daily_count_deleted=1,
+    daily_count_users_accessing_deceased=9,
 )
 
 EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
@@ -125,6 +128,7 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_downloaded": 4,
             "weekly_count_deleted": 1,
             "weekly_count_searched": 0,
+            "weekly_count_users_accessing_deceased": 12,
             "average_records_per_patient": 4.5,
             "number_of_patients": 4,
         },
@@ -135,6 +139,7 @@ EXPECTED_SUMMARY_ORGANISATION_DATA = pl.DataFrame(
             "weekly_count_downloaded": 1 + 5,
             "weekly_count_deleted": 1 + 1,
             "weekly_count_searched": 0,
+            "weekly_count_users_accessing_deceased": 31,
             "average_records_per_patient": (3.51 + 2.78) / 2,
             "number_of_patients": 10,
         },
@@ -152,6 +157,7 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountViewed": 35,
         "DailyCountDownloaded": 4,
         "DailyCountDeleted": 1,
+        "DailyCountUsersAccessingDeceased": 12,
         "StatisticID": "OrganisationData#5acda4bf-8b93-4ba0-8410-789aac4fcbae",
     },
     {
@@ -163,6 +169,7 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountViewed": 15,
         "DailyCountDownloaded": 1,
         "DailyCountDeleted": 1,
+        "DailyCountUsersAccessingDeceased": 22,
         "StatisticID": "OrganisationData#9ee2c3d1-97b9-4c34-b75c-83e7d1b442f4",
     },
     {
@@ -174,6 +181,7 @@ SERIALISED_ORGANISATION_DATA = [
         "DailyCountViewed": 30,
         "DailyCountDownloaded": 5,
         "DailyCountDeleted": 1,
+        "DailyCountUsersAccessingDeceased": 9,
         "StatisticID": "OrganisationData#3f54cfe3-6c84-4bb2-b5b4-b786aa03b9c7",
     },
 ]
@@ -285,32 +293,35 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
         {
             "Date": "20240505-20240511",
             "ODS code": "Z56789",
-            "Active users count": 1,
-            "Average records per patient": 4.5,
-            "Average size of documents per patient in megabytes": 1.5,
-            "Number of document types": 1,
             "Number of patients": 4,
             "Total number of records": 18,
-            "Total size of records in megabytes": 1.75,
+            "Weekly count searched": 0,
+            "Weekly count users accessing deceased": 12,
+            "Weekly count viewed": 35,
+            "Weekly count downloaded": 4,
+            "Weekly count stored": 0,
+            "Weekly count deleted": 1,
+            "Active users count": 1,
             "Unique active user ids hashed": str(
                 [str(SERIALISED_APPLICATION_DATA[0]["ActiveUserIdsHashed"][0])]
             ),
-            "Weekly count deleted": 1,
-            "Weekly count downloaded": 4,
-            "Weekly count searched": 0,
-            "Weekly count stored": 0,
-            "Weekly count viewed": 35,
+            "Average records per patient": 4.5,
+            "Average size of documents per patient in megabytes": 1.5,
+            "Number of document types": 1,
+            "Total size of records in megabytes": 1.75,
         },
         {
             "Date": "20240505-20240511",
             "ODS code": "Y12345",
-            "Active users count": 3,
-            "Average records per patient": (2.78 + 3.51) / 2,
-            "Average size of documents per patient in megabytes": 0.6,
-            "Number of document types": 2,
             "Number of patients": 10,
             "Total number of records": 20,
-            "Total size of records in megabytes": 2.34,
+            "Weekly count searched": 0,
+            "Weekly count users accessing deceased": 31,
+            "Weekly count viewed": 15 + 30,
+            "Weekly count downloaded": 1 + 5,
+            "Weekly count stored": 0 + 2,
+            "Weekly count deleted": 1 + 1,
+            "Active users count": 3,
             "Unique active user ids hashed": str(
                 [
                     str(SERIALISED_APPLICATION_DATA[1]["ActiveUserIdsHashed"][0]),
@@ -318,11 +329,10 @@ EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
                     str(SERIALISED_APPLICATION_DATA[2]["ActiveUserIdsHashed"][1]),
                 ]
             ),
-            "Weekly count deleted": 1 + 1,
-            "Weekly count downloaded": 1 + 5,
-            "Weekly count searched": 0,
-            "Weekly count stored": 0 + 2,
-            "Weekly count viewed": 15 + 30,
+            "Average records per patient": (2.78 + 3.51) / 2,
+            "Average size of documents per patient in megabytes": 0.6,
+            "Number of document types": 2,
+            "Total size of records in megabytes": 2.34,
         },
     ]
 )

@@ -71,7 +71,6 @@ def mock_ods_api_service(mocker):
         "name": "PORTWAY LIFESTYLE CENTRE",
         "org_ods_code": "A9A5A",
         "role_code": "RO76",
-        "is_BSOL": False,
     }
 
     mock = mocker.patch.object(
@@ -98,7 +97,6 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
 
     expected_jwt = "mock_ndr_auth_token"
     expected_role = RepositoryRole.PCSE
-    expected_is_bsol = True
 
     mocker.patch.object(
         LoginService,
@@ -121,7 +119,6 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
     mocker.patch.object(DynamoDBService, "delete_item")
 
     expected = {
-        "isBSOL": expected_is_bsol,
         "role": expected_role.value,
         "authorisation_token": expected_jwt,
     }

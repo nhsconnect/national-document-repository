@@ -435,6 +435,7 @@ def test_write_stitching_reference(mock_service, mock_uuid):
             "ContentType": "application/pdf",
             "Created": "2024-01-01T12:00:00.000000Z",
             "Deleted": "",
+            "CurrentGpOds": "Y12345",
             "FileLocation": f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/{TEST_UUID}",
             "FileName": f"{TEST_1_OF_1_DOCUMENT_REFERENCE.file_name}",
             "ID": f"{TEST_UUID}",
