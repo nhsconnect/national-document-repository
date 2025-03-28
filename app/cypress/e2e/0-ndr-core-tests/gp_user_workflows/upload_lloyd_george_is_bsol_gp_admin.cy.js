@@ -408,15 +408,13 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 );
 
                 clickUploadButton();
+                cy.wait(['@doc_upload', '@s3_upload']);
                 cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 403,
                         delay: 2500,
                     });
                 }).as('s3_retry_upload');
-
-                cy.wait(['@doc_upload', '@s3_upload']);
-
                 cy.getByTestId('upload-documents-table')
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
