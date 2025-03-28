@@ -52,6 +52,15 @@ LloydGeorgeRecordsSearched = CloudwatchLogsQueryParams(
     """,
 )
 
+CountUsersAccessedDeceasedPatient = CloudwatchLogsQueryParams(
+    lambda_name="AccessAuditLambda",
+    query_string="""
+        fields @timestamp, Message, Authorisation.nhs_user_id AS user_id, 
+        Authorisation.selected_organisation.org_ods_code AS ods_code
+        | filter Message = 'Successful processed access request to view deceased patient' 
+        | stats count_distinct(user_id) AS daily_count_users_accessing_deceased BY ods_code
+    """,
+)
 
 UniqueActiveUserIds = CloudwatchLogsQueryParams(
     lambda_name="TokenRequestHandler",

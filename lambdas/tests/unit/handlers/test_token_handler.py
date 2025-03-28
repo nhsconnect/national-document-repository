@@ -34,7 +34,6 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
 ):
     expected_jwt = "mock_ndr_auth_token"
     login_service_response = {
-        "isBSOL": False,
         "role": RepositoryRole.PCSE.value,
         "authorisation_token": expected_jwt,
     }
@@ -48,7 +47,6 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
     }
 
     expected_response_body = {
-        "isBSOL": False,
         "role": "PCSE",
         "authorisation_token": expected_jwt,
     }
