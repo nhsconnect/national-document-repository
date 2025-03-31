@@ -26,6 +26,7 @@ import WarningText from '../../../generic/warningText/WarningText';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
+import BackButton from '../../../generic/backButton/BackButton';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -125,9 +126,7 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
 
     return (
         <>
-            <BackLink onClick={handleNoOption} href="#">
-                Go back
-            </BackLink>
+            <BackButton />
             {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
             {showNoOptionSelectedMessage && (
                 <ErrorBox
