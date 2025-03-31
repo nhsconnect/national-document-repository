@@ -3,22 +3,43 @@ import SessionExpiredErrorPage from './SessionExpiredErrorPage';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { endpoints } from '../../types/generic/endpoints';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import SessionProvider from '../../providers/sessionProvider/SessionProvider';
+import { History, createMemoryHistory } from 'history';
+import * as ReactRouter from 'react-router-dom';
+
+const mockNavigate = jest.fn();
 
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
+    useNavigate: () => mockNavigate,
+}));
 
 const originalWindowLocation = window.location;
 const mockLocationReplace = jest.fn();
 const mockUseBaseUrl = useBaseAPIUrl as jest.Mock;
 
+let history = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
+});
+
 describe('SessionExpiredErrorPage', () => {
+    beforeEach(() => {
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 0,
+        });
+    });
     afterAll(() => {
         Object.defineProperty(window, 'location', {
             value: originalWindowLocation,
         });
     });
 
-    it('render a page with a user friendly message to state that their session expired', () => {
-        render(<SessionExpiredErrorPage />);
+    it('render a page with a user friendly message to state that their session expired', async () => {
+        await renderPage(history);
 
         expect(
             screen.getByRole('heading', { name: 'We signed you out due to inactivity' }),
@@ -32,7 +53,7 @@ describe('SessionExpiredErrorPage', () => {
     });
 
     it('pass accessibility checks', async () => {
-        render(<SessionExpiredErrorPage />);
+        await renderPage(history);
         const results = await runAxeTest(document.body);
 
         expect(results).toHaveNoViolations();
@@ -48,7 +69,7 @@ describe('SessionExpiredErrorPage', () => {
             },
         });
 
-        render(<SessionExpiredErrorPage />);
+        await renderPage(history);
 
         const signBackInButton = screen.getByRole('button', {
             name: 'Sign back in',
@@ -63,4 +84,16 @@ describe('SessionExpiredErrorPage', () => {
             expect(mockLocationReplace).toBeCalledWith(mockBackendUrl + endpoints.LOGIN),
         );
     });
+
+    const renderPage = async (history: History) => {
+        return await act(async () => {
+            return render(
+                <SessionProvider sessionOverride={{ isLoggedIn: true }}>
+                    <ReactRouter.Router navigator={history} location={history.location}>
+                        <SessionExpiredErrorPage />
+                    </ReactRouter.Router>
+                </SessionProvider>,
+            );
+        });
+    };
 });

@@ -4,13 +4,15 @@ import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import NavLinks from '../navLinks/NavLinks';
 import useRole from '../../../helpers/hooks/useRole';
+import { useSessionContext } from '../../../providers/sessionProvider/SessionProvider';
 
 type Props = {};
 
 const Header = (props: Props) => {
     const role = useRole();
+    const [{ isLoggedIn }] = useSessionContext();
     const navigateHome = () => {
-        navigate(!!role ? routes.HOME : routes.START);
+        navigate(!!isLoggedIn ? routes.HOME : routes.START);
     };
     const navigate = useNavigate();
     return (
