@@ -79,6 +79,10 @@ MOCK_PATIENT_SEARCHED = [
     },
 ]
 
+MOCK_DECEASED_ACCESS = [
+    {"ods_code": "Y12345", "daily_count_users_accessing_deceased": "2"},
+    {"ods_code": "H81109", "daily_count_users_accessing_deceased": "13"},
+]
 
 MOCK_RESPONSE_QUERY_IN_PROGRESS = {"status": "Running"}
 

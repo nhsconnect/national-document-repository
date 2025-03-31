@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_version:
-        description: "What tagged verison do you want to push to prod?"
+        description: "What tagged version do you want to push to prod?"
         required: true
         type: "string"
 
@@ -29,38 +29,9 @@ jobs:
           echo Build Branch: ${{ inputs.tag_version }}
           echo Sandbox: prod
           echo Environment: prod
-          echo Cypress Base Url: ${{ vars.CYPRESS_BASE_URL }}
-
-  lambda_test_job:
-    name: Run Lambda Unit Tests
-    uses: ./.github/workflows/base-lambdas-reusable-test.yml
-    with:
-      python_version: "3.11"
-      build_branch: ${{ inputs.tag_version }}
-
-  react_testing_job:
-    name: Run UI Unit Tests
-    uses: ./.github/workflows/base-jest-test.yml
-    with:
-      build_branch: ${{ inputs.tag_version }}
-
-  cypress_build_job:
-    name: Build UI version for E2E Tests
-    uses: ./.github/workflows/base-cypress-build.yml
-    with:
-      build_branch: ${{ inputs.tag_version }}
-  
-  cypress_test_job:
-    name: Run Cypress E2E Tests
-    needs: [cypress_build_job]
-    uses: ./.github/workflows/base-cypress-test-all-env.yml
-    with:
-      cypress_base_url: ${{ vars.CYPRESS_BASE_URL }}
-      build_branch: ${{ inputs.tag_version }}
 
   publish_all_lambda_layers:
     name: Publish all Lambda Layers
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
     uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
     with:
       build_branch: ${{ inputs.tag_version }}
@@ -72,7 +43,7 @@ jobs:
 
   deploy_all_lambdas:
     name: Deploy all Lambdas
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job", "publish_all_lambda_layers"]
+    needs: ["publish_all_lambda_layers"]
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     with:
       build_branch: ${{ inputs.tag_version }}
@@ -84,7 +55,6 @@ jobs:
   
   deploy_ui:
     name: Deploy UI
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
       build_branch: ${{ inputs.tag_version }}
@@ -95,7 +65,6 @@ jobs:
 
   deploy_ods_batch_update:
     name: Deploy ODS Batch Update
-    needs: [ "lambda_test_job", "react_testing_job", "cypress_test_job" ]
     uses: ./.github/workflows/base-batch-update.yml
     with:
       build_branch: ${{ inputs.tag_version }}

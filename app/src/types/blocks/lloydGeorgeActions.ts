@@ -22,7 +22,7 @@ export type LGRecordActionLink = {
 
 export const lloydGeorgeRecordLinksInBSOL: Array<LGRecordActionLink> = [
     {
-        label: 'Remove files',
+        label: 'Remove record',
         key: 'delete-all-files-link',
         type: RECORD_ACTION.UPDATE,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
@@ -30,7 +30,7 @@ export const lloydGeorgeRecordLinksInBSOL: Array<LGRecordActionLink> = [
         showIfRecordInStorage: true,
     },
     {
-        label: 'Download files',
+        label: 'Download record',
         key: 'download-all-files-link',
         type: RECORD_ACTION.DOWNLOAD,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
