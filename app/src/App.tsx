@@ -45,6 +45,7 @@ if (process.env.REACT_APP_ENVIRONMENT === 'development' && !cypress) {
                         ndrOdsName: token_data.selected_organisation.name,
                         ndrOdsCode: token_data.selected_organisation.org_ods_code,
                         ndrRoleCode: token_data.selected_organisation.role_code,
+                        ndrIcbOdsCode: token_data.selected_organisation.icb_ods_code,
                         ndrSmartCardRole: token_data.smart_card_role,
                         ndrSessionId: token_data.ndr_session_id,
                         ndrNHSUserId: token_data.nhs_user_id,

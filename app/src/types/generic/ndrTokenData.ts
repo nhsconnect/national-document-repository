@@ -6,7 +6,7 @@ export type NdrTokenData = {
         name: string;
         org_ods_code: string;
         role_code: string;
-        is_BSOL: boolean;
+        icb_ods_code: string;
     };
     repository_role: string;
     ndr_session_id: string;
