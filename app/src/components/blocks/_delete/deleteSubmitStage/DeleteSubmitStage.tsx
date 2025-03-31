@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
-import { BackLink, Button, Fieldset, Radios, WarningCallout } from 'nhsuk-react-components';
+import { Button, Fieldset, Radios, WarningCallout } from 'nhsuk-react-components';
 import deleteAllDocuments, {
     DeleteResponse,
 } from '../../../../helpers/requests/deleteAllDocuments';
