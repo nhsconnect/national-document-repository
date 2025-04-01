@@ -84,6 +84,15 @@ MOCK_DECEASED_ACCESS = [
     {"ods_code": "H81109", "daily_count_users_accessing_deceased": "13"},
 ]
 
+MOCK_ODS_REPORT_REQUESTED = [
+    {"ods_code": "Y12345", "daily_count_ods_report_requested": "10"},
+    {"ods_code": "H81109", "daily_count_ods_report_requested": "20"},
+]
+
+MOCK_ODS_REPORT_CREATED = [
+    {"ods_code": "Y12345", "daily_count_ods_report_created": "0"},
+    {"ods_code": "H81109", "daily_count_ods_report_created": "13"},
+]
 MOCK_RESPONSE_QUERY_IN_PROGRESS = {"status": "Running"}
 
 MOCK_RESPONSE_QUERY_FAILED = {"status": "Failed"}

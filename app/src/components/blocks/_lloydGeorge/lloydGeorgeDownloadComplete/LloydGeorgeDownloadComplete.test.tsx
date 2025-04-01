@@ -35,48 +35,13 @@ describe('LloydGeorgeDownloadComplete', () => {
         jest.clearAllMocks();
     });
 
-    describe('LloydGeorgeDownloadComplete non BSOL journey', () => {
-        it('renders the component', () => {
-            render(
-                <LloydGeorgeDownloadComplete
-                    deleteAfterDownload={true}
-                    numberOfFiles={numberOfFiles}
-                    setDownloadStage={mockSetDownloadStage}
-                />,
-            );
-
-            expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
-            expect(
-                screen.getByText('You have successfully downloaded the Lloyd George record of:'),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText('This record has been removed from our storage.'),
-            ).toBeInTheDocument();
-            expect(screen.getByText('Your responsibilities with this record')).toBeInTheDocument();
-            expect(
-                screen.getByText('Follow the Record Management Code of Practice'),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole('button', {
-                    name: 'Return to patient record',
-                }),
-            ).toBeInTheDocument();
-            expect(screen.queryByText('Hide files')).not.toBeInTheDocument();
-        });
-    });
-
-    describe('LloydGeorgeDownloadComplete BSOL journeys', () => {
+    describe('LloydGeorgeDownloadComplete journeys', () => {
         it('renders the download complete screen for download all journey', () => {
             render(
                 <LgDownloadComplete
-                    deleteAfterDownload={false}
                     numberOfFiles={downloadAllSelectedDocuments.length}
                     selectedDocuments={downloadAllSelectedDocuments}
                     searchResults={searchResults}
-                    setDownloadStage={mockSetDownloadStage}
                 />,
             );
 
@@ -103,11 +68,9 @@ describe('LloydGeorgeDownloadComplete', () => {
         it('renders the download complete screen for download selected files journey', () => {
             render(
                 <LgDownloadComplete
-                    deleteAfterDownload={false}
                     numberOfFiles={selectedDocuments.length}
                     selectedDocuments={selectedDocuments}
                     searchResults={searchResults}
-                    setDownloadStage={mockSetDownloadStage}
                 />,
             );
 
@@ -143,20 +106,10 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     describe('Accessibility', () => {
-        it.each([true, false])(
-            'pass accessibility checks when deleteAfterDownload is %s',
-            async (deleteAfterDownload) => {
-                render(
-                    <LloydGeorgeDownloadComplete
-                        numberOfFiles={numberOfFiles}
-                        deleteAfterDownload={deleteAfterDownload}
-                        setDownloadStage={mockSetDownloadStage}
-                    />,
-                );
-
-                const results = await runAxeTest(document.body);
-                expect(results).toHaveNoViolations();
-            },
-        );
+        it('passes accessibility checks', async () => {
+            render(<LloydGeorgeDownloadComplete numberOfFiles={numberOfFiles} />);
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
     });
 });
