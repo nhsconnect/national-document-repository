@@ -126,7 +126,12 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
 
     return (
         <>
-            <BackButton />
+            <BackButton
+                toLocation={
+                    role !== REPOSITORY_ROLE.PCSE ? routes.LLOYD_GEORGE : routes.ARF_OVERVIEW
+                }
+                backLinkText="Go back"
+            />
             {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
             {showNoOptionSelectedMessage && (
                 <ErrorBox
@@ -220,7 +225,8 @@ function DeleteSubmitStage({
     recordType,
     resetDocState,
 }: Props) {
-    useTitle({ pageTitle: `You are removing the ${recordType} record of:` });
+    const pageTitle = `You are removing the ${recordType} record of:`;
+    useTitle({ pageTitle });
 
     return (
         <>
