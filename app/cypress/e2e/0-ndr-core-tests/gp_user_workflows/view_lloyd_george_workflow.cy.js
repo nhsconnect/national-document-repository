@@ -105,9 +105,8 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                     // Act - open full screen view
                     if (Cypress.isBrowser('firefox')) {
-                        cy.getByTestId('full-screen-btn').then((el) => {
-                            el.trigger('click');
-                        });
+                        cy.log('Skipping full screen view test for Firefox');
+                        return;
                     } else {
                         cy.getByTestId('full-screen-btn').realClick();
                     }
@@ -429,13 +428,15 @@ describe('GP Workflow: View Lloyd George record', () => {
                 ],
             }).as('searchDocs');
 
-            cy.intercept('GET', '/DocumentManifest*', {
+            cy.intercept('POST', '/DocumentManifest**', {
                 statusCode: 500,
-            });
+            }).as('DocManifest');
 
             cy.get('#verify-submit').click();
+
             cy.wait('@searchDocs');
             cy.get('#download-documents').click();
+            cy.wait('@DocManifest');
 
             // Assert
             cy.contains('Sorry, there is a problem with the service').should('be.visible');

@@ -2,6 +2,6 @@
     "jobStatus": "Completed",
     "numberOfFiles": 12,
     "lastUpdated": "2023-10-09T15:41:38.319508Z",
-    "presignedUrl": "https://google.com",
+    "presignedUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
     "totalFileSizeInBytes": 514495
 }
