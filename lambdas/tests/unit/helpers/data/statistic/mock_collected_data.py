@@ -57,6 +57,8 @@ MOCK_ORGANISATION_DATA = [
         daily_count_deleted=2,
         daily_count_searched=30,
         daily_count_users_accessing_deceased=13,
+        daily_count_ods_report_created=13,
+        daily_count_ods_report_requested=20,
     ),
     OrganisationData(
         statistic_id=TEST_UUID,
@@ -70,6 +72,8 @@ MOCK_ORGANISATION_DATA = [
         daily_count_deleted=1,
         daily_count_searched=50,
         daily_count_users_accessing_deceased=2,
+        daily_count_ods_report_created=0,
+        daily_count_ods_report_requested=10,
     ),
 ]
 

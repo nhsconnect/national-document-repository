@@ -6,7 +6,7 @@ import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
 import useRole from '../../../../helpers/hooks/useRole';
 import BackButton from '../../../generic/backButton/BackButton';
-import { getBSOLUserRecordActionLinks } from '../../../../types/blocks/lloydGeorgeActions';
+import { getUserRecordActionLinks } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routes, routeChildren } from '../../../../types/generic/routes';
@@ -56,15 +56,13 @@ function LloydGeorgeViewRecordStage({
         setUserSession({ ...session, isFullscreen });
     };
 
-    let recordLinksToShow = getBSOLUserRecordActionLinks({ role, hasRecordInStorage }).map(
-        (link) => {
-            link.onClick = () => {
-                setFullScreen(false);
-            };
+    let recordLinksToShow = getUserRecordActionLinks({ role, hasRecordInStorage }).map((link) => {
+        link.onClick = () => {
+            setFullScreen(false);
+        };
 
-            return link;
-        },
-    );
+        return link;
+    });
 
     const recordDetailsProps: RecordDetailsProps = {
         downloadStage,
