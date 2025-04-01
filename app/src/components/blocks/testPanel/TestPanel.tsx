@@ -7,7 +7,7 @@ import TestToggle, { ToggleProps } from './TestToggle';
 
 function TestPanel() {
     const [config, setConfig] = useConfigContext();
-    const { isBsol, recordUploaded, userRole, patientIsActive, uploading } = config.mockLocal;
+    const { recordUploaded, userRole, patientIsActive, uploading } = config.mockLocal;
 
     const updateLocalFlag = (key: keyof LocalFlags, value: boolean | REPOSITORY_ROLE) => {
         setConfig({
@@ -44,13 +44,6 @@ function TestPanel() {
     };
 
     const dataToggles = {
-        'bsol-toggle': {
-            label: 'User is BSOL',
-            checked: !!isBsol,
-            onChange: () => {
-                updateLocalFlag('isBsol', !isBsol);
-            },
-        },
         'record-toggle': {
             label: 'Patient has a record',
             checked: !!recordUploaded,

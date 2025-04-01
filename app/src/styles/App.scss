@@ -270,6 +270,12 @@ $hunit: '%';
         &_patient-info {
             p {
                 font-size: 1.2rem;
+                word-break: break-word;
+                overflow-wrap: break-word;
+            }
+            span {
+                overflow-wrap: break-word;
+                word-break: break-word;
             }
         }
 
@@ -319,30 +325,6 @@ $hunit: '%';
                 margin-bottom: 0;
                 border-left: none;
                 border-right: none;
-            }
-        }
-
-        &_gp-admin-non-bsol {
-            &_inset-text {
-                padding-bottom: 0;
-                padding-top: 0;
-
-                &_confirm-download-remove-button {
-                    background-color: #b61105;
-                    box-shadow: #9a0c02;
-
-                    &:hover {
-                        background-color: #9a0c02;
-                    }
-
-                    &:active {
-                        background-color: #9a0c02;
-                    }
-                }
-
-                &_checkbox {
-                    margin-bottom: 30px;
-                }
             }
         }
     }

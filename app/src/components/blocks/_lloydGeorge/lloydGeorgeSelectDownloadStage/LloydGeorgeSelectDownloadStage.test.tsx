@@ -129,13 +129,12 @@ describe('LloydGeorgeSelectDownloadStage', () => {
     });
 });
 
-const renderComponent = (history: MemoryHistory, deleteAfterDownload = false) => {
+const renderComponent = (history: MemoryHistory) => {
     return render(
         <ReactRouter.Router navigator={history} location={history.location}>
             <LloydGeorgeSelectDownloadStage
                 setDownloadStage={mockSetDownloadStage}
                 numberOfFiles={2}
-                deleteAfterDownload={deleteAfterDownload}
             />
         </ReactRouter.Router>,
     );

@@ -4,7 +4,6 @@ import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useRole from '../../helpers/hooks/useRole';
-import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
@@ -27,8 +26,6 @@ function LloydGeorgeRecordPage() {
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
     const role = useRole();
-    const isBSOL = useIsBSOL();
-    const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
     const config = useConfig();
     const navigate = useNavigate();
     const patientDetails = usePatient();
@@ -123,7 +120,6 @@ function LloydGeorgeRecordPage() {
                     element={
                         <LloydGeorgeSelectDownloadStage
                             setDownloadStage={setDownloadStage}
-                            deleteAfterDownload={deleteAfterDownload}
                             numberOfFiles={numberOfFiles}
                         />
                     }
