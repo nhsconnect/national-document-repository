@@ -62,6 +62,24 @@ CountUsersAccessedDeceasedPatient = CloudwatchLogsQueryParams(
     """,
 )
 
+OdsReportsRequested = CloudwatchLogsQueryParams(
+    lambda_name="GetReportByODS",
+    query_string="""
+        fields @timestamp, Message, Authorisation.selected_organisation.org_ods_code AS ods_code
+        | filter Message like /Received a request to create a report for ODS code/
+        | stats count() AS daily_count_ods_report_requested BY ods_code
+    """,
+)
+
+OdsReportsCreated = CloudwatchLogsQueryParams(
+    lambda_name="GetReportByODS",
+    query_string="""
+        fields @timestamp, Message, Authorisation.selected_organisation.org_ods_code AS ods_code
+        | filter Message = 'A report has been successfully created.'
+        | stats count() AS daily_count_ods_report_created BY ods_code
+    """,
+)
+
 UniqueActiveUserIds = CloudwatchLogsQueryParams(
     lambda_name="TokenRequestHandler",
     query_string="""
