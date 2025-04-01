@@ -47,7 +47,7 @@ const uploadedFileNames = {
         ],
     ],
 };
-const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
+const bucketUrlIdentifer = 'localhost:3000/Document';
 const singleFileUsecaseIndex = 0;
 const multiFileUsecaseIndex = 1;
 
@@ -56,7 +56,7 @@ const mockCreateDocRefHandler = (req) => {
     const clientIds = uploadPayload.map((document) => document.clientId);
     const responseBody = clientIds.reduce((body, id, currentIndex) => {
         body[id] = {
-            url: 'http://' + bucketUrlIdentifer,
+            url: 'https://' + bucketUrlIdentifer,
             fields: {
                 key: `test key ${currentIndex}`,
                 'x-amz-algorithm': 'xxxx-xxxx-SHA256',
@@ -95,9 +95,9 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
         cy.getByTestId('upload-patient-record-button').click();
         cy.url().should('include', 'upload');
         cy.url().should('eq', baseUrl + lloydGeorgeUploadUrl);
-        cy.intercept('POST', '**/UploadState', (req) => {
+        cy.intercept('POST', '**/UploadState**', (req) => {
             req.reply({
-                statusCode: 200,
+                statusCode: 204,
             });
         });
     };
@@ -112,7 +112,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
             { tags: 'regression' },
             () => {
                 cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler);
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 1500,
@@ -166,7 +166,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
             { tags: 'regression' },
             () => {
                 cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler);
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 1500,
@@ -210,7 +210,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
             { tags: 'regression' },
             () => {
                 cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler);
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 1500,
@@ -258,7 +258,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                     'doc_upload',
                 );
 
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 407,
                         delay: 1500,
@@ -283,11 +283,10 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 );
 
                 clickUploadButton();
-                cy.wait('@doc_upload');
-                cy.wait('@s3_upload');
+                cy.wait(['@doc_upload', '@s3_upload']);
 
                 cy.getByTestId('retry-upload-error-box').should('exist');
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 1500,
@@ -323,7 +322,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler).as(
                     'doc_upload',
                 );
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 403,
                         delay: 1500,
@@ -347,10 +346,9 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
 
                 clickUploadButton();
 
-                cy.wait('@doc_upload');
-                cy.wait('@s3_upload');
+                cy.wait(['@doc_upload', '@s3_upload']);
 
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 2500,
@@ -365,8 +363,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
 
                 cy.getByTestId('error-box-link').should('exist');
                 cy.getByTestId('error-box-link').click();
-                cy.wait('@s3_retry_upload');
-                cy.wait('@upload_confirm');
+                cy.wait(['@s3_retry_upload', '@upload_confirm']);
 
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
@@ -387,7 +384,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler).as(
                     'doc_upload',
                 );
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 403,
                         delay: 1500,
@@ -410,15 +407,13 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 );
 
                 clickUploadButton();
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.wait(['@doc_upload', '@s3_upload']);
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 403,
                         delay: 2500,
                     });
                 }).as('s3_retry_upload');
-
-                cy.wait('@doc_upload');
-                cy.wait('@s3_upload');
 
                 cy.getByTestId('upload-documents-table')
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
@@ -434,7 +429,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 cy.wait(1000);
                 cy.get('#upload-retry-button').click();
 
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 1500,
@@ -468,7 +463,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler).as(
                     'doc_upload',
                 );
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 200,
                     });
@@ -485,8 +480,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 );
 
                 clickUploadButton();
-                cy.wait('@doc_upload');
-                cy.wait('@s3_upload');
+                cy.wait(['@doc_upload', '@s3_upload']);
 
                 cy.getByTestId('failure-complete-page')
                     .should('include.text', 'Some of your files failed a virus scan')
@@ -511,7 +505,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                     'doc_upload',
                 );
 
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                cy.intercept('POST', '**/Document', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 1500,
@@ -535,8 +529,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 );
 
                 clickUploadButton();
-                cy.wait('@doc_upload');
-                cy.wait('@s3_upload');
+                cy.wait(['@doc_upload', '@s3_upload']);
 
                 cy.getByTestId('lloyd-george-upload-failed-panel').should('exist');
                 cy.getByTestId('lloyd-george-upload-failed-panel').should(

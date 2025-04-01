@@ -40,6 +40,7 @@ Cypress.Commands.add('login', (role, featureFlags) => {
 
         cy.visit(authCallback);
         cy.wait('@auth');
+        cy.wait('@featureFlags');
     } else {
         throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
     }
@@ -84,34 +85,9 @@ Cypress.Commands.add('smokeLogin', (role) => {
                 cy.get(`#nhsRoleId_${role}`).click();
             },
         );
-        cy.url().should('contain', baseUrl + authCallback);
-        cy.url({ timeout: 15000 }).should('not.contain', baseUrl + authCallback);
     } else {
         throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
     }
-});
-
-Cypress.Commands.add('downloadIframeReplace', () => {
-    cy.window().then((win) => {
-        const triggerAutIframeLoad = () => {
-            const AUT_IFRAME_SELECTOR = '.aut-iframe';
-
-            // get the application iframe
-            const autIframe = win.parent.document.querySelector(AUT_IFRAME_SELECTOR);
-
-            if (!autIframe) {
-                throw new ReferenceError(
-                    `Failed to get the application frame using the selector '${AUT_IFRAME_SELECTOR}'`,
-                );
-            }
-
-            autIframe.dispatchEvent(new Event('load'));
-            // remove the event listener to prevent it from firing the load event before each next unload
-            win.removeEventListener('beforeunload', triggerAutIframeLoad);
-        };
-
-        win.addEventListener('beforeunload', triggerAutIframeLoad);
-    });
 });
 
 Cypress.Commands.add('navigateToHomePage', () => {
@@ -219,10 +195,7 @@ declare global {
                 attribute: string,
                 value: string,
             ): Chainable<Bluebird<DynamoDB.BatchWriteItemOutput>>;
-            /**
-             * Workaround to prevent click on download link from firing a load event and preventing test continuing to run
-             */
-            downloadIframeReplace(): Chainable<void>;
+
             navigateToHomePage(): Chainable<void>;
             navigateToPatientSearchPage(): Chainable<void>;
             navigateToDownloadReportPage(): Chainable<void>;

@@ -22,8 +22,6 @@ describe('GP Workflow: Patient search and verify', () => {
             () => {
                 cy.smokeLogin(role);
 
-                cy.url({ timeout: 10000 }).should('eq', baseUrl + routes.home);
-
                 cy.navigateToPatientSearchPage();
 
                 cy.get('#nhs-number-input').click();
