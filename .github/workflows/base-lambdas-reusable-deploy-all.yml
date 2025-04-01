@@ -281,17 +281,17 @@ jobs:
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-
-  deploy_nems_message_lambda:
-    name: Deploy nems_message_lambda
+ 
+  deploy_nhs_oauth_token_generator_lambda:
+    name: Deploy nhs_oauth_token_generator_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
-      lambda_handler_name: nems_message_handler
-      lambda_aws_name: NemsMessageLambda
+      lambda_handler_name: nhs_oauth_token_generator_handler
+      lambda_aws_name: NhsOauthTokenGeneratorLambda
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
@@ -477,3 +477,18 @@ jobs:
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_pdf_stitching_lambda:
+    name: Deploy PDF Stitching lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: pdf_stitching_handler
+      lambda_aws_name: PdfStitchingLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+

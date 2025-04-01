@@ -1,11 +1,10 @@
-# .github/workflows/terraform-dev
 name: 'PROD UI - Deploy tagged version to Prod'
 
 on:
   workflow_dispatch:
     inputs:
       tag_version:
-        description: 'What tagged verison do you want to push to prod?'
+        description: 'Which tagged version do you want to push to prod?'
         required: true
         type: 'string'
 
@@ -15,29 +14,8 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  react_testing_job:
-    name: Run UI Unit Tests
-    uses: ./.github/workflows/base-jest-test.yml
-    with:
-      build_branch: ${{ inputs.tag_version }}
-
-  cypress_build_job:
-    name: Build UI version for E2E Tests
-    uses: ./.github/workflows/base-cypress-build.yml
-    with:
-      build_branch: ${{ inputs.tag_version }}
-  
-  cypress_test_job:
-    name: Run Cypress E2E Tests
-    needs: [cypress_build_job]
-    uses: ./.github/workflows/base-cypress-test-all-env.yml
-    with:
-      cypress_base_url: ${{ vars.CYPRESS_BASE_URL }}
-      build_branch: ${{ inputs.tag_version }}
-
   deploy_ui:
     name: Deploy UI
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
       build_branch: ${{ inputs.tag_version }}

@@ -14,6 +14,8 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import SessionProvider from '../../providers/sessionProvider/SessionProvider';
+import { act } from 'react-dom/test-utils';
 
 jest.mock('axios');
 jest.mock('../../helpers/hooks/useConfig');
@@ -21,7 +23,6 @@ jest.mock('../../helpers/hooks/usePatient');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/useRole');
-jest.mock('../../helpers/hooks/useIsBSOL');
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatientDetails = buildPatientDetails();
@@ -65,7 +66,7 @@ describe('LloydGeorgeRecordPage', () => {
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
-        renderPage(history);
+        await renderPage(history);
 
         await waitFor(async () => {
             expect(screen.getByText(patientName)).toBeInTheDocument();
@@ -75,7 +76,7 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('renders initial lg record view', async () => {
-        renderPage(history);
+        await renderPage(history);
         await waitFor(async () => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
@@ -91,7 +92,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        renderPage(history);
+        await renderPage(history);
 
         await waitFor(async () => {
             expect(
@@ -113,7 +114,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        renderPage(history);
+        await renderPage(history);
 
         await waitFor(async () => {
             expect(
@@ -136,7 +137,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        renderPage(history);
+        await renderPage(history);
 
         await waitFor(async () => {
             expect(
@@ -158,7 +159,7 @@ describe('LloydGeorgeRecordPage', () => {
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
         mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
-        renderPage(history);
+        await renderPage(history);
 
         await waitFor(async () => {
             expect(
@@ -184,7 +185,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.get.mockResolvedValue({ data: lgResult });
 
-        renderPage(history);
+        await renderPage(history);
 
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
@@ -201,7 +202,7 @@ describe('LloydGeorgeRecordPage', () => {
 
             mockAxios.get.mockResolvedValue({ data: lgResult });
 
-            renderPage(history);
+            await renderPage(history);
 
             await waitFor(() => {
                 expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
@@ -212,11 +213,16 @@ describe('LloydGeorgeRecordPage', () => {
         });
     });
 
-    const renderPage = (history: History) => {
-        return render(
-            <ReactRouter.Router navigator={history} location={history.location}>
-                <LloydGeorgeRecordPage />
-            </ReactRouter.Router>,
-        );
+    const renderPage = async (history: History) => {
+        return await act(() => {
+            return render(
+                <SessionProvider sessionOverride={{ isLoggedIn: true }}>
+                    <ReactRouter.Router navigator={history} location={history.location}>
+                        <LloydGeorgeRecordPage />
+                    </ReactRouter.Router>
+                    ,
+                </SessionProvider>,
+            );
+        });
     };
 });

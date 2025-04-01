@@ -4,7 +4,6 @@ import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useRole from '../../helpers/hooks/useRole';
-import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
@@ -27,15 +26,12 @@ function LloydGeorgeRecordPage() {
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
     const role = useRole();
-    const isBSOL = useIsBSOL();
-    const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
     const config = useConfig();
     const navigate = useNavigate();
     const patientDetails = usePatient();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const [numberOfFiles, setNumberOfFiles] = useState(0);
-    const [totalFileSizeInBytes, settotalFileSizeInBytes] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [cloudFrontUrl, setCloudFrontUrl] = useState('');
     const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
@@ -45,22 +41,15 @@ function LloydGeorgeRecordPage() {
     const resetDocState = () => {
         setNumberOfFiles(0);
         setLastUpdated('');
-        settotalFileSizeInBytes(0);
         setCloudFrontUrl('');
         setDownloadStage(DOWNLOAD_STAGE.INITIAL);
     };
 
     const refreshRecord = async () => {
-        const onSuccess = (
-            filesCount: number,
-            updatedDate: string,
-            fileSize: number,
-            presignedUrl: string,
-        ) => {
+        const onSuccess = (filesCount: number, updatedDate: string, presignedUrl: string) => {
             setNumberOfFiles(filesCount);
             setLastUpdated(getFormattedDatetime(new Date(updatedDate)));
             setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-            settotalFileSizeInBytes(fileSize);
             setCloudFrontUrl(presignedUrl);
         };
 
@@ -70,7 +59,7 @@ function LloydGeorgeRecordPage() {
 
             if (isMock(error)) {
                 if (!!config.mockLocal.recordUploaded) {
-                    onSuccess(1, moment().format(), 59000, '/dev/testFile.pdf');
+                    onSuccess(1, moment().format(), '/dev/testFile.pdf');
                 } else {
                     setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
                 }
@@ -96,14 +85,13 @@ function LloydGeorgeRecordPage() {
 
         const nhsNumber: string = patientDetails?.nhsNumber ?? '';
         try {
-            const { numberOfFiles, totalFileSizeInBytes, lastUpdated, presignedUrl } =
-                await getLloydGeorgeRecord({
-                    nhsNumber,
-                    baseUrl,
-                    baseHeaders,
-                });
+            const { numberOfFiles, lastUpdated, presignedUrl } = await getLloydGeorgeRecord({
+                nhsNumber,
+                baseUrl,
+                baseHeaders,
+            });
 
-            onSuccess(numberOfFiles, lastUpdated, totalFileSizeInBytes, presignedUrl);
+            onSuccess(numberOfFiles, lastUpdated, presignedUrl);
         } catch (e) {
             onError(e as AxiosError);
         }
@@ -120,8 +108,6 @@ function LloydGeorgeRecordPage() {
                             setStage={setStage}
                             stage={stage}
                             lastUpdated={lastUpdated}
-                            totalFileSizeInBytes={totalFileSizeInBytes}
-                            numberOfFiles={numberOfFiles}
                             refreshRecord={refreshRecord}
                             cloudFrontUrl={cloudFrontUrl}
                             showMenu={showMenu}
@@ -134,7 +120,6 @@ function LloydGeorgeRecordPage() {
                     element={
                         <LloydGeorgeSelectDownloadStage
                             setDownloadStage={setDownloadStage}
-                            deleteAfterDownload={deleteAfterDownload}
                             numberOfFiles={numberOfFiles}
                         />
                     }

@@ -73,24 +73,24 @@ env:
 	rm -rf lambdas/venv || true
 	python3 -m venv ./lambdas/venv
 	./lambdas/venv/bin/pip3 install --upgrade pip
-	./lambdas/venv/bin/pip3 install -r $(TEST_REQUIREMENTS)
-	./lambdas/venv/bin/pip3 install -r $(CORE_REQUIREMENTS)
-	./lambdas/venv/bin/pip3 install -r $(DATA_REQUIREMENTS)
-	./lambdas/venv/bin/pip3 install -r $(REPORTS_REQUIREMENTS)
+	./lambdas/venv/bin/pip3 install -r $(TEST_REQUIREMENTS) --no-cache-dir
+	./lambdas/venv/bin/pip3 install -r $(CORE_REQUIREMENTS) --no-cache-dir
+	./lambdas/venv/bin/pip3 install -r $(DATA_REQUIREMENTS) --no-cache-dir
+	./lambdas/venv/bin/pip3 install -r $(REPORTS_REQUIREMENTS) --no-cache-dir
 
 
 github_env:
 	rm -rf lambdas/venv || true
 	python3 -m venv ./lambdas/venv
 	./lambdas/venv/bin/pip3 install --upgrade pip
-	./lambdas/venv/bin/pip3 install -r $(GITHUB_REQUIREMENTS)
+	./lambdas/venv/bin/pip3 install -r $(GITHUB_REQUIREMENTS) --no-cache-dir
 
 edge_env:
 	rm -rf lambdas/venv || true
 	python3 -m venv ./lambdas/venv
 	./lambdas/venv/bin/pip3 install --upgrade pip
-	./lambdas/venv/bin/pip3 install -r $(GITHUB_REQUIREMENTS)
-	./lambdas/venv/bin/pip3 install -r $(EDGE_REQUIREMENTS)
+	./lambdas/venv/bin/pip3 install -r $(GITHUB_REQUIREMENTS) --no-cache-dir
+	./lambdas/venv/bin/pip3 install -r $(EDGE_REQUIREMENTS) --no-cache-dir
 
 zip:
 	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
@@ -125,9 +125,6 @@ clean-install:
 
 start:
 	npm --prefix ./app start
-
-storybook:
-	npm --prefix ./app run storybook
 
 test-ui:
 	npm --prefix ./app run test-all

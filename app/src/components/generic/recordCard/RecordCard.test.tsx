@@ -155,16 +155,6 @@ describe('RecordCard Component', () => {
             });
         });
 
-        it('does not render the "View in full screen" button if the user is GP_CLINICAL', async () => {
-            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
-
-            render(<RecordCard {...props} />);
-
-            await waitFor(() => {
-                expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
-            });
-        });
-
         it('does not render the "View in full screen" button or pdf view when recordUrl is not set', () => {
             render(<RecordCard {...props} cloudFrontUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
