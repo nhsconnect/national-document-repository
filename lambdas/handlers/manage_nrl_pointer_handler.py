@@ -59,7 +59,9 @@ def lambda_handler(event, context):
                         f"Datetime: {int(datetime.now().timestamp())} "
                     )
                     nrl_api_service.create_new_pointer(
-                        document.model_dump(exclude_none=True)
+                        nrl_message.nhs_number,
+                        document.model_dump(exclude_none=True),
+                        nrl_message.snomed_code_doc_type,
                     )
 
                 case NrlActionTypes.DELETE:
