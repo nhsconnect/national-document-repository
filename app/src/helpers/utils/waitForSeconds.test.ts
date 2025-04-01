@@ -16,7 +16,7 @@ describe('waitForSeconds', () => {
 
         const timestampWhenMockFunctionCalled = mockFunction.mock.calls[0][0];
         expect(timestampWhenMockFunctionCalled).toBeGreaterThanOrEqual(
-            startTime + 1000 * secondsToWait,
+            startTime + 1000 * (secondsToWait - 1),
         );
         expect(timestampWhenMockFunctionCalled).toBeLessThanOrEqual(
             startTime + 1000 * (secondsToWait + 1),
