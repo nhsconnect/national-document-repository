@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
-import { BackLink, Button, Fieldset, Radios, WarningCallout } from 'nhsuk-react-components';
+import { Button, Fieldset, Radios, WarningCallout } from 'nhsuk-react-components';
 import deleteAllDocuments, {
     DeleteResponse,
 } from '../../../../helpers/requests/deleteAllDocuments';
@@ -26,6 +26,7 @@ import WarningText from '../../../generic/warningText/WarningText';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
+import BackButton from '../../../generic/backButton/BackButton';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -125,9 +126,12 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
 
     return (
         <>
-            <BackLink onClick={handleNoOption} href="#">
-                Go back
-            </BackLink>
+            <BackButton
+                toLocation={
+                    role !== REPOSITORY_ROLE.PCSE ? routes.LLOYD_GEORGE : routes.ARF_OVERVIEW
+                }
+                backLinkText="Go back"
+            />
             {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
             {showNoOptionSelectedMessage && (
                 <ErrorBox
@@ -221,7 +225,8 @@ function DeleteSubmitStage({
     recordType,
     resetDocState,
 }: Props) {
-    useTitle({ pageTitle: `You are removing the ${recordType} record of:` });
+    const pageTitle = `You are removing the ${recordType} record of:`;
+    useTitle({ pageTitle });
 
     return (
         <>

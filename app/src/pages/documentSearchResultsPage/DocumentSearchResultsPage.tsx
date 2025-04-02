@@ -125,10 +125,12 @@ const DocumentSearchResultsPageIndex = ({
     submissionState,
     downloadState,
     searchResults,
-    pageHeader,
     nhsNumber,
     setDownloadState,
 }: PageIndexArgs) => {
+    const pageHeader = 'Manage this Lloyd George record';
+    useTitle({ pageTitle: pageHeader });
+
     return (
         <>
             <h1 id="download-page-title">{pageHeader}</h1>
