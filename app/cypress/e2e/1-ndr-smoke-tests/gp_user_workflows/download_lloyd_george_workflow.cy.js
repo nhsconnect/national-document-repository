@@ -52,8 +52,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('available-files-table-title').should('exist');
                 cy.getByTestId('download-file-btn').click();
 
-                cy.downloadIframeReplace();
-
                 cy.intercept('POST', '**/DocumentManifest*').as('postDocumentManifest');
 
                 // Assert contents of page when downloading
