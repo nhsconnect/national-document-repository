@@ -43,15 +43,31 @@ const AvailableFilesTable = ({
             setSelectedDocuments([]);
         }
     };
+
     const handleChangeCheckboxes = (e: React.FormEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const toggledDocumentId = target.value;
-        if (target.checked) {
-            setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
-        } else {
-            setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
-        }
+
+        setSelectedDocuments((prevSelectedDocuments) => {
+            if (target.checked) {
+                // Add the document ID if it's not already in the array
+                return [...prevSelectedDocuments, toggledDocumentId];
+            } else {
+                // Remove the document ID if it's in the array
+                return prevSelectedDocuments.filter((id) => id !== toggledDocumentId);
+            }
+        });
     };
+
+    // const handleChangeCheckboxes = (e: React.FormEvent<HTMLInputElement>) => {
+    //     const target = e.target as HTMLInputElement;
+    //     const toggledDocumentId = target.value;
+    //     if (target.checked) {
+    //         setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
+    //     } else {
+    //         setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
+    //     }
+    // };
 
     const getToggleButtonAriaDescription = () => {
         if (selectedDocuments.length === searchResults.length) {
