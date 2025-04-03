@@ -98,7 +98,7 @@ function LloydGeorgeUploadStage({
                         return (
                             <Table.Row key={document.id}>
                                 <Table.Cell>
-                                    <div>{document.file.name}</div>
+                                    <div className="lg-upload-cell-div">{document.file.name}</div>
                                     {uploadFailed && (
                                         <strong className="nhs-warning-color">
                                             File failed to upload
