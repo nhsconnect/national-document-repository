@@ -83,7 +83,9 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
             ).toBeInTheDocument();
 
-            expect(screen.getByRole('button', { name: 'Select files' })).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Select the files you wish to upload' }),
+            ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();

@@ -161,7 +161,9 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                 </p>
                 <p>You will not be able to view a partially uploaded record.</p>
             </div>
-            <Fieldset.Legend size="m">Select the files you wish to upload</Fieldset.Legend>
+            <Fieldset.Legend id="upload-fieldset-legend" size="m">
+                Select the files you wish to upload
+            </Fieldset.Legend>
             <Fieldset>
                 <div
                     role="button"
@@ -202,6 +204,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                             onClick={() => {
                                 fileInputRef.current?.click();
                             }}
+                            aria-labelledby="upload-fieldset-legend"
                         >
                             Select files
                         </Button>
