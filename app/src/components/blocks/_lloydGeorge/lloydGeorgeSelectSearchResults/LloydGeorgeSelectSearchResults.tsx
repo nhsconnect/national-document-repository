@@ -50,8 +50,8 @@ const AvailableFilesTable = ({
         if (target.checked) {
             if (!selectedDocuments.includes(toggledDocumentId)) {
                 setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
-                console.log('Toggling:', toggledDocumentId, 'checked:', target.checked);
-                console.log('Before:', selectedDocuments);
+                console.log('Toggling:', toggledDocumentId, 'checked:', target.checked); // eslint-disable-line
+                console.log('Before:', selectedDocuments); // eslint-disable-line
             }
         } else {
             setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
