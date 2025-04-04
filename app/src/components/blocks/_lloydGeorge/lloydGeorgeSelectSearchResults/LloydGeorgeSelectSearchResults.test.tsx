@@ -27,7 +27,7 @@ const searchResults = [
     buildSearchResult({ fileName: '1of1_test.pdf', id: 'test-id-3' }),
 ];
 const searchResultOneFileOnly = [searchResults[0]];
-const mockAllSelectedDocuments = searchResults.map((result) => result.id);
+const mockAllSelectedDocuments = [searchResults[2].id, searchResults[0].id, searchResults[1].id];
 
 describe('LloydGeorgeSelectSearchResults', () => {
     beforeEach(() => {
