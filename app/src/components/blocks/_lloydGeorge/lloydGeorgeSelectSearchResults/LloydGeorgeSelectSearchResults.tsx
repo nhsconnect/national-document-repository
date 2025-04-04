@@ -84,8 +84,9 @@ const AvailableFilesTable = ({
                     >
                         <span>
                             {selectedDocuments.length === searchResults.length &&
-                                'Deselect all files'}
-                            {selectedDocuments.length < searchResults.length && 'Select all files'}
+                                'Deselect all files '}
+                            {selectedDocuments.length + ', ' + searchResults.length}
+                            {selectedDocuments.length < searchResults.length && ' Select all files'}
                         </span>
                         <output
                             data-testid="toggle-selection-btn-announcement"
