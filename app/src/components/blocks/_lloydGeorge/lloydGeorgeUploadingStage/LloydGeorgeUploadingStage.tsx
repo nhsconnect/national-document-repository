@@ -75,6 +75,7 @@ function LloydGeorgeUploadStage({
                     className: 'nhsuk-u-visually-hidden',
                 }}
                 data-testid="upload-documents-table"
+                className="upload-documents-table"
             >
                 <Table.Head>
                     <Table.Row>
