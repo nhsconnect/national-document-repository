@@ -48,7 +48,11 @@ const AvailableFilesTable = ({
         const target = e.target as HTMLInputElement;
         const toggledDocumentId = target.value;
         if (target.checked) {
-            setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
+            if (!selectedDocuments.includes(toggledDocumentId)) {
+                setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
+                console.log('Toggling:', toggledDocumentId, 'checked:', target.checked);
+                console.log('Before:', selectedDocuments);
+            }
         } else {
             setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
         }
@@ -83,7 +87,7 @@ const AvailableFilesTable = ({
                         aria-description={getToggleButtonAriaDescription()}
                     >
                         <span>
-                            {selectedDocuments.length === searchResults.length &&
+                            {selectedDocuments.length >= searchResults.length &&
                                 'Deselect all files '}
                             {selectedDocuments.length + ', ' + searchResults.length}
                             {selectedDocuments.length < searchResults.length && ' Select all files'}
