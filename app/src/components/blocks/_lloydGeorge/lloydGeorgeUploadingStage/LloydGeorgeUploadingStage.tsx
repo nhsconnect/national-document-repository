@@ -68,79 +68,81 @@ function LloydGeorgeUploadStage({
                     file will be uploaded and combined into one record.
                 </p>
             </WarningCallout>
-            <Table
-                responsive
-                caption="Your documents are uploading"
-                captionProps={{
-                    className: 'nhsuk-u-visually-hidden',
-                }}
-                data-testid="upload-documents-table"
-                className="upload-documents-table"
-            >
-                <Table.Head>
-                    <Table.Row>
-                        <Table.Cell>Filename</Table.Cell>
-                        <Table.Cell className="lg-upload-thin-table-cell">Size</Table.Cell>
-                        <Table.Cell className="lg-upload-thick-table-cell">
-                            Upload progress
-                        </Table.Cell>
-                    </Table.Row>
-                </Table.Head>
-                <Table.Body>
-                    {documents.map((document) => {
-                        const notInProgress = ![
-                            DOCUMENT_UPLOAD_STATE.UPLOADING,
-                            DOCUMENT_UPLOAD_STATE.SCANNING,
-                        ].includes(document.state);
-                        const isScanning = document.state === DOCUMENT_UPLOAD_STATE.SCANNING;
+            <div className="table-container">
+                <Table
+                    responsive
+                    caption="Your documents are uploading"
+                    captionProps={{
+                        className: 'nhsuk-u-visually-hidden',
+                    }}
+                    data-testid="upload-documents-table"
+                    className="upload-documents-table"
+                >
+                    <Table.Head>
+                        <Table.Row>
+                            <Table.Cell>Filename</Table.Cell>
+                            <Table.Cell className="lg-upload-thin-table-cell">Size</Table.Cell>
+                            <Table.Cell className="lg-upload-thick-table-cell">
+                                Upload progress
+                            </Table.Cell>
+                        </Table.Row>
+                    </Table.Head>
+                    <Table.Body>
+                        {documents.map((document) => {
+                            const notInProgress = ![
+                                DOCUMENT_UPLOAD_STATE.UPLOADING,
+                                DOCUMENT_UPLOAD_STATE.SCANNING,
+                            ].includes(document.state);
+                            const isScanning = document.state === DOCUMENT_UPLOAD_STATE.SCANNING;
 
-                        const uploadFailed = !!document.attempts && notInProgress;
+                            const uploadFailed = !!document.attempts && notInProgress;
 
-                        return (
-                            <Table.Row key={document.id}>
-                                <Table.Cell>
-                                    <div>{document.file.name}</div>
-                                    {uploadFailed && (
-                                        <strong className="nhs-warning-color">
-                                            File failed to upload
-                                        </strong>
-                                    )}
-                                </Table.Cell>
-                                <Table.Cell className="lg-upload-thin-table-cell">
-                                    {formatFileSize(document.file.size)}
-                                </Table.Cell>
-                                <Table.Cell className="lg-upload-thick-table-cell">
-                                    <progress
-                                        aria-label={`Uploading ${document.file.name}`}
-                                        max="100"
-                                        value={isScanning ? undefined : document.progress}
-                                    ></progress>
-                                    <output aria-label={`${document.file.name} upload status`}>
-                                        {getUploadMessage(document)}
-                                    </output>
-                                    {uploadFailed && (
-                                        <div className="lg-upload-failed-div">
-                                            <LinkButton
-                                                onClick={() => {
-                                                    if (uploadSession) {
-                                                        uploadAndScanDocuments(
-                                                            [document],
-                                                            uploadSession,
-                                                            nhsNumber,
-                                                        );
-                                                    }
-                                                }}
-                                            >
-                                                Retry upload
-                                            </LinkButton>
-                                        </div>
-                                    )}
-                                </Table.Cell>
-                            </Table.Row>
-                        );
-                    })}
-                </Table.Body>
-            </Table>
+                            return (
+                                <Table.Row key={document.id}>
+                                    <Table.Cell>
+                                        <div>{document.file.name}</div>
+                                        {uploadFailed && (
+                                            <strong className="nhs-warning-color">
+                                                File failed to upload
+                                            </strong>
+                                        )}
+                                    </Table.Cell>
+                                    <Table.Cell className="lg-upload-thin-table-cell">
+                                        {formatFileSize(document.file.size)}
+                                    </Table.Cell>
+                                    <Table.Cell className="lg-upload-thick-table-cell">
+                                        <progress
+                                            aria-label={`Uploading ${document.file.name}`}
+                                            max="100"
+                                            value={isScanning ? undefined : document.progress}
+                                        ></progress>
+                                        <output aria-label={`${document.file.name} upload status`}>
+                                            {getUploadMessage(document)}
+                                        </output>
+                                        {uploadFailed && (
+                                            <div className="lg-upload-failed-div">
+                                                <LinkButton
+                                                    onClick={() => {
+                                                        if (uploadSession) {
+                                                            uploadAndScanDocuments(
+                                                                [document],
+                                                                uploadSession,
+                                                                nhsNumber,
+                                                            );
+                                                        }
+                                                    }}
+                                                >
+                                                    Retry upload
+                                                </LinkButton>
+                                            </div>
+                                        )}
+                                    </Table.Cell>
+                                </Table.Row>
+                            );
+                        })}
+                    </Table.Body>
+                </Table>
+            </div>
         </>
     );
 }

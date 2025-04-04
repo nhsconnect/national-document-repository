@@ -1191,3 +1191,8 @@ $hunit: '%';
 .upload-documents-table {
     table-layout: fixed;
 }
+
+.table-container {
+    overflow: scroll;
+    max-width: 95vw;
+}
