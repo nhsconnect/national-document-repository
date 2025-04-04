@@ -121,49 +121,52 @@ const AvailableFilesTable = ({
                     </Table.Row>
                 </Table.Head>
                 <Table.Body>
-                    {searchResults.map((result, index) => (
-                        <Table.Row
-                            className="available-files-row"
-                            id={`search-result-${index}`}
-                            key={`document-${result.fileName + result.created}`}
-                            data-testid={`search-result-${index}`}
-                        >
-                            {allowSelectDocument && (
-                                <Table.Cell id={`selected-files-row-${index}`}>
-                                    <Checkboxes.Box
-                                        value={result.ID}
-                                        id={result.ID}
-                                        data-testid={`checkbox-${index}`}
-                                        checked={selectedDocuments.includes(result.ID)}
-                                        aria-checked={selectedDocuments.includes(result.ID)}
-                                        onChange={(e) => handleChangeCheckboxes(e)}
-                                    >
-                                        <span className="nhsuk-u-visually-hidden">
-                                            {result.fileName}
-                                        </span>
-                                    </Checkboxes.Box>
+                    {searchResults.map((result, index) => {
+                        console.log('result:', result); // eslint-disable-line
+                        return (
+                            <Table.Row
+                                className="available-files-row"
+                                id={`search-result-${index}`}
+                                key={`document-${result.fileName + result.created}`}
+                                data-testid={`search-result-${index}`}
+                            >
+                                {allowSelectDocument && (
+                                    <Table.Cell id={`selected-files-row-${index}`}>
+                                        <Checkboxes.Box
+                                            value={result.ID}
+                                            id={result.ID}
+                                            data-testid={`checkbox-${index}`}
+                                            checked={selectedDocuments.includes(result.ID)}
+                                            aria-checked={selectedDocuments.includes(result.ID)}
+                                            onChange={(e) => handleChangeCheckboxes(e)}
+                                        >
+                                            <span className="nhsuk-u-visually-hidden">
+                                                {result.fileName}
+                                            </span>
+                                        </Checkboxes.Box>
+                                    </Table.Cell>
+                                )}
+                                <Table.Cell
+                                    id={'available-files-row-' + index + '-filename'}
+                                    data-testid="filename"
+                                >
+                                    {result.fileName}
                                 </Table.Cell>
-                            )}
-                            <Table.Cell
-                                id={'available-files-row-' + index + '-filename'}
-                                data-testid="filename"
-                            >
-                                {result.fileName}
-                            </Table.Cell>
-                            <Table.Cell
-                                id={'available-files-row-' + index + '-created-date'}
-                                data-testid="created"
-                            >
-                                {getFormattedDatetime(new Date(result.created))}
-                            </Table.Cell>
-                            <Table.Cell
-                                id={'available-files-row-' + index + '-file-size'}
-                                data-testid="file-size"
-                            >
-                                {formatFileSize(result.fileSize)}
-                            </Table.Cell>
-                        </Table.Row>
-                    ))}
+                                <Table.Cell
+                                    id={'available-files-row-' + index + '-created-date'}
+                                    data-testid="created"
+                                >
+                                    {getFormattedDatetime(new Date(result.created))}
+                                </Table.Cell>
+                                <Table.Cell
+                                    id={'available-files-row-' + index + '-file-size'}
+                                    data-testid="file-size"
+                                >
+                                    {formatFileSize(result.fileSize)}
+                                </Table.Cell>
+                            </Table.Row>
+                        );
+                    })}
                 </Table.Body>
             </Table>
         </>
