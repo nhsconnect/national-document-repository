@@ -36,7 +36,7 @@ const AvailableFilesTable = ({
         if (selectedDocuments.length < searchResults.length) {
             const downloadableItems: string[] = [];
             searchResults.forEach((result) => {
-                downloadableItems.push(result.ID);
+                downloadableItems.push(result.id);
             });
             setSelectedDocuments(downloadableItems);
         } else {
@@ -91,7 +91,7 @@ const AvailableFilesTable = ({
                         <span>
                             {selectedDocuments.length >= searchResults.length &&
                                 'Deselect all files '}
-                            {selectedDocuments.length + ', ' + searchResults.length}
+                            {/* {selectedDocuments.length + ', ' + searchResults.length} */}
                             {selectedDocuments.length < searchResults.length && ' Select all files'}
                         </span>
                         <output
@@ -133,11 +133,11 @@ const AvailableFilesTable = ({
                                 {allowSelectDocument && (
                                     <Table.Cell id={`selected-files-row-${index}`}>
                                         <Checkboxes.Box
-                                            value={result.ID}
-                                            id={result.ID}
+                                            value={result.id}
+                                            id={result.id}
                                             data-testid={`checkbox-${index}`}
-                                            checked={selectedDocuments.includes(result.ID)}
-                                            aria-checked={selectedDocuments.includes(result.ID)}
+                                            checked={selectedDocuments.includes(result.id)}
+                                            aria-checked={selectedDocuments.includes(result.id)}
                                             onChange={(e) => handleChangeCheckboxes(e)}
                                         >
                                             <span className="nhsuk-u-visually-hidden">

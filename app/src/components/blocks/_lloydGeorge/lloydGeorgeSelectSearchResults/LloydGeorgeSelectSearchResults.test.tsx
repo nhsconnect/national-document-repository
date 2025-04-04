@@ -22,12 +22,12 @@ const mockSetSelectedDocuments = jest.fn();
 const mockSetSubmissionSearchState = jest.fn();
 const mockSelectedDocuments = ['test-id-1', 'test-id-2'];
 const searchResults = [
-    buildSearchResult({ fileName: '1of2_test.pdf', ID: 'test-id-1' }),
-    buildSearchResult({ fileName: '2of2_test.pdf', ID: 'test-id-2' }),
-    buildSearchResult({ fileName: '1of1_test.pdf', ID: 'test-id-3' }),
+    buildSearchResult({ fileName: '1of2_test.pdf', id: 'test-id-1' }),
+    buildSearchResult({ fileName: '2of2_test.pdf', id: 'test-id-2' }),
+    buildSearchResult({ fileName: '1of1_test.pdf', id: 'test-id-3' }),
 ];
 const searchResultOneFileOnly = [searchResults[0]];
-const mockAllSelectedDocuments = [searchResults[2].ID, searchResults[0].ID, searchResults[1].ID];
+const mockAllSelectedDocuments = searchResults.map((result) => result.id);
 
 describe('LloydGeorgeSelectSearchResults', () => {
     beforeEach(() => {
@@ -85,7 +85,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
 
         it('add documentId to selectedDocument when checkbox is checked', async () => {
             renderComponent({ selectedDocuments: mockSelectedDocuments });
-            const expectedSelectedDocument = [...mockSelectedDocuments, searchResults[2].ID];
+            const expectedSelectedDocument = [...mockSelectedDocuments, searchResults[2].id];
 
             const checkbox = screen.getByRole('checkbox', { name: searchResults[2].fileName });
             expect(checkbox).not.toBeChecked();
@@ -99,7 +99,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
         it('remove documentId from selectedDocument when a checkbox is unchecked', async () => {
             renderComponent({ selectedDocuments: mockSelectedDocuments });
             const expectedSelectedDocument = mockSelectedDocuments.filter(
-                (id) => id !== searchResults[0].ID,
+                (id) => id !== searchResults[0].id,
             );
 
             const checkbox = screen.getByRole('checkbox', { name: searchResults[0].fileName });
