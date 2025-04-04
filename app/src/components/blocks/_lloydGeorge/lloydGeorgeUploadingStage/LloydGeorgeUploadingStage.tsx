@@ -69,7 +69,6 @@ function LloydGeorgeUploadStage({
                 </p>
             </WarningCallout>
             <Table
-                responsive
                 caption="Your documents are uploading"
                 captionProps={{
                     className: 'nhsuk-u-visually-hidden',
