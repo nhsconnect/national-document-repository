@@ -26,11 +26,11 @@ function LloydGeorgeDownloadComplete({ numberOfFiles, selectedDocuments, searchR
     };
 
     const documentsList = searchResults
-        ?.filter((document) => selectedDocuments?.includes(document.ID))
+        ?.filter((document) => selectedDocuments?.includes(document.id))
         .map((document) => {
             return {
-                ref: document.ID,
-                id: document.ID,
+                ref: document.id,
+                id: document.id,
                 fileName: document.fileName,
             };
         }) as GenericDocument[];

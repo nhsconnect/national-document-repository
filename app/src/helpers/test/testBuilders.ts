@@ -127,7 +127,7 @@ const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
         fileName: 'fileName.pdf',
         created: moment().format(),
         virusScannerResult: 'Clean',
-        ID: '1234qwer-241ewewr',
+        id: '1234qwer-241ewewr',
         fileSize: 224,
         ...searchResultOverride,
     };

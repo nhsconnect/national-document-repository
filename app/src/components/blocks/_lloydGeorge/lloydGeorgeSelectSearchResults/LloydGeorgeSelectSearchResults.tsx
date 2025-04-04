@@ -36,18 +36,21 @@ const AvailableFilesTable = ({
         if (selectedDocuments.length < searchResults.length) {
             const downloadableItems: string[] = [];
             searchResults.forEach((result) => {
-                downloadableItems.push(result.ID);
+                downloadableItems.push(result.id);
             });
             setSelectedDocuments(downloadableItems);
         } else {
             setSelectedDocuments([]);
         }
     };
+
     const handleChangeCheckboxes = (e: React.FormEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const toggledDocumentId = target.value;
         if (target.checked) {
-            setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
+            if (!selectedDocuments.includes(toggledDocumentId)) {
+                setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
+            }
         } else {
             setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
         }
@@ -82,7 +85,7 @@ const AvailableFilesTable = ({
                         aria-description={getToggleButtonAriaDescription()}
                     >
                         <span>
-                            {selectedDocuments.length === searchResults.length &&
+                            {selectedDocuments.length >= searchResults.length &&
                                 'Deselect all files'}
                             {selectedDocuments.length < searchResults.length && 'Select all files'}
                         </span>
@@ -113,49 +116,51 @@ const AvailableFilesTable = ({
                     </Table.Row>
                 </Table.Head>
                 <Table.Body>
-                    {searchResults.map((result, index) => (
-                        <Table.Row
-                            className="available-files-row"
-                            id={`search-result-${index}`}
-                            key={`document-${result.fileName + result.created}`}
-                            data-testid={`search-result-${index}`}
-                        >
-                            {allowSelectDocument && (
-                                <Table.Cell id={`selected-files-row-${index}`}>
-                                    <Checkboxes.Box
-                                        value={result.ID}
-                                        id={result.ID}
-                                        data-testid={`checkbox-${index}`}
-                                        checked={selectedDocuments.includes(result.ID)}
-                                        aria-checked={selectedDocuments.includes(result.ID)}
-                                        onChange={(e) => handleChangeCheckboxes(e)}
-                                    >
-                                        <span className="nhsuk-u-visually-hidden">
-                                            {result.fileName}
-                                        </span>
-                                    </Checkboxes.Box>
+                    {searchResults.map((result, index) => {
+                        return (
+                            <Table.Row
+                                className="available-files-row"
+                                id={`search-result-${index}`}
+                                key={`document-${result.fileName + result.created}`}
+                                data-testid={`search-result-${index}`}
+                            >
+                                {allowSelectDocument && (
+                                    <Table.Cell id={`selected-files-row-${index}`}>
+                                        <Checkboxes.Box
+                                            value={result.id}
+                                            id={result.id}
+                                            data-testid={`checkbox-${index}`}
+                                            checked={selectedDocuments.includes(result.id)}
+                                            aria-checked={selectedDocuments.includes(result.id)}
+                                            onChange={(e) => handleChangeCheckboxes(e)}
+                                        >
+                                            <span className="nhsuk-u-visually-hidden">
+                                                {result.fileName}
+                                            </span>
+                                        </Checkboxes.Box>
+                                    </Table.Cell>
+                                )}
+                                <Table.Cell
+                                    id={'available-files-row-' + index + '-filename'}
+                                    data-testid="filename"
+                                >
+                                    {result.fileName}
                                 </Table.Cell>
-                            )}
-                            <Table.Cell
-                                id={'available-files-row-' + index + '-filename'}
-                                data-testid="filename"
-                            >
-                                {result.fileName}
-                            </Table.Cell>
-                            <Table.Cell
-                                id={'available-files-row-' + index + '-created-date'}
-                                data-testid="created"
-                            >
-                                {getFormattedDatetime(new Date(result.created))}
-                            </Table.Cell>
-                            <Table.Cell
-                                id={'available-files-row-' + index + '-file-size'}
-                                data-testid="file-size"
-                            >
-                                {formatFileSize(result.fileSize)}
-                            </Table.Cell>
-                        </Table.Row>
-                    ))}
+                                <Table.Cell
+                                    id={'available-files-row-' + index + '-created-date'}
+                                    data-testid="created"
+                                >
+                                    {getFormattedDatetime(new Date(result.created))}
+                                </Table.Cell>
+                                <Table.Cell
+                                    id={'available-files-row-' + index + '-file-size'}
+                                    data-testid="file-size"
+                                >
+                                    {formatFileSize(result.fileSize)}
+                                </Table.Cell>
+                            </Table.Row>
+                        );
+                    })}
                 </Table.Body>
             </Table>
         </>
@@ -170,7 +175,7 @@ const LloydGeorgeSelectSearchResults = ({
 }: Props) => {
     const sortByFileName = (a: SearchResult, b: SearchResult) => {
         const fileNumberOfA = parseInt(a.fileName.substring(0, a.fileName.indexOf('of')));
-        const fileNumberOfB = parseInt(b.fileName.substring(0, a.fileName.indexOf('of')));
+        const fileNumberOfB = parseInt(b.fileName.substring(0, b.fileName.indexOf('of')));
         if (fileNumberOfA && fileNumberOfB) {
             return fileNumberOfA > fileNumberOfB ? 1 : -1;
         } else {

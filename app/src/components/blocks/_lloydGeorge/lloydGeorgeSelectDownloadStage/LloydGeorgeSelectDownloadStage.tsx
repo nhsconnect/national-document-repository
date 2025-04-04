@@ -102,8 +102,8 @@ function LloydGeorgeSelectDownloadStage({ setDownloadStage, numberOfFiles }: Pro
                 if (isMock(error)) {
                     setSearchResults([
                         buildSearchResult(),
-                        buildSearchResult({ fileName: 'fileName2.pdf', ID: '1234qwer-241ewewr-2' }),
-                        buildSearchResult({ fileName: 'fileName3.pdf', ID: '1234qwer-241ewewr-3' }),
+                        buildSearchResult({ fileName: 'fileName2.pdf', id: '1234qwer-241ewewr-2' }),
+                        buildSearchResult({ fileName: 'fileName3.pdf', id: '1234qwer-241ewewr-3' }),
                     ]);
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
                 } else if (error.response?.status === 403) {
