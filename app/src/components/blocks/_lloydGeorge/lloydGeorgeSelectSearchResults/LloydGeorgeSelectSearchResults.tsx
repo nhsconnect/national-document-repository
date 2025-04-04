@@ -32,8 +32,11 @@ const AvailableFilesTable = ({
     setSelectedDocuments,
     allowSelectDocument,
 }: AvailableFilesTableProps) => {
+    // Ensure selectedDocuments is always an array
+    const safeSelectedDocuments = Array.isArray(selectedDocuments) ? selectedDocuments : [];
+
     const toggleSelectAllFilesToDownload = () => {
-        if (selectedDocuments.length < searchResults.length) {
+        if (safeSelectedDocuments.length < searchResults.length) {
             const downloadableItems: string[] = [];
             searchResults.forEach((result) => {
                 downloadableItems.push(result.ID);
@@ -49,40 +52,15 @@ const AvailableFilesTable = ({
         const toggledDocumentId = target.value;
 
         setSelectedDocuments((prevSelectedDocuments) => {
+            const safePrevSelectedDocuments = Array.isArray(prevSelectedDocuments)
+                ? prevSelectedDocuments
+                : [];
             if (target.checked) {
-                // Add the document ID if it's not already in the array
-                return [...prevSelectedDocuments, toggledDocumentId];
+                return [...safePrevSelectedDocuments, toggledDocumentId];
             } else {
-                // Remove the document ID if it's in the array
-                return prevSelectedDocuments.filter((id) => id !== toggledDocumentId);
+                return safePrevSelectedDocuments.filter((id) => id !== toggledDocumentId);
             }
         });
-    };
-
-    // const handleChangeCheckboxes = (e: React.FormEvent<HTMLInputElement>) => {
-    //     const target = e.target as HTMLInputElement;
-    //     const toggledDocumentId = target.value;
-    //     if (target.checked) {
-    //         setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
-    //     } else {
-    //         setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
-    //     }
-    // };
-
-    const getToggleButtonAriaDescription = () => {
-        if (selectedDocuments.length === searchResults.length) {
-            return 'Toggle selection button, Click to deselect all files';
-        } else {
-            return 'Toggle selection button, Click to select all files';
-        }
-    };
-
-    const getToggleButtonStatusChange = () => {
-        if (selectedDocuments.length === searchResults.length) {
-            return 'All files are selected';
-        } else if (selectedDocuments.length === 0) {
-            return 'All files are deselected';
-        }
     };
 
     return (
@@ -95,19 +73,18 @@ const AvailableFilesTable = ({
                         secondary={true}
                         data-testid="toggle-selection-btn"
                         type="button"
-                        aria-description={getToggleButtonAriaDescription()}
+                        aria-description={
+                            safeSelectedDocuments.length === searchResults.length
+                                ? 'Toggle selection button, Click to deselect all files'
+                                : 'Toggle selection button, Click to select all files'
+                        }
                     >
                         <span>
-                            {selectedDocuments.length === searchResults.length &&
+                            {safeSelectedDocuments.length === searchResults.length &&
                                 'Deselect all files'}
-                            {selectedDocuments.length < searchResults.length && 'Select all files'}
+                            {safeSelectedDocuments.length < searchResults.length &&
+                                'Select all files'}
                         </span>
-                        <output
-                            data-testid="toggle-selection-btn-announcement"
-                            className="nhsuk-u-visually-hidden"
-                        >
-                            {getToggleButtonStatusChange()}
-                        </output>
                     </Button>
                     <p>Or select individual files</p>
                 </div>
@@ -142,8 +119,8 @@ const AvailableFilesTable = ({
                                         value={result.ID}
                                         id={result.ID}
                                         data-testid={`checkbox-${index}`}
-                                        checked={selectedDocuments.includes(result.ID)}
-                                        aria-checked={selectedDocuments.includes(result.ID)}
+                                        checked={safeSelectedDocuments.includes(result.ID)}
+                                        aria-checked={safeSelectedDocuments.includes(result.ID)}
                                         onChange={(e) => handleChangeCheckboxes(e)}
                                     >
                                         <span className="nhsuk-u-visually-hidden">
