@@ -47,13 +47,9 @@ const AvailableFilesTable = ({
     const handleChangeCheckboxes = (e: React.FormEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const toggledDocumentId = target.value;
-        console.log('toggledDocumentId:', target.value); // eslint-disable-line
-
         if (target.checked) {
             if (!selectedDocuments.includes(toggledDocumentId)) {
                 setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
-                console.log('Toggling:', toggledDocumentId, 'checked:', target.checked); // eslint-disable-line
-                console.log('Before:', selectedDocuments); // eslint-disable-line
             }
         } else {
             setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
@@ -90,9 +86,8 @@ const AvailableFilesTable = ({
                     >
                         <span>
                             {selectedDocuments.length >= searchResults.length &&
-                                'Deselect all files '}
-                            {/* {selectedDocuments.length + ', ' + searchResults.length} */}
-                            {selectedDocuments.length < searchResults.length && ' Select all files'}
+                                'Deselect all files'}
+                            {selectedDocuments.length < searchResults.length && 'Select all files'}
                         </span>
                         <output
                             data-testid="toggle-selection-btn-announcement"
@@ -122,7 +117,6 @@ const AvailableFilesTable = ({
                 </Table.Head>
                 <Table.Body>
                     {searchResults.map((result, index) => {
-                        console.log('result:', result); // eslint-disable-line
                         return (
                             <Table.Row
                                 className="available-files-row"
