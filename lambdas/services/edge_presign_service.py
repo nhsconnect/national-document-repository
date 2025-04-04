@@ -1,4 +1,3 @@
-import hashlib
 import re
 
 from botocore.exceptions import ClientError
@@ -20,16 +19,13 @@ class EdgePresignService:
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
     def use_presign(self, request_values: dict):
-        uri: str = request_values["uri"]
-        querystring: str = request_values["querystring"]
-        domain_name: str = request_values["domain_name"]
+        uri: str = request_values.get("uri")
+        request_values.get("querystring")
+        origin: dict = request_values.get("origin", {})
+        domain_name: str = origin["s3"]["domainName"]
 
-        presign_string: str = f"{uri}?{querystring}"
-        encoded_presign_string = presign_string.encode("utf-8")
-        presign_credentials_hash: str = hashlib.md5(encoded_presign_string).hexdigest()
-
-        self.attempt_presign_ingestion(
-            uri_hash=presign_credentials_hash,
+        return self.attempt_presign_ingestion(
+            uri_hash=uri,
             domain_name=domain_name,
         )
 
@@ -44,20 +40,25 @@ class EdgePresignService:
                 base_table_name, environment
             )
             logger.info(f"Table: {formatted_table_name}")
-            self.dynamo_service.update_item(
+            updated_item = self.dynamo_service.update_item(
                 table_name=formatted_table_name,
                 key_pair={"ID": uri_hash},
                 updated_fields={"IsRequested": True},
                 condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
                 expression_attribute_values={":false": False},
             )
+            print(updated_item)
+            return updated_item.get("Attributes").get("presignedUrl")
         except ClientError as e:
             logger.error(f"{str(e)}", {"Result": LambdaError.EdgeNoClient.to_str()})
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
     @staticmethod
-    def update_s3_headers(request: dict, request_values: dict):
-        domain_name = request_values["domain_name"]
+    def update_s3_headers(
+        request: dict,
+    ):
+        origin: dict = request.get("origin", {})
+        domain_name: str = origin["s3"]["domainName"]
         if "authorization" in request["headers"]:
             del request["headers"]["authorization"]
         request["headers"]["host"] = [{"key": "Host", "value": domain_name}]

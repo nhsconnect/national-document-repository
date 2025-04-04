@@ -1,4 +1,5 @@
 import os
+import uuid
 from datetime import datetime, timedelta
 
 from botocore.exceptions import ClientError
@@ -30,7 +31,7 @@ class LloydGeorgeStitchJobService:
         self.document_service = DocumentService()
         self.stitch_trace_table = os.environ.get("STITCH_METADATA_DYNAMODB_NAME")
         self.lloyd_george_table_name = os.environ.get("LLOYD_GEORGE_DYNAMODB_NAME")
-
+        self.cloudfront_table_name = os.environ.get("EDGE_REFERENCE_TABLE")
         self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
         self.lloyd_george_bucket_name = os.environ.get("LLOYD_GEORGE_BUCKET_NAME")
 
@@ -161,6 +162,11 @@ class LloydGeorgeStitchJobService:
         presign_url_response = self.s3_service.create_download_presigned_url(
             s3_bucket_name=self.lloyd_george_bucket_name,
             file_key=stitched_file_location,
+        )
+        presigned_id = str(uuid.uuid4())
+        self.dynamo_service.create_item(
+            self.cloudfront_table_name,
+            {"ID": presigned_id, "presignedUrl": presign_url_response},
         )
         return format_cloudfront_url(presign_url_response, self.cloudfront_url)
 
