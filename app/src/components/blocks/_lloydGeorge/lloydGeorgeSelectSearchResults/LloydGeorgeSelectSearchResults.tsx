@@ -47,6 +47,8 @@ const AvailableFilesTable = ({
     const handleChangeCheckboxes = (e: React.FormEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const toggledDocumentId = target.value;
+        console.log('toggledDocumentId:', target.value); // eslint-disable-line
+
         if (target.checked) {
             if (!selectedDocuments.includes(toggledDocumentId)) {
                 setSelectedDocuments([...selectedDocuments, toggledDocumentId]);
