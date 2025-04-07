@@ -71,7 +71,7 @@ function RecordCard({
                         </Card.Heading>
                         {cloudFrontUrl && (
                             <button
-                                className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
+                                className="lloydgeorge_record-stage_pdf-content-button link-button clickable full-screen"
                                 data-testid="full-screen-btn"
                                 onClick={() => {
                                     fullScreenHandler(true);

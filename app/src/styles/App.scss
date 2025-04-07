@@ -303,6 +303,7 @@ $hunit: '%';
                     max-width: calc(100% - 130px);
                     word-wrap: break-word;
                     overflow-wrap: break-word;
+                    display: inline;
                 }
 
                 p {
@@ -826,6 +827,10 @@ $hunit: '%';
 
 .clickable {
     cursor: pointer;
+}
+
+.full-screen {
+    display: inline;
 }
 
 .table-column-header {
