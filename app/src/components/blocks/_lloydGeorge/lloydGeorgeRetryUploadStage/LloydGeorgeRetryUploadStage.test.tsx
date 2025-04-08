@@ -28,7 +28,7 @@ describe('LloydGeorgeRetryUploadStage', () => {
             });
             expect(
                 screen.getByRole('link', {
-                    name: '(NHS National Service Desk - this link will open in a new tab)',
+                    name: 'NHS National Service Desk - this link will open in a new tab',
                 }),
             ).toHaveAttribute(
                 'href',
