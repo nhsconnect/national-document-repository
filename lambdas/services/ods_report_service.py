@@ -8,9 +8,8 @@ from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.repository_role import RepositoryRole
+from jinja2 import Template
 from openpyxl.workbook import Workbook
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -18,6 +17,7 @@ from utils.common_query_filters import NotDeleted
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import OdsReportException
 from utils.request_context import request_context
+from weasyprint import HTML
 
 logger = LoggingService(__name__)
 
@@ -194,28 +194,59 @@ class OdsReportService:
 
         wb.save(file_name)
 
-    def create_pdf_report(self, file_name: str, nhs_numbers: set[str], ods_code: str):
-        c = canvas.Canvas(file_name, pagesize=letter)
-        _, height = letter
-        c.setFont("Helvetica-Bold", 16)
-        x = 100
-        y = 700
-        c.drawString(x, height - 50, f"NHS numbers within NDR for ODS code: {ods_code}")
-        c.setFont("Helvetica", 12)
+    def create_pdf_report(file_name: str, nhs_numbers: set[str], ods_code: str):
+        html_template = Template(
+            """
+        <!DOCTYPE html>
+        <html lang="en-GB">
+        <head>
+            <meta charset="UTF-8">
+            <title>NHS Report - ODS {{ ods_code }}</title>
+            <meta name="author" content="NHS England">
+            <meta name="language" content="en-GB">
+            <meta name="subject" content="NHS Number Report for ODS Code {{ ods_code }}">
+            <meta name="keywords" content="NHS, ODS, Number, Report">
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 2em;
+                    font-size: 12pt;
+                    color: #000;
+                    background: #fff;
+                }
+                h1 {
+                    font-size: 1.5em;
+                }
+                h2 {
+                    font-size: 1.2em;
+                    margin-top: 1.5em;
+                }
+                ul {
+                    list-style-type: disc;
+                    margin-left: 1.5em;
+                }
+                li {
+                    margin-bottom: 0.25em;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>NHS numbers within NDR for ODS code: {{ ods_code }}</h1>
+            <p>Total number of patients: {{ nhs_numbers|length }}</p>
+            <h2>List of NHS Numbers</h2>
+            <ul>
+                {% for nhs in nhs_numbers|sort %}
+                    <li>{{ nhs }}</li>
+                {% endfor %}
+            </ul>
+        </body>
+        </html>
+        """
+        )
 
-        c.drawString(x, y, f"Total number of patients: {len(nhs_numbers)}")
-        y -= 20
-        c.drawString(x, y, "NHS Numbers:")
-        y -= 20
-        for row in nhs_numbers:
-            if y < 40:
-                c.showPage()
-                y = height - 50
+        rendered_html = html_template.render(nhs_numbers=nhs_numbers, ods_code=ods_code)
 
-            c.drawString(100, y, row)
-            y -= 20
-
-        c.save()
+        HTML(string=rendered_html).write_pdf(file_name)
 
     def save_report_to_s3(self, ods_code: str, file_name: str, temp_file_path: str):
         logger.info("Uploading the csv report to S3 bucket...")
