@@ -87,7 +87,9 @@ describe('LloydGeorgeSelectSearchResults', () => {
             renderComponent({ selectedDocuments: mockSelectedDocuments });
             const expectedSelectedDocument = [...mockSelectedDocuments, searchResults[2].ID];
 
-            const checkbox = screen.getByRole('checkbox', { name: searchResults[2].fileName });
+            const checkbox = screen.getByRole('checkbox', {
+                name: `Select Filename ${searchResults[2].fileName}`,
+            });
             expect(checkbox).not.toBeChecked();
 
             act(() => {
@@ -102,7 +104,9 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 (id) => id !== searchResults[0].ID,
             );
 
-            const checkbox = screen.getByRole('checkbox', { name: searchResults[0].fileName });
+            const checkbox = screen.getByRole('checkbox', {
+                name: `Select Filename ${searchResults[0].fileName}`,
+            });
             expect(checkbox).toBeChecked();
 
             act(() => {
