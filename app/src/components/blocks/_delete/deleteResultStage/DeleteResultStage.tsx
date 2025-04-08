@@ -69,6 +69,7 @@ function DeleteResultStage({ numberOfFiles, setDownloadStage }: Props) {
                     href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code"
                     target="_blank"
                     rel="noreferrer"
+                    aria-label="Record Management Code of Practice - this link will open in a new tab"
                 >
                     Record Management Code of Practice
                 </a>{' '}
