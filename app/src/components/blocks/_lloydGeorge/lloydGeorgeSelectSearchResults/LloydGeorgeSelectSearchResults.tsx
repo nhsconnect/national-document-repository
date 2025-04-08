@@ -128,9 +128,10 @@ const AvailableFilesTable = ({
                                         data-testid={`checkbox-${index}`}
                                         checked={selectedDocuments.includes(result.ID)}
                                         aria-checked={selectedDocuments.includes(result.ID)}
+                                        aria-label={`Select Filename ${result.fileName}`}
                                         onChange={(e) => handleChangeCheckboxes(e)}
                                     >
-                                        <span className="nhsuk-u-visually-hidden">
+                                        <span className="nhsuk-u-visually-hidden" aria-hidden>
                                             {result.fileName}
                                         </span>
                                     </Checkboxes.Box>
@@ -139,6 +140,7 @@ const AvailableFilesTable = ({
                             <Table.Cell
                                 id={'available-files-row-' + index + '-filename'}
                                 data-testid="filename"
+                                aria-hidden
                             >
                                 {result.fileName}
                             </Table.Cell>
