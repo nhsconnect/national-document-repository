@@ -1,5 +1,6 @@
 import os
-from datetime import datetime, timedelta
+import uuid
+from datetime import datetime, timedelta, timezone
 
 from botocore.exceptions import ClientError
 from enums.dynamo_filter import AttributeOperator
@@ -30,7 +31,7 @@ class LloydGeorgeStitchJobService:
         self.document_service = DocumentService()
         self.stitch_trace_table = os.environ.get("STITCH_METADATA_DYNAMODB_NAME")
         self.lloyd_george_table_name = os.environ.get("LLOYD_GEORGE_DYNAMODB_NAME")
-
+        self.cloudfront_table_name = os.environ.get("EDGE_REFERENCE_TABLE")
         self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
         self.lloyd_george_bucket_name = os.environ.get("LLOYD_GEORGE_BUCKET_NAME")
 
@@ -162,7 +163,20 @@ class LloydGeorgeStitchJobService:
             s3_bucket_name=self.lloyd_george_bucket_name,
             file_key=stitched_file_location,
         )
-        return format_cloudfront_url(presign_url_response, self.cloudfront_url)
+        presigned_id = str(uuid.uuid4())
+        deletion_date = datetime.now(timezone.utc)
+
+        ttl_half_an_hour_in_seconds = 30 * 60
+        dynamo_item_ttl = int(deletion_date.timestamp() + ttl_half_an_hour_in_seconds)
+        self.dynamo_service.create_item(
+            self.cloudfront_table_name,
+            {
+                "ID": presigned_id,
+                "presignedUrl": presign_url_response,
+                "TTL": dynamo_item_ttl,
+            },
+        )
+        return format_cloudfront_url(presigned_id, self.cloudfront_url)
 
     def check_lloyd_george_record_for_patient(self, nhs_number) -> None:
         try:

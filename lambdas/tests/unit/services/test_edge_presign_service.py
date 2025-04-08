@@ -1,4 +1,3 @@
-import hashlib
 from unittest.mock import patch
 
 import pytest
@@ -12,8 +11,6 @@ from tests.unit.conftest import (
 from tests.unit.enums.test_edge_presign_values import (
     EXPECTED_EDGE_NO_CLIENT_ERROR_CODE,
     EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE,
-    EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE,
-    EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE,
     MOCKED_AUTH_QUERY,
 )
 from utils.lambda_exceptions import CloudFrontEdgeException
@@ -33,26 +30,50 @@ def request_values():
     return {
         "uri": "/some/path",
         "querystring": MOCKED_AUTH_QUERY,
-        "domain_name": MOCKED_LG_BUCKET_URL,
+        "origin": {
+            "s3": {
+                "domainName": MOCKED_LG_BUCKET_URL,
+            }
+        },
+        "headers": {
+            "authorization": "some_auth",
+        },
     }
 
 
-def test_use_presign(edge_presign_service, request_values):
-    with patch.object(
+def test_use_presign(edge_presign_service, request_values, mocker):
+    mock_attempt_presign_ingestion = mocker.patch.object(
         edge_presign_service, "attempt_presign_ingestion"
-    ) as mock_attempt_presign_ingestion:
-        edge_presign_service.use_presign(request_values)
+    )
+    mock_attempt_presign_ingestion.return_value = (
+        "https://example.com/someother/path?querystring"
+    )
 
-        expected_hash = hashlib.md5(
-            f"{request_values['uri']}?{request_values['querystring']}".encode("utf-8")
-        ).hexdigest()
-        mock_attempt_presign_ingestion.assert_called_once_with(
-            uri_hash=expected_hash, domain_name=MOCKED_LG_BUCKET_URL
-        )
+    request_result = edge_presign_service.use_presign(request_values)
+
+    mock_attempt_presign_ingestion.assert_called_once_with(
+        request_id="some/path", domain_name=MOCKED_LG_BUCKET_URL
+    )
+    assert request_result.get("uri") == "/someother/path"
+    assert request_result.get("querystring") == "querystring"
 
 
 def test_attempt_presign_ingestion_success(edge_presign_service):
-    edge_presign_service.attempt_presign_ingestion("hashed_uri", MOCKED_LG_BUCKET_URL)
+    try:
+        edge_presign_service.dynamo_service.update_item.return_value = {
+            "Attributes": {
+                "presignedUrl": f"https://{MOCKED_LG_BUCKET_URL}/some/path?querystring"
+            }
+        }
+        result = edge_presign_service.attempt_presign_ingestion(
+            "random id", MOCKED_LG_BUCKET_URL
+        )
+
+        edge_presign_service.dynamo_service.update_item.assert_called_once()
+        edge_presign_service.ssm_service.get_ssm_parameter.assert_called_once()
+        assert result == f"https://{MOCKED_LG_BUCKET_URL}/some/path?querystring"
+    except CloudFrontEdgeException:
+        assert False
 
 
 def test_attempt_presign_ingestion_client_error(edge_presign_service):
@@ -72,42 +93,9 @@ def test_attempt_presign_ingestion_client_error(edge_presign_service):
 
 
 def test_update_s3_headers(edge_presign_service, request_values):
-    request = {
-        "headers": {
-            "host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}],
-        }
-    }
-
-    response = edge_presign_service.update_s3_headers(request, request_values)
+    response = edge_presign_service.update_s3_headers(request_values)
     assert "authorization" not in response["headers"]
     assert response["headers"]["host"][0]["value"] == MOCKED_LG_BUCKET_URL
-
-
-def test_filter_request_values_success(edge_presign_service):
-    request = {
-        "uri": "/test/uri",
-        "querystring": MOCKED_AUTH_QUERY,
-        "headers": {"host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}]},
-        "origin": {"s3": {"domainName": MOCKED_LG_BUCKET_URL}},
-    }
-    result = edge_presign_service.filter_request_values(request)
-    assert result["uri"] == "/test/uri"
-    assert result["querystring"] == MOCKED_AUTH_QUERY
-    assert result["domain_name"] == MOCKED_LG_BUCKET_URL
-
-
-def test_filter_request_values_missing_component(edge_presign_service):
-    request = {
-        "uri": "/test/uri",
-        "querystring": MOCKED_AUTH_QUERY,
-        "headers": {"host": [{"key": "Host", "value": MOCKED_LG_BUCKET_URL}]},
-    }
-    with pytest.raises(CloudFrontEdgeException) as exc_info:
-        edge_presign_service.filter_request_values(request)
-
-    assert exc_info.value.status_code == 500
-    assert exc_info.value.err_code == EXPECTED_EDGE_NO_ORIGIN_ERROR_CODE
-    assert exc_info.value.message == EXPECTED_EDGE_NO_ORIGIN_ERROR_MESSAGE
 
 
 def test_filter_domain_for_env(edge_presign_service):

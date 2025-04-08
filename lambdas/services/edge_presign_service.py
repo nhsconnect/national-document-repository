@@ -1,10 +1,8 @@
-import hashlib
 import re
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from services.base.dynamo_service import DynamoDBService
-from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import CloudFrontEdgeException
@@ -15,25 +13,30 @@ logger = LoggingService(__name__)
 class EdgePresignService:
     def __init__(self):
         self.dynamo_service = DynamoDBService()
-        self.s3_service = S3Service()
         self.ssm_service = SSMService()
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
     def use_presign(self, request_values: dict):
-        uri: str = request_values["uri"]
-        querystring: str = request_values["querystring"]
-        domain_name: str = request_values["domain_name"]
+        request_id: str = request_values.get("uri").lstrip("/")
+        origin: dict = request_values.get("origin", {})
+        domain_name: str = origin["s3"]["domainName"]
 
-        presign_string: str = f"{uri}?{querystring}"
-        encoded_presign_string = presign_string.encode("utf-8")
-        presign_credentials_hash: str = hashlib.md5(encoded_presign_string).hexdigest()
-
-        self.attempt_presign_ingestion(
-            uri_hash=presign_credentials_hash,
+        presign_url = self.attempt_presign_ingestion(
+            request_id=request_id,
             domain_name=domain_name,
         )
+        question_mark_index = presign_url.find("?")
+        if question_mark_index != -1:
+            querystring = presign_url[question_mark_index + 1 :]
+        else:
+            querystring = ""
 
-    def attempt_presign_ingestion(self, uri_hash: str, domain_name: str) -> None:
+        url_parts = presign_url[:question_mark_index].split("/")
+        request_values["querystring"] = querystring
+        request_values["uri"] = "/" + "/".join(url_parts[3:])
+        return request_values
+
+    def attempt_presign_ingestion(self, request_id: str, domain_name: str) -> str:
         try:
             environment = self.filter_domain_for_env(domain_name)
             logger.info(f"Environment found: {environment}")
@@ -44,44 +47,30 @@ class EdgePresignService:
                 base_table_name, environment
             )
             logger.info(f"Table: {formatted_table_name}")
-            self.dynamo_service.update_item(
+            updated_item = self.dynamo_service.update_item(
                 table_name=formatted_table_name,
-                key_pair={"ID": uri_hash},
+                key_pair={"ID": request_id},
                 updated_fields={"IsRequested": True},
                 condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
                 expression_attribute_values={":false": False},
             )
+            logger.info("Found item related to request ID")
+            return updated_item.get("Attributes").get("presignedUrl")
         except ClientError as e:
             logger.error(f"{str(e)}", {"Result": LambdaError.EdgeNoClient.to_str()})
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
     @staticmethod
-    def update_s3_headers(request: dict, request_values: dict):
-        domain_name = request_values["domain_name"]
+    def update_s3_headers(
+        request: dict,
+    ):
+        origin: dict = request.get("origin", {})
+        domain_name: str = origin["s3"]["domainName"]
         if "authorization" in request["headers"]:
             del request["headers"]["authorization"]
         request["headers"]["host"] = [{"key": "Host", "value": domain_name}]
 
         return request
-
-    @staticmethod
-    def filter_request_values(request: dict) -> dict:
-        try:
-            uri: str = request["uri"]
-            querystring: str = request["querystring"]
-            headers: dict = request["headers"]
-            origin: dict = request.get("origin", {})
-            domain_name: str = origin["s3"]["domainName"]
-        except KeyError as e:
-            logger.error(f"Missing request component: {str(e)}")
-            raise CloudFrontEdgeException(500, LambdaError.EdgeNoOrigin)
-
-        return {
-            "uri": uri,
-            "querystring": querystring,
-            "headers": headers,
-            "domain_name": domain_name,
-        }
 
     @staticmethod
     def filter_domain_for_env(domain_name: str) -> str:
