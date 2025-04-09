@@ -166,7 +166,7 @@ class LloydGeorgeStitchJobService:
         presigned_id = str(uuid.uuid4())
         deletion_date = datetime.now(timezone.utc)
 
-        ttl_half_an_hour_in_seconds = 30 * 60
+        ttl_half_an_hour_in_seconds = self.s3_service.presigned_url_expiry
         dynamo_item_ttl = int(deletion_date.timestamp() + ttl_half_an_hour_in_seconds)
         self.dynamo_service.create_item(
             self.cloudfront_table_name,
