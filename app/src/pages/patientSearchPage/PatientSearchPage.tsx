@@ -126,7 +126,8 @@ function PatientSearchPage() {
             <BackLink asElement="a" href={routes.HOME}>
                 Return to Home
             </BackLink>
-            {submissionState === SEARCH_STATES.FAILED && (
+            {(submissionState === SEARCH_STATES.FAILED ||
+                inputError === incorrectFormatMessage) && (
                 <>
                     {isError ? (
                         <ServiceError />
@@ -140,14 +141,7 @@ function PatientSearchPage() {
                     )}
                 </>
             )}
-            {inputError === incorrectFormatMessage && (
-                <ErrorBox
-                    messageTitle={'There is a problem'}
-                    messageLinkBody={inputError}
-                    errorInputLink={'#nhs-number-input'}
-                    errorBoxSummaryId={'error-box-summary'}
-                />
-            )}
+
             <h1>{pageTitle}</h1>
             <form onSubmit={handleSubmit(handleSearch, handleError)}>
                 <TextInput
