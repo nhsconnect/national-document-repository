@@ -126,7 +126,11 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage, resetD
                 <>
                     {hasDocuments ? (
                         <>
-                            <Table caption="List of files in record" id="current-documents-table">
+                            <Table
+                                caption="List of files in record"
+                                id="current-documents-table"
+                                className="lloydgeorge_delete_table"
+                            >
                                 <Table.Head>
                                     <Table.Row>
                                         <Table.Cell>Filename</Table.Cell>

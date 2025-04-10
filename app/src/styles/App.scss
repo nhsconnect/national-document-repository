@@ -456,6 +456,14 @@ $hunit: '%';
         }
     }
 
+    &_delete {
+        &_table {
+            td {
+                word-break: break-word;
+            }
+        }
+    }
+
     &_delete-complete {
         max-width: 711px;
 
