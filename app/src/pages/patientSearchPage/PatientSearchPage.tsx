@@ -142,7 +142,7 @@ function PatientSearchPage() {
                     )}
                 </>
             )}
-            {inputError == incorrectFormatMessage && (
+            {inputError === incorrectFormatMessage && (
                 <ErrorBox
                     messageTitle={'There is a problem'}
                     messageLinkBody={inputError}
