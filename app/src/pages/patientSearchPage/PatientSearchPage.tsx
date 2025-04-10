@@ -120,8 +120,6 @@ function PatientSearchPage() {
             ([k, v]: [string, { message: string }]) => v.message,
         );
         setInputError(errorMessages[0]);
-        console.log(inputError);
-        console.log(isError);
     };
     return (
         <>
