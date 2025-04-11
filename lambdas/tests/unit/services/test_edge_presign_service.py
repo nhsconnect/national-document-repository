@@ -111,7 +111,6 @@ def test_update_s3_headers(edge_presign_service, request_values):
     ],
 )
 def test_filter_domain_for_env(edge_presign_service, domain_name, expected_environment):
-    domain_name = domain_name
     environment = edge_presign_service._filter_domain_for_env(domain_name)
     assert environment == expected_environment
 
