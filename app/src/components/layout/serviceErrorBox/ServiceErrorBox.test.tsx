@@ -23,7 +23,7 @@ describe('ServiceError', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('link', {
-                name: '(NHS National Service Desk - this link will open in a new tab)',
+                name: 'NHS National Service Desk - this link will open in a new tab',
             }),
         ).toBeInTheDocument();
     });
@@ -32,7 +32,7 @@ describe('ServiceError', () => {
         render(<ServiceError />);
 
         const serviceDeskLink = screen.getByRole('link', {
-            name: '(NHS National Service Desk - this link will open in a new tab)',
+            name: 'NHS National Service Desk - this link will open in a new tab',
         });
         expect(serviceDeskLink).toHaveAttribute(
             'href',
