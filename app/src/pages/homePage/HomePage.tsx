@@ -3,13 +3,10 @@ import { routes } from '../../types/generic/routes';
 import useTitle from '../../helpers/hooks/useTitle';
 import { REPORT_TYPE } from '../../types/generic/reports';
 import { ReactComponent as RightCircleIcon } from '../../styles/right-chevron-circle.svg';
-import useConfig from '../../helpers/hooks/useConfig';
 
 type Props = {};
 
 const HomePage = (props: Props) => {
-    const { featureFlags } = useConfig();
-
     useTitle({ pageTitle: 'Access and store digital patient documents' });
 
     return (
