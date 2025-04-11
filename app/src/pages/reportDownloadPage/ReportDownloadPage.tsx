@@ -7,7 +7,6 @@ import { useEffect } from 'react';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import DownloadReportSelectStage from '../../components/blocks/_downloadReport/downloadReportSelectStage/DownloadReportSelectStage';
 import DownloadReportCompleteStage from '../../components/blocks/_downloadReport/downloadReportCompleteStage/DownloadReportCompleteStage';
-import useConfig from '../../helpers/hooks/useConfig';
 
 type Props = {};
 
@@ -19,26 +18,13 @@ const RedirectToHomePage = () => {
     return <></>;
 };
 
-const RedirectToNotFound = () => {
-    const navigate = useNavigate();
-    useEffect(() => {
-        navigate(routes.NOT_FOUND);
-    });
-    return <></>;
-};
-
 const ReportDownloadPage = (props: Props) => {
     useTitle({ pageTitle: 'Download report' });
     const [searchParams] = useSearchParams();
-    const { featureFlags } = useConfig();
 
     const reportType = searchParams.get('reportType') as REPORT_TYPE;
 
     const report = getReportByType(reportType);
-
-    if (!featureFlags.downloadOdsReportEnabled) {
-        return <RedirectToNotFound />;
-    }
 
     if (!reportType || !report) {
         return <RedirectToHomePage />;

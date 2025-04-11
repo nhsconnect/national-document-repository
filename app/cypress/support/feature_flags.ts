@@ -6,5 +6,4 @@ export const defaultFeatureFlags: FeatureFlags = {
     uploadLloydGeorgeWorkflowEnabled: true,
     uploadArfWorkflowEnabled: true,
     uploadLambdaEnabled: true,
-    downloadOdsReportEnabled: true,
 };
