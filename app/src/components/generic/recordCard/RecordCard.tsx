@@ -62,9 +62,16 @@ function RecordCard({
                         data-testid="pdf-card"
                         className="lloydgeorge_record-stage_pdf-content"
                     >
+                        <Card.Heading
+                            className="lloydgeorge_record-stage_pdf-content-label"
+                            headingLevel="h2"
+                            tabIndex={0}
+                        >
+                            {heading}
+                        </Card.Heading>
                         {cloudFrontUrl && (
                             <button
-                                className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
+                                className="lloydgeorge_record-stage_pdf-content-button link-button clickable full-screen"
                                 data-testid="full-screen-btn"
                                 onClick={() => {
                                     fullScreenHandler(true);
@@ -74,12 +81,7 @@ function RecordCard({
                                 View in full screen
                             </button>
                         )}
-                        <Card.Heading
-                            className="lloydgeorge_record-stage_pdf-content-label"
-                            headingLevel="h2"
-                        >
-                            {heading}
-                        </Card.Heading>
+
                         {detailsElement}
 
                         <RecordMenuCard
