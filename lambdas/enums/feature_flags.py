@@ -7,4 +7,3 @@ class FeatureFlags(Enum):
     UPLOAD_ARF_WORKFLOW_ENABLED = "uploadArfWorkflowEnabled"
     USE_SMARTCARD_AUTH = "useSmartcardAuth"
     LLOYD_GEORGE_VALIDATION_STRICT_MODE = "lloydGeorgeValidationStrictMode"
-    ODS_REPORT_LAMBDA_ENABLED = "downloadOdsReportEnabled"
