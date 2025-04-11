@@ -17,9 +17,9 @@ const numberOfFiles = 7;
 const selectedDocuments = ['test-id-1', 'test-id-2'];
 const downloadAllSelectedDocuments: Array<string> = [];
 const searchResults = [
-    buildSearchResult({ fileName: '1of2_test.pdf', ID: 'test-id-1' }),
-    buildSearchResult({ fileName: '2of2_test.pdf', ID: 'test-id-2' }),
-    buildSearchResult({ fileName: '1of1_test.pdf', ID: 'test-id-3' }),
+    buildSearchResult({ fileName: '1of2_test.pdf', id: 'test-id-1' }),
+    buildSearchResult({ fileName: '2of2_test.pdf', id: 'test-id-2' }),
+    buildSearchResult({ fileName: '1of1_test.pdf', id: 'test-id-3' }),
 ];
 
 jest.mock('react-router-dom', () => ({

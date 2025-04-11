@@ -35,7 +35,7 @@ function PrivacyPage() {
                         target="_blank"
                         href={gdprLink}
                         rel="noreferrer"
-                        aria-label="(UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab)"
+                        aria-label="UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab"
                     >
                         UK General Data Protection Regulation (GDPR) 2018
                     </a>{' '}
@@ -57,7 +57,7 @@ function PrivacyPage() {
                         target="_blank"
                         href="https://am.nhsidentity.spineservices.nhs.uk/openam/XUI/?realm=/#/"
                         rel="noreferrer"
-                        aria-label="(NHS Care Identity - this link will open in a new tab)"
+                        aria-label="NHS Care Identity - this link will open in a new tab"
                     >
                         NHS Care Identity
                     </a>{' '}
@@ -80,7 +80,7 @@ function PrivacyPage() {
                         target="_blank"
                         href="https://digital.nhs.uk/services/care-identity-service"
                         rel="noreferrer"
-                        aria-label="(NHS Care Identity Service - this link will open in a new tab)"
+                        aria-label="NHS Care Identity Service - this link will open in a new tab"
                     >
                         NHS Care Identity Service
                     </a>{' '}
@@ -97,7 +97,7 @@ function PrivacyPage() {
                         target="_blank"
                         href="https://www.england.nhs.uk/contact-us/privacy-notice/nhs-england-as-a-data-controller/"
                         rel="noreferrer"
-                        aria-label="(NHS England's role as a data controller - this link will open in a new tab)"
+                        aria-label="NHS England's role as a data controller - this link will open in a new tab"
                     >
                         NHS England's role as a data controller
                     </a>{' '}
@@ -129,7 +129,7 @@ function PrivacyPage() {
                         target="_blank"
                         href={gdprLink}
                         rel="noreferrer"
-                        aria-label="(UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab)"
+                        aria-label="UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab"
                     >
                         UK General Data Protection Regulation (GDPR) 2018
                     </a>{' '}
