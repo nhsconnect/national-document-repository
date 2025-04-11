@@ -36,10 +36,6 @@ const ReportDownloadPage = (props: Props) => {
 
     const report = getReportByType(reportType);
 
-    if (!featureFlags.downloadOdsReportEnabled) {
-        return <RedirectToNotFound />;
-    }
-
     if (!reportType || !report) {
         return <RedirectToHomePage />;
     }

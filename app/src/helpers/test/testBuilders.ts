@@ -159,7 +159,6 @@ const buildConfig = (
             uploadLloydGeorgeWorkflowEnabled: false,
             uploadLambdaEnabled: false,
             uploadArfWorkflowEnabled: false,
-            downloadOdsReportEnabled: true,
             ...featureFlagsOverride,
         },
     };
