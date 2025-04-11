@@ -16,7 +16,7 @@ def lambda_handler(event, context):
     logger.info(f"Request: {request}")
 
     edge_presign_service = EdgePresignService()
-    modified_request = edge_presign_service.use_presign(request)
+    modified_request = edge_presign_service.use_presigned(request)
 
     forwarded_request: dict = edge_presign_service.update_s3_headers(modified_request)
 

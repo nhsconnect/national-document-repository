@@ -41,31 +41,31 @@ def request_values():
     }
 
 
-def test_use_presign(edge_presign_service, request_values, mocker):
-    mock_attempt_presign_ingestion = mocker.patch.object(
-        edge_presign_service, "attempt_presign_ingestion"
+def test_use_presigned(edge_presign_service, request_values, mocker):
+    mock_attempt_presigned_ingestion = mocker.patch.object(
+        edge_presign_service, "_attempt_presigned_ingestion"
     )
-    mock_attempt_presign_ingestion.return_value = (
+    mock_attempt_presigned_ingestion.return_value = (
         "https://example.com/someother/path?querystring"
     )
 
-    request_result = edge_presign_service.use_presign(request_values)
+    request_result = edge_presign_service.use_presigned(request_values)
 
-    mock_attempt_presign_ingestion.assert_called_once_with(
+    mock_attempt_presigned_ingestion.assert_called_once_with(
         "some/path", MOCKED_LG_BUCKET_URL
     )
     assert request_result.get("uri") == "/someother/path"
     assert request_result.get("querystring") == "querystring"
 
 
-def test_attempt_presign_ingestion_success(edge_presign_service):
+def test_attempt_presigned_ingestion_success(edge_presign_service):
     try:
         edge_presign_service.dynamo_service.update_item.return_value = {
             "Attributes": {
                 "presignedUrl": f"https://{MOCKED_LG_BUCKET_URL}/some/path?querystring"
             }
         }
-        result = edge_presign_service.attempt_presign_ingestion(
+        result = edge_presign_service._attempt_presigned_ingestion(
             "random id", MOCKED_LG_BUCKET_URL
         )
 
@@ -76,14 +76,14 @@ def test_attempt_presign_ingestion_success(edge_presign_service):
         assert False
 
 
-def test_attempt_presign_ingestion_client_error(edge_presign_service):
+def test_attempt_presigned_ingestion_client_error(edge_presign_service):
     client_error = ClientError(
         {"Error": {"Code": "ConditionalCheckFailedException"}}, "UpdateItem"
     )
     edge_presign_service.dynamo_service.update_item.side_effect = client_error
 
     with pytest.raises(CloudFrontEdgeException) as exc_info:
-        edge_presign_service.attempt_presign_ingestion(
+        edge_presign_service._attempt_presigned_ingestion(
             "hashed_uri", MOCKED_LG_BUCKET_URL
         )
 

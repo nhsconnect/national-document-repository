@@ -16,16 +16,16 @@ class EdgePresignService:
         self.ssm_service = SSMService()
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
-    def use_presign(self, request_values: dict) -> dict:
+    def use_presigned(self, request_values: dict) -> dict:
         request_id = self._extract_request_id(request_values)
         domain_name = self._extract_domain_name(request_values)
 
-        presign_url = self.attempt_presign_ingestion(request_id, domain_name)
-        self._update_request_with_presign_url(request_values, presign_url)
+        presigned_url = self._attempt_presigned_ingestion(request_id, domain_name)
+        self._update_request_with_presigned_url(request_values, presigned_url)
 
         return request_values
 
-    def attempt_presign_ingestion(self, request_id: str, domain_name: str) -> str:
+    def _attempt_presigned_ingestion(self, request_id: str, domain_name: str) -> str:
         try:
             environment = self._filter_domain_for_env(domain_name)
             table_name = self._get_formatted_table_name(environment)
@@ -47,15 +47,19 @@ class EdgePresignService:
     def _extract_domain_name(self, request_values: dict) -> str:
         return request_values.get("origin", {}).get("s3", {}).get("domainName", "")
 
-    def _update_request_with_presign_url(self, request_values: dict, presign_url: str):
-        question_mark_index = presign_url.find("?")
+    def _update_request_with_presigned_url(
+        self, request_values: dict, presigned_url: str
+    ):
+        question_mark_index = presigned_url.find("?")
         querystring = (
-            presign_url[question_mark_index + 1 :] if question_mark_index != -1 else ""
+            presigned_url[question_mark_index + 1 :]
+            if question_mark_index != -1
+            else ""
         )
         url_parts = (
-            presign_url[:question_mark_index].split("/")
+            presigned_url[:question_mark_index].split("/")
             if question_mark_index != -1
-            else presign_url.split("/")
+            else presigned_url.split("/")
         )
         request_values["querystring"] = querystring
         request_values["uri"] = "/" + "/".join(url_parts[3:])

@@ -26,12 +26,12 @@ def test_lambda_handler_success(valid_event, context, mock_edge_presign_service)
     modified_request = copy.deepcopy(request_body)
     modified_request["uri"] = "/path/to/resource"
     modified_request["querystring"] = "key=value"
-    mock_edge_presign_service.use_presign.return_value = modified_request
+    mock_edge_presign_service.use_presigned.return_value = modified_request
     mock_edge_presign_service.update_s3_headers.return_value = modified_request
 
     response = lambda_handler(valid_event, context)
 
-    mock_edge_presign_service.use_presign.assert_called_once_with(request_body)
+    mock_edge_presign_service.use_presigned.assert_called_once_with(request_body)
     mock_edge_presign_service.update_s3_headers.assert_called_once_with(
         modified_request
     )
@@ -42,7 +42,7 @@ def test_lambda_handler_success(valid_event, context, mock_edge_presign_service)
 
 
 def test_lambda_handler_exception(valid_event, context, mock_edge_presign_service):
-    mock_edge_presign_service.use_presign.side_effect = CloudFrontEdgeException(
+    mock_edge_presign_service.use_presigned.side_effect = CloudFrontEdgeException(
         400, LambdaError.MockError
     )
 
