@@ -67,7 +67,6 @@ function PatientSearchPage() {
         setInputError(null);
         setStatusCode(null);
         const nhsNumber = data.nhsNumber.replace(/[-\s]/gi, '');
-
         try {
             const patientDetails = await getPatientDetails({
                 nhsNumber,
@@ -127,7 +126,8 @@ function PatientSearchPage() {
             <BackLink asElement="a" href={routes.HOME}>
                 Return to Home
             </BackLink>
-            {submissionState === SEARCH_STATES.FAILED && (
+            {(submissionState === SEARCH_STATES.FAILED ||
+                inputError === incorrectFormatMessage) && (
                 <>
                     {isError ? (
                         <ServiceError />
@@ -141,8 +141,9 @@ function PatientSearchPage() {
                     )}
                 </>
             )}
+
             <h1>{pageTitle}</h1>
-            <form onSubmit={handleSubmit(handleSearch, handleError)} noValidate>
+            <form onSubmit={handleSubmit(handleSearch, handleError)}>
                 <TextInput
                     id="nhs-number-input"
                     data-testid="nhs-number-input"
