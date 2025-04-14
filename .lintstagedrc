@@ -8,7 +8,6 @@
     ],
   "*.py": [
     "./lambdas/venv/bin/python3 -m isort --profile black",
-    "./lambdas/venv/bin/python3 -m black",
     "./lambdas/venv/bin/ruff check ./lambdas"
   ]
 }
