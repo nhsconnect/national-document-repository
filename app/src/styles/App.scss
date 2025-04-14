@@ -303,6 +303,7 @@ $hunit: '%';
                     max-width: calc(100% - 130px);
                     word-wrap: break-word;
                     overflow-wrap: break-word;
+                    display: inline;
                 }
 
                 p {
@@ -828,6 +829,10 @@ $hunit: '%';
     cursor: pointer;
 }
 
+.full-screen {
+    display: inline;
+}
+
 .table-column-header {
     font-size: 1.5rem;
 }
@@ -1033,6 +1038,7 @@ $hunit: '%';
                 flex: 1;
                 display: flex;
                 flex-direction: column;
+                overflow-y: auto;
 
                 .pdf-viewer-div {
                     height: unset;
