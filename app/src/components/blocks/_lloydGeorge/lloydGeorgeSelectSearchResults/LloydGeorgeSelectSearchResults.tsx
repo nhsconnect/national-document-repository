@@ -110,8 +110,8 @@ const AvailableFilesTable = ({
                         {allowSelectDocument && (
                             <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
                         )}
-                        <Table.Cell className={'table-column-header'}>
-                            Filename aria-hidden
+                        <Table.Cell className={'table-column-header'} aria-hidden>
+                            Filename
                         </Table.Cell>
                         <Table.Cell className={'table-column-header'}>Upload date</Table.Cell>
                         <Table.Cell className={'table-column-header'}>File size</Table.Cell>
@@ -131,7 +131,6 @@ const AvailableFilesTable = ({
                                         value={result.id}
                                         id={result.id}
                                         data-testid={`checkbox-${index}`}
-
                                         checked={selectedDocuments.includes(result.id)}
                                         aria-checked={selectedDocuments.includes(result.id)}
                                         aria-label={`Select Filename ${result.fileName}`}
