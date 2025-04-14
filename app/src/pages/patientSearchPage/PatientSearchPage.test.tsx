@@ -78,7 +78,7 @@ describe('PatientSearchPage', () => {
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '21212');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
             await waitFor(() => {
-                expect(screen.getByText(incorrectFormatMessage)).toBeInTheDocument();
+                expect(screen.getAllByText(incorrectFormatMessage)).toHaveLength(2);
             });
         });
     });
@@ -422,7 +422,7 @@ describe('PatientSearchPage', () => {
             renderPatientSearchPage();
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
             await waitFor(() => {
-                expect(screen.getByText(incorrectFormatMessage)).toBeInTheDocument();
+                expect(screen.getAllByText(incorrectFormatMessage)).toHaveLength(2);
             });
         });
 
@@ -436,7 +436,7 @@ describe('PatientSearchPage', () => {
                 );
                 userEvent.click(screen.getByRole('button', { name: 'Search' }));
                 await waitFor(() => {
-                    expect(screen.getByText(incorrectFormatMessage)).toBeInTheDocument();
+                    expect(screen.getAllByText(incorrectFormatMessage)).toHaveLength(2);
                 });
             },
         );
