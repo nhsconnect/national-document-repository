@@ -251,9 +251,12 @@ $hunit: '%';
 // Lloyd George
 .lloydgeorge {
     &_record-stage {
-        &_links,
-        a {
-            padding-right: 30px;
+        &_links {
+            display: flex;
+
+            div {
+                padding-right: 30px;
+            }
         }
 
         &_flex {
