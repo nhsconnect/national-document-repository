@@ -536,7 +536,8 @@ $hunit: '%';
     }
 
     &_drag-and-drop {
-        display: flex;
+        word-break: break-word;
+        overflow-wrap: break-word;
         width: 100%;
         max-width: 960px;
         padding: 32px;
@@ -889,6 +890,8 @@ $hunit: '%';
     font-weight: 600;
     margin: 20px;
     margin-right: 0px;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .complete-stage-paragraph {
