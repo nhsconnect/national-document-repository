@@ -721,6 +721,12 @@ $hunit: '%';
     margin-bottom: nhsuk-spacing(3);
 }
 
+.nhsuk-icon__chevron-left {
+    margin: auto;
+    top: 0;
+    bottom: 0;
+}
+
 .nhsuk-header__navigation-list {
     display: grid;
     grid-template-columns: auto auto 1fr;
@@ -1190,6 +1196,7 @@ $hunit: '%';
     .button-container {
         display: flex;
         align-items: baseline;
+        font-size: 1rem;
     }
 }
 
