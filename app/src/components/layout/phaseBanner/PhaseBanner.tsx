@@ -2,6 +2,7 @@ import React from 'react';
 import { routes } from '../../../types/generic/routes';
 import { useSessionContext } from '../../../providers/sessionProvider/SessionProvider';
 import { Link } from 'react-router-dom';
+import { Tag } from 'nhsuk-react-components';
 
 function PhaseBanner() {
     const [session] = useSessionContext();
@@ -23,9 +24,7 @@ function PhaseBanner() {
         <div className="govuk-phase-banner">
             <div className="nhsuk-width-container">
                 <div className="govuk-phase-banner__content">
-                    <strong className="govuk-tag govuk-phase-banner__content__tag">
-                        New service
-                    </strong>
+                    <Tag className="gov-phase-banner_tag">New service</Tag>
                     <p className="govuk-phase-banner__text">
                         Your {linkToFeedbackPage} will help us to improve this service.
                     </p>
