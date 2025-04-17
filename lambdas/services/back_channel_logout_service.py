@@ -39,7 +39,7 @@ class BackChannelLogoutService:
 
     def finding_session_id_by_sid(self, sid):
         filter_sid = Attr("sid").eq(sid)
-        db_response = self.dynamodb_service.scan_table(
+        db_response = self.dynamodb_service.scan_table(  # table is small so changing scan to query wouldn't give much value
             table_name=self.dynamodb_name, filter_expression=filter_sid
         )
         items = db_response.get("Items", None)
