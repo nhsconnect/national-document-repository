@@ -65,7 +65,7 @@ jobs:
 
   deploy_ods_batch_update:
     name: Deploy ODS Batch Update
-    uses: ./.github/workflows/base-batch-update.yml
+    uses: ./.github/workflows/base-data-collection.yml
     with:
       build_branch: ${{ inputs.tag_version }}
       environment: prod

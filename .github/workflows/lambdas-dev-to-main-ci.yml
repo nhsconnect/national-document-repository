@@ -65,7 +65,7 @@ jobs:
   deploy_ods_batch_update:
     name: Deploy ODS Batch Update
     needs: [ "run_tests" ]
-    uses: ./.github/workflows/base-batch-update.yml
+    uses: ./.github/workflows/base-data-collection.yml
     if: github.ref == 'refs/heads/main'
     with:
       build_branch: ${{ github.event.pull_request.head.ref }}

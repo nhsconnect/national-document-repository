@@ -119,7 +119,7 @@ jobs:
   deploy_ods_batch_update:
     name: Deploy ODS Batch Update
     needs: ["tag_and_release"]
-    uses: ./.github/workflows/base-batch-update.yml
+    uses: ./.github/workflows/base-data-collection.yml
     with:
       build_branch: ${{ needs.tag_and_release.outputs.version }}
       environment: pre-prod
