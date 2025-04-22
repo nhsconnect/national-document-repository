@@ -22,12 +22,13 @@ def lambda_handler(event, context):
     alarm_notifications = event.get("Records", [])
 
     for sns_message in alarm_notifications:
-        card_title = sns_message["Sns"]["Message"]["AlarmName"]
-        card_description = sns_message["Sns"]["Message"]["AlarmDescription"]
-        alarm_state = sns_message["Sns"]["Message"]["NewStateValue"]
-        alarm_time = sns_message["Sns"]["Message"]["StateChangeTime "]
+        message = json.loads(sns_message["Sns"]["Message"])
+        card_title = message["AlarmName"]
+        card_description = message["AlarmDescription"]
+        alarm_state = message["NewStateValue"]
+        alarm_time = message["StateChangeTime"]
 
-        colour = "red" if alarm_state == "ALARM" else "green"
+        colour = "Warning" if alarm_state == "ALARM" else "Good"
 
         payload = json.dumps(
             {
@@ -43,10 +44,11 @@ def lambda_handler(event, context):
                             "body": [
                                 {
                                     "type": "TextBlock",
-                                    "size": "medium",
-                                    "weight": "bold",
+                                    "size": "Medium",
+                                    "weight": "Bolder",
                                     "text": card_title,
                                     "color": colour,
+                                    "wrap": True,
                                 },
                                 {
                                     "type": "TextBlock",
@@ -56,6 +58,7 @@ def lambda_handler(event, context):
                                 {
                                     "type": "TextBlock",
                                     "text": f"This state change happened at {alarm_time}",
+                                    "wrap": True,
                                 },
                             ],
                         },
