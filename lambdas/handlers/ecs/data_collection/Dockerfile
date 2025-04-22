@@ -10,6 +10,6 @@ COPY ../../../requirements /lambdas/requirements
 RUN pip install -r requirements/layers/requirements_core_lambda_layer.txt
 RUN pip install -r requirements/layers/requirements_data_lambda_layer.txt
 
-COPY . /lambdas
+COPY ../../../ /lambdas
 
 ENTRYPOINT ["python", "main.py"]
