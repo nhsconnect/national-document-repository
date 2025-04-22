@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/lambdas
 
 WORKDIR /lambdas
-COPY requirements lambdas/handlers/ecs/data_collection/requirements
+COPY ../../../requirements /lambdas/requirements
 
 RUN pip install -r requirements/layers/requirements_core_lambda_layer.txt
 RUN pip install -r requirements/layers/requirements_data_lambda_layer.txt
