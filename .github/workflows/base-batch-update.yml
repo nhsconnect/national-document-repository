@@ -1,4 +1,4 @@
-name: "Z-BASE Deploy Batch Update: Build batch update image"
+name: "Z-BASE Deploy Data Collection: Build data collection image"
 
 on:
   workflow_call:
@@ -22,12 +22,12 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  batch_update_build_docker_image:
+  data_collection_build_docker_image:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     defaults:
       run:
-        working-directory: lambdas
+        working-directory: lambdas/handlers/ecs/data_collection
 
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ inputs.sandbox }}-weekly-ods-update
+          ECR_REPOSITORY: ${{ inputs.sandbox }}-data-collection
           IMAGE_TAG: latest
           IMAGE_TAG_SHA: ${{ github.sha }}
         run: |
@@ -66,7 +66,7 @@ jobs:
       - name: Download task definition
         id: download-task
         run: |
-          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-task-ods-weekly-update --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-task-data-collection --query taskDefinition > task-definition.json
           echo "revision=$(cat task-definition.json | jq .revision)" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition
@@ -74,17 +74,17 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ./lambdas/task-definition.json
-          container-name: ${{ inputs.sandbox }}-container-ods-weekly-update
+          container-name: ${{ inputs.sandbox }}-container-data-collection
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ./lambdas/task-definition.json
-          cluster: ${{ inputs.sandbox }}-ods-weekly-update
+          cluster: ${{ inputs.sandbox }}-data-collection
           wait-for-service-stability: true
 
       - name: De-register previous revision
         run: |
           aws ecs deregister-task-definition \
-            --task-definition ${{ inputs.sandbox }}-task-ods-weekly-update:${{ steps.download-task.outputs.revision }}
+            --task-definition ${{ inputs.sandbox }}-task-data-collection:${{ steps.download-task.outputs.revision }}

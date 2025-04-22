@@ -12,4 +12,4 @@ RUN pip install -r requirements/layers/requirements_data_lambda_layer.txt
 
 COPY . /lambdas
 
-ENTRYPOINT ["python", "scripts/batch_update_ods_code.py"]
+ENTRYPOINT ["python", "weekly_lloyd_george_data_report.py"]
