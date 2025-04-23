@@ -1,4 +1,5 @@
 import json
+import os
 
 import requests
 from utils.audit_logging_setup import LoggingService
@@ -10,14 +11,11 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @ensure_environment_variables(
-    names=[
-        "APPCONFIG_APPLICATION",
-        "APPCONFIG_CONFIGURATION",
-    ]
+    names=["APPCONFIG_APPLICATION", "APPCONFIG_CONFIGURATION", "WEBHOOK_URL"]
 )
 def lambda_handler(event, context):
 
-    url = "<HTTP POST URL>"
+    url = os.environ["WEBHOOK_URL"]
 
     alarm_notifications = event.get("Records", [])
 
