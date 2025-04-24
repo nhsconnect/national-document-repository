@@ -66,7 +66,7 @@ def lambda_handler(event, context):
                                     "type": "Actions.OpenUrl",
                                     "title": "Find out what to do",
                                     "url": "",
-                                }
+                                },
                             ],
                         },
                     }
@@ -76,7 +76,7 @@ def lambda_handler(event, context):
 
         headers = {"Content-Type": "application/json"}
 
-        response = requests("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload)
         logger.info(response.url)
 
 
