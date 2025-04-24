@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 import requests
 from utils.audit_logging_setup import LoggingService
@@ -17,6 +18,7 @@ def lambda_handler(event, context):
 
     url = os.environ["WEBHOOK_URL"]
 
+    logger.info(f"Received event: {event}")
     alarm_notifications = event.get("Records", [])
 
     for sns_message in alarm_notifications:
@@ -44,7 +46,7 @@ def lambda_handler(event, context):
                                     "type": "TextBlock",
                                     "size": "Medium",
                                     "weight": "Bolder",
-                                    "text": card_title,
+                                    "text": format_alarm_name(card_title),
                                     "color": colour,
                                     "wrap": True,
                                 },
@@ -55,9 +57,16 @@ def lambda_handler(event, context):
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "text": f"This state change happened at {alarm_time}",
+                                    "text": f"This state change happened at: {format_time_string(alarm_time)}",
                                     "wrap": True,
                                 },
+                            ],
+                            "actions": [
+                                {
+                                    "type": "Actions.OpenUrl",
+                                    "title": "Find out what to do",
+                                    "url": "",
+                                }
                             ],
                         },
                     }
@@ -67,5 +76,17 @@ def lambda_handler(event, context):
 
         headers = {"Content-Type": "application/json"}
 
-        response = requests.request("POST", url, headers=headers, data=payload)
-        logger.info(response.text)
+        response = requests("POST", url, headers=headers, data=payload)
+        logger.info(response.url)
+
+
+def format_alarm_name(alarm_name: str) -> str:
+    underscore_stripped_string = alarm_name.replace("_", " ")
+    words = underscore_stripped_string.split(" ")
+    capitalised_words = [word.capitalize() for word in words]
+    return " ".join(capitalised_words)
+
+
+def format_time_string(date_string: str) -> str:
+    # needs to have timezone correct in it!
+    return datetime.strftime(datetime.fromisoformat(date_string), "%H:%M:%S %d-%m-%Y")
