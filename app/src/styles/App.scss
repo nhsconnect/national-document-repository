@@ -536,6 +536,7 @@ $hunit: '%';
     }
 
     &_drag-and-drop {
+        display: flex;
         width: 100%;
         max-width: 960px;
         padding: 32px;
