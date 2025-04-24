@@ -12,10 +12,8 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 
-class NRLFormatCode(Coding):
-    system: Literal["https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode"] = (
-        "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode"
-    )
+class FormatCode(Coding):
+    system: Optional[str] = None
     code: Literal["urn:nhs-ic:record-contact", "urn:nhs-ic:unstructured"] = (
         "urn:nhs-ic:unstructured"
     )
@@ -57,8 +55,8 @@ class ContentStabilityExtension(Extension):
 
 class DocumentReferenceContent(BaseModel):
     attachment: Attachment
-    format: NRLFormatCode = NRLFormatCode()
-    extension: List[ContentStabilityExtension] = [ContentStabilityExtension()]
+    format: Optional[FormatCode]
+    extension: Optional[List[ContentStabilityExtension]] = None
 
 
 class DocumentReferenceContext(BaseModel):
@@ -95,6 +93,12 @@ class DocumentReferenceInfo(BaseModel):
         SnomedCodes.GENERAL_MEDICAL_PRACTICE.value
     )
     attachment: Optional[Attachment] = Attachment()
+    nrl_format_code: Optional[FormatCode] = FormatCode(
+        system="https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode"
+    )
+    nrl_content_stability_extension: Optional[ContentStabilityExtension] = [
+        ContentStabilityExtension()
+    ]
 
     def create_fhir_document_reference_object(self):
         fhir_base_url = "https://fhir.nhs.uk/Id"
@@ -122,7 +126,13 @@ class DocumentReferenceInfo(BaseModel):
                     }
                 ]
             },
-            content=[{"attachment": self.attachment}],
+            content=[
+                {
+                    "attachment": self.attachment,
+                    "format": self.nrl_format_code,
+                    "extension": self.nrl_content_stability_extension,
+                }
+            ],
             category=[
                 {
                     "coding": [
