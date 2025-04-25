@@ -65,7 +65,7 @@ def lambda_handler(event, context):
                                 {
                                     "type": "Actions.OpenUrl",
                                     "title": "Find out what to do",
-                                    "url": "",
+                                    "url": "www.google.com",
                                 },
                             ],
                         },
