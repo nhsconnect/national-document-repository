@@ -82,9 +82,7 @@ def lambda_handler(event, context):
 
 def format_alarm_name(alarm_name: str) -> str:
     underscore_stripped_string = alarm_name.replace("_", " ")
-    words = underscore_stripped_string.split(" ")
-    capitalised_words = [word.capitalize() for word in words]
-    return " ".join(capitalised_words)
+    return underscore_stripped_string.title()
 
 
 def format_time_string(date_string: str) -> str:
