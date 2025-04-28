@@ -217,16 +217,96 @@ def test_process_documents_return_fhir(mock_document_service):
     mock_document_service.create_document_reference_fhir_response.assert_called_once()
 
 
-# def test_process_documents_return_model(mock_document_service):
-#     mock_document_service._build_document_model = MagicMock(return_value={"id": "123"})
-#     mock_document_service.SearchDocumentReference = MagicMock()
-#     mock_document_service.SearchDocumentReference.return_value.model_dump = MagicMock(
-#         return_value={"id": "123"}
-#     )
-#
-#     result = mock_document_service._process_documents(
-#         MOCK_DOCUMENT_REFERENCE, return_fhir=False
-#     )
-#
-#     assert result == [{"id": "123"}]
-#     mock_document_service._build_document_model.assert_called_once()
+def test_create_document_reference_fhir_response(mock_document_service, mocker):
+    mock_document_reference = mocker.MagicMock()
+    mock_document_reference.nhs_number = "9000000009"
+    mock_document_reference.file_name = "test_document.pdf"
+    mock_document_reference.created = "2023-05-01T12:00:00Z"
+
+    mock_attachment = mocker.patch(
+        "services.document_reference_search_service.Attachment"
+    )
+    mock_attachment_instance = mocker.MagicMock()
+    mock_attachment.return_value = mock_attachment_instance
+
+    mock_doc_ref_info = mocker.patch(
+        "services.document_reference_search_service.DocumentReferenceInfo"
+    )
+    mock_doc_ref_info_instance = mocker.MagicMock()
+    mock_doc_ref_info.return_value = mock_doc_ref_info_instance
+
+    mock_fhir_doc_ref = mocker.MagicMock()
+    mock_doc_ref_info_instance.create_minimal_fhir_document_reference_object.return_value = (
+        mock_fhir_doc_ref
+    )
+
+    expected_fhir_response = {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "subject": {
+            "identifier": {
+                "system": "https://fhir.nhs.uk/Id/nhs-number",
+                "value": "9000000009",
+            }
+        },
+        "content": [
+            {
+                "attachment": {
+                    "contentType": "application/pdf",
+                    "language": "en-GB",
+                    "title": "test_document.pdf",
+                    "creation": "2023-05-01T12:00:00Z",
+                }
+            }
+        ],
+    }
+    mock_fhir_doc_ref.model_dump.return_value = expected_fhir_response
+
+    result = mock_document_service.create_document_reference_fhir_response(
+        mock_document_reference
+    )
+
+    mock_attachment.assert_called_once_with(
+        title=mock_document_reference.file_name,
+        creation=mock_document_reference.created,
+    )
+
+    mock_doc_ref_info.assert_called_once_with(
+        nhsNumber=mock_document_reference.nhs_number,
+        attachment=mock_attachment_instance,
+    )
+
+    mock_doc_ref_info_instance.create_minimal_fhir_document_reference_object.assert_called_once()
+    mock_fhir_doc_ref.model_dump.assert_called_once_with(exclude_none=True)
+
+    assert result == expected_fhir_response
+
+
+def test_create_document_reference_fhir_response_integration(
+    mock_document_service, mocker
+):
+    mock_document_reference = mocker.MagicMock()
+    mock_document_reference.nhs_number = "9000000009"
+    mock_document_reference.file_name = "test_document.pdf"
+    mock_document_reference.created = "2023-05-01T12:00:00Z"
+
+    result = mock_document_service.create_document_reference_fhir_response(
+        mock_document_reference
+    )
+
+    assert isinstance(result, dict)
+    assert result["resourceType"] == "DocumentReference"
+    assert result["status"] == "current"
+    assert (
+        result["subject"]["identifier"]["value"] == mock_document_reference.nhs_number
+    )
+    assert len(result["content"]) == 1
+    assert (
+        result["content"][0]["attachment"]["title"] == mock_document_reference.file_name
+    )
+    assert (
+        result["content"][0]["attachment"]["creation"]
+        == mock_document_reference.created
+    )
+    assert result["content"][0]["attachment"]["contentType"] == "application/pdf"
+    assert result["content"][0]["attachment"]["language"] == "en-GB"

@@ -120,10 +120,9 @@ class DocumentReferenceSearchService(DocumentService):
         fhir_document_reference = (
             DocumentReferenceInfo(
                 nhsNumber=document_reference.nhs_number,
-                custodian=document_reference.current_gp_ods,
                 attachment=document_details,
             )
-            .create_fhir_document_reference_object()
+            .create_minimal_fhir_document_reference_object()
             .model_dump(exclude_none=True)
         )
         return fhir_document_reference

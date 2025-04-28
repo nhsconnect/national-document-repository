@@ -17,7 +17,7 @@ def extract_nhs_number_from_event(event) -> str:
 def validate_patient_id(lambda_func: Callable):
     """A decorator for lambda handler.
     Verify that the incoming event contains a valid patientId (nhs number).
-    If not, returns a 400 Bad request response before actual lambda was triggered.
+    If not, returns a 400 Bad request response before the actual lambda was triggered.
 
     Usage:
     @validate_patient_id
