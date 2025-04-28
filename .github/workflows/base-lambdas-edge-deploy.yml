@@ -81,7 +81,14 @@ jobs:
           --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
           --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip \
           --region 'us-east-1' \
-          --publish
+          --publish \
+          --output json)
+          
+          LAMBDA_VERSION=$(echo $RESPONSE | jq -r '.Version')
+          echo "Lambda function updated to version: $LAMBDA_VERSION"
+          
+          LAMBDA_ARN=$(echo $RESPONSE | jq -r '.FunctionArn')
+          echo "LAMBDA_ARN=$LAMBDA_ARN" >> $GITHUB_ENV
 
       - name: Get CloudFront Distribution ID
         id: cloudfront
@@ -99,3 +106,4 @@ jobs:
         env:
           LAMBDA_NAME: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
           AWS_REGION: 'us-east-1'
+          LAMBDA_ARN: ${{ env.LAMBDA_ARN }}
