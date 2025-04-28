@@ -2,7 +2,7 @@ import json
 from unittest.mock import patch
 
 import pytest
-from handlers.get_document_references_handler import lambda_handler
+from handlers.fhir_document_reference_search_handler import lambda_handler
 
 
 @pytest.fixture
