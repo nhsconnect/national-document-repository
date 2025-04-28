@@ -77,13 +77,13 @@ jobs:
 
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         run: |
-          aws lambda update-function-code \
+          RESPONSE=$(aws lambda update-function-code \
           --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
           --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip \
           --region 'us-east-1' \
           --publish \
-          --output json
-          
+          --output json)
+
           LAMBDA_VERSION=$(echo $RESPONSE | jq -r '.Version')
           echo "Lambda function updated to version: $LAMBDA_VERSION"
           
