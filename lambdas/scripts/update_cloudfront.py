@@ -51,23 +51,18 @@ def propagate_lambda_update(retry_count=3, seconds_delay=5):
 def get_latest_lambda_version(function_name):
     """Get the latest version of the Lambda function."""
     try:
-        response = lambda_client.list_versions_by_function(FunctionName=function_name)
-    except ClientError as e:
-        print(f"Client error: {e.response['Error']['Message']}")
+        response = lambda_client.get_function_configuration(FunctionName=function_name)
+    except ClientError as ex:
+        print(f"Client error: {ex.response['Error']['Message']}")
         sys.exit(2)
-
-    versions = response["Versions"]
     try:
-        versions = [v for v in versions if "Version" in v and v["Version"] != "$LATEST"]
-        if not versions:
+        version = response["Version"]
+        if not version:
             print(f"No published versions found for Lambda function: {function_name}")
             sys.exit(3)
-
-        latest_version = max(versions, key=lambda x: int(x["Version"]))
-        print(f"Latest Lambda version: {latest_version['Version']}")
-        return latest_version["Version"]
-    except ValueError as e:
-        print(f"Error while processing versions: {e}")
+        return version
+    except ValueError as ex:
+        print(f"Error while processing versions: {ex}")
         sys.exit(4)
     except KeyError:
         print("Unexpected response format: missing 'Version' key.")
