@@ -32,7 +32,7 @@ def missing_nhs_number_event():
 @pytest.fixture
 def mock_document_reference_search_service():
     with patch(
-        "handlers.get_document_references_handler.DocumentReferenceSearchService"
+        "handlers.fhir_document_reference_search_handler.DocumentReferenceSearchService"
     ) as mock_service:
         service_instance = mock_service.return_value
         yield service_instance
