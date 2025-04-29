@@ -104,6 +104,5 @@ jobs:
         run: |
           ./lambdas/venv/bin/python3 lambdas/scripts/update_cloudfront.py
         env:
-          LAMBDA_NAME: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
           AWS_REGION: 'us-east-1'
           LAMBDA_ARN: ${{ env.LAMBDA_ARN }}
