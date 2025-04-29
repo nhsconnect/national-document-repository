@@ -36,14 +36,14 @@ EXPECTED_EDGE_NO_CLIENT_ERROR_CODE = LambdaError.EdgeNoClient.value["err_code"]
 EXPECTED_EDGE_MALFORMED_ERROR_MESSAGE = LambdaError.EdgeMalformed.value["message"]
 EXPECTED_EDGE_MALFORMED_ERROR_CODE = LambdaError.EdgeMalformed.value["err_code"]
 
-
+MOCK_PRESIGNED_URL = "https://presigned-url.com/path/to/resource"
 MOCK_S3_EDGE_EVENT = {
     "Records": [
         {
             "cf": {
                 "request": {
                     "headers": MOCKED_HEADERS,
-                    "querystring": MOCKED_AUTH_QUERY,
+                    "querystring": "",
                     "uri": "/some/path",
                     "origin": {
                         "s3": {
