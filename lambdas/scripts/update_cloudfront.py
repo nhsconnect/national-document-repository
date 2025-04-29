@@ -84,39 +84,6 @@ def propagate_lambda_update(lambda_client, retry_count=3, initial_delay=5):
     return False
 
 
-def wait_for_distribution_deployment(cloudfront_client, max_attempts=30, delay=60):
-    logger.info(
-        f"Waiting for CloudFront distribution {distribution_id} to be deployed..."
-    )
-
-    for attempt in range(1, max_attempts + 1):
-        try:
-            response = cloudfront_client.get_distribution(Id=distribution_id)
-            status = response["Distribution"]["Status"]
-
-            if status == "Deployed":
-                logger.info(
-                    f"CloudFront distribution {distribution_id} is now deployed"
-                )
-                return True
-
-            logger.info(
-                f"Attempt {attempt}/{max_attempts}: Distribution status is {status}, waiting {delay} seconds..."
-            )
-            time.sleep(delay)
-
-        except ClientError as e:
-            logger.error(
-                f"Error checking distribution status: {e.response['Error']['Message']}"
-            )
-            return False
-
-    logger.error(
-        f"Distribution {distribution_id} did not deploy within the expected timeframe"
-    )
-    return False
-
-
 def invalidate_cloudfront_cache(cloudfront_client):
     try:
         invalidation_response = cloudfront_client.create_invalidation(
@@ -132,29 +99,6 @@ def invalidate_cloudfront_cache(cloudfront_client):
     except ClientError as e:
         logger.error(f"Error invalidating cache: {e.response['Error']['Message']}")
         sys.exit(EXIT_CACHE_INVALIDATION_FAILED)
-
-
-def monitor_invalidation_status(cloudfront_client, invalidation_id):
-    logger.info(f"Monitoring invalidation {invalidation_id}...")
-
-    while True:
-        try:
-            response = cloudfront_client.get_invalidation(
-                DistributionId=distribution_id, Id=invalidation_id
-            )
-            status = response["Invalidation"]["Status"]
-
-            if status == "Completed":
-                logger.info(f"Invalidation {invalidation_id} completed successfully")
-                break
-
-            logger.info(f"Invalidation status: {status}. Waiting...")
-            time.sleep(30)
-        except ClientError as e:
-            logger.error(
-                f"Error monitoring invalidation: {e.response['Error']['Message']}"
-            )
-            break
 
 
 def update_cloudfront_lambda_association(cloudfront_client):
@@ -235,14 +179,9 @@ def main():
             logger.error("Failed to update CloudFront Lambda association")
             return EXIT_DISTRIBUTION_UPDATE_FAILED
 
-        if wait_for_distribution_deployment(cloudfront_client):
-            invalidation_id = invalidate_cloudfront_cache(cloudfront_client)
-            monitor_invalidation_status(cloudfront_client, invalidation_id)
-            logger.info("Lambda@Edge update process completed successfully.")
-            return EXIT_SUCCESS
-        else:
-            logger.error("Failed to verify distribution deployment")
-            return EXIT_DISTRIBUTION_UPDATE_FAILED
+        invalidate_cloudfront_cache(cloudfront_client)
+        logger.info("Lambda@Edge update process completed successfully.")
+        return EXIT_SUCCESS
 
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
