@@ -77,11 +77,18 @@ jobs:
 
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         run: |
-          aws lambda update-function-code \
+          RESPONSE=$(aws lambda update-function-code \
           --function-name ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }} \
           --zip-file fileb://build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip \
           --region 'us-east-1' \
-          --publish
+          --publish \
+          --output json)
+
+          LAMBDA_VERSION=$(echo $RESPONSE | jq -r '.Version')
+          echo "Lambda function updated to version: $LAMBDA_VERSION"
+          
+          LAMBDA_ARN=$(echo $RESPONSE | jq -r '.FunctionArn')
+          echo "LAMBDA_ARN=$LAMBDA_ARN" >> $GITHUB_ENV
 
       - name: Get CloudFront Distribution ID
         id: cloudfront
@@ -97,5 +104,5 @@ jobs:
         run: |
           ./lambdas/venv/bin/python3 lambdas/scripts/update_cloudfront.py
         env:
-          LAMBDA_NAME: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
           AWS_REGION: 'us-east-1'
+          LAMBDA_ARN: ${{ env.LAMBDA_ARN }}
