@@ -313,6 +313,7 @@ def test_update_item_is_called_with_correct_parameters(mock_service, mock_table)
         UpdateExpression=expected_update_expression,
         ExpressionAttributeNames=expected_expr_attr_names,
         ExpressionAttributeValues=expected_expr_attr_values,
+        ReturnValues="ALL_NEW",
     )
 
 
