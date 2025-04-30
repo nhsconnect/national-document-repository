@@ -1,14 +1,11 @@
 import pytest
 from services.metadata_preprocessing_sevice import MetadataPreprocessingService
+from utils.exceptions import InvalidFileNameException
 
 
 @pytest.fixture
 def repo_under_test(set_env, mocker):
-    # service = MetadataPreprocessingService(strict_mode=True)
     service = MetadataPreprocessingService()
-    # mocker.patch.object(service, "dynamo_repository")
-    # mocker.patch.object(service, "sqs_repository")
-    # mocker.patch.object(service, "s3_repository")
     yield service
 
 
@@ -32,8 +29,6 @@ def test_correctly_extract_document_number_from_bulk_upload_file_name(repo_under
         ("X12of34YZ", (12, 34, "YZ")),
         ("8ab12of34YZ", (12, 34, "YZ")),
         ("8ab12of34YZ2442-ofladimus 900123", (12, 34, "YZ2442-ofladimus 900123")),
-        # questions
-        ("--of--", (None, None, "--of--")),  # no numbers
     ]
 
     for input_str, expected in test_cases:
@@ -43,10 +38,20 @@ def test_correctly_extract_document_number_from_bulk_upload_file_name(repo_under
         assert actual == expected
 
 
+def test_extract_document_number_from_bulk_upload_file_name_with_no_document_number(
+    repo_under_test,
+):
+    invalid_data = "12-12-2024"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        repo_under_test.extract_document_number_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "incorrect document number format"
+
+
 def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
     repo_under_test,
 ):
-    # paths, expected_results
     test_cases = [
         ("_Lloyd_George_Record_person_name", ("Lloyd_George_Record", "_person_name")),
         ("_lloyd_george_record_person_name", ("Lloyd_George_Record", "_person_name")),
@@ -59,8 +64,8 @@ def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
             "]{\lloyd george?record///person_name",
             ("Lloyd_George_Record", "///person_name"),
         ),
-        # # questions
-        # ("person_name", (None, "person_name")),  # no numbers
+        ("_Lloyd_George-Record_person_name", ("Lloyd_George_Record", "_person_name")),
+        ("_Ll0yd_Ge0rge-21Rec0rd_person_name", ("Lloyd_George_Record", "_person_name")),
     ]
 
     for input_str, expected in test_cases:
@@ -70,14 +75,24 @@ def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
         assert actual == expected
 
 
+def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
+    repo_under_test,
+):
+    invalid_data = "12-12-2024"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        repo_under_test.extract_lloyd_george_record_from_bulk_upload_file_name(
+            invalid_data
+        )
+
+    assert str(exc_info.value) == "incorrect Lloyd George Record format"
+
+
 def test_correctly_extract_person_name_from_bulk_upload_file_name(repo_under_test):
-    # paths, expected_results
     test_cases = [
         ("_John_doe-1231", ("John Doe", "-1231")),
         ("-José-María-1231", ("José María", "-1231")),
         ("-José&María-Grandola&1231", ("José María Grandola", "&1231")),
-        # # questions
-        # ("123213-", (None, "123213-")),  # no numbers
     ]
 
     for input_str, expected in test_cases:
@@ -87,13 +102,23 @@ def test_correctly_extract_person_name_from_bulk_upload_file_name(repo_under_tes
         assert actual == expected
 
 
+def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
+    repo_under_test,
+):
+    invalid_data = "12-12-2024"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        repo_under_test.extract_person_name_from_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "incorrect person name format"
+
+
 def test_correctly_extract_nhs_number_from_bulk_upload_file_name(repo_under_test):
     # paths, expected_results
     test_cases = [
         ("_-9991211234-12012024", ("9991211234", "-12012024")),
         ("_-9-99/12?11\/234-12012024", ("9991211234", "-12012024")),
-        # # questions
-        # ("person_name", (None, "person_name")),  # no numbers
+        ("_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024")),
     ]
 
     for input_str, expected in test_cases:
@@ -103,6 +128,15 @@ def test_correctly_extract_nhs_number_from_bulk_upload_file_name(repo_under_test
         assert actual == expected
 
 
+def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(repo_under_test):
+    invalid_data = "invalid_nhs_number.txt"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        repo_under_test.extract_nhs_number_from_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "incorrect NHS number format"
+
+
 def test_correctly_extract_date_from_bulk_upload_file_name(repo_under_test):
     test_cases = [
         ("-12012024", ("12", "01", "2024")),
@@ -110,13 +144,23 @@ def test_correctly_extract_date_from_bulk_upload_file_name(repo_under_test):
         ("-12-01-2024", ("12", "01", "2024")),
         ("-12-1-2024", ("12", "01", "2024")),
         ("-1-01-2024", ("01", "01", "2024")),
-        # # questions
-        # ("person_name", (None, "person_name")),  # no numbers
+        ("-1-01-24", ("01", "01", "2024")),
     ]
 
     for input_str, expected in test_cases:
         actual = repo_under_test.extract_date_from_bulk_upload_file_name(input_str)
         assert actual == expected
+
+
+def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
+    repo_under_test,
+):
+    invalid_data = "12-july-2024.txt"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        repo_under_test.extract_date_from_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "incorrect date format"
 
 
 def test_correctly_assembles_valid_file_name(repo_under_test):
