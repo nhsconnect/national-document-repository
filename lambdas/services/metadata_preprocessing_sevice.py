@@ -1,4 +1,8 @@
+import os
+
 import regex
+from models.staging_metadata import METADATA_FILENAME
+from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException
 
@@ -6,7 +10,9 @@ logger = LoggingService(__name__)
 
 
 class MetadataPreprocessingService:
-    # def __init__(self, strict_mode):
+    def __init__(self):
+        self.s3_service = S3Service()
+        self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
 
     def extract_person_name_from_bulk_upload_file_name(self, file_path):
         document_number_expression = r".*?([\p{L}]+(?:[^\p{L}]+[\p{L}]+)*)(.*)$"
@@ -113,26 +119,26 @@ class MetadataPreprocessingService:
             f"[{day}-{month}-{year}]"
         )
 
-    def validate_and_update_bulk_uplodad_file_name(self, file_path) -> str:
+    def validate_and_update_bulk_uplodad_file_name(self, file_name) -> str:
         try:
-            logger.info(f"processing file name {file_path}")
+            logger.info(f"processing file name {file_name}")
 
-            firstDocumentNumber, secondDocumentNumber, current_file_path = (
-                self.extract_document_number_bulk_upload_file_name(file_path)
+            firstDocumentNumber, secondDocumentNumber, current_file_name = (
+                self.extract_document_number_bulk_upload_file_name(file_name)
             )
-            lloyd_george_record, current_file_path = (
+            lloyd_george_record, current_file_name = (
                 self.extract_lloyd_george_record_from_bulk_upload_file_name(
-                    current_file_path
+                    current_file_name
                 )
             )
-            person_name, current_file_path = (
-                self.extract_person_name_from_bulk_upload_file_name(current_file_path)
+            person_name, current_file_name = (
+                self.extract_person_name_from_bulk_upload_file_name(current_file_name)
             )
-            nhs_number, current_file_path = (
-                self.extract_nhs_number_from_bulk_upload_file_name(current_file_path)
+            nhs_number, current_file_name = (
+                self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
             )
             day, month, year = self.extract_date_from_bulk_upload_file_name(
-                current_file_path
+                current_file_name
             )
             file_name = self.assemble_valid_file_name(
                 firstDocumentNumber,
@@ -147,5 +153,43 @@ class MetadataPreprocessingService:
             return file_name
 
         except InvalidFileNameException as error:
-            logger.info(f"Failed to process {file_path} due to error: {error}")
-            return file_path
+            logger.info(f"Failed to process {file_name} due to error: {error}")
+            return file_name
+
+    def process_metadata(self, practice_directory: str) -> str:
+        # file_exist_on_s3(self, s3_bucket_name: str, file_key: str)
+        file_key = f"{practice_directory}/{METADATA_FILENAME}"
+        fileExists = self.s3_service.file_exist_on_s3(
+            s3_bucket_name=self.staging_store_bucket, file_key=file_key
+        )
+        if fileExists:
+            logger.info(f"File {file_key} already exists")
+        # else:
+        # bulk_upload_report_service().csv_to_staging_metadata(file_key)
+        # self.csv_to_staging_metadata_with_updated_file_names(file_key)
+
+    #
+    # @staticmethod
+    # def csv_to_staging_metadata_with_updated_file_names(csv_file_path: str) -> list[StagingMetadata]:
+    #     logger.info("Parsing bulk upload metadata")
+    #
+    #     patients = {}
+    #     with open(
+    #             csv_file_path, mode="r", encoding="utf-8", errors="replace"
+    #     ) as csv_file_handler:
+    #         csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
+    #         for row in csv_reader:
+    #             file_metadata = MetadataFile.model_validate(row)
+    #             # MetadataFile.file_path = self.validate_and_update_bulk_uplodad_file_name(file_path=MetadataFile.file_path)
+    #             # nhs_number = row[NHS_NUMBER_FIELD_NAME]
+    #             # row.file_name = file_metadata.file_name
+    #             row.file_name = validate_and_update_bulk_uplodad_file_name(file_metadata.file_name)
+    #             # if nhs_number not in patients:
+    #             #     patients[nhs_number] = [file_metadata]
+    #             # else:
+    #             #     patients[nhs_number] += [file_metadata]
+    #
+    #     return [
+    #         StagingMetadata(nhs_number=nhs_number, files=patients[nhs_number])
+    #         for nhs_number in patients
+    #     ]
