@@ -536,7 +536,8 @@ $hunit: '%';
     }
 
     &_drag-and-drop {
-        display: flex;
+        word-break: break-word;
+        overflow-wrap: break-word;
         width: 100%;
         max-width: 960px;
         padding: 32px;
@@ -855,7 +856,7 @@ $hunit: '%';
 }
 
 .govuk-phase-banner__content__tag {
-    text-transform: none;
+    padding-right: 10px;
 }
 
 .govuk-warning-text__icon {
@@ -886,6 +887,8 @@ $hunit: '%';
 }
 
 .lg-input-format-paragraph {
+    word-break: break-word;
+    overflow-wrap: break-word;
     font-weight: 600;
     margin: 20px;
     margin-right: 0px;
