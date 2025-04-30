@@ -12,18 +12,24 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @ensure_environment_variables(
-    names=["APPCONFIG_APPLICATION", "APPCONFIG_CONFIGURATION", "WEBHOOK_URL"]
+    names=[
+        "APPCONFIG_APPLICATION",
+        "APPCONFIG_CONFIGURATION",
+        "WEBHOOK_URL",
+        "CONFLUENCE_BASE_URL",
+    ]
 )
 def lambda_handler(event, context):
 
-    url = os.environ["WEBHOOK_URL"]
+    webhook_url = os.environ["WEBHOOK_URL"]
+    confluence_base_url = os.environ["CONFLUENCE_BASE_URL"]
 
     logger.info(f"Received event: {event}")
     alarm_notifications = event.get("Records", [])
 
     for sns_message in alarm_notifications:
         message = json.loads(sns_message["Sns"]["Message"])
-        card_title = message["AlarmName"]
+        alarm_name = message["AlarmName"]
         card_description = message["AlarmDescription"]
         alarm_state = message["NewStateValue"]
         alarm_time = message["StateChangeTime"]
@@ -46,7 +52,7 @@ def lambda_handler(event, context):
                                     "type": "TextBlock",
                                     "size": "Medium",
                                     "weight": "Bolder",
-                                    "text": format_alarm_name(card_title),
+                                    "text": format_alarm_name(alarm_name),
                                     "color": colour,
                                     "wrap": True,
                                 },
@@ -63,9 +69,11 @@ def lambda_handler(event, context):
                             ],
                             "actions": [
                                 {
-                                    "type": "Actions.OpenUrl",
+                                    "type": "Action.OpenUrl",
                                     "title": "Find out what to do",
-                                    "url": "www.google.com",
+                                    "url": create_action_url(
+                                        confluence_base_url, alarm_name
+                                    ),
                                 },
                             ],
                         },
@@ -76,7 +84,7 @@ def lambda_handler(event, context):
 
         headers = {"Content-Type": "application/json"}
 
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", webhook_url, headers=headers, data=payload)
         logger.info(response.url)
 
 
@@ -88,3 +96,12 @@ def format_alarm_name(alarm_name: str) -> str:
 def format_time_string(date_string: str) -> str:
     # needs to have timezone correct in it!
     return datetime.strftime(datetime.fromisoformat(date_string), "%H:%M:%S %d-%m-%Y")
+
+
+def create_action_url(base_url: str, alarm_name: str) -> str:
+    formatted_alarm_name = format_alarm_name(alarm_name)
+    trimmed_alarm_name = formatted_alarm_name.split(" ")[1:]
+    url_extension = " ".join(trimmed_alarm_name).replace(" ", "%20")
+    search_query = "#:~:text="
+
+    return f"{base_url}{search_query}{url_extension}"
