@@ -60,7 +60,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             renderComponent({ selectedDocuments: mockSelectedDocuments });
 
             const headers = screen.getAllByRole('columnheader');
-            const expectedHeaders = ['Selected', 'Filename', 'Upload date', 'File size'];
+            const expectedHeaders = ['Selected', 'Upload date', 'File size'];
 
             expectedHeaders.forEach((headerText, index) => {
                 expect(headers[index]).toHaveTextContent(headerText);

@@ -3,13 +3,10 @@ import { routes } from '../../types/generic/routes';
 import useTitle from '../../helpers/hooks/useTitle';
 import { REPORT_TYPE } from '../../types/generic/reports';
 import { ReactComponent as RightCircleIcon } from '../../styles/right-chevron-circle.svg';
-import useConfig from '../../helpers/hooks/useConfig';
 
 type Props = {};
 
 const HomePage = (props: Props) => {
-    const { featureFlags } = useConfig();
-
     useTitle({ pageTitle: 'Access and store digital patient documents' });
 
     return (
@@ -35,27 +32,25 @@ const HomePage = (props: Props) => {
                         </Card.Content>
                     </Card>
                 </Card.GroupItem>
-                {featureFlags.downloadOdsReportEnabled && (
-                    <Card.GroupItem width="one-half">
-                        <Card clickable cardType="primary">
-                            <Card.Content>
-                                <Card.Heading className="nhsuk-heading-m">
-                                    <Card.Link
-                                        data-testid="download-report-btn"
-                                        href={`${routes.REPORT_DOWNLOAD}?reportType=${REPORT_TYPE.ODS_PATIENT_SUMMARY}`}
-                                    >
-                                        Download a report
-                                    </Card.Link>
-                                </Card.Heading>
-                                <Card.Description>
-                                    This report shows the list of Lloyd George records stored for
-                                    your organisation.
-                                </Card.Description>
-                                <RightCircleIcon />
-                            </Card.Content>
-                        </Card>
-                    </Card.GroupItem>
-                )}
+                <Card.GroupItem width="one-half">
+                    <Card clickable cardType="primary">
+                        <Card.Content>
+                            <Card.Heading className="nhsuk-heading-m">
+                                <Card.Link
+                                    data-testid="download-report-btn"
+                                    href={`${routes.REPORT_DOWNLOAD}?reportType=${REPORT_TYPE.ODS_PATIENT_SUMMARY}`}
+                                >
+                                    Download a report
+                                </Card.Link>
+                            </Card.Heading>
+                            <Card.Description>
+                                This report shows the list of Lloyd George records stored for your
+                                organisation.
+                            </Card.Description>
+                            <RightCircleIcon />
+                        </Card.Content>
+                    </Card>
+                </Card.GroupItem>
             </Card.Group>
         </>
     );

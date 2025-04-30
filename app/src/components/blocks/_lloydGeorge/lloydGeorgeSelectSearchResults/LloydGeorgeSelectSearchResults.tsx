@@ -110,7 +110,9 @@ const AvailableFilesTable = ({
                         {allowSelectDocument && (
                             <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
                         )}
-                        <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
+                        <Table.Cell className={'table-column-header'} aria-hidden>
+                            Filename
+                        </Table.Cell>
                         <Table.Cell className={'table-column-header'}>Upload date</Table.Cell>
                         <Table.Cell className={'table-column-header'}>File size</Table.Cell>
                     </Table.Row>

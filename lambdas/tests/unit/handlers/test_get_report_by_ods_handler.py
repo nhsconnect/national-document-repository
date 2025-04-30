@@ -2,14 +2,11 @@ import json
 import logging
 
 import pytest
-from enums.lambda_error import LambdaError
 from handlers.get_report_by_ods_handler import (
     handle_api_gateway_request,
     handle_manual_trigger,
     lambda_handler,
 )
-from services.feature_flags_service import FeatureFlagService
-from tests.unit.conftest import MOCK_INTERACTION_ID
 from utils.exceptions import OdsErrorException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -27,31 +24,13 @@ def mock_service(mocker):
 
 
 @pytest.fixture
-def mock_lambda_enabled(mocker):
-    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
-    mock_upload_lambda_feature_flag = mock_function.return_value = {
-        "downloadOdsReportEnabled": True
-    }
-    return mock_upload_lambda_feature_flag
-
-
-@pytest.fixture
-def mock_lambda_disabled(mocker):
-    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
-    mock_upload_lambda_feature_flag = mock_function.return_value = {
-        "downloadOdsReportEnabled": False
-    }
-    return mock_upload_lambda_feature_flag
-
-
-@pytest.fixture
 def mock_jwt_encode(mocker):
     decoded_token = {"selected_organisation": {"org_ods_code": "ODS123"}}
     yield mocker.patch("jwt.decode", return_value=decoded_token)
 
 
 def test_lambda_handler_api_gateway_request(
-    mock_service, set_env, context, mock_jwt_encode, mock_lambda_enabled
+    mock_service, set_env, context, mock_jwt_encode
 ):
     event = {"httpMethod": "GET", "headers": {"Authorization": "mock_token"}}
     mock_service.get_nhs_numbers_by_ods.return_value = "example.com/presigned-url"
@@ -70,9 +49,7 @@ def test_lambda_handler_api_gateway_request(
     )
 
 
-def test_lambda_handler_manual_trigger(
-    mock_service, set_env, context, mock_lambda_enabled
-):
+def test_lambda_handler_manual_trigger(mock_service, set_env, context):
     event = {"odsCode": "ODS123,ODS456"}
     mock_service.get_nhs_numbers_by_ods.return_value = None
     expected = ApiGatewayResponse(
@@ -89,19 +66,6 @@ def test_lambda_handler_manual_trigger(
     mock_service.get_nhs_numbers_by_ods.assert_any_call(
         ods_code="ODS456", file_type_output="csv", is_upload_to_s3_needed=True
     )
-
-
-def test_lambda_handler_feature_flag_disabled(
-    mock_service, set_env, context, mock_lambda_disabled
-):
-    request_context.request_id = MOCK_INTERACTION_ID
-    expected = ApiGatewayResponse(
-        500, LambdaError.FeatureFlagDisabled.create_error_body(), "GET"
-    ).create_api_gateway_response()
-
-    actual = lambda_handler({"httpMethod": "GET"}, context)
-
-    assert expected == actual
 
 
 @pytest.mark.parametrize(

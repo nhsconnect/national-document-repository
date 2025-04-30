@@ -74,10 +74,5 @@ def generate_date_folder_name(date: str) -> str:
 
 
 def format_cloudfront_url(presign_url: str, cloudfront_domain: str) -> str:
-    url_parts = presign_url.split("/")
-    if len(url_parts) < 4:
-        raise ValueError("Invalid presigned URL format")
-
-    path_parts = url_parts[3:]
-    formatted_url = f"https://{cloudfront_domain}/{'/'.join(path_parts)}"
+    formatted_url = f"https://{cloudfront_domain}/{presign_url}"
     return formatted_url
