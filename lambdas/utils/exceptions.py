@@ -146,3 +146,7 @@ class PdsResponseValidationException(Exception):
 
 class InvalidFileNameException(Exception):
     pass
+
+
+class MetadataPreprocessingException(Exception):
+    pass

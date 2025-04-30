@@ -1,11 +1,22 @@
+import os
+
 import pytest
-from services.metadata_preprocessing_sevice import MetadataPreprocessingService
+from msgpack.fallback import BytesIO
+from services.bulk_upload_metadata_preprocessor_service import (
+    MetadataPreprocessingService,
+)
+from unit.conftest import TEST_BASE_DIRECTORY
 from utils.exceptions import InvalidFileNameException
+
+from build.lambdas.authoriser_handler.tmp.models.staging_metadata import (
+    METADATA_FILENAME,
+)
 
 
 @pytest.fixture
-def repo_under_test(set_env, mocker):
+def repo_under_test(mocker, set_env):
     service = MetadataPreprocessingService()
+    mocker.patch.object(service, "s3_service")
     yield service
 
 
@@ -185,3 +196,45 @@ def test_correctly_assembles_valid_file_name(repo_under_test):
         year,
     )
     assert actual == expected
+
+
+@pytest.fixture
+def mock_metadata_file_get_object():
+    def _mock_metadata_file_get_object(
+        s3_object_data: dict[str:dict],
+        Bucket: str,
+        Key: str,
+    ):
+        return {
+            "Body": s3_object_data[Key]["Body"],
+            "Metadata": s3_object_data[Key]["Metadata"],
+        }
+
+    return _mock_metadata_file_get_object
+
+
+def test_process_metadata_file_exists(repo_under_test, mock_metadata_file_get_object):
+    test_directory = "test_practice_directory"
+    test_metadata_key = f"{test_directory}/{METADATA_FILENAME}"
+    test_preprocessed_metadata_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/unprocessed",
+        f"unprocessed_{METADATA_FILENAME}",
+    )
+
+    with open(test_preprocessed_metadata_file, "rb") as file:
+        unprocessed_metadata_bytes = file.read()
+
+    test_response = {
+        f"{test_directory}/{METADATA_FILENAME}": {
+            "Body": BytesIO(unprocessed_metadata_bytes),
+            "Metadata": {"Key": test_metadata_key},
+        }
+    }
+
+    repo_under_test.s3_service.file_exist_on_s3.return_value = True
+    repo_under_test.s3_service.client.get_object.side_effect = (
+        lambda Bucket, Key: mock_metadata_file_get_object(test_response, Bucket, Key)
+    )
+
+    repo_under_test.process_metadata(test_directory)

@@ -1,4 +1,6 @@
-from services.metadata_preprocessing_sevice import MetadataPreprocessingService
+from services.bulk_upload_metadata_preprocessor_service import (
+    MetadataPreprocessingService,
+)
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -13,7 +15,7 @@ logger = LoggingService(__name__)
 @ensure_environment_variables(names=["STAGING_STORE_BUCKET_NAME"])
 @handle_lambda_exceptions
 def lambda_handler(event, _context):
-    logger.info("Starting metadata preprocessing reading process")
+    logger.info("Starting metadata pre-processing")
 
     practice_directory = event.get("practiceDirectory")
     metadata_service = MetadataPreprocessingService()
