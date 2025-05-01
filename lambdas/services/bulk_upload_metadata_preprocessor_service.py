@@ -12,7 +12,7 @@ from utils.exceptions import InvalidFileNameException, MetadataPreprocessingExce
 logger = LoggingService(__name__)
 
 
-class MetadataPreprocessingService:
+class MetadataPreprocessorService:
     def __init__(self, practice_directory: str):
         self.s3_service = S3Service()
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")

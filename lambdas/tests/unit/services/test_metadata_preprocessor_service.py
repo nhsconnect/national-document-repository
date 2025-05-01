@@ -3,7 +3,7 @@ import os
 import pytest
 from msgpack.fallback import BytesIO
 from services.bulk_upload_metadata_preprocessor_service import (
-    MetadataPreprocessingService,
+    MetadataPreprocessorService,
 )
 from unit.conftest import TEST_BASE_DIRECTORY
 from utils.exceptions import InvalidFileNameException
@@ -16,7 +16,7 @@ from lambdas.models.staging_metadata import METADATA_FILENAME
 
 @pytest.fixture
 def test_service(mocker, set_env):
-    service = MetadataPreprocessingService(practice_directory="test_practice_directory")
+    service = MetadataPreprocessorService(practice_directory="test_practice_directory")
     mocker.patch.object(service, "s3_service")
     yield service
 
