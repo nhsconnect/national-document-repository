@@ -217,9 +217,7 @@ class MetadataPreprocessingService:
         # TODO Move original metadata file into subdirectory for process files e.g. /processed
         self.move_original_metadata_file(file_key)
 
-        self.s3_service.save_or_create_file(
-            file_key, file_key, BytesIO(csv_text_wrapper.buffer.read())
-        )
+        self.s3_service.save_or_create_file(file_key, file_key, csv_buffer)
         # self.s3_service.client.put_object(
         #     Bucket=source_bucket,
         #     Key=file_key,
@@ -231,15 +229,13 @@ class MetadataPreprocessingService:
         # csv_buffer = io.StringIO()
         fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
 
-        writer = csv.DictWriter(csv_buffer, fieldnames=fieldnames)
+        writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rejected_list)
 
         # Compose full key with folder
         failed_file_key = f"{self.practice_directory}/failed{METADATA_FILENAME}"
-        self.s3_service.save_or_create_file(
-            file_key, failed_file_key, csv_buffer.getvalue()
-        )
+        self.s3_service.save_or_create_file(file_key, failed_file_key, csv_buffer)
         # Upload to S3
         # self.s3_service.client.put_object(
         #     Bucket=source_bucket,
