@@ -1,11 +1,11 @@
+import argparse
 import csv
 import os
 import shutil
+from datetime import date
 from enum import StrEnum
 from glob import glob
-from typing import List, Dict, NamedTuple, Any
-from datetime import date
-import argparse
+from typing import Any, Dict, List, NamedTuple
 
 import boto3
 from botocore.exceptions import ClientError
@@ -196,25 +196,37 @@ def flatten(input_list: List[List[Any]]) -> List[Any]:
 def build_valid_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
-    return f"{file_count}of{total_number}_Lloyd_George_Record_[{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
+    return (
+        f"{file_count}of{total_number}_Lloyd_George_Record_["
+        f"{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
+    )
 
 
 def build_invalid_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
-    return f"{file_count}of{total_number}_Lloyd_George_Record_[{patient.nhs_number}]_[{patient.full_name}]_[{patient.date_of_birth}].pdf"
+    return (
+        f"{file_count}of{total_number}_Lloyd_George_Record_["
+        f"{patient.nhs_number}]_[{patient.full_name}]_[{patient.date_of_birth}].pdf"
+    )
 
 
 def build_invalid_file_number_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
-    return f"{file_count}of{total_number - 1}_Lloyd_George_Record[{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
+    return (
+        f"{file_count}of{total_number - 1}_Lloyd_George_Record["
+        f"{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
+    )
 
 
 def build_invalid_nhs_number_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
-    return f"{file_count}of{total_number}_Lloyd_George_Record_[{patient.full_name}]_[{str(patient.nhs_number)[:-2]}01]_[{patient.date_of_birth}].pdf"
+    return (
+        f"{file_count}of{total_number}_Lloyd_George_Record_["
+        f"{patient.full_name}]_[{str(patient.nhs_number)[:-2]}01]_[{patient.date_of_birth}].pdf"
+    )
 
 
 def build_many_file_names(patient: Patient, total_number: int = 3) -> List[str]:
@@ -305,7 +317,10 @@ def build_metadata_csv_rows(patient: Patient, total_number: int = 3) -> list[str
 def build_metadata_csv(
     patient_list: List[Patient], total_number_for_each: int = 3
 ) -> str:
-    header_row = "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD"
+    header_row = (
+        "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,"
+        "SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD"
+    )
     all_rows = []
     for patient in patient_list:
         row = build_metadata_csv_rows(
@@ -374,7 +389,12 @@ def upload_lg_files_to_staging():
     files = ["metadata.csv"] + glob("*/*Lloyd_George_Record*.pdf")
     client = boto3.client("s3")
     for file in files:
-        client.upload_file(Filename=file, Bucket=STAGING_BUCKET, Key=file)
+        client.upload_file(
+            Filename=file,
+            Bucket=STAGING_BUCKET,
+            Key=file,
+            ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
+        )
 
         scan_result = "Clean"
         if file.startswith(tuple(NHS_NUMBER_INFECTED)):
@@ -580,7 +600,8 @@ if __name__ == "__main__":
     if (
         args.upload
         or input(
-            "Would you like to upload the test files to S3 and add the virus-scan tag? (y/N) "
+            "Would you like to upload the test files to S3 "
+            "and add the virus-scan tag? (y/N) "
         ).lower()
         == "y"
     ):
@@ -588,7 +609,8 @@ if __name__ == "__main__":
     if (
         args.empty_lloydgeorge_store
         or input(
-            "Would you like to remove all records from the LloydGeorgeRecord Bucket (y/N) "
+            "Would you like to remove all records "
+            "from the LloydGeorgeRecord Bucket (y/N) "
         ).lower()
         == "y"
     ):

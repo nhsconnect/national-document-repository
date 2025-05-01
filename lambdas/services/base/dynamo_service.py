@@ -128,12 +128,13 @@ class DynamoDBService:
             "UpdateExpression": update_expression,
             "ExpressionAttributeNames": expression_attribute_names,
             "ExpressionAttributeValues": generated_expression_attribute_values,
+            "ReturnValues": "ALL_NEW",
         }
 
         if condition_expression:
             update_item_args["ConditionExpression"] = condition_expression
 
-        table.update_item(**update_item_args)
+        return table.update_item(**update_item_args)
 
     def delete_item(self, table_name: str, key: dict):
         try:
