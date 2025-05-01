@@ -15,24 +15,24 @@ from lambdas.models.staging_metadata import METADATA_FILENAME
 
 
 @pytest.fixture
-def repo_under_test(mocker, set_env):
-    service = MetadataPreprocessingService()
+def test_service(mocker, set_env):
+    service = MetadataPreprocessingService(practice_directory="test_practice_directory")
     mocker.patch.object(service, "s3_service")
     yield service
 
 
-def test_validate_and_update_file_name_returns_a_valid_file_path(repo_under_test):
+def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
     wrong_file_path = "01 of 02_Lloyd_George_Record_Jim Stevens_9000000001_22.10.2010"
     expected_file_path = (
         "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010]"
     )
 
-    actual = repo_under_test.validate_and_update_bulk_uplodad_file_name(wrong_file_path)
+    actual = test_service.validate_and_update_file_name(wrong_file_path)
 
     assert actual == expected_file_path
 
 
-def test_correctly_extract_document_number_from_bulk_upload_file_name(repo_under_test):
+def test_correctly_extract_document_number_from_bulk_upload_file_name(test_service):
     # paths, expected_results
     test_cases = [
         ("1 of 02_Lloyd_George_Record", (1, 2, "_Lloyd_George_Record")),
@@ -44,25 +44,23 @@ def test_correctly_extract_document_number_from_bulk_upload_file_name(repo_under
     ]
 
     for input_str, expected in test_cases:
-        actual = repo_under_test.extract_document_number_bulk_upload_file_name(
-            input_str
-        )
+        actual = test_service.extract_document_number_bulk_upload_file_name(input_str)
         assert actual == expected
 
 
 def test_extract_document_number_from_bulk_upload_file_name_with_no_document_number(
-    repo_under_test,
+    test_service,
 ):
     invalid_data = "12-12-2024"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
-        repo_under_test.extract_document_number_bulk_upload_file_name(invalid_data)
+        test_service.extract_document_number_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "incorrect document number format"
 
 
 def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
-    repo_under_test,
+    test_service,
 ):
     test_cases = [
         ("_Lloyd_George_Record_person_name", ("Lloyd_George_Record", "_person_name")),
@@ -81,26 +79,26 @@ def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
     ]
 
     for input_str, expected in test_cases:
-        actual = repo_under_test.extract_lloyd_george_record_from_bulk_upload_file_name(
+        actual = test_service.extract_lloyd_george_record_from_bulk_upload_file_name(
             input_str
         )
         assert actual == expected
 
 
 def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
-    repo_under_test,
+    test_service,
 ):
     invalid_data = "12-12-2024"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
-        repo_under_test.extract_lloyd_george_record_from_bulk_upload_file_name(
+        test_service.extract_lloyd_george_record_from_bulk_upload_file_name(
             invalid_data
         )
 
     assert str(exc_info.value) == "incorrect Lloyd George Record format"
 
 
-def test_correctly_extract_person_name_from_bulk_upload_file_name(repo_under_test):
+def test_correctly_extract_person_name_from_bulk_upload_file_name(test_service):
     test_cases = [
         ("_John_doe-1231", ("John Doe", "-1231")),
         ("-José-María-1231", ("José María", "-1231")),
@@ -108,24 +106,22 @@ def test_correctly_extract_person_name_from_bulk_upload_file_name(repo_under_tes
     ]
 
     for input_str, expected in test_cases:
-        actual = repo_under_test.extract_person_name_from_bulk_upload_file_name(
-            input_str
-        )
+        actual = test_service.extract_person_name_from_bulk_upload_file_name(input_str)
         assert actual == expected
 
 
 def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
-    repo_under_test,
+    test_service,
 ):
     invalid_data = "12-12-2024"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
-        repo_under_test.extract_person_name_from_bulk_upload_file_name(invalid_data)
+        test_service.extract_person_name_from_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "incorrect person name format"
 
 
-def test_correctly_extract_nhs_number_from_bulk_upload_file_name(repo_under_test):
+def test_correctly_extract_nhs_number_from_bulk_upload_file_name(test_service):
     # paths, expected_results
     test_cases = [
         ("_-9991211234-12012024", ("9991211234", "-12012024")),
@@ -134,22 +130,20 @@ def test_correctly_extract_nhs_number_from_bulk_upload_file_name(repo_under_test
     ]
 
     for input_str, expected in test_cases:
-        actual = repo_under_test.extract_nhs_number_from_bulk_upload_file_name(
-            input_str
-        )
+        actual = test_service.extract_nhs_number_from_bulk_upload_file_name(input_str)
         assert actual == expected
 
 
-def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(repo_under_test):
+def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_service):
     invalid_data = "invalid_nhs_number.txt"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
-        repo_under_test.extract_nhs_number_from_bulk_upload_file_name(invalid_data)
+        test_service.extract_nhs_number_from_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "incorrect NHS number format"
 
 
-def test_correctly_extract_date_from_bulk_upload_file_name(repo_under_test):
+def test_correctly_extract_date_from_bulk_upload_file_name(test_service):
     test_cases = [
         ("-12012024", ("12", "01", "2024")),
         ("-12.01.2024", ("12", "01", "2024")),
@@ -160,22 +154,22 @@ def test_correctly_extract_date_from_bulk_upload_file_name(repo_under_test):
     ]
 
     for input_str, expected in test_cases:
-        actual = repo_under_test.extract_date_from_bulk_upload_file_name(input_str)
+        actual = test_service.extract_date_from_bulk_upload_file_name(input_str)
         assert actual == expected
 
 
 def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
-    repo_under_test,
+    test_service,
 ):
     invalid_data = "12-july-2024.txt"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
-        repo_under_test.extract_date_from_bulk_upload_file_name(invalid_data)
+        test_service.extract_date_from_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "incorrect date format"
 
 
-def test_correctly_assembles_valid_file_name(repo_under_test):
+def test_correctly_assembles_valid_file_name(test_service):
     firstDocumentNumber = 1
     secondDocumentNumber = 2
     lloyd_george_record = "Lloyd_George_Record"
@@ -186,7 +180,7 @@ def test_correctly_assembles_valid_file_name(repo_under_test):
     year = 2010
 
     expected = "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010]"
-    actual = repo_under_test.assemble_valid_file_name(
+    actual = test_service.assemble_valid_file_name(
         firstDocumentNumber,
         secondDocumentNumber,
         lloyd_george_record,
@@ -202,40 +196,30 @@ def test_correctly_assembles_valid_file_name(repo_under_test):
 @pytest.fixture
 def mock_metadata_file_get_object():
     def _mock_metadata_file_get_object(
-        s3_object_data: dict[str:dict],
+        test_file_path: str,
         Bucket: str,
         Key: str,
     ):
-        return {
-            "Body": s3_object_data[Key]["Body"],
-            "Metadata": s3_object_data[Key]["Metadata"],
-        }
+        with open(test_file_path, "rb") as file:
+            test_file_data = file.read()
+
+        return {"Body": BytesIO(test_file_data)}
 
     return _mock_metadata_file_get_object
 
 
-def test_process_metadata_file_exists(repo_under_test, mock_metadata_file_get_object):
-    test_directory = "test_practice_directory"
-    test_metadata_key = f"{test_directory}/{METADATA_FILENAME}"
+def test_process_metadata_file_exists(test_service, mock_metadata_file_get_object):
     test_preprocessed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
         "helpers/data/bulk_upload/unprocessed",
         f"unprocessed_{METADATA_FILENAME}",
     )
 
-    with open(test_preprocessed_metadata_file, "rb") as file:
-        unprocessed_metadata_bytes = file.read()
-
-    test_response = {
-        f"{test_directory}/{METADATA_FILENAME}": {
-            "Body": BytesIO(unprocessed_metadata_bytes),
-            "Metadata": {"Key": test_metadata_key},
-        }
-    }
-
-    repo_under_test.s3_service.file_exist_on_s3.return_value = True
-    repo_under_test.s3_service.client.get_object.side_effect = (
-        lambda Bucket, Key: mock_metadata_file_get_object(test_response, Bucket, Key)
+    test_service.s3_service.file_exist_on_s3.return_value = True
+    test_service.s3_service.client.get_object.side_effect = (
+        lambda Bucket, Key: mock_metadata_file_get_object(
+            test_preprocessed_metadata_file, Bucket, Key
+        )
     )
 
-    repo_under_test.process_metadata(test_directory)
+    test_service.process_metadata()

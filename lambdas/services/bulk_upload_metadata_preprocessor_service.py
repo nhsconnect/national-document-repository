@@ -19,7 +19,10 @@ class MetadataPreprocessingService:
         self.processed_folder_name = "/processed"
         self.practice_directory = practice_directory
 
-    def extract_person_name_from_bulk_upload_file_name(self, file_path):
+    @staticmethod
+    def extract_person_name_from_bulk_upload_file_name(
+        file_path: str,
+    ) -> tuple[str, str]:
         document_number_expression = r".*?([\p{L}]+(?:[^\p{L}]+[\p{L}]+)*)(.*)$"
         expression_result = regex.search(
             rf"{document_number_expression}", file_path, regex.IGNORECASE
@@ -42,8 +45,10 @@ class MetadataPreprocessingService:
 
         return cleaned_name, current_file_path
 
-    def extract_lloyd_george_record_from_bulk_upload_file_name(self, file_path):
-
+    @staticmethod
+    def extract_lloyd_george_record_from_bulk_upload_file_name(
+        file_path: str,
+    ) -> tuple[str, str]:
         _expression = r".*?ll[oO0οՕ〇]yd.*?ge[oO0οՕ〇]rge.*?rec[oO0οՕ〇]rd(.*)"
         lloyd_george_record = regex.search(
             rf"{_expression}", file_path, regex.IGNORECASE
@@ -58,7 +63,10 @@ class MetadataPreprocessingService:
 
         return lloyd_george_record_text, current_file_path
 
-    def extract_document_number_bulk_upload_file_name(self, file_path):
+    @staticmethod
+    def extract_document_number_bulk_upload_file_name(
+        file_path: str,
+    ) -> tuple[int, int, str]:
         document_number_expression = r"[^0-9]*(\d+)[^0-9]*of[^0-9]*(\d+)(.*)"
         expression_result = regex.search(rf"{document_number_expression}", file_path)
 
@@ -66,13 +74,16 @@ class MetadataPreprocessingService:
             logger.info("Failed to find the document number in file name")
             raise InvalidFileNameException("incorrect document number format")
 
-        firstDocumentNumber = int(expression_result.group(1))
-        secondDocumentNumber = int(expression_result.group(2))
+        first_document_number = int(expression_result.group(1))
+        second_document_number = int(expression_result.group(2))
         current_file_path = expression_result.group(3)
 
-        return firstDocumentNumber, secondDocumentNumber, current_file_path
+        return first_document_number, second_document_number, current_file_path
 
-    def extract_nhs_number_from_bulk_upload_file_name(self, file_path):
+    @staticmethod
+    def extract_nhs_number_from_bulk_upload_file_name(
+        file_path: str,
+    ) -> tuple[str, str]:
         nhs_number_expression = r"((?:.*?\d){10})(.*)"
         expression_result = regex.search(rf"{nhs_number_expression}", file_path)
 
@@ -85,7 +96,8 @@ class MetadataPreprocessingService:
 
         return nhs_number, current_file_path
 
-    def extract_date_from_bulk_upload_file_name(self, file_path):
+    @staticmethod
+    def extract_date_from_bulk_upload_file_name(file_path):
         date_number_expression = r"(\D*\d{1,2})(\D*\d{1,2})(\D*(\d{4}|\d{2}))(.*)"
         expression_result = regex.search(rf"{date_number_expression}", file_path)
 
@@ -105,30 +117,30 @@ class MetadataPreprocessingService:
 
         return day, month, year
 
+    @staticmethod
     def assemble_valid_file_name(
-        self,
-        firstDocumentNumber,
-        secondDocumentNumber,
-        lloyd_george_record,
-        person_name,
-        nhs_number,
-        day,
-        month,
-        year,
-    ):
+        first_document_number: int,
+        second_document_number: int,
+        lloyd_george_record: str,
+        patient_name: str,
+        nhs_number: str,
+        day: str,
+        month: str,
+        year: str,
+    ) -> str:
         return (
-            f"{firstDocumentNumber}of{secondDocumentNumber}"
+            f"{first_document_number}of{second_document_number}"
             f"_{lloyd_george_record}_"
-            f"[{person_name}]_"
+            f"[{patient_name}]_"
             f"[{nhs_number}]_"
             f"[{day}-{month}-{year}]"
         )
 
-    def validate_and_update_bulk_uplodad_file_name(self, file_name) -> str:
+    def validate_and_update_file_name(self, file_name) -> str:
         try:
             logger.info(f"processing file name {file_name}")
 
-            firstDocumentNumber, secondDocumentNumber, current_file_name = (
+            first_document_number, second_document_number, current_file_name = (
                 self.extract_document_number_bulk_upload_file_name(file_name)
             )
             lloyd_george_record, current_file_name = (
@@ -136,7 +148,7 @@ class MetadataPreprocessingService:
                     current_file_name
                 )
             )
-            person_name, current_file_name = (
+            patient_name, current_file_name = (
                 self.extract_person_name_from_bulk_upload_file_name(current_file_name)
             )
             nhs_number, current_file_name = (
@@ -146,10 +158,10 @@ class MetadataPreprocessingService:
                 current_file_name
             )
             file_name = self.assemble_valid_file_name(
-                firstDocumentNumber,
-                secondDocumentNumber,
+                first_document_number,
+                second_document_number,
                 lloyd_george_record,
-                person_name,
+                patient_name,
                 nhs_number,
                 day,
                 month,
@@ -161,8 +173,10 @@ class MetadataPreprocessingService:
             logger.info(f"Failed to process {file_name} due to error: {error}")
             return file_name
 
-    def process_metadata(self, practice_directory: str):
-        file_key = f"{practice_directory}/{METADATA_FILENAME}"
+    def process_metadata(
+        self,
+    ):
+        file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
         file_exists = self.s3_service.file_exist_on_s3(
             s3_bucket_name=self.staging_store_bucket, file_key=file_key
         )
@@ -197,10 +211,15 @@ class MetadataPreprocessingService:
         writer.writeheader()
         writer.writerows(metadata_csv_data)
 
+        csv_text_wrapper.flush()
+        csv_buffer.seek(0)
+
         # TODO Move original metadata file into subdirectory for process files e.g. /processed
         self.move_original_metadata_file(file_key)
 
-        self.s3_service.save_or_create_file(file_key, file_key, csv_buffer.getvalue())
+        self.s3_service.save_or_create_file(
+            file_key, file_key, BytesIO(csv_text_wrapper.buffer.read())
+        )
         # self.s3_service.client.put_object(
         #     Bucket=source_bucket,
         #     Key=file_key,
@@ -217,7 +236,7 @@ class MetadataPreprocessingService:
         writer.writerows(rejected_list)
 
         # Compose full key with folder
-        failed_file_key = f"{practice_directory}/failed{METADATA_FILENAME}"
+        failed_file_key = f"{self.practice_directory}/failed{METADATA_FILENAME}"
         self.s3_service.save_or_create_file(
             file_key, failed_file_key, csv_buffer.getvalue()
         )
@@ -237,9 +256,7 @@ class MetadataPreprocessingService:
         error_list = []
         for row in metadata_csv_data:
             try:
-                new_filepath = self.validate_and_update_bulk_uplodad_file_name(
-                    row.get("FILEPATH")
-                )
+                new_filepath = self.validate_and_update_file_name(row.get("FILEPATH"))
                 row["FILEPATH"] = new_filepath
             except MetadataPreprocessingException as error:
                 rejected_list.append(row.get("FILEPATH"))
@@ -247,9 +264,8 @@ class MetadataPreprocessingService:
         return metadata_csv_data, rejected_list, error_list
 
     def move_original_metadata_file(self, file_key: str):
-        source_bucket = self.staging_store_bucket
         destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{METADATA_FILENAME}"
 
         self.s3_service.client.move_file_in_bucket(
-            source_bucket, file_key, destination_key
+            self.staging_store_bucket, file_key, destination_key
         )
