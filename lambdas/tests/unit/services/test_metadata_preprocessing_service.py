@@ -8,9 +8,10 @@ from services.bulk_upload_metadata_preprocessor_service import (
 from unit.conftest import TEST_BASE_DIRECTORY
 from utils.exceptions import InvalidFileNameException
 
-from build.lambdas.authoriser_handler.tmp.models.staging_metadata import (
-    METADATA_FILENAME,
-)
+# from build.lambdas.authoriser_handler.tmp.models.staging_metadata import (
+#     METADATA_FILENAME,
+# )
+from lambdas.models.staging_metadata import METADATA_FILENAME
 
 
 @pytest.fixture

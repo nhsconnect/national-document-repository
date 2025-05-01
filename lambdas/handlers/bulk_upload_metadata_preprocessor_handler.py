@@ -18,5 +18,5 @@ def lambda_handler(event, _context):
     logger.info("Starting metadata pre-processing")
 
     practice_directory = event.get("practiceDirectory")
-    metadata_service = MetadataPreprocessingService()
-    metadata_service.process_metadata(practice_directory)
+    metadata_service = MetadataPreprocessingService(practice_directory)
+    metadata_service.process_metadata()

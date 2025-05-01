@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from typing import Any, Mapping
 
 import boto3
@@ -159,3 +160,15 @@ class S3Service:
     def get_file_size(self, s3_bucket_name: str, object_key: str) -> int:
         response = self.client.head_object(Bucket=s3_bucket_name, Key=object_key)
         return response.get("ContentLength", 0)
+
+    def move_file_in_bucket(
+        self, source_bucket: str, source_key: str, destination_key: str
+    ):
+        self.client.copy_object(
+            bucket=source_bucket,
+            copy_source=source_key,
+            key={"Bucket": source_bucket, "Key": destination_key},
+        )
+
+    def save_or_create_file(self, source_bucket: str, file_key: str, body: BytesIO):
+        self.client.put_object(Bucket=source_bucket, Key=file_key, Body=body)

@@ -1,5 +1,6 @@
 import csv
 import os
+from io import TextIOWrapper
 
 import regex
 from models.staging_metadata import METADATA_FILENAME
@@ -12,9 +13,11 @@ logger = LoggingService(__name__)
 
 
 class MetadataPreprocessingService:
-    def __init__(self):
+    def __init__(self, practice_directory: str):
         self.s3_service = S3Service()
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
+        self.processed_folder_name = "/processed"
+        self.practice_directory = practice_directory
 
     def extract_person_name_from_bulk_upload_file_name(self, file_path):
         document_number_expression = r".*?([\p{L}]+(?:[^\p{L}]+[\p{L}]+)*)(.*)$"
@@ -179,11 +182,74 @@ class MetadataPreprocessingService:
 
         print(metadata_csv_data)
 
-        # TODO Move original metadata file into subdirectory for process files e.g. /processed
+        # TODO update file names
+        metadata_csv_data, rejected_list, error_list = (
+            self.update_and_standardize_filenames(metadata_csv_data)
+        )
 
+        # Convert list of dicts to CSV in memory
+        # use bites.io
+        csv_buffer = BytesIO()
+        csv_text_wrapper = TextIOWrapper(csv_buffer, encoding="utf-8", newline="")
+        fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
+
+        writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(metadata_csv_data)
+
+        # TODO Move original metadata file into subdirectory for process files e.g. /processed
+        self.move_original_metadata_file(file_key)
+
+        self.s3_service.save_or_create_file(file_key, file_key, csv_buffer.getvalue())
+        # self.s3_service.client.put_object(
+        #     Bucket=source_bucket,
+        #     Key=file_key,
+        #     Body=csv_buffer.getvalue()
+        # )
         # TODO Write rejected csv lines to a new failed.csv
         # and place this in the same subdirectory as the original processed metadata e.g. /processed
+        # Prepare CSV in memory
+        # csv_buffer = io.StringIO()
+        fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
+
+        writer = csv.DictWriter(csv_buffer, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rejected_list)
+
+        # Compose full key with folder
+        failed_file_key = f"{practice_directory}/failed{METADATA_FILENAME}"
+        self.s3_service.save_or_create_file(
+            file_key, failed_file_key, csv_buffer.getvalue()
+        )
+        # Upload to S3
+        # self.s3_service.client.put_object(
+        #     Bucket=source_bucket,
+        #     Key=failed_file_key,
+        #     Body=csv_buffer.getvalue()
+        # )
 
         response = self.s3_service.client.upload_fileobj(
             Fileobj=BytesIO(), Bucket=self.staging_store_bucket, Key=file_key
+        )
+
+    def update_and_standardize_filenames(self, metadata_csv_data):
+        rejected_list = []
+        error_list = []
+        for row in metadata_csv_data:
+            try:
+                new_filepath = self.validate_and_update_bulk_uplodad_file_name(
+                    row.get("FILEPATH")
+                )
+                row["FILEPATH"] = new_filepath
+            except MetadataPreprocessingException as error:
+                rejected_list.append(row.get("FILEPATH"))
+                error_list.append((row.get("FILEPATH"), str(error)))
+        return metadata_csv_data, rejected_list, error_list
+
+    def move_original_metadata_file(self, file_key: str):
+        source_bucket = self.staging_store_bucket
+        destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{METADATA_FILENAME}"
+
+        self.s3_service.client.move_file_in_bucket(
+            source_bucket, file_key, destination_key
         )
