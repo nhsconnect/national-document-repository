@@ -22,9 +22,11 @@ def test_service(mocker, set_env):
 
 
 def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
-    wrong_file_path = "01 of 02_Lloyd_George_Record_Jim Stevens_9000000001_22.10.2010"
+    wrong_file_path = (
+        "01 of 02_Lloyd_George_Record_Jim Stevens_9000000001_22.10.2010.txt"
+    )
     expected_file_path = (
-        "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010]"
+        "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010].txt"
     )
 
     actual = test_service.validate_and_update_file_name(wrong_file_path)
@@ -103,6 +105,10 @@ def test_correctly_extract_person_name_from_bulk_upload_file_name(test_service):
         ("_John_doe-1231", ("John Doe", "-1231")),
         ("-José-María-1231", ("José María", "-1231")),
         ("-José&María-Grandola&1231", ("José María Grandola", "&1231")),
+        (
+            "_Jim Stevens_9000000001_22.10.2010.txt",
+            ("Jim Stevens", "_9000000001_22.10.2010.txt"),
+        ),
     ]
 
     for input_str, expected in test_cases:
@@ -145,12 +151,12 @@ def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_serv
 
 def test_correctly_extract_date_from_bulk_upload_file_name(test_service):
     test_cases = [
-        ("-12012024", ("12", "01", "2024")),
-        ("-12.01.2024", ("12", "01", "2024")),
-        ("-12-01-2024", ("12", "01", "2024")),
-        ("-12-1-2024", ("12", "01", "2024")),
-        ("-1-01-2024", ("01", "01", "2024")),
-        ("-1-01-24", ("01", "01", "2024")),
+        ("-12012024.txt", ("12", "01", "2024", ".txt")),
+        ("-12.01.2024.csv", ("12", "01", "2024", ".csv")),
+        ("-12-01-2024.txt", ("12", "01", "2024", ".txt")),
+        ("-12-1-2024.txt", ("12", "01", "2024", ".txt")),
+        ("-1-01-2024.txt", ("01", "01", "2024", ".txt")),
+        ("-1-01-24.txt", ("01", "01", "2024", ".txt")),
     ]
 
     for input_str, expected in test_cases:
@@ -169,6 +175,32 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
     assert str(exc_info.value) == "incorrect date format"
 
 
+def test_correctly_extract_file_extension_from_bulk_upload_file_name(test_service):
+    test_cases = [
+        (".txt", ".txt"),
+        ("cool_stuff.txt", ".txt"),
+        ("{}.[].txt", ".txt"),
+        (".csv", ".csv"),
+    ]
+
+    for input_str, expected in test_cases:
+        actual = test_service.extract_file_extension_from_bulk_upload_file_name(
+            input_str
+        )
+        assert actual == expected
+
+
+def test_extract_file_extension_from_bulk_upload_file_name_with_incorrect_file_extension_format(
+    test_service,
+):
+    invalid_data = "txt"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        test_service.extract_file_extension_from_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "incorrect file extension format"
+
+
 def test_correctly_assembles_valid_file_name(test_service):
     firstDocumentNumber = 1
     secondDocumentNumber = 2
@@ -178,8 +210,9 @@ def test_correctly_assembles_valid_file_name(test_service):
     day = 22
     month = 10
     year = 2010
+    file_extension = ".txt"
 
-    expected = "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010]"
+    expected = "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010].txt"
     actual = test_service.assemble_valid_file_name(
         firstDocumentNumber,
         secondDocumentNumber,
@@ -189,6 +222,7 @@ def test_correctly_assembles_valid_file_name(test_service):
         day,
         month,
         year,
+        file_extension,
     )
     assert actual == expected
 

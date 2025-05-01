@@ -23,10 +23,11 @@ class MetadataPreprocessingService:
     def extract_person_name_from_bulk_upload_file_name(
         file_path: str,
     ) -> tuple[str, str]:
-        document_number_expression = r".*?([\p{L}]+(?:[^\p{L}]+[\p{L}]+)*)(.*)$"
+        document_number_expression = r"^.*?([\p{L}]+(?:[^\p{L}\d]+[\p{L}]+)*)(.*)"
         expression_result = regex.search(
             rf"{document_number_expression}", file_path, regex.IGNORECASE
         )
+
         if expression_result is None:
             logger.info("Failed to find the person name in the file name")
             raise InvalidFileNameException("incorrect person name format")
@@ -108,6 +109,8 @@ class MetadataPreprocessingService:
         day = "".join(regex.findall(r"\d", expression_result.group(1))).zfill(2)
         month = "".join(regex.findall(r"\d", expression_result.group(2))).zfill(2)
         year = "".join(regex.findall(r"\d", expression_result.group(3)))
+        current_file_path = expression_result.group(5)
+
         if len(year) == 2:
             year = "20" + year
 
@@ -115,7 +118,22 @@ class MetadataPreprocessingService:
             logger.info("Failed to find date in file name")
             raise InvalidFileNameException("incorrect date format")
 
-        return day, month, year
+        return day, month, year, current_file_path
+
+    @staticmethod
+    def extract_file_extension_from_bulk_upload_file_name(
+        file_path: str,
+    ) -> str:
+        file_extension_expression = r"(\.([^.]*))$"
+        expression_result = regex.search(rf"{file_extension_expression}", file_path)
+
+        if expression_result is None:
+            logger.info("Failed to find a file extension")
+            raise InvalidFileNameException("incorrect file extension format")
+
+        file_extension = expression_result.group(1)
+
+        return file_extension
 
     @staticmethod
     def assemble_valid_file_name(
@@ -127,6 +145,7 @@ class MetadataPreprocessingService:
         day: str,
         month: str,
         year: str,
+        file_extension: str,
     ) -> str:
         return (
             f"{first_document_number}of{second_document_number}"
@@ -134,6 +153,7 @@ class MetadataPreprocessingService:
             f"[{patient_name}]_"
             f"[{nhs_number}]_"
             f"[{day}-{month}-{year}]"
+            f"{file_extension}"
         )
 
     def validate_and_update_file_name(self, file_name) -> str:
@@ -154,7 +174,10 @@ class MetadataPreprocessingService:
             nhs_number, current_file_name = (
                 self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
             )
-            day, month, year = self.extract_date_from_bulk_upload_file_name(
+            day, month, year, current_file_name = (
+                self.extract_date_from_bulk_upload_file_name(current_file_name)
+            )
+            file_extension = self.extract_file_extension_from_bulk_upload_file_name(
                 current_file_name
             )
             file_name = self.assemble_valid_file_name(
@@ -166,6 +189,7 @@ class MetadataPreprocessingService:
                 day,
                 month,
                 year,
+                file_extension,
             )
             return file_name
 
