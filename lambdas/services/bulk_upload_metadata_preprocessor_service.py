@@ -225,47 +225,33 @@ class MetadataPreprocessorService:
             self.update_and_standardize_filenames(metadata_csv_data)
         )
 
-        # Convert list of dicts to CSV in memory
-        # use bites.io
-        csv_buffer = BytesIO()
-        csv_text_wrapper = TextIOWrapper(csv_buffer, encoding="utf-8", newline="")
-        fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
-
-        writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(metadata_csv_data)
-
-        csv_text_wrapper.flush()
-        csv_buffer.seek(0)
+        # TODO convert dictionary into csv
+        csv_buffer = self.convert_dictionary_to_csv(metadata_csv_data)
 
         # TODO Move original metadata file into subdirectory for process files e.g. /processed
         self.move_original_metadata_file(file_key)
 
         self.s3_service.save_or_create_file(file_key, file_key, csv_buffer)
-        # self.s3_service.client.put_object(
-        #     Bucket=source_bucket,
-        #     Key=file_key,
-        #     Body=csv_buffer.getvalue()
-        # )
+
         # TODO Write rejected csv lines to a new failed.csv
         # and place this in the same subdirectory as the original processed metadata e.g. /processed
         # Prepare CSV in memory
         # csv_buffer = io.StringIO()
-        fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
 
-        writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rejected_list)
+        rejected_csv_buffer = self.convert_list_to_csv(
+            metadata_csv_data[0].keys(), rejected_list
+        )
+        # fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
+        #
+        # writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
+        # writer.writeheader()
+        # writer.writerows(rejected_list)
 
         # Compose full key with folder
         failed_file_key = f"{self.practice_directory}/failed{METADATA_FILENAME}"
-        self.s3_service.save_or_create_file(file_key, failed_file_key, csv_buffer)
-        # Upload to S3
-        # self.s3_service.client.put_object(
-        #     Bucket=source_bucket,
-        #     Key=failed_file_key,
-        #     Body=csv_buffer.getvalue()
-        # )
+        self.s3_service.save_or_create_file(
+            file_key, failed_file_key, rejected_csv_buffer
+        )
 
         response = self.s3_service.client.upload_fileobj(
             Fileobj=BytesIO(), Bucket=self.staging_store_bucket, Key=file_key
@@ -289,3 +275,32 @@ class MetadataPreprocessorService:
         self.s3_service.client.move_file_in_bucket(
             self.staging_store_bucket, file_key, destination_key
         )
+
+    # todo move to library or util file
+    def convert_dictionary_to_csv(self, metadata_csv_data, encoding: str = "utf-8"):
+        # Convert list of dics to CSV in memory
+        # use bites.io
+        csv_buffer = BytesIO()
+        csv_text_wrapper = TextIOWrapper(csv_buffer, encoding=encoding, newline="")
+        fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
+
+        writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(metadata_csv_data)
+
+        csv_text_wrapper.flush()
+        csv_buffer.seek(0)
+        return csv_buffer
+
+    def convert_list_to_csv(self, headers, metadata_csv_data, encoding: str = "utf-8"):
+        csv_buffer = BytesIO()
+        csv_text_wrapper = TextIOWrapper(csv_buffer, encoding=encoding, newline="")
+        fieldnames = headers if headers else []
+
+        writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(metadata_csv_data)
+
+        csv_text_wrapper.flush()
+        csv_buffer.seek(0)
+        return csv_buffer
