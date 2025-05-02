@@ -231,7 +231,9 @@ class MetadataPreprocessorService:
         # TODO Move original metadata file into subdirectory for process files e.g. /processed
         self.move_original_metadata_file(file_key)
 
-        self.s3_service.save_or_create_file(file_key, file_key, csv_buffer)
+        self.s3_service.save_or_create_file(
+            self.staging_store_bucket, file_key, csv_buffer
+        )
 
         # TODO Write rejected csv lines to a new failed.csv
         # and place this in the same subdirectory as the original processed metadata e.g. /processed
@@ -250,7 +252,7 @@ class MetadataPreprocessorService:
         # Compose full key with folder
         failed_file_key = f"{self.practice_directory}/failed{METADATA_FILENAME}"
         self.s3_service.save_or_create_file(
-            file_key, failed_file_key, rejected_csv_buffer
+            self.staging_store_bucket, failed_file_key, rejected_csv_buffer
         )
 
         response = self.s3_service.client.upload_fileobj(
@@ -272,7 +274,7 @@ class MetadataPreprocessorService:
     def move_original_metadata_file(self, file_key: str):
         destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{METADATA_FILENAME}"
 
-        self.s3_service.client.copy_copy_across_bucket(
+        self.s3_service.copy_across_bucket(
             self.staging_store_bucket,
             file_key,
             self.staging_store_bucket,
