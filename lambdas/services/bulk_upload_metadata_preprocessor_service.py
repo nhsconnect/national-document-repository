@@ -1,5 +1,6 @@
 import csv
 import os
+from datetime import datetime
 from io import TextIOWrapper
 
 import regex
@@ -16,8 +17,9 @@ class MetadataPreprocessorService:
     def __init__(self, practice_directory: str):
         self.s3_service = S3Service()
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
-        self.processed_folder_name = "/processed"
+        self.processed_folder_name = "processed"
         self.practice_directory = practice_directory
+        self.processed_date = datetime.now().strftime("%Y-%m-%dT%H:%M")
 
     @staticmethod
     def extract_person_name_from_bulk_upload_file_name(
@@ -209,10 +211,12 @@ class MetadataPreprocessorService:
             logger.info(f"File {file_key} doesn't exist")
             raise MetadataPreprocessingException()
 
+        logger.info("Found metadata file")
         response = self.s3_service.client.get_object(
             Bucket=self.staging_store_bucket, Key=file_key
         )
 
+        logger.info("Reading metadata file")
         metadata_csv = csv.DictReader(
             response["Body"].read().decode("utf-8").splitlines()
         )
@@ -221,18 +225,24 @@ class MetadataPreprocessorService:
         print(metadata_csv_data)
 
         # TODO update file names
+        logger.info("Processing metadata filenames")
         metadata_csv_data, rejected_list, error_list = (
             self.update_and_standardize_filenames(metadata_csv_data)
         )
 
-        # TODO convert dictionary into csv
-        csv_buffer = self.convert_dictionary_to_csv(metadata_csv_data)
-
         # TODO Move original metadata file into subdirectory for process files e.g. /processed
+        logger.info("Moving original metadata file to processed folder")
         self.move_original_metadata_file(file_key)
 
+        logger.info("Generating buffered byte data from new csv data")
+        metadata_headers = metadata_csv_data[0].keys() if metadata_csv_data else []
+        csv_buffer = self.convert_csv_dictionary_to_bytes(
+            metadata_headers, metadata_csv_data
+        )
+
+        logger.info("Writing new metadata file from buffer")
         self.s3_service.save_or_create_file(
-            self.staging_store_bucket, file_key, csv_buffer
+            self.staging_store_bucket, file_key, BytesIO(csv_buffer)
         )
 
         # TODO Write rejected csv lines to a new failed.csv
@@ -240,9 +250,10 @@ class MetadataPreprocessorService:
         # Prepare CSV in memory
         # csv_buffer = io.StringIO()
 
-        rejected_csv_buffer = self.convert_list_to_csv(
-            metadata_csv_data[0].keys(), rejected_list
-        )
+        # logger.info("Converting rejected list to a csv")
+        # rejected_csv_buffer = self.convert_list_to_csv(
+        #     metadata_csv_data[0].keys(), rejected_list
+        # )
         # fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
         #
         # writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
@@ -250,14 +261,11 @@ class MetadataPreprocessorService:
         # writer.writerows(rejected_list)
 
         # Compose full key with folder
-        failed_file_key = f"{self.practice_directory}/failed{METADATA_FILENAME}"
-        self.s3_service.save_or_create_file(
-            self.staging_store_bucket, failed_file_key, rejected_csv_buffer
-        )
-
-        response = self.s3_service.client.upload_fileobj(
-            Fileobj=BytesIO(), Bucket=self.staging_store_bucket, Key=file_key
-        )
+        # logger.info("Writing failure log from buffer")
+        # failed_file_key = f"{self.practice_directory}/{self.processed_date}_failures_{METADATA_FILENAME}"
+        # self.s3_service.save_or_create_file(
+        #     self.staging_store_bucket, failed_file_key, rejected_csv_buffer
+        # )
 
     def update_and_standardize_filenames(self, metadata_csv_data):
         rejected_list = []
@@ -272,7 +280,8 @@ class MetadataPreprocessorService:
         return metadata_csv_data, rejected_list, error_list
 
     def move_original_metadata_file(self, file_key: str):
-        destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{METADATA_FILENAME}"
+
+        destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}_{METADATA_FILENAME}"
 
         self.s3_service.copy_across_bucket(
             self.staging_store_bucket,
@@ -282,22 +291,10 @@ class MetadataPreprocessorService:
         )
 
     # todo move to library or util file
-    def convert_dictionary_to_csv(self, metadata_csv_data, encoding: str = "utf-8"):
-        # Convert list of dics to CSV in memory
-        # use bites.io
-        csv_buffer = BytesIO()
-        csv_text_wrapper = TextIOWrapper(csv_buffer, encoding=encoding, newline="")
-        fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
-
-        writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(metadata_csv_data)
-
-        csv_text_wrapper.flush()
-        csv_buffer.seek(0)
-        return csv_buffer
-
-    def convert_list_to_csv(self, headers, metadata_csv_data, encoding: str = "utf-8"):
+    @staticmethod
+    def convert_csv_dictionary_to_bytes(
+        headers: list[str], metadata_csv_data: list[dict], encoding: str = "utf-8"
+    ) -> bytes:
         csv_buffer = BytesIO()
         csv_text_wrapper = TextIOWrapper(csv_buffer, encoding=encoding, newline="")
         fieldnames = headers if headers else []
@@ -308,4 +305,8 @@ class MetadataPreprocessorService:
 
         csv_text_wrapper.flush()
         csv_buffer.seek(0)
-        return csv_buffer
+
+        result = csv_buffer.getvalue()
+        csv_buffer.close()
+
+        return result
