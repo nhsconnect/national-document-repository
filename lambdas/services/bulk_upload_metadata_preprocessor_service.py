@@ -160,7 +160,7 @@ class MetadataPreprocessorService:
 
     def validate_and_update_file_name(self, file_name) -> str:
         try:
-            logger.info(f"processing file name {file_name}")
+            logger.info(f"Processing file name {file_name}")
 
             first_document_number, second_document_number, current_file_name = (
                 self.extract_document_number_bulk_upload_file_name(file_name)
@@ -193,44 +193,46 @@ class MetadataPreprocessorService:
                 year,
                 file_extension,
             )
+            logger.info(f"Finished processing file name, new file name is: {file_name}")
             return file_name
 
         except InvalidFileNameException as error:
             logger.info(f"Failed to process {file_name} due to error: {error}")
             return file_name
 
-    def process_metadata(
-        self,
-    ):
-        file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
+    def get_metadata_csv_from_file(self, file_key: str, bucket_name: str):
+        logger.info("Getting metadata csv from a file")
+        logger.info("Verifying if file exists")
         file_exists = self.s3_service.file_exist_on_s3(
-            s3_bucket_name=self.staging_store_bucket, file_key=file_key
+            s3_bucket_name=bucket_name, file_key=file_key
         )
-
         if not file_exists:
             logger.info(f"File {file_key} doesn't exist")
             raise MetadataPreprocessingException()
-
-        logger.info("Found metadata file")
-        response = self.s3_service.client.get_object(
-            Bucket=self.staging_store_bucket, Key=file_key
-        )
-
-        logger.info("Reading metadata file")
+        logger.info(f"File {file_key} exists")
+        response = self.s3_service.client.get_object(Bucket=bucket_name, Key=file_key)
+        logger.info(f"Reading {file_key} file")
         metadata_csv = csv.DictReader(
             response["Body"].read().decode("utf-8").splitlines()
         )
         metadata_csv_data = list(metadata_csv)
+        return metadata_csv_data
 
+    def process_metadata(
+        self,
+    ):
+        file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
+
+        metadata_csv_data = self.get_metadata_csv_from_file(
+            file_key, self.staging_store_bucket
+        )
         print(metadata_csv_data)
 
-        # TODO update file names
         logger.info("Processing metadata filenames")
         metadata_csv_data, rejected_list, error_list = (
             self.update_and_standardize_filenames(metadata_csv_data)
         )
 
-        # TODO Move original metadata file into subdirectory for process files e.g. /processed
         logger.info("Moving original metadata file to processed folder")
         self.move_original_metadata_file(file_key)
 
@@ -270,14 +272,46 @@ class MetadataPreprocessorService:
     def update_and_standardize_filenames(self, metadata_csv_data):
         rejected_list = []
         error_list = []
+        logger.info("Updating and standardizing filenames")
         for row in metadata_csv_data:
             try:
-                new_filepath = self.validate_and_update_file_name(row.get("FILEPATH"))
-                row["FILEPATH"] = new_filepath
+                original_file_name = row.get("FILEPATH")
+                new_file_name = self.validate_and_update_file_name(original_file_name)
+                row["FILEPATH"] = new_file_name
+                if new_file_name != original_file_name:
+                    self.update_file_name(original_file_name, new_file_name)
             except MetadataPreprocessingException as error:
                 rejected_list.append(row.get("FILEPATH"))
                 error_list.append((row.get("FILEPATH"), str(error)))
+        logger.info("Finished updating and standardizing filenames")
         return metadata_csv_data, rejected_list, error_list
+
+    def update_file_name(self, original_file_name: str, new_file_name: str):
+        logger.info("Updating file name")
+        original_file_key = f"{self.practice_directory}/{original_file_name}"
+        new_file_key = f"{self.practice_directory}/{new_file_name}"
+
+        file_exists = self.s3_service.file_exist_on_s3(
+            s3_bucket_name=self.staging_store_bucket, file_key=original_file_key
+        )
+        if not file_exists:
+            logger.info(f"File {original_file_key} doesn't exist")
+            raise MetadataPreprocessingException()
+
+        # Copy the file
+        logger.info(
+            f"Copying file {original_file_name} with new file name {new_file_name}"
+        )
+        self.s3_service.client.copy_object(
+            Bucket=self.staging_store_bucket,
+            CopySource={"Bucket": self.staging_store_bucket, "Key": original_file_key},
+            Key=new_file_key,
+        )
+        # Step 2: Delete the original
+        logger.info(f"deleting original file with name {original_file_name}")
+        self.s3_service.client.delete_object(
+            Bucket=self.staging_store_bucket, Key=original_file_key
+        )
 
     def move_original_metadata_file(self, file_key: str):
 
