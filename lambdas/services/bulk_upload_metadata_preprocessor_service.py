@@ -272,8 +272,11 @@ class MetadataPreprocessorService:
     def move_original_metadata_file(self, file_key: str):
         destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{METADATA_FILENAME}"
 
-        self.s3_service.client.move_file_in_bucket(
-            self.staging_store_bucket, file_key, destination_key
+        self.s3_service.client.copy_copy_across_bucket(
+            self.staging_store_bucket,
+            file_key,
+            self.staging_store_bucket,
+            destination_key,
         )
 
     # todo move to library or util file
