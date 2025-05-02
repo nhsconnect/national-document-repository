@@ -5,12 +5,9 @@ from msgpack.fallback import BytesIO
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
-from unit.conftest import TEST_BASE_DIRECTORY
+from tests.unit.conftest import TEST_BASE_DIRECTORY
 from utils.exceptions import InvalidFileNameException
 
-# from build.lambdas.authoriser_handler.tmp.models.staging_metadata import (
-#     METADATA_FILENAME,
-# )
 from lambdas.models.staging_metadata import METADATA_FILENAME
 
 
