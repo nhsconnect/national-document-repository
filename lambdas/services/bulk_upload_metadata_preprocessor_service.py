@@ -224,7 +224,7 @@ class MetadataPreprocessorService:
         file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
 
         metadata_csv_data = self.get_metadata_csv_from_file(
-            file_key, self.staging_store_bucket
+            file_key=file_key, bucket_name=self.staging_store_bucket
         )
         print(metadata_csv_data)
 

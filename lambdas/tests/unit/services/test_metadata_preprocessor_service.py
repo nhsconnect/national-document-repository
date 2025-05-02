@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from freezegun import freeze_time
 from msgpack.fallback import BytesIO
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
@@ -12,10 +13,16 @@ from lambdas.models.staging_metadata import METADATA_FILENAME
 
 
 @pytest.fixture
+@freeze_time("2025-01-01T12:00:00")
 def test_service(mocker, set_env):
     service = MetadataPreprocessorService(practice_directory="test_practice_directory")
     mocker.patch.object(service, "s3_service")
-    yield service
+    return service
+
+
+@pytest.fixture
+def mock_get_metadata_csv_from_file(mocker, test_service):
+    return mocker.patch.object(test_service, "get_metadata_csv_from_file")
 
 
 def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
@@ -239,7 +246,13 @@ def mock_metadata_file_get_object():
     return _mock_metadata_file_get_object
 
 
-def test_process_metadata_file_exists(test_service, mock_metadata_file_get_object):
+def test_process_metadata_file_exists(test_service, mock_get_metadata_csv_from_file):
+    test_service.process_metadata()
+
+    mock_get_metadata_csv_from_file.assert_called_once()
+
+
+def test_get_metadata_csv_from_file(test_service, mock_metadata_file_get_object):
     test_preprocessed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
         "helpers/data/bulk_upload/unprocessed",
@@ -252,5 +265,3 @@ def test_process_metadata_file_exists(test_service, mock_metadata_file_get_objec
             test_preprocessed_metadata_file, Bucket, Key
         )
     )
-
-    test_service.process_metadata()
