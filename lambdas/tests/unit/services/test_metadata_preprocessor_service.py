@@ -7,7 +7,7 @@ from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
 from tests.unit.conftest import MOCK_STAGING_STORE_BUCKET, TEST_BASE_DIRECTORY
-from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
+from utils.exceptions import InvalidFileNameException
 
 from lambdas.models.staging_metadata import METADATA_FILENAME
 
@@ -21,8 +21,8 @@ def test_service(mocker, set_env):
 
 
 @pytest.fixture
-def mock_get_metadata_csv_from_file(mocker, test_service):
-    return mocker.patch.object(test_service, "get_metadata_csv_from_file")
+def mock_get_metadata_rows_from_file(mocker, test_service):
+    return mocker.patch.object(test_service, "get_metadata_rows_from_file")
 
 
 def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
@@ -33,7 +33,7 @@ def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
         "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010].txt"
     )
 
-    actual = test_service.validate_and_update_file_name(wrong_file_path)
+    actual = test_service.validate_record_filename(wrong_file_path)
 
     assert actual == expected_file_path
 
@@ -246,10 +246,10 @@ def mock_metadata_file_get_object():
     return _mock_metadata_file_get_object
 
 
-def test_process_metadata_file_exists(test_service, mock_get_metadata_csv_from_file):
+def test_process_metadata_file_exists(test_service, mock_get_metadata_rows_from_file):
     test_service.process_metadata()
 
-    mock_get_metadata_csv_from_file.assert_called_once()
+    mock_get_metadata_rows_from_file.assert_called_once()
 
 
 def test_get_metadata_csv_from_file(test_service, mock_metadata_file_get_object):
@@ -271,7 +271,7 @@ def test_move_original_metadata_file(test_service):
     file_key = "input/unprocessed/metadata.csv"
     expected_destination_key = (
         f"{test_service.practice_directory}"
-        f"/{test_service.processed_folder_name}/{test_service.processed_date}_{METADATA_FILENAME}"
+        f"/{test_service.processed_folder_name}/{test_service.processed_date}/{METADATA_FILENAME}"
     )
 
     # Act
@@ -304,7 +304,7 @@ def test_update_file_name(mocker, test_service):
     mock_delete = mocker.patch.object(test_service.s3_service.client, "delete_object")
 
     # Act
-    test_service.update_file_name(original_file_name, new_file_name)
+    test_service.update_record_filename(original_file_name, new_file_name)
 
     # Assert
     mock_copy.assert_called_once_with(
@@ -319,14 +319,11 @@ def test_update_file_name(mocker, test_service):
 
 
 def test_update_file_name_file_not_found(test_service, mocker):
-    original_file_name = "nonexistent.csv"
-    new_file_name = "new_file.csv"
-
     test_service.staging_store_bucket = MOCK_STAGING_STORE_BUCKET
-    # Mock file existence to False
     mocker.patch.object(test_service.s3_service, "file_exist_on_s3", return_value=False)
-    with pytest.raises(MetadataPreprocessingException):
-        test_service.update_file_name(original_file_name, new_file_name)
+
+    test_service.s3_service.client.copy_object.assert_not_called()
+    test_service.s3_service.client.delete_object.assert_not_called()
 
 
 def test_convert_csv_dictionary_to_bytes(test_service, mocker):
@@ -358,31 +355,30 @@ def test_update_and_standardize_filenames_success_and_failure(test_service, mock
     ]
 
     # Define side effects for validate_and_update_file_name
-    def mock_validate_and_update_file_name(filename):
+    def mock_validate_record_filename(filename):
         if filename == "invalid_file.csv":
-            raise MetadataPreprocessingException("Invalid filename")
+            raise InvalidFileNameException("Invalid filename")
         return f"updated_{filename}"
 
     # Patch dependent methods
     mocker.patch.object(
         test_service,
-        "validate_and_update_file_name",
-        side_effect=mock_validate_and_update_file_name,
+        "validate_record_filename",
+        side_effect=mock_validate_record_filename,
     )
-    mock_update_file_name = mocker.patch.object(test_service, "update_file_name")
+    mock_update_file_name = mocker.patch.object(test_service, "update_record_filename")
 
     # Act
-    metadata_csv_data, rejected_list, error_list = (
-        test_service.update_and_standardize_filenames(input_data)
+    updated_metadata_rows, rejected_rows, error_list = (
+        test_service.standardize_filenames(input_data)
     )
 
     # Assert
-    assert metadata_csv_data == [
-        {"FILEPATH": "updated_valid_file_1.csv"},
-        {"FILEPATH": "invalid_file.csv"},  # Not updated due to exception
+    assert updated_metadata_rows == [
+        {"FILEPATH": "updated_valid_file_1.csv"},  # Not updated due to exception
         {"FILEPATH": "updated_valid_file_2.csv"},
     ]
-    assert rejected_list == ["invalid_file.csv"]
+    assert rejected_rows == [{"FILEPATH": "invalid_file.csv"}]
     assert error_list == [("invalid_file.csv", "Invalid filename")]
     assert mock_update_file_name.call_count == 2
     mock_update_file_name.assert_any_call(

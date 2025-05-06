@@ -4,6 +4,7 @@ from datetime import datetime
 from io import TextIOWrapper
 
 import regex
+from botocore.exceptions import ClientError
 from models.staging_metadata import METADATA_FILENAME
 from services.base.s3_service import S3Service
 from six import BytesIO
@@ -19,7 +20,182 @@ class MetadataPreprocessorService:
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
         self.processed_folder_name = "processed"
         self.practice_directory = practice_directory
-        self.processed_date = datetime.now().strftime("%Y-%m-%dT%H:%M")
+        self.processed_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    def process_metadata(self):
+        file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
+
+        metadata_rows = self.get_metadata_rows_from_file(
+            file_key=file_key, bucket_name=self.staging_store_bucket
+        )
+
+        logger.info("Processing metadata filenames")
+        updated_metadata, rejected_list, error_list = self.standardize_filenames(
+            metadata_rows
+        )
+
+        successfully_moved_file = self.move_original_metadata_file(file_key)
+        if successfully_moved_file:
+            self.s3_service.delete_object(
+                s3_bucket_name=self.staging_store_bucket, file_key=file_key
+            )
+
+        logger.info("Generating buffered byte data from new csv data")
+        metadata_headers = metadata_rows[0].keys() if metadata_rows else []
+        updated_metadata_csv_buffer = self.convert_csv_dictionary_to_bytes(
+            metadata_headers, updated_metadata
+        )
+
+        logger.info("Writing new metadata file from buffer")
+        self.s3_service.save_or_create_file(
+            self.staging_store_bucket, file_key, BytesIO(updated_metadata_csv_buffer)
+        )
+
+        # TODO Write rejected csv lines to a new failed.csv
+        # and place this in the same subdirectory as the original processed metadata e.g. /processed
+        # Prepare CSV in memory
+        # csv_buffer = io.StringIO()
+
+        # logger.info("Converting rejected list to a csv")
+        # rejected_csv_buffer = self.convert_list_to_csv(
+        #     metadata_csv_data[0].keys(), rejected_list
+        # )
+        # fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
+        #
+        # writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
+        # writer.writeheader()
+        # writer.writerows(rejected_list)
+
+        # Compose full key with folder
+        # logger.info("Writing failure log from buffer")
+        # failed_file_key = f"{self.practice_directory}/{self.processed_date}_failures_{METADATA_FILENAME}"
+        # self.s3_service.save_or_create_file(
+        #     self.staging_store_bucket, failed_file_key, rejected_csv_buffer
+        # )
+
+    def get_metadata_rows_from_file(self, file_key: str, bucket_name: str):
+        logger.info(f"Retrieving {file_key}")
+        file_exists = self.s3_service.file_exist_on_s3(
+            s3_bucket_name=bucket_name, file_key=file_key
+        )
+        if not file_exists:
+            logger.info(f"File {file_key} doesn't exist")
+            raise MetadataPreprocessingException()
+
+        response = self.s3_service.client.get_object(Bucket=bucket_name, Key=file_key)
+
+        logger.info(f"Reading {file_key}")
+        data = csv.DictReader(response["Body"].read().decode("utf-8").splitlines())
+        metadata_rows = list(data)
+        return metadata_rows
+
+    def standardize_filenames(self, metadata_csv_data: list[dict]):
+        logger.info("Standardizing filenames")
+
+        updated_rows = []
+        rejected_rows = []
+        error_list = []
+
+        for row in metadata_csv_data:
+            original_file_name = row.get("FILEPATH")
+            updated_row = row
+            try:
+                new_file_name = self.validate_record_filename(original_file_name)
+                updated_row.update({"FILEPATH": new_file_name})
+                updated_rows.append(updated_row)
+                if new_file_name != original_file_name:
+                    self.update_record_filename(original_file_name, new_file_name)
+            except InvalidFileNameException as error:
+                rejected_rows.append(row)
+                error_list.append((original_file_name, str(error)))
+
+        logger.info("Finished updating and standardizing filenames")
+        return updated_rows, rejected_rows, error_list
+
+    def validate_record_filename(self, file_name) -> str:
+        try:
+            logger.info(f"Processing file name {file_name}")
+
+            first_document_number, second_document_number, current_file_name = (
+                self.extract_document_number_bulk_upload_file_name(file_name)
+            )
+            lloyd_george_record, current_file_name = (
+                self.extract_lloyd_george_record_from_bulk_upload_file_name(
+                    current_file_name
+                )
+            )
+            patient_name, current_file_name = (
+                self.extract_person_name_from_bulk_upload_file_name(current_file_name)
+            )
+            nhs_number, current_file_name = (
+                self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
+            )
+            day, month, year, current_file_name = (
+                self.extract_date_from_bulk_upload_file_name(current_file_name)
+            )
+            file_extension = self.extract_file_extension_from_bulk_upload_file_name(
+                current_file_name
+            )
+            file_name = self.assemble_valid_file_name(
+                first_document_number,
+                second_document_number,
+                lloyd_george_record,
+                patient_name,
+                nhs_number,
+                day,
+                month,
+                year,
+                file_extension,
+            )
+            logger.info(f"Finished processing, new file name is: {file_name}")
+            return file_name
+
+        except InvalidFileNameException as error:
+            logger.info(f"Failed to process {file_name} due to error: {error}")
+            raise error
+
+    def update_record_filename(self, original_file_name: str, new_file_name: str):
+        logger.info("Updating file name")
+        original_file_key = f"{self.practice_directory}/{original_file_name}"
+        new_file_key = f"{self.practice_directory}/{new_file_name}"
+
+        file_exists = self.s3_service.file_exist_on_s3(
+            s3_bucket_name=self.staging_store_bucket, file_key=original_file_key
+        )
+        if not file_exists:
+            logger.info(f"File {original_file_key} doesn't exist")
+            return
+
+        logger.info(
+            f"Copying file `{original_file_name}` to new file name `{new_file_name}`"
+        )
+        self.s3_service.client.copy_object(
+            Bucket=self.staging_store_bucket,
+            CopySource={"Bucket": self.staging_store_bucket, "Key": original_file_key},
+            Key=new_file_key,
+        )
+
+        logger.info(f"Deleting original file with name {original_file_name}")
+        self.s3_service.client.delete_object(
+            Bucket=self.staging_store_bucket, Key=original_file_key
+        )
+
+    def move_original_metadata_file(self, file_key: str):
+        destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/{METADATA_FILENAME}"
+        logger.info(f"Moving metadata file from {file_key} to {destination_key}")
+        try:
+            self.s3_service.copy_across_bucket(
+                self.staging_store_bucket,
+                file_key,
+                self.staging_store_bucket,
+                destination_key,
+            )
+            return True
+        except ClientError as e:
+            logger.error(
+                f"Failed to move metadata file '{file_key}' to '{destination_key}': {e}"
+            )
+            return False
 
     @staticmethod
     def extract_person_name_from_bulk_upload_file_name(
@@ -158,192 +334,6 @@ class MetadataPreprocessorService:
             f"{file_extension}"
         )
 
-    def validate_and_update_file_name(self, file_name) -> str:
-        try:
-            logger.info(f"Processing file name {file_name}")
-
-            first_document_number, second_document_number, current_file_name = (
-                self.extract_document_number_bulk_upload_file_name(file_name)
-            )
-            lloyd_george_record, current_file_name = (
-                self.extract_lloyd_george_record_from_bulk_upload_file_name(
-                    current_file_name
-                )
-            )
-            patient_name, current_file_name = (
-                self.extract_person_name_from_bulk_upload_file_name(current_file_name)
-            )
-            nhs_number, current_file_name = (
-                self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
-            )
-            day, month, year, current_file_name = (
-                self.extract_date_from_bulk_upload_file_name(current_file_name)
-            )
-            file_extension = self.extract_file_extension_from_bulk_upload_file_name(
-                current_file_name
-            )
-            file_name = self.assemble_valid_file_name(
-                first_document_number,
-                second_document_number,
-                lloyd_george_record,
-                patient_name,
-                nhs_number,
-                day,
-                month,
-                year,
-                file_extension,
-            )
-            logger.info(f"Finished processing file name, new file name is: {file_name}")
-            return file_name
-
-        except InvalidFileNameException as error:
-            logger.info(f"Failed to process {file_name} due to error: {error}")
-            raise error
-
-    def get_metadata_csv_from_file(self, file_key: str, bucket_name: str):
-        logger.info("Getting metadata csv from a file")
-        logger.info("Verifying if file exists")
-        file_exists = self.s3_service.file_exist_on_s3(
-            s3_bucket_name=bucket_name, file_key=file_key
-        )
-        if not file_exists:
-            logger.info(f"File {file_key} doesn't exist")
-            raise MetadataPreprocessingException()
-        logger.info(f"File {file_key} exists")
-        response = self.s3_service.client.get_object(Bucket=bucket_name, Key=file_key)
-        logger.info(f"Reading {file_key} file")
-        metadata_csv = csv.DictReader(
-            response["Body"].read().decode("utf-8").splitlines()
-        )
-        metadata_csv_data = list(metadata_csv)
-        return metadata_csv_data
-
-    def process_metadata(
-        self,
-    ):
-        file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
-
-        metadata_csv_data = self.get_metadata_csv_from_file(
-            file_key=file_key, bucket_name=self.staging_store_bucket
-        )
-        print(metadata_csv_data)
-
-        logger.info("Processing metadata filenames")
-        updated_metadata, rejected_list, error_list = (
-            self.update_and_standardize_filenames(metadata_csv_data)
-        )
-
-        successfully_moved_file = self.move_original_metadata_file(file_key)
-        if successfully_moved_file:
-            self.delete_original_metadata_file(file_key)
-
-        logger.info("Generating buffered byte data from new csv data")
-        metadata_headers = metadata_csv_data[0].keys() if metadata_csv_data else []
-
-        updated_metadata_csv_buffer = self.convert_csv_dictionary_to_bytes(
-            metadata_headers, updated_metadata
-        )
-
-        logger.info("Writing new metadata file from buffer")
-        self.s3_service.save_or_create_file(
-            self.staging_store_bucket, file_key, BytesIO(updated_metadata_csv_buffer)
-        )
-
-        # TODO Write rejected csv lines to a new failed.csv
-        # and place this in the same subdirectory as the original processed metadata e.g. /processed
-        # Prepare CSV in memory
-        # csv_buffer = io.StringIO()
-
-        # logger.info("Converting rejected list to a csv")
-        # rejected_csv_buffer = self.convert_list_to_csv(
-        #     metadata_csv_data[0].keys(), rejected_list
-        # )
-        # fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
-        #
-        # writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
-        # writer.writeheader()
-        # writer.writerows(rejected_list)
-
-        # Compose full key with folder
-        # logger.info("Writing failure log from buffer")
-        # failed_file_key = f"{self.practice_directory}/{self.processed_date}_failures_{METADATA_FILENAME}"
-        # self.s3_service.save_or_create_file(
-        #     self.staging_store_bucket, failed_file_key, rejected_csv_buffer
-        # )
-
-    def update_and_standardize_filenames(self, metadata_csv_data):
-        rejected_list = []
-        error_list = []
-        correct_list = []
-        logger.info("Updating and standardizing filenames")
-        for row in metadata_csv_data:
-            original_file_name = row.get("FILEPATH")
-            updated_row = row
-            try:
-                new_file_name = self.validate_and_update_file_name(original_file_name)
-                updated_row.update({"FILEPATH": new_file_name})
-                correct_list.append(updated_row)
-                if new_file_name != original_file_name:
-                    self.update_file_name(original_file_name, new_file_name)
-            except MetadataPreprocessingException:
-                pass
-            except InvalidFileNameException as error:
-                rejected_list.append(row)
-                error_list.append((original_file_name, str(error)))
-
-        logger.info("Finished updating and standardizing filenames")
-        return correct_list, rejected_list, error_list
-
-    def update_file_name(self, original_file_name: str, new_file_name: str):
-        logger.info("Updating file name")
-        original_file_key = f"{self.practice_directory}/{original_file_name}"
-        new_file_key = f"{self.practice_directory}/{new_file_name}"
-
-        file_exists = self.s3_service.file_exist_on_s3(
-            s3_bucket_name=self.staging_store_bucket, file_key=original_file_key
-        )
-        if not file_exists:
-            logger.info(f"File {original_file_key} doesn't exist")
-            raise MetadataPreprocessingException()
-
-        # Copy the file
-        logger.info(
-            f"Copying file {original_file_name} with new file name {new_file_name}"
-        )
-        self.s3_service.client.copy_object(
-            Bucket=self.staging_store_bucket,
-            CopySource={"Bucket": self.staging_store_bucket, "Key": original_file_key},
-            Key=new_file_key,
-        )
-        # Step 2: Delete the original
-        logger.info(f"deleting original file with name {original_file_name}")
-        self.s3_service.client.delete_object(
-            Bucket=self.staging_store_bucket, Key=original_file_key
-        )
-
-    def move_original_metadata_file(self, file_key: str):
-        destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}_{METADATA_FILENAME}"
-        logger.info(f"Moving metadata file from {file_key} to {destination_key}")
-        try:
-            self.s3_service.copy_across_bucket(
-                self.staging_store_bucket,
-                file_key,
-                self.staging_store_bucket,
-                destination_key,
-            )
-            return True
-        except Exception as e:
-            logger.error(
-                f"Failed to move metadata file '{file_key}' to '{destination_key}': {e}"
-            )
-            return False
-
-    def delete_original_metadata_file(self, file_key: str):
-        logger.info(f"Deleting metadata file: {file_key}")
-        self.s3_service.delete_object(
-            s3_bucket_name=self.staging_store_bucket, file_key=file_key
-        )
-
     # todo move to library or util file
     @staticmethod
     def convert_csv_dictionary_to_bytes(
@@ -358,7 +348,6 @@ class MetadataPreprocessorService:
         writer.writerows(metadata_csv_data)
 
         csv_text_wrapper.flush()
-        # csv_text_wrapper.close()
         csv_buffer.seek(0)
 
         result = csv_buffer.getvalue()
