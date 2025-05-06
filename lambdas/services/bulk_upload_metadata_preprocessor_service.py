@@ -229,21 +229,19 @@ class MetadataPreprocessorService:
         print(metadata_csv_data)
 
         logger.info("Processing metadata filenames")
-        updated_metadata_list, rejected_list, error_list = (
+        updated_metadata, rejected_list, error_list = (
             self.update_and_standardize_filenames(metadata_csv_data)
         )
 
-        sucessfully_moved_file = self.move_original_metadata_file(file_key)
-        if sucessfully_moved_file:
+        successfully_moved_file = self.move_original_metadata_file(file_key)
+        if successfully_moved_file:
             self.delete_original_metadata_file(file_key)
 
         logger.info("Generating buffered byte data from new csv data")
         metadata_headers = metadata_csv_data[0].keys() if metadata_csv_data else []
-        # csv_buffer = self.convert_csv_dictionary_to_bytes(
-        #     metadata_headers, metadata_csv_data
-        # )
+
         updated_metadata_csv_buffer = self.convert_csv_dictionary_to_bytes(
-            metadata_headers, updated_metadata_list
+            metadata_headers, updated_metadata
         )
 
         logger.info("Writing new metadata file from buffer")
@@ -280,15 +278,17 @@ class MetadataPreprocessorService:
         logger.info("Updating and standardizing filenames")
         for row in metadata_csv_data:
             original_file_name = row.get("FILEPATH")
+            updated_row = row
             try:
                 new_file_name = self.validate_and_update_file_name(original_file_name)
-                correct_list.append(new_file_name)
+                updated_row.update({"FILEPATH": new_file_name})
+                correct_list.append(updated_row)
                 if new_file_name != original_file_name:
                     self.update_file_name(original_file_name, new_file_name)
             except MetadataPreprocessingException:
                 pass
             except InvalidFileNameException as error:
-                rejected_list.append(original_file_name)
+                rejected_list.append(row)
                 error_list.append((original_file_name, str(error)))
 
         logger.info("Finished updating and standardizing filenames")
@@ -358,6 +358,7 @@ class MetadataPreprocessorService:
         writer.writerows(metadata_csv_data)
 
         csv_text_wrapper.flush()
+        # csv_text_wrapper.close()
         csv_buffer.seek(0)
 
         result = csv_buffer.getvalue()
