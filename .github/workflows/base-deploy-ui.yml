@@ -93,7 +93,7 @@ jobs:
           OIDC_PROVIDER_ID: not provided yet
           IDENTITY_PROVIDER_POOL_ID: ${{ steps.cognito-identity-pool.outputs.IDENTITY_PROVIDER_POOL_ID }} 
           MONITOR_ACCOUNT_ID: ${{ steps.rum-app-monitor.outputs.MONITOR_ACCOUNT_ID }} 
-          BUILD_ENV: 'local'
+          BUILD_ENV: ${{ inputs.environment }}
           IMAGE_VERSION: 'ndr-${{ inputs.sandbox }}-app:${{ github.sha }}'
         run: |
           ./react-environment-config.sh
