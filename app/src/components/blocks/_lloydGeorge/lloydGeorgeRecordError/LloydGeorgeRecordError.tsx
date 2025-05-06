@@ -52,11 +52,7 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
     } else if (renderUploadPath) {
         return (
             <span>
-                <h3 data-testid="no-records-title">No records available for this patient.</h3>
-                <p data-testid="upload-patient-record-text">
-                    You can upload full or part of a patient record. You can upload supporting files
-                    once the record is uploaded.
-                </p>
+                <p>This patient does not have a Lloyd George record stored in this service.</p>
 
                 <div className="lloydgeorge_record-stage_pdf-content-no_record">
                     <ButtonLink
@@ -65,10 +61,12 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
                         href="#"
                         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
                             e.preventDefault();
-                            navigate(routes.LLOYD_GEORGE_UPLOAD);
+
+                            //navigate(routes.LLOYD_GEORGE_UPLOAD);
+                            navigate(routes.DOCUMENT_UPLOAD);
                         }}
                     >
-                        Upload patient record
+                        Upload files for this patient
                     </ButtonLink>
                 </div>
             </span>

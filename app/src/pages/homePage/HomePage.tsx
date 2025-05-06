@@ -22,11 +22,12 @@ const HomePage = (props: Props) => {
                                     data-testid="search-patient-btn"
                                     href={routes.SEARCH_PATIENT}
                                 >
-                                    Search for a patient
+                                    View or upload a patient record
                                 </Card.Link>
                             </Card.Heading>
                             <Card.Description>
-                                Find a Lloyd George record for a patient using their NHS number.
+                                View or upload a Lloyd George record for a patient using their NHS
+                                number.
                             </Card.Description>
                             <RightCircleIcon />
                         </Card.Content>
