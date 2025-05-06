@@ -65,7 +65,9 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
                         href="#"
                         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
                             e.preventDefault();
-                            navigate(routes.LLOYD_GEORGE_UPLOAD);
+
+                            //navigate(routes.LLOYD_GEORGE_UPLOAD);
+                            navigate(routes.DOCUMENT_UPLOAD);
                         }}
                     >
                         Upload patient record

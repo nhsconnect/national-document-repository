@@ -1,7 +1,11 @@
 $govuk-compatibility-govukelements: true;
-@import 'node_modules/govuk-frontend/govuk/components/phase-banner/phase-banner';
-@import 'node_modules/govuk-frontend/govuk/components/warning-text/warning-text';
-@import 'node_modules/govuk-frontend/govuk/components/notification-banner/notification-banner';
+@import 'node_modules/govuk-frontend/dist/govuk/base';
+@import 'node_modules/govuk-frontend/dist/govuk/core';
+@import 'node_modules/govuk-frontend/dist/govuk/utilities';
+@import 'node_modules/govuk-frontend/dist/govuk/components/phase-banner';
+@import 'node_modules/govuk-frontend/dist/govuk/components/warning-text';
+@import 'node_modules/govuk-frontend/dist/govuk/components/notification-banner';
+@import 'node_modules/govuk-frontend/dist/govuk/components/pagination';
 
 @import 'node_modules/nhsuk-frontend/packages/nhsuk';
 @import 'node_modules/nhsuk-frontend/packages/core/all';
@@ -1218,4 +1222,13 @@ $hunit: '%';
     .nhsuk-footer {
         margin-bottom: 0;
     }
+}
+
+.govuk-pagination__item:hover,
+.govuk-pagination__next:hover,
+.govuk-pagination__prev:hover {
+    background-color: #d3d3d2;
+}
+.govuk-pagination__item--ellipses:hover {
+    background-color: transparent;
 }
