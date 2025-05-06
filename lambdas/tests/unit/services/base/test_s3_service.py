@@ -129,6 +129,7 @@ def test_copy_across_bucket(mock_service, mock_client):
         Bucket="bucket_to_copy_to",
         Key=f"{TEST_NHS_NUMBER}/{TEST_UUID}",
         CopySource={"Bucket": "bucket_to_copy_from", "Key": TEST_FILE_KEY},
+        StorageClass="INTELLIGENT_TIERING",
     )
 
 

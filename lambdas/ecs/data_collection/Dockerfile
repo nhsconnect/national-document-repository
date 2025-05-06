@@ -5,11 +5,11 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/lambdas
 
 WORKDIR /lambdas
-COPY requirements /lambdas/requirements
+COPY ../../requirements /lambdas/requirements
 
 RUN pip install -r requirements/layers/requirements_core_lambda_layer.txt
 RUN pip install -r requirements/layers/requirements_data_lambda_layer.txt
 
-COPY . /lambdas
+COPY ../../ /lambdas
 
-ENTRYPOINT ["python", "scripts/batch_update_ods_code.py"]
+ENTRYPOINT ["python", "ecs/data_collection/main.py"]
