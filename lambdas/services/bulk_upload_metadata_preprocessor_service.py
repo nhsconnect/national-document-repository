@@ -1,5 +1,6 @@
 import csv
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from io import TextIOWrapper
 
@@ -89,28 +90,40 @@ class MetadataPreprocessorService:
         metadata_rows = list(data)
         return metadata_rows
 
-    def standardize_filenames(self, metadata_csv_data: list[dict]):
+    def standardize_filenames(self, metadata_csv_data: list[dict], max_workers=10):
         logger.info("Standardizing filenames")
 
         updated_rows = []
         rejected_rows = []
         error_list = []
 
-        for row in metadata_csv_data:
-            original_file_name = row.get("FILEPATH")
-            updated_row = row
-            try:
-                new_file_name = self.validate_record_filename(original_file_name)
-                updated_row.update({"FILEPATH": new_file_name})
-                updated_rows.append(updated_row)
-                if new_file_name != original_file_name:
-                    self.update_record_filename(original_file_name, new_file_name)
-            except InvalidFileNameException as error:
-                rejected_rows.append(row)
-                error_list.append((original_file_name, str(error)))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [
+                executor.submit(self.process_row, row) for row in metadata_csv_data
+            ]
+
+            for future in as_completed(futures):
+                successful, row_data, error = future.result()
+                if successful:
+                    updated_rows.append(row_data)
+                else:
+                    rejected_rows.append(row_data)
+                    error_list.append((row_data.get("FILEPATH"), error))
 
         logger.info("Finished updating and standardizing filenames")
         return updated_rows, rejected_rows, error_list
+
+    def process_row(self, row: dict):
+        original_file_name = row.get("FILEPATH")
+        updated_row = dict(row)
+        try:
+            new_file_name = self.validate_record_filename(original_file_name)
+            updated_row["FILEPATH"] = new_file_name
+            if new_file_name != original_file_name:
+                self.update_record_filename(original_file_name, new_file_name)
+            return True, updated_row, None
+        except InvalidFileNameException as error:
+            return False, row, str(error)
 
     def validate_record_filename(self, file_name) -> str:
         try:
@@ -151,31 +164,33 @@ class MetadataPreprocessorService:
             return file_name
 
         except InvalidFileNameException as error:
-            logger.info(f"Failed to process {file_name} due to error: {error}")
+            logger.error(f"Failed to process {file_name} due to error: {error}")
             raise error
 
     def update_record_filename(self, original_file_name: str, new_file_name: str):
-        logger.info("Updating file name")
         original_file_key = f"{self.practice_directory}/{original_file_name}"
         new_file_key = f"{self.practice_directory}/{new_file_name}"
 
-        file_exists = self.s3_service.file_exist_on_s3(
-            s3_bucket_name=self.staging_store_bucket, file_key=original_file_key
-        )
-        if not file_exists:
-            logger.info(f"File {original_file_key} doesn't exist")
-            return
+        logger.info(f"Renaming file `{original_file_key}` to `{new_file_key}`")
 
-        logger.info(
-            f"Copying file `{original_file_name}` to new file name `{new_file_name}`"
-        )
-        self.s3_service.client.copy_object(
-            Bucket=self.staging_store_bucket,
-            CopySource={"Bucket": self.staging_store_bucket, "Key": original_file_key},
-            Key=new_file_key,
-        )
+        try:
+            self.s3_service.client.copy_object(
+                Bucket=self.staging_store_bucket,
+                CopySource={
+                    "Bucket": self.staging_store_bucket,
+                    "Key": original_file_key,
+                },
+                Key=new_file_key,
+            )
+        except ClientError as e:
+            error_code = e.response["Error"]["Code"]
+            if error_code == "NoSuchKey":
+                logger.info(f"File {original_file_key} doesn't exist")
+                return
+            else:
+                logger.error(f"Failed update filename for `{original_file_key}`: {e}")
+                raise MetadataPreprocessingException("Failed to update filename")
 
-        logger.info(f"Deleting original file with name {original_file_name}")
         self.s3_service.client.delete_object(
             Bucket=self.staging_store_bucket, Key=original_file_key
         )
