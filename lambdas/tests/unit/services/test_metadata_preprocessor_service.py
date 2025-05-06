@@ -299,7 +299,7 @@ def test_update_file_name(mocker, test_service):
     test_service.staging_store_bucket = MOCK_STAGING_STORE_BUCKET
 
     # Mock that the original file exists
-    mocker.patch.object(test_service.s3_service, "file_exist_on_s3", return_value=True)
+    test_service.s3_service.file_exist_on_s3.return_value = True
     mock_copy = mocker.patch.object(test_service.s3_service.client, "copy_object")
     mock_delete = mocker.patch.object(test_service.s3_service.client, "delete_object")
 

@@ -198,7 +198,7 @@ class MetadataPreprocessorService:
 
         except InvalidFileNameException as error:
             logger.info(f"Failed to process {file_name} due to error: {error}")
-            return file_name
+            raise error
 
     def get_metadata_csv_from_file(self, file_key: str, bucket_name: str):
         logger.info("Getting metadata csv from a file")
@@ -229,22 +229,26 @@ class MetadataPreprocessorService:
         print(metadata_csv_data)
 
         logger.info("Processing metadata filenames")
-        metadata_csv_data, rejected_list, error_list = (
+        updated_metadata_list, rejected_list, error_list = (
             self.update_and_standardize_filenames(metadata_csv_data)
         )
 
-        logger.info("Moving original metadata file to processed folder")
-        self.move_original_metadata_file(file_key)
+        sucessfully_moved_file = self.move_original_metadata_file(file_key)
+        if sucessfully_moved_file:
+            self.delete_original_metadata_file(file_key)
 
         logger.info("Generating buffered byte data from new csv data")
         metadata_headers = metadata_csv_data[0].keys() if metadata_csv_data else []
-        csv_buffer = self.convert_csv_dictionary_to_bytes(
-            metadata_headers, metadata_csv_data
+        # csv_buffer = self.convert_csv_dictionary_to_bytes(
+        #     metadata_headers, metadata_csv_data
+        # )
+        updated_metadata_csv_buffer = self.convert_csv_dictionary_to_bytes(
+            metadata_headers, updated_metadata_list
         )
 
         logger.info("Writing new metadata file from buffer")
         self.s3_service.save_or_create_file(
-            self.staging_store_bucket, file_key, BytesIO(csv_buffer)
+            self.staging_store_bucket, file_key, BytesIO(updated_metadata_csv_buffer)
         )
 
         # TODO Write rejected csv lines to a new failed.csv
@@ -272,19 +276,23 @@ class MetadataPreprocessorService:
     def update_and_standardize_filenames(self, metadata_csv_data):
         rejected_list = []
         error_list = []
+        correct_list = []
         logger.info("Updating and standardizing filenames")
         for row in metadata_csv_data:
+            original_file_name = row.get("FILEPATH")
             try:
-                original_file_name = row.get("FILEPATH")
                 new_file_name = self.validate_and_update_file_name(original_file_name)
-                row["FILEPATH"] = new_file_name
+                correct_list.append(new_file_name)
                 if new_file_name != original_file_name:
                     self.update_file_name(original_file_name, new_file_name)
-            except MetadataPreprocessingException as error:
-                rejected_list.append(row.get("FILEPATH"))
-                error_list.append((row.get("FILEPATH"), str(error)))
+            except MetadataPreprocessingException:
+                pass
+            except InvalidFileNameException as error:
+                rejected_list.append(original_file_name)
+                error_list.append((original_file_name, str(error)))
+
         logger.info("Finished updating and standardizing filenames")
-        return metadata_csv_data, rejected_list, error_list
+        return correct_list, rejected_list, error_list
 
     def update_file_name(self, original_file_name: str, new_file_name: str):
         logger.info("Updating file name")
@@ -314,14 +322,26 @@ class MetadataPreprocessorService:
         )
 
     def move_original_metadata_file(self, file_key: str):
-
         destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}_{METADATA_FILENAME}"
+        logger.info(f"Moving metadata file from {file_key} to {destination_key}")
+        try:
+            self.s3_service.copy_across_bucket(
+                self.staging_store_bucket,
+                file_key,
+                self.staging_store_bucket,
+                destination_key,
+            )
+            return True
+        except Exception as e:
+            logger.error(
+                f"Failed to move metadata file '{file_key}' to '{destination_key}': {e}"
+            )
+            return False
 
-        self.s3_service.copy_across_bucket(
-            self.staging_store_bucket,
-            file_key,
-            self.staging_store_bucket,
-            destination_key,
+    def delete_original_metadata_file(self, file_key: str):
+        logger.info(f"Deleting metadata file: {file_key}")
+        self.s3_service.delete_object(
+            s3_bucket_name=self.staging_store_bucket, file_key=file_key
         )
 
     # todo move to library or util file
