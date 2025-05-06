@@ -1,7 +1,11 @@
 $govuk-compatibility-govukelements: true;
-@import 'govuk-frontend/govuk/components/phase-banner/phase-banner';
-@import 'govuk-frontend/govuk/components/warning-text/warning-text';
-@import 'govuk-frontend/govuk/components/notification-banner/notification-banner';
+@import 'govuk-frontend/dist/govuk/base';
+@import 'govuk-frontend/dist/govuk/core';
+@import 'govuk-frontend/dist/govuk/utilities';
+@import 'govuk-frontend/dist/govuk/components/phase-banner';
+@import 'govuk-frontend/dist/govuk/components/warning-text';
+@import 'govuk-frontend/dist/govuk/components/notification-banner';
+@import 'govuk-frontend/dist/govuk/components/pagination';
 
 @import 'nhsuk-frontend/packages/nhsuk';
 @import 'nhsuk-frontend/packages/core/all';
@@ -22,10 +26,10 @@ $sunit: 'px';
     $i: 0;
     $x: 0;
     @while $i <= $smax {
-        $x: $x + 1;
         #{$className + $x} {
             #{$styleName}: #{$i + $sunit};
         }
+        $x: $x + 1;
         $i: $i + $soffset;
     }
 }
@@ -93,6 +97,10 @@ $hunit: '%';
 .mx-auto {
     margin-left: auto;
     margin-right: auto;
+}
+
+.d-flex {
+    display: flex;
 }
 
 .flex-center {
@@ -314,8 +322,6 @@ $hunit: '%';
                 }
 
                 &-no_record {
-                    text-align: right;
-
                     &-upload {
                         margin-bottom: 0;
                     }
@@ -577,11 +583,7 @@ $hunit: '%';
     }
 
     &_upload-submission {
-        display: flex;
-        align-items: baseline;
-
         .lloydgeorge_link {
-            margin-left: 25px;
             padding: 0;
 
             &:focus {
@@ -1218,4 +1220,17 @@ $hunit: '%';
     .nhsuk-footer {
         margin-bottom: 0;
     }
+}
+
+.govuk-pagination__item:hover,
+.govuk-pagination__next:hover,
+.govuk-pagination__prev:hover {
+    background-color: #d3d3d2;
+}
+.govuk-pagination__item--ellipses:hover {
+    background-color: transparent;
+}
+
+.remove-all-button {
+    padding: 0;
 }
