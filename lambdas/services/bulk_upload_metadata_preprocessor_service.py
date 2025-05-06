@@ -31,8 +31,8 @@ class MetadataPreprocessorService:
         )
 
         logger.info("Processing metadata filenames")
-        updated_metadata, rejected_list, error_list = self.standardize_filenames(
-            metadata_rows
+        updated_metadata_rows, rejected_rows, rejected_reasons = (
+            self.standardize_filenames(metadata_rows)
         )
 
         successfully_moved_file = self.move_original_metadata_file(file_key)
@@ -44,7 +44,7 @@ class MetadataPreprocessorService:
         logger.info("Generating buffered byte data from new csv data")
         metadata_headers = metadata_rows[0].keys() if metadata_rows else []
         updated_metadata_csv_buffer = self.convert_csv_dictionary_to_bytes(
-            metadata_headers, updated_metadata
+            metadata_headers, updated_metadata_rows
         )
 
         logger.info("Writing new metadata file from buffer")
@@ -53,26 +53,17 @@ class MetadataPreprocessorService:
         )
 
         # TODO Write rejected csv lines to a new failed.csv
-        # and place this in the same subdirectory as the original processed metadata e.g. /processed
-        # Prepare CSV in memory
-        # csv_buffer = io.StringIO()
+        logger.info("Generating buffered byte data from rejected data")
+        rejected_headers = rejected_reasons[0].keys() if rejected_reasons else []
+        rejected_csv_data = self.convert_csv_dictionary_to_bytes(
+            rejected_headers, rejected_reasons
+        )
+        failed_file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
 
-        # logger.info("Converting rejected list to a csv")
-        # rejected_csv_buffer = self.convert_list_to_csv(
-        #     metadata_csv_data[0].keys(), rejected_list
-        # )
-        # fieldnames = metadata_csv_data[0].keys() if metadata_csv_data else []
-        #
-        # writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
-        # writer.writeheader()
-        # writer.writerows(rejected_list)
-
-        # Compose full key with folder
-        # logger.info("Writing failure log from buffer")
-        # failed_file_key = f"{self.practice_directory}/{self.processed_date}_failures_{METADATA_FILENAME}"
-        # self.s3_service.save_or_create_file(
-        #     self.staging_store_bucket, failed_file_key, rejected_csv_buffer
-        # )
+        logger.info("Writing new rejections file from buffer")
+        self.s3_service.save_or_create_file(
+            self.staging_store_bucket, failed_file_key, BytesIO(rejected_csv_data)
+        )
 
     def get_metadata_rows_from_file(self, file_key: str, bucket_name: str):
         logger.info(f"Retrieving {file_key}")
@@ -90,16 +81,16 @@ class MetadataPreprocessorService:
         metadata_rows = list(data)
         return metadata_rows
 
-    def standardize_filenames(self, metadata_csv_data: list[dict], max_workers=10):
+    def standardize_filenames(self, metadata_rows: list[dict], max_workers=10):
         logger.info("Standardizing filenames")
 
         updated_rows = []
         rejected_rows = []
-        error_list = []
+        rejected_reasons = []
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [
-                executor.submit(self.process_row, row) for row in metadata_csv_data
+                executor.submit(self.process_metadata_row, row) for row in metadata_rows
             ]
 
             for future in as_completed(futures):
@@ -108,12 +99,14 @@ class MetadataPreprocessorService:
                     updated_rows.append(row_data)
                 else:
                     rejected_rows.append(row_data)
-                    error_list.append((row_data.get("FILEPATH"), error))
+                    rejected_reasons.append(
+                        {"FILEPATH": row_data.get("FILEPATH"), "REASON": error}
+                    )
 
         logger.info("Finished updating and standardizing filenames")
-        return updated_rows, rejected_rows, error_list
+        return updated_rows, rejected_rows, rejected_reasons
 
-    def process_row(self, row: dict):
+    def process_metadata_row(self, row: dict):
         original_file_name = row.get("FILEPATH")
         updated_row = dict(row)
         try:
@@ -197,7 +190,9 @@ class MetadataPreprocessorService:
 
     def move_original_metadata_file(self, file_key: str):
         destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/{METADATA_FILENAME}"
-        logger.info(f"Moving metadata file from {file_key} to {destination_key}")
+        logger.info(
+            f"Moving original metadata file from {file_key} to {destination_key}"
+        )
         try:
             self.s3_service.copy_across_bucket(
                 self.staging_store_bucket,
@@ -352,7 +347,7 @@ class MetadataPreprocessorService:
     # todo move to library or util file
     @staticmethod
     def convert_csv_dictionary_to_bytes(
-        headers: list[str], metadata_csv_data: list[dict], encoding: str = "utf-8"
+        headers: list[str], csv_dict_data: list[dict], encoding: str = "utf-8"
     ) -> bytes:
         csv_buffer = BytesIO()
         csv_text_wrapper = TextIOWrapper(csv_buffer, encoding=encoding, newline="")
@@ -360,7 +355,7 @@ class MetadataPreprocessorService:
 
         writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(metadata_csv_data)
+        writer.writerows(csv_dict_data)
 
         csv_text_wrapper.flush()
         csv_buffer.seek(0)

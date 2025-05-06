@@ -246,10 +246,21 @@ def mock_metadata_file_get_object():
     return _mock_metadata_file_get_object
 
 
-def test_process_metadata_file_exists(test_service, mock_get_metadata_rows_from_file):
-    test_service.process_metadata()
+def test_process_metadata_file_exists(test_service, mock_metadata_file_get_object):
+    test_preprocessed_metadata_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/unprocessed",
+        f"unprocessed_{METADATA_FILENAME}",
+    )
 
-    mock_get_metadata_rows_from_file.assert_called_once()
+    test_service.s3_service.file_exist_on_s3.return_value = True
+    test_service.s3_service.client.get_object.side_effect = (
+        lambda Bucket, Key: mock_metadata_file_get_object(
+            test_preprocessed_metadata_file, Bucket, Key
+        )
+    )
+
+    test_service.process_metadata()
 
 
 def test_get_metadata_csv_from_file(test_service, mock_metadata_file_get_object):
@@ -264,6 +275,11 @@ def test_get_metadata_csv_from_file(test_service, mock_metadata_file_get_object)
         lambda Bucket, Key: mock_metadata_file_get_object(
             test_preprocessed_metadata_file, Bucket, Key
         )
+    )
+
+    test_service.get_metadata_rows_from_file(
+        file_key=f"{test_service.practice_directory}/{METADATA_FILENAME}",
+        bucket_name=MOCK_STAGING_STORE_BUCKET,
     )
 
 
@@ -284,11 +300,6 @@ def test_move_original_metadata_file(test_service):
         MOCK_STAGING_STORE_BUCKET,
         expected_destination_key,
     )
-
-
-# @pytest.fixture
-# def mock_file_exist_on_s3(mocker, test_service):
-#     return mocker.patch.object(test_service, "file_exist_on_s3")
 
 
 def test_update_file_name(mocker, test_service):
@@ -379,7 +390,7 @@ def test_update_and_standardize_filenames_success_and_failure(test_service, mock
         {"FILEPATH": "updated_valid_file_2.csv"},
     ]
     assert rejected_rows == [{"FILEPATH": "invalid_file.csv"}]
-    assert error_list == [("invalid_file.csv", "Invalid filename")]
+    assert error_list == [{"invalid_file.csv", "Invalid filename"}]
     assert mock_update_file_name.call_count == 2
     mock_update_file_name.assert_any_call(
         "valid_file_1.csv", "updated_valid_file_1.csv"
