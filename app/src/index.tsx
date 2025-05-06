@@ -4,6 +4,7 @@ import './styles/index.css';
 import App from './App';
 import 'pdfjs-viewer-element';
 import PdfjsViewerElement from 'pdfjs-viewer-element';
+import { GlobalWorkerOptions } from 'pdfjs-dist';
 
 declare module 'react' {
     namespace JSX {
@@ -23,3 +24,5 @@ root.render(
         <App />
     </React.StrictMode>,
 );
+
+GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';

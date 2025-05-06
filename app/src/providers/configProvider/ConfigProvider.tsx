@@ -43,7 +43,7 @@ const ConfigProvider = ({ children, configOverride, setConfigOverride }: Props) 
     );
     const defaultMockLocals = isLocal
         ? {
-              recordUploaded: true,
+              recordUploaded: false,
               patientIsActive: true,
               patientIsDeceased: false,
               userRole: REPOSITORY_ROLE.GP_ADMIN,
