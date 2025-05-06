@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from enums.nrl_sqs_upload import NrlActionTypes
-from models.fhir.R4.nrl_fhir_document_reference import DocumentReferenceInfo
+from models.fhir.R4.fhir_document_reference import DocumentReferenceInfo
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService

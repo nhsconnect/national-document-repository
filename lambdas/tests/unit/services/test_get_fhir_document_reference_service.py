@@ -1,21 +1,21 @@
+import copy
 import json
 
 import pytest
-from enums.death_notification_status import DeathNotificationStatus
-from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
+from enums.lambda_error import LambdaError
 from enums.snomed_codes import SnomedCodes
-from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
+from services.get_fhir_document_reference_service import GetFhirDocumentReferenceService
 from tests.unit.conftest import (
-    EXPECTED_PARSED_PATIENT_BASE_CASE,
     FAKE_URL,
     MOCK_LG_TABLE_NAME,
     TEST_CURRENT_GP_ODS,
     TEST_UUID,
 )
 from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
-from tests.unit.helpers.mock_response import MockResponse
-from utils.constants.ssm import GP_ADMIN_USER_ROLE_CODES, GP_CLINICAL_USER_ROLE_CODE
-from utils.lambda_exceptions import NRLGetDocumentReferenceException
+from utils.lambda_exceptions import (
+    GetFhirDocumentReferenceException,
+    SearchPatientException,
+)
 
 MOCK_USER_INFO = {
     "nhsid_useruid": TEST_UUID,
@@ -143,28 +143,15 @@ MOCK_FHIR_DOCUMENT = {
 @pytest.fixture
 def patched_service(mocker, set_env, context):
     mocker.patch("services.base.s3_service.IAMService")
+    mocker.patch("services.get_fhir_document_reference_service.S3Service")
+    mocker.patch("services.get_fhir_document_reference_service.SSMService")
+    mocker.patch("services.get_fhir_document_reference_service.DocumentService")
+    mocker.patch(
+        "services.get_fhir_document_reference_service.SearchPatientDetailsService"
+    )
+    service = GetFhirDocumentReferenceService("R8000", "B9A5A")
 
-    service = NRLGetDocumentReferenceService()
-    mocker.patch.object(service, "ssm_service")
-    mocker.patch.object(service, "s3_service")
-    mocker.patch.object(service, "pds_service")
-    mocker.patch.object(service, "document_service")
     yield service
-
-
-@pytest.fixture
-def mock_fetch_user_info(patched_service, mocker):
-    service = patched_service
-    mocker.patch.object(service, "get_user_roles_and_ods_codes")
-    mocker.patch.object(service, "fetch_user_info")
-    mocker.patch.object(service, "get_ndr_accepted_role_codes")
-    yield service
-
-
-def test_get_user_roles_and_ods_codes(patched_service):
-    expected = {"B9A5A": ["R8000", "R8015"], TEST_CURRENT_GP_ODS: ["R8008"]}
-
-    assert patched_service.get_user_roles_and_ods_codes(MOCK_USER_INFO) == expected
 
 
 def test_get_document_reference_service(patched_service):
@@ -184,9 +171,8 @@ def test_handle_get_document_reference_request(patched_service, mocker, set_env)
     mocker.patch.object(
         patched_service, "get_document_references", return_value=mock_document_ref
     )
-    mocker.patch.object(patched_service, "fetch_user_info", return_value=MOCK_USER_INFO)
     mocker.patch.object(
-        patched_service, "is_user_allowed_to_see_file", return_value=True
+        patched_service.search_patient_service, "handle_search_patient_request"
     )
     mocker.patch.object(
         patched_service, "create_document_presigned_url", return_value=FAKE_URL
@@ -198,7 +184,7 @@ def test_handle_get_document_reference_request(patched_service, mocker, set_env)
     )
 
     actual = patched_service.handle_get_document_reference_request(
-        SnomedCodes.LLOYD_GEORGE.value.code, "test-id", "bearer token_test"
+        SnomedCodes.LLOYD_GEORGE.value.code, "test-id"
     )
 
     assert expected == actual
@@ -214,18 +200,20 @@ def test_handle_get_document_reference_request_when_user_is_not_allowed_access(
     mocker.patch.object(
         patched_service, "get_document_references", return_value=mock_document_ref
     )
-    mocker.patch.object(patched_service, "fetch_user_info", return_value=MOCK_USER_INFO)
     mocker.patch.object(
-        patched_service, "is_user_allowed_to_see_file", return_value=False
+        patched_service.search_patient_service,
+        "handle_search_patient_request",
+        side_effect=SearchPatientException(403, LambdaError.DocumentReferenceForbidden),
     )
     mocker.patch.object(
         patched_service, "create_document_presigned_url", return_value=FAKE_URL
     )
     mocker.patch.object(patched_service, "create_document_reference_fhir_response")
 
-    with pytest.raises(NRLGetDocumentReferenceException):
+    with pytest.raises(GetFhirDocumentReferenceException):
         patched_service.handle_get_document_reference_request(
-            SnomedCodes.LLOYD_GEORGE, "test-id", "bearer token_test"
+            SnomedCodes.LLOYD_GEORGE.value.code,
+            "test-id",
         )
 
     patched_service.create_document_reference_fhir_response.assert_not_called()
@@ -234,11 +222,8 @@ def test_handle_get_document_reference_request_when_user_is_not_allowed_access(
 def test_get_document_reference_request_no_table_associated_to_snomed_code_throws_exception(
     patched_service,
 ):
-
-    with pytest.raises(NRLGetDocumentReferenceException):
-        patched_service.handle_get_document_reference_request(
-            "12345678", "test-id", "bearer token_test"
-        )
+    with pytest.raises(GetFhirDocumentReferenceException):
+        patched_service.handle_get_document_reference_request("12345678", "test-id")
 
 
 def test_create_document_reference_fhir_response(patched_service):
@@ -251,114 +236,6 @@ def test_create_document_reference_fhir_response(patched_service):
     assert json.loads(actual) == expected
 
 
-def test_user_allowed_to_see_file_happy_path(patched_service, mock_fetch_user_info):
-    patched_service.get_user_roles_and_ods_codes.return_value = {
-        "TEST_ODS": ["R8000", "R3002", "R8003"],
-        "Y12345": ["R8000", "R1234"],
-    }
-    mocked_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE
-
-    patched_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
-    patched_service.pds_service.fetch_patient_details.return_value = (
-        mocked_patient_details
-    )
-    assert (
-        patched_service.is_user_allowed_to_see_file(
-            TEST_UUID, create_test_doc_store_refs()[0]
-        )
-        is True
-    )
-
-
-def test_user_allowed_to_see_file_returns_false_based_on_role(
-    patched_service, mock_fetch_user_info
-):
-    patched_service.get_user_roles_and_ods_codes.return_value = {
-        "TEST_ODS": ["R8001", "R3002", "R8003"],
-        "Y12345": ["R8001", "R1234"],
-    }
-    mocked_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE
-    patched_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
-    patched_service.pds_service.fetch_patient_details.return_value = (
-        mocked_patient_details
-    )
-
-    assert (
-        patched_service.is_user_allowed_to_see_file(
-            TEST_UUID, create_test_doc_store_refs()[0]
-        )
-        is False
-    )
-
-
-def test_user_allowed_to_see_file_inactive_patient(
-    patched_service, mock_fetch_user_info
-):
-    patched_service.get_user_roles_and_ods_codes.return_value = {
-        "TEST_ODS": ["R8000", "R3002", "R8003"],
-        "Y12345": ["R8000", "R1234"],
-    }
-
-    mocked_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(
-        update={
-            "general_practice_ods": PatientOdsInactiveStatus.DECEASED,
-            "death_notification_status": DeathNotificationStatus.FORMAL,
-            "deceased": True,
-            "active": False,
-        }
-    )
-
-    patched_service.get_ndr_accepted_role_codes.return_value = ["R8000", "R8008"]
-    patched_service.pds_service.fetch_patient_details.return_value = (
-        mocked_patient_details
-    )
-
-    assert (
-        patched_service.is_user_allowed_to_see_file(
-            TEST_UUID, create_test_doc_store_refs()[0]
-        )
-        is False
-    )
-
-
-def test_fetch_user_info(patched_service, mocker, mock_userinfo):
-    mock_response = MockResponse(status_code=200, json_data=mock_userinfo["user_info"])
-    mocker.patch("requests.get", return_value=mock_response)
-    mock_token = "access_token"
-    actual = patched_service.fetch_user_info(mock_token)
-
-    assert actual == mock_userinfo["user_info"]
-
-
-def test_fetch_user_info_throws_exception_for_non_200_response(patched_service, mocker):
-    mock_response = MockResponse(status_code=400, json_data="")
-    mocker.patch("requests.get", return_value=mock_response)
-
-    with pytest.raises(NRLGetDocumentReferenceException):
-        patched_service.fetch_user_info("access_token")
-
-
-def test_get_ndr_accepted_role_codes(patched_service, mocker):
-    parameters = [
-        GP_ADMIN_USER_ROLE_CODES,
-        GP_CLINICAL_USER_ROLE_CODE,
-    ]
-    ssm_parameters_expected = {
-        GP_ADMIN_USER_ROLE_CODES: "R1111,R1112,R1113",
-        GP_CLINICAL_USER_ROLE_CODE: "R2111,R2112,R2113",
-    }
-    patched_service.ssm_service.get_ssm_parameters = mocker.MagicMock(
-        return_value=ssm_parameters_expected
-    )
-
-    actual = patched_service.get_ndr_accepted_role_codes()
-
-    patched_service.ssm_service.get_ssm_parameters.assert_called_with(
-        parameters_keys=parameters
-    )
-    assert actual == ["R1111", "R1112", "R1113", "R2111", "R2112", "R2113"]
-
-
 def test_create_document_presigned_url(patched_service, mocker):
     expected_url = "https://d12345.cloudfront.net/path/to/resource"
 
@@ -366,7 +243,7 @@ def test_create_document_presigned_url(patched_service, mocker):
         "https://example.com/path/to/resource"
     )
     mocker.patch(
-        "services.nrl_get_document_reference_service.format_cloudfront_url"
+        "services.get_fhir_document_reference_service.format_cloudfront_url"
     ).return_value = "https://d12345.cloudfront.net/path/to/resource"
 
     result = patched_service.create_document_presigned_url(
@@ -377,4 +254,110 @@ def test_create_document_presigned_url(patched_service, mocker):
     patched_service.s3_service.create_download_presigned_url.assert_called_once_with(
         s3_bucket_name="test-s3-bucket",
         file_key="9000000009/test-key-123",
+    )
+
+
+def test_get_document_references_empty_result(patched_service):
+    # Test when no documents are found
+    patched_service.document_service.fetch_documents_from_table.return_value = []
+
+    with pytest.raises(GetFhirDocumentReferenceException) as exc_info:
+        patched_service.get_document_references("test-id", MOCK_LG_TABLE_NAME)
+
+    assert exc_info.value.error == LambdaError.DocumentReferenceNotFound
+    assert exc_info.value.status_code == 404
+
+
+def test_handle_get_document_reference_request_pds_error(patched_service, mocker):
+    # Test when search_patient_service raises a SearchPatientException
+    mock_document_ref = create_test_doc_store_refs()[0]
+    mocker.patch.object(
+        patched_service, "get_document_references", return_value=mock_document_ref
+    )
+    mocker.patch.object(
+        patched_service.search_patient_service,
+        "handle_search_patient_request",
+        side_effect=SearchPatientException(500, LambdaError.SearchPatientNoPDS),
+    )
+
+    with pytest.raises(GetFhirDocumentReferenceException) as exc_info:
+        patched_service.handle_get_document_reference_request(
+            SnomedCodes.LLOYD_GEORGE.value.code, "test-id"
+        )
+
+    assert exc_info.value.error == LambdaError.DocumentReferenceForbidden
+    assert exc_info.value.status_code == 403
+
+
+def test_create_document_presigned_url_failure(patched_service, mocker):
+    # Test when S3 service raises an exception
+    document_ref = create_test_doc_store_refs()[0]
+    patched_service.s3_service.create_download_presigned_url.side_effect = Exception(
+        "S3 error"
+    )
+
+    with pytest.raises(Exception) as exc_info:
+        patched_service.create_document_presigned_url(document_ref)
+
+    assert str(exc_info.value) == "S3 error"
+    patched_service.s3_service.create_download_presigned_url.assert_called_once()
+
+
+def test_create_document_reference_fhir_response_with_different_document_data(
+    patched_service,
+):
+    # Test creating FHIR response with different document data
+    test_doc = create_test_doc_store_refs()[0]
+    # Modify the document reference to test different values
+    modified_doc = copy.deepcopy(test_doc)
+    modified_doc.file_name = "different_file.pdf"
+    modified_doc.created = "2023-05-15T10:30:00.000Z"
+
+    result = patched_service.create_document_reference_fhir_response(
+        modified_doc, "https://new-test-url.com"
+    )
+
+    result_json = json.loads(result)
+    assert result_json["content"][0]["attachment"]["url"] == "https://new-test-url.com"
+    assert result_json["content"][0]["attachment"]["title"] == "different_file.pdf"
+    assert (
+        result_json["content"][0]["attachment"]["creation"]
+        == "2023-05-15T10:30:00.000Z"
+    )
+
+
+def test_handle_get_document_reference_request_integration(patched_service, mocker):
+    # More comprehensive integration test of the full request handling flow
+    mock_document_ref = create_test_doc_store_refs()[0]
+    mocker.patch.object(
+        patched_service, "get_document_references", return_value=mock_document_ref
+    )
+    mocker.patch.object(
+        patched_service.search_patient_service, "handle_search_patient_request"
+    )
+    mocker.patch.object(
+        patched_service, "create_document_presigned_url", return_value=FAKE_URL
+    )
+
+    # Don't mock create_document_reference_fhir_response to test the actual implementation
+    mocker.patch(
+        "services.get_fhir_document_reference_service.format_cloudfront_url",
+        return_value=FAKE_URL,
+    )
+
+    result = patched_service.handle_get_document_reference_request(
+        SnomedCodes.LLOYD_GEORGE.value.code, "test-id"
+    )
+
+    result_json = json.loads(result)
+    # Verify result structure
+    assert result_json["resourceType"] == "DocumentReference"
+    assert result_json["subject"]["identifier"]["value"] == mock_document_ref.nhs_number
+    assert (
+        result_json["custodian"]["identifier"]["value"]
+        == mock_document_ref.current_gp_ods
+    )
+    assert result_json["content"][0]["attachment"]["url"] == FAKE_URL
+    assert (
+        result_json["content"][0]["attachment"]["title"] == mock_document_ref.file_name
     )

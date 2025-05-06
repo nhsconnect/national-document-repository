@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 import jwt
 import requests
@@ -107,64 +107,94 @@ class OidcService:
             logger.error(err)
             raise OidcApiException("The JWT provided by CIS2 is invalid or expired.")
 
-    def fetch_user_org_codes(
-        self, access_token: str, id_token_claim_set: IdTokenClaimSet
-    ) -> List[str]:
-        userinfo = self.fetch_userinfo(access_token)
-
-        logger.info(f"User info response: {userinfo}")
-
+    def _find_selected_role(self, userinfo: Dict, selected_role_id: str) -> Dict | None:
+        """
+        Helper method to find the selected role data in userinfo.
+        Returns the selected role data or None if not found.
+        """
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
-
-        logger.info(f"nrbac_roles: {nrbac_roles}")
-
-        selected_role = get_selected_roleid(id_token_claim_set)
-
-        logger.info(f"Selected role ID: {selected_role}")
+        logger.debug(f"nrbac_roles: {nrbac_roles}")
 
         for role in nrbac_roles:
-            logger.info(f"Role: {role}")
-            if role["person_roleid"] == selected_role:
-                return [role["org_code"]]
+            if role["person_roleid"] == selected_role_id:
+                return role
+
+        return None
+
+    def fetch_user_org_code(self, userinfo: Dict, selected_role_id: str) -> str:
+        """
+        Fetch organisation codes for the user based on their selected role.
+
+        Args:
+            userinfo: The already fetched user info data
+            selected_role_id: The ID token claim set
+
+        Returns:
+            organisation code
+        """
+        selected_role = self._find_selected_role(userinfo, selected_role_id)
+
+        if selected_role:
+            return selected_role["org_code"]
 
         logger.info("No org code found")
-        return []
+        return ""
 
     def fetch_user_role_code(
         self,
-        access_token: str,
-        id_token_claim_set: IdTokenClaimSet,
+        userinfo: Dict,
+        selected_role_id: str,
         prefix_character: str,
     ) -> tuple:
-        userinfo = self.fetch_userinfo(access_token)
-        logger.info(f"User info response: {userinfo}")
+        """
+        Fetch role code with a specified prefix and user ID.
+
+        Args:
+            userinfo: The already fetched user info data
+            selected_role_id: The users selected role ID
+            prefix_character: The prefix character to filter role codes
+
+        Returns:
+            A tuple of (role_code, user_id)
+
+        Raises:
+            AuthorisationException: If no matching role code is found
+        """
         user_id = userinfo.get("nhsid_useruid", None)
-        nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
-        logger.info(f"nrbac_roles: {nrbac_roles}")
 
-        selected_role = get_selected_roleid(id_token_claim_set)
-        logger.info(f"Selected role ID: {selected_role}")
+        selected_role = self._find_selected_role(userinfo, selected_role_id)
 
-        role_codes = ""
-        for nrbac_role in nrbac_roles:
-            if nrbac_role["person_roleid"] == selected_role:
-                role_codes = nrbac_role["role_code"]
-                break
+        if not selected_role:
+            raise AuthorisationException("No role codes found for user's selected role")
 
-        if role_codes == "":
-            raise AuthorisationException("No role codes found for users selected role")
+        role_codes = selected_role.get("role_code", "")
+        if not role_codes:
+            raise AuthorisationException("No role codes found for user's selected role")
 
         role_codes_split = role_codes.split(":")
+        prefix_upper = prefix_character.upper()
 
         for role_code in role_codes_split:
-            if role_code[0].upper() == prefix_character.upper():
+            if role_code and role_code[0].upper() == prefix_upper:
                 return role_code, user_id
 
         raise AuthorisationException(
-            f"Role codes have been found for the user but not with prefix {prefix_character.upper()}",
+            f"Role codes have been found for the user but not with prefix {prefix_upper}",
         )
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
+        """
+        Fetch user information from the OIDC provider.
+
+        Args:
+            access_token: The OAuth access token
+
+        Returns:
+            User information as a dictionary
+
+        Raises:
+            OidcApiException: If the request fails
+        """
         logger.info(f"Access token for user info request: {access_token}")
 
         userinfo_response = requests.get(
@@ -175,7 +205,9 @@ class OidcService:
         )
 
         if userinfo_response.status_code == 200:
-            return userinfo_response.json()
+            userinfo = userinfo_response.json()
+            logger.debug(f"User info response: {userinfo}")
+            return userinfo
         else:
             logger.error(
                 f"Got error response from OIDC provider: {userinfo_response.status_code} "
@@ -183,7 +215,6 @@ class OidcService:
             )
             raise OidcApiException("Failed to retrieve userinfo")
 
-    # TODO Move to SSM service, example in token_handler_ssm_service
     def fetch_oidc_parameters(self, ssm_service_class):
         ssm_service = ssm_service_class()
         parameters_names = [
@@ -202,7 +233,6 @@ class OidcService:
             parameters_names, with_decryption=True
         )
 
-        # Callback url is different in sandbox/dev/test. This env var is to be supplied by terraform.
         oidc_parameters["OIDC_CALLBACK_URL"] = os.environ["OIDC_CALLBACK_URL"]
         oidc_parameters["ENVIRONMENT"] = os.environ["ENVIRONMENT"]
 

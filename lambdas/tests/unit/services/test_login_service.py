@@ -53,13 +53,13 @@ def mock_oidc_service(mocker, mock_userinfo):
         ),
     ]
     mock_service.fetch_tokens.return_value = mocked_tokens
-    mock_service.fetch_user_org_codes.return_value = ["mock_ods_code1"]
+    mock_service.fetch_user_org_code.return_value = ["mock_ods_code1"]
     mock_service.fetch_user_info.return_value = mock_userinfo
     mock_service.fetch_user_role_code.return_value = ("R8008", "500000000000")
 
     yield {
         "fetch_token": mock_service.fetch_tokens,
-        "fetch_user_org_codes": mock_service.fetch_user_org_codes,
+        "fetch_user_org_codes": mock_service.fetch_user_org_code,
         "fetch_user_role_code": mock_service.fetch_user_info,
         "fetch_user_info": mock_service.fetch_user_role_code,
     }

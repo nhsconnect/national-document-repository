@@ -1,11 +1,15 @@
 from enums.lambda_error import LambdaError
+from oauthlib.oauth2 import WebApplicationClient
+from services.base.ssm_service import SSMService
 from services.dynamic_configuration_service import DynamicConfigurationService
-from services.nrl_get_document_reference_service import NRLGetDocumentReferenceService
+from services.get_fhir_document_reference_service import GetFhirDocumentReferenceService
+from services.oidc_service import OidcService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.lambda_exceptions import NRLGetDocumentReferenceException
+from utils.exceptions import OidcApiException
+from utils.lambda_exceptions import GetFhirDocumentReferenceException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = LoggingService(__name__)
@@ -26,13 +30,14 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     try:
         if not event:
-            raise NRLGetDocumentReferenceException(
+            raise GetFhirDocumentReferenceException(
                 400, LambdaError.DocumentReferenceInvalidRequest
             )
 
         bearer_token = event.get("headers", {}).get("Authorization", None)
+        selected_role_id = event.get("headers", {}).get("cis2-urid", None)
         if not bearer_token:
-            raise NRLGetDocumentReferenceException(
+            raise GetFhirDocumentReferenceException(
                 401, LambdaError.DocumentReferenceUnauthorised
             )
 
@@ -40,21 +45,32 @@ def lambda_handler(event, context):
         document_id, snomed_code = get_id_and_snomed_from_path_parameters(path_params)
 
         if not document_id or not snomed_code:
-            raise NRLGetDocumentReferenceException(
+            raise GetFhirDocumentReferenceException(
                 404, LambdaError.DocumentReferenceNotFound
             )
 
         configuration_service = DynamicConfigurationService()
         configuration_service.set_auth_ssm_prefix()
-        get_document_service = NRLGetDocumentReferenceService()
+
+        oidc_service = OidcService()
+        oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
+        userinfo = oidc_service.fetch_userinfo(bearer_token)
+        org_ods_code = oidc_service.fetch_user_org_code(userinfo, selected_role_id)
+        smartcard_role_code, user_id = oidc_service.fetch_user_role_code(
+            userinfo, selected_role_id, "R"
+        )
+        get_document_service = GetFhirDocumentReferenceService(
+            smartcard_role_code, org_ods_code
+        )
         document_ref = get_document_service.handle_get_document_reference_request(
-            snomed_code, document_id, bearer_token
+            snomed_code,
+            document_id,
         )
 
         return ApiGatewayResponse(
             status_code=200, body=document_ref, methods="GET"
         ).create_api_gateway_response()
-    except NRLGetDocumentReferenceException as e:
+    except (GetFhirDocumentReferenceException, OidcApiException) as e:
         return ApiGatewayResponse(
             status_code=e.status_code,
             body=e.error.create_error_response().create_error_fhir_response(
