@@ -6,8 +6,8 @@ from msgpack.fallback import BytesIO
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
-from tests.unit.conftest import TEST_BASE_DIRECTORY
-from utils.exceptions import InvalidFileNameException
+from tests.unit.conftest import MOCK_STAGING_STORE_BUCKET, TEST_BASE_DIRECTORY
+from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
 
 from lambdas.models.staging_metadata import METADATA_FILENAME
 
@@ -264,4 +264,130 @@ def test_get_metadata_csv_from_file(test_service, mock_metadata_file_get_object)
         lambda Bucket, Key: mock_metadata_file_get_object(
             test_preprocessed_metadata_file, Bucket, Key
         )
+    )
+
+
+def test_move_original_metadata_file(test_service):
+    file_key = "input/unprocessed/metadata.csv"
+    expected_destination_key = (
+        f"{test_service.practice_directory}"
+        f"/{test_service.processed_folder_name}/{test_service.processed_date}_{METADATA_FILENAME}"
+    )
+
+    # Act
+    test_service.move_original_metadata_file(file_key)
+
+    # Assert
+    test_service.s3_service.copy_across_bucket.assert_called_once_with(
+        MOCK_STAGING_STORE_BUCKET,
+        file_key,
+        MOCK_STAGING_STORE_BUCKET,
+        expected_destination_key,
+    )
+
+
+# @pytest.fixture
+# def mock_file_exist_on_s3(mocker, test_service):
+#     return mocker.patch.object(test_service, "file_exist_on_s3")
+
+
+def test_update_file_name(mocker, test_service):
+    original_file_name = "old_file.csv"
+    new_file_name = "new_file.csv"
+    original_file_key = f"{test_service.practice_directory}/{original_file_name}"
+    new_file_key = f"{test_service.practice_directory}/{new_file_name}"
+    test_service.staging_store_bucket = MOCK_STAGING_STORE_BUCKET
+
+    # Mock that the original file exists
+    mocker.patch.object(test_service.s3_service, "file_exist_on_s3", return_value=True)
+    mock_copy = mocker.patch.object(test_service.s3_service.client, "copy_object")
+    mock_delete = mocker.patch.object(test_service.s3_service.client, "delete_object")
+
+    # Act
+    test_service.update_file_name(original_file_name, new_file_name)
+
+    # Assert
+    mock_copy.assert_called_once_with(
+        Bucket=MOCK_STAGING_STORE_BUCKET,
+        CopySource={"Bucket": MOCK_STAGING_STORE_BUCKET, "Key": original_file_key},
+        Key=new_file_key,
+    )
+    mock_delete.assert_called_once_with(
+        Bucket=MOCK_STAGING_STORE_BUCKET,
+        Key=original_file_key,
+    )
+
+
+def test_update_file_name_file_not_found(test_service, mocker):
+    original_file_name = "nonexistent.csv"
+    new_file_name = "new_file.csv"
+
+    test_service.staging_store_bucket = MOCK_STAGING_STORE_BUCKET
+    # Mock file existence to False
+    mocker.patch.object(test_service.s3_service, "file_exist_on_s3", return_value=False)
+    with pytest.raises(MetadataPreprocessingException):
+        test_service.update_file_name(original_file_name, new_file_name)
+
+
+def test_convert_csv_dictionary_to_bytes(test_service, mocker):
+    # Arrange
+    headers = ["id", "name", "age"]
+    metadata_csv_data = [
+        {"id": "1", "name": "Alice", "age": "30"},
+        {"id": "2", "name": "Bob", "age": "25"},
+    ]
+
+    # Act
+    result_bytes = test_service.convert_csv_dictionary_to_bytes(
+        headers=headers, metadata_csv_data=metadata_csv_data, encoding="utf-8"
+    )
+
+    # Assert
+    result_str = result_bytes.decode("utf-8")
+    expected_output = "id,name,age\r\n1,Alice,30\r\n2,Bob,25\r\n"
+
+    assert result_str == expected_output
+
+
+def test_update_and_standardize_filenames_success_and_failure(test_service, mocker):
+    # Arrange
+    input_data = [
+        {"FILEPATH": "valid_file_1.csv"},
+        {"FILEPATH": "invalid_file.csv"},
+        {"FILEPATH": "valid_file_2.csv"},
+    ]
+
+    # Define side effects for validate_and_update_file_name
+    def mock_validate_and_update_file_name(filename):
+        if filename == "invalid_file.csv":
+            raise MetadataPreprocessingException("Invalid filename")
+        return f"updated_{filename}"
+
+    # Patch dependent methods
+    mocker.patch.object(
+        test_service,
+        "validate_and_update_file_name",
+        side_effect=mock_validate_and_update_file_name,
+    )
+    mock_update_file_name = mocker.patch.object(test_service, "update_file_name")
+
+    # Act
+    metadata_csv_data, rejected_list, error_list = (
+        test_service.update_and_standardize_filenames(input_data)
+    )
+
+    # Assert
+    assert metadata_csv_data == [
+        {"FILEPATH": "updated_valid_file_1.csv"},
+        {"FILEPATH": "invalid_file.csv"},  # Not updated due to exception
+        {"FILEPATH": "updated_valid_file_2.csv"},
+    ]
+    assert rejected_list == ["invalid_file.csv"]
+    assert error_list == [("invalid_file.csv", "Invalid filename")]
+    assert mock_update_file_name.call_count == 2
+    mock_update_file_name.assert_any_call(
+        "valid_file_1.csv", "updated_valid_file_1.csv"
+    )
+    mock_update_file_name.assert_any_call(
+        "valid_file_2.csv", "updated_valid_file_2.csv"
     )
