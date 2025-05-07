@@ -117,8 +117,9 @@ class MetadataPreprocessorService:
         try:
             logger.info(f"Processing file name {file_name}")
 
+            file_path_prefix, current_file_name = self.extract_document_path(file_name)
             first_document_number, second_document_number, current_file_name = (
-                self.extract_document_number_bulk_upload_file_name(file_name)
+                self.extract_document_number_bulk_upload_file_name(current_file_name)
             )
             lloyd_george_record, current_file_name = (
                 self.extract_lloyd_george_record_from_bulk_upload_file_name(
@@ -138,6 +139,7 @@ class MetadataPreprocessorService:
                 current_file_name
             )
             file_name = self.assemble_valid_file_name(
+                file_path_prefix,
                 first_document_number,
                 second_document_number,
                 lloyd_george_record,
@@ -256,6 +258,22 @@ class MetadataPreprocessorService:
         return first_document_number, second_document_number, current_file_path
 
     @staticmethod
+    def extract_document_path(
+        file_path: str,
+    ) -> tuple[str, str]:
+        document_number_expression = r"(.*[/])*((\d+)[^0-9]*of[^0-9]*(\d+)(.*))"
+        expression_result = regex.search(rf"{document_number_expression}", file_path)
+
+        if expression_result is None:
+            logger.info("Failed to find the document number in file name")
+            raise InvalidFileNameException("incorrect document number format")
+
+        file_path = expression_result.group(1)
+        current_file_path = expression_result.group(2)
+
+        return file_path, current_file_path
+
+    @staticmethod
     def extract_nhs_number_from_bulk_upload_file_name(
         file_path: str,
     ) -> tuple[str, str]:
@@ -311,6 +329,7 @@ class MetadataPreprocessorService:
 
     @staticmethod
     def assemble_valid_file_name(
+        file_path_prefix: str,
         first_document_number: int,
         second_document_number: int,
         lloyd_george_record: str,
@@ -322,6 +341,7 @@ class MetadataPreprocessorService:
         file_extension: str,
     ) -> str:
         return (
+            f"{file_path_prefix}"
             f"{first_document_number}of{second_document_number}"
             f"_{lloyd_george_record}_"
             f"[{patient_name}]_"

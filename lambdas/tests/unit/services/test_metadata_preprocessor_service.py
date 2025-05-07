@@ -72,15 +72,32 @@ def mock_metadata_file_get_object():
 
 def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
     wrong_file_path = (
-        "01 of 02_Lloyd_George_Record_Jim Stevens_9000000001_22.10.2010.txt"
+        "/M89002/01 of 02_Lloyd_George_Record_Jim Stevens_9000000001_22.10.2010.txt"
     )
     expected_file_path = (
-        "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010].txt"
+        "/M89002/1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010].txt"
     )
 
     actual = test_service.validate_record_filename(wrong_file_path)
 
     assert actual == expected_file_path
+
+
+def test_extract_document_path(test_service):
+    # paths, expected_results
+    test_cases = [
+        (
+            "/M89002/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/M89002/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
+        ),
+    ]
+
+    for input_str, expected in test_cases:
+        actual = test_service.extract_document_path(input_str)
+        assert actual == expected
 
 
 def test_correctly_extract_document_number_from_bulk_upload_file_name(test_service):
