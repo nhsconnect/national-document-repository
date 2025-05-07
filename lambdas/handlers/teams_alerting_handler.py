@@ -51,7 +51,8 @@ class AlarmHistoryFields(StrEnum):
         "APPCONFIG_CONFIGURATION",
         "WEBHOOK_URL",
         "CONFLUENCE_BASE_URL",
-        "ALARM_HISTORY_DYNAMODB_NAME" "ALERTING_SLACK_CHANNEL_ID",
+        "ALARM_HISTORY_DYNAMODB_NAME",
+        "ALERTING_SLACK_CHANNEL_ID",
     ]
 )
 def lambda_handler(event, context):
@@ -70,9 +71,9 @@ def lambda_handler(event, context):
         alarm_state = message["NewStateValue"]
         alarm_time = message["StateChangeTime"]
 
-        alarm_entry = get_alarm_history(alarm_name, dynamo_service, table_name)
+        alarm_entries = get_alarm_history(alarm_name, dynamo_service, table_name)
 
-        if not alarm_entry:
+        if not alarm_entries:
 
             logger.info(f"No alarm entry found for {format_alarm_name(alarm_name)}")
 
@@ -82,10 +83,14 @@ def lambda_handler(event, context):
                 last_updated=create_alarm_timestamp(alarm_time),
                 channel_id=os.environ["ALERTING_SLACK_CHANNEL_ID"],
             )
-            update_alarm_state_history(new_entry, alarm_state)
+            update_alarm_state_history(new_entry, alarm_state, alarm_name)
             create_alarm_entry(dynamo_service, table_name, new_entry)
 
             send_teams_alert(new_entry)
+
+        else:
+
+            send_teams_alert(alarm_entries[0])
 
 
 def create_alarm_timestamp(alarm_time: str) -> int:
@@ -128,6 +133,8 @@ def update_alarm_state_history(
 
     if current_state == "OK":
         alarm_entry.history.append("\U0001F7E2")
+
+    alarm_entry.last_updated = get_current_timestamp()
 
 
 def get_alarm_history(
