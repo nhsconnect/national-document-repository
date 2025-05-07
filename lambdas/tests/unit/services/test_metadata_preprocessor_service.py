@@ -276,6 +276,7 @@ def test_get_metadata_csv_from_file(test_service, mock_metadata_file_get_object)
             test_preprocessed_metadata_file, Bucket, Key
         )
     )
+    test_service.process_metadata()
 
     test_service.get_metadata_rows_from_file(
         file_key=f"{test_service.practice_directory}/{METADATA_FILENAME}",
@@ -398,3 +399,49 @@ def test_update_and_standardize_filenames_success_and_failure(test_service, mock
     mock_update_file_name.assert_any_call(
         "valid_file_2.csv", "updated_valid_file_2.csv"
     )
+
+
+@pytest.fixture
+def sample_metadata_row():
+    return {
+        "FILEPATH": "01 of 02_Lloyd_George_Record_[Dwayne Basil COWIE]_[9730787506]_[18-09-1974].pdf",
+        "GP-PRACTICE-CODE": "M85143",
+        "NHS-NO": "9730787506",
+        "PAGE COUNT": "1",
+        "SCAN-DATE": "03/09/2022",
+        "SCAN-ID": "NEC",
+        "SECTION": "LG",
+        "SUB-SECTION": "",
+        "UPLOAD": "04/10/2023",
+        "USER-ID": "NEC",
+    }
+
+
+@pytest.fixture
+def mock_validate_record_filename(mocker, test_service):
+    def _mock_validate(filename):
+        if filename == "invalid_file.csv":
+            raise InvalidFileNameException("Invalid filename")
+        return f"updated_{filename}"
+
+    return mocker.patch.object(
+        test_service,
+        "validate_record_filename",
+        side_effect=_mock_validate,
+    )
+
+
+def test_process_row_valid_filename(
+    test_service, sample_metadata_row, mock_validate_record_filename, mocker
+):
+    # Arrange
+    filename = sample_metadata_row["FILEPATH"]
+    updated_filename = "updated_" + filename
+    mock_update = mocker.patch.object(test_service, "update_record_filename")
+    # Act
+    success, updated_row, error = test_service.process_row(sample_metadata_row)
+    # Assert
+    assert success is True
+    assert updated_row["FILEPATH"] == updated_filename
+    assert error is None
+    mock_update.assert_called_once_with(filename, updated_filename)
