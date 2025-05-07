@@ -195,7 +195,8 @@ class LoginService:
         logger.error(
             f"{LambdaError.LoginNoRole.to_str()}", {"Result": "Unsuccessful login"}
         )
-        raise LoginException(401, {**LambdaError.LoginNoRole, "roles": ["123", "241"]})
+        # raise LoginException(401, {**LambdaError.LoginNoRole, "roles": ["123", "241"]})
+        raise LoginException(401, LambdaError.LoginNoRole)
 
     @staticmethod
     def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
