@@ -83,9 +83,9 @@ def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
     assert actual == expected_file_path
 
 
-def test_extract_document_path(test_service):
-    # paths, expected_results
-    test_cases = [
+@pytest.mark.parametrize(
+    ["value", "expected"],
+    [
         (
             "/M89002/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
             (
@@ -93,11 +93,20 @@ def test_extract_document_path(test_service):
                 "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
             ),
         ),
-    ]
-
-    for input_str, expected in test_cases:
-        actual = test_service.extract_document_path(input_str)
-        assert actual == expected
+        (
+            "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/2020 Prince of Whales 2/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
+        ),
+    ],
+)
+def test_extract_document_path(test_service, value, expected):
+    # paths, expected_results
+    # for input_str, expected in test_cases:
+    actual = test_service.extract_document_path(value)
+    assert actual == expected
 
 
 def test_correctly_extract_document_number_from_bulk_upload_file_name(test_service):
