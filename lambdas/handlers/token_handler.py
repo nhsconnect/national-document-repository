@@ -43,7 +43,13 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             200, json.dumps(response), "GET"
         ).create_api_gateway_response()
-
+    except LoginException as e:
+        if e.status_code == 401:
+            return ApiGatewayResponse(
+                401,
+                {**LambdaError.LoginNoRole.create_error_body(), "roles": ["123"]},
+                "GET",
+            ).create_api_gateway_response()
     except (KeyError, TypeError) as e:
         logger.error(
             f"{ LambdaError.LoginNoAuth.to_str()}: {str(e)}",
