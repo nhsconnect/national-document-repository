@@ -44,8 +44,11 @@ class MetadataPreprocessorService:
         self.generate_and_save_csv_file(metadata_rows, updated_metadata_rows, file_key)
 
         # save file with rejected lines
-        file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
-        self.generate_and_save_csv_file(rejected_reasons, rejected_reasons, file_key)
+        if rejected_reasons:
+            file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
+            self.generate_and_save_csv_file(
+                rejected_reasons, rejected_reasons, file_key
+            )
 
     def generate_and_save_csv_file(
         self,
