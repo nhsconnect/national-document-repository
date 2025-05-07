@@ -439,7 +439,7 @@ def test_process_row_valid_filename(
     updated_filename = "updated_" + filename
     mock_update = mocker.patch.object(test_service, "update_record_filename")
     # Act
-    success, updated_row, error = test_service.process_row(sample_metadata_row)
+    success, updated_row, error = test_service.process_metadata_row(sample_metadata_row)
     # Assert
     assert success is True
     assert updated_row["FILEPATH"] == updated_filename
