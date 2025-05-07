@@ -32,6 +32,7 @@ const AuthCallbackPage = (props: Props) => {
                 console.log(error);
                 navigate(routes.UNAUTHORISED_LOGIN, { state: { someProp: 'test' } });
             } else {
+                console.log(error);
                 navigate(routes.AUTH_ERROR);
             }
         };
