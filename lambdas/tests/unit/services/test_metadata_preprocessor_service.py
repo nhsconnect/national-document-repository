@@ -25,6 +25,51 @@ def mock_get_metadata_rows_from_file(mocker, test_service):
     return mocker.patch.object(test_service, "get_metadata_rows_from_file")
 
 
+@pytest.fixture
+def sample_metadata_row():
+    return {
+        "FILEPATH": "01 of 02_Lloyd_George_Record_[Dwayne Basil COWIE]_[9730787506]_[18-09-1974].pdf",
+        "GP-PRACTICE-CODE": "M85143",
+        "NHS-NO": "9730787506",
+        "PAGE COUNT": "1",
+        "SCAN-DATE": "03/09/2022",
+        "SCAN-ID": "NEC",
+        "SECTION": "LG",
+        "SUB-SECTION": "",
+        "UPLOAD": "04/10/2023",
+        "USER-ID": "NEC",
+    }
+
+
+@pytest.fixture
+def mock_validate_record_filename(mocker, test_service):
+    def _mock_validate(filename):
+        if filename == "invalid_file.csv":
+            raise InvalidFileNameException("Invalid filename")
+        return f"updated_{filename}"
+
+    return mocker.patch.object(
+        test_service,
+        "validate_record_filename",
+        side_effect=_mock_validate,
+    )
+
+
+@pytest.fixture
+def mock_metadata_file_get_object():
+    def _mock_metadata_file_get_object(
+        test_file_path: str,
+        Bucket: str,
+        Key: str,
+    ):
+        with open(test_file_path, "rb") as file:
+            test_file_data = file.read()
+
+        return {"Body": BytesIO(test_file_data)}
+
+    return _mock_metadata_file_get_object
+
+
 def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
     wrong_file_path = (
         "01 of 02_Lloyd_George_Record_Jim Stevens_9000000001_22.10.2010.txt"
@@ -206,20 +251,20 @@ def test_extract_file_extension_from_bulk_upload_file_name_with_incorrect_file_e
 
 
 def test_correctly_assembles_valid_file_name(test_service):
-    firstDocumentNumber = 1
-    secondDocumentNumber = 2
+    first_document_number = 1
+    second_document_number = 2
     lloyd_george_record = "Lloyd_George_Record"
     person_name = "Jim Stevens"
     nhs_number = "9000000001"
-    day = 22
-    month = 10
-    year = 2010
+    day = "22"
+    month = "10"
+    year = "2010"
     file_extension = ".txt"
 
     expected = "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010].txt"
     actual = test_service.assemble_valid_file_name(
-        firstDocumentNumber,
-        secondDocumentNumber,
+        first_document_number,
+        second_document_number,
         lloyd_george_record,
         person_name,
         nhs_number,
@@ -229,21 +274,6 @@ def test_correctly_assembles_valid_file_name(test_service):
         file_extension,
     )
     assert actual == expected
-
-
-@pytest.fixture
-def mock_metadata_file_get_object():
-    def _mock_metadata_file_get_object(
-        test_file_path: str,
-        Bucket: str,
-        Key: str,
-    ):
-        with open(test_file_path, "rb") as file:
-            test_file_data = file.read()
-
-        return {"Body": BytesIO(test_file_data)}
-
-    return _mock_metadata_file_get_object
 
 
 def test_process_metadata_file_exists(test_service, mock_metadata_file_get_object):
@@ -398,36 +428,6 @@ def test_update_and_standardize_filenames_success_and_failure(test_service, mock
     )
     mock_update_file_name.assert_any_call(
         "valid_file_2.csv", "updated_valid_file_2.csv"
-    )
-
-
-@pytest.fixture
-def sample_metadata_row():
-    return {
-        "FILEPATH": "01 of 02_Lloyd_George_Record_[Dwayne Basil COWIE]_[9730787506]_[18-09-1974].pdf",
-        "GP-PRACTICE-CODE": "M85143",
-        "NHS-NO": "9730787506",
-        "PAGE COUNT": "1",
-        "SCAN-DATE": "03/09/2022",
-        "SCAN-ID": "NEC",
-        "SECTION": "LG",
-        "SUB-SECTION": "",
-        "UPLOAD": "04/10/2023",
-        "USER-ID": "NEC",
-    }
-
-
-@pytest.fixture
-def mock_validate_record_filename(mocker, test_service):
-    def _mock_validate(filename):
-        if filename == "invalid_file.csv":
-            raise InvalidFileNameException("Invalid filename")
-        return f"updated_{filename}"
-
-    return mocker.patch.object(
-        test_service,
-        "validate_record_filename",
-        side_effect=_mock_validate,
     )
 
 

@@ -40,29 +40,21 @@ class MetadataPreprocessorService:
             self.s3_service.delete_object(
                 s3_bucket_name=self.staging_store_bucket, file_key=file_key
             )
+        # save metadata file with new lines
+        self.generate_and_save_csv_file(metadata_rows, updated_metadata_rows, file_key)
 
-        logger.info("Generating buffered byte data from new csv data")
-        metadata_headers = metadata_rows[0].keys() if metadata_rows else []
-        updated_metadata_csv_buffer = self.convert_csv_dictionary_to_bytes(
-            metadata_headers, updated_metadata_rows
-        )
+        # save file with rejected lines
+        file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
+        self.generate_and_save_csv_file(rejected_reasons, rejected_reasons, file_key)
 
-        logger.info("Writing new metadata file from buffer")
+    def generate_and_save_csv_file(
+        self, dictionary_with_headers, dictionary_with_rows, file_key
+    ):
+        headers = dictionary_with_headers[0].keys() if dictionary_with_headers else []
+        csv_data = self.convert_csv_dictionary_to_bytes(headers, dictionary_with_rows)
+        logger.info(f"Writing file from buffer to {file_key}")
         self.s3_service.save_or_create_file(
-            self.staging_store_bucket, file_key, BytesIO(updated_metadata_csv_buffer)
-        )
-
-        # TODO Write rejected csv lines to a new failed.csv
-        logger.info("Generating buffered byte data from rejected data")
-        rejected_headers = rejected_reasons[0].keys() if rejected_reasons else []
-        rejected_csv_data = self.convert_csv_dictionary_to_bytes(
-            rejected_headers, rejected_reasons
-        )
-        failed_file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
-
-        logger.info("Writing new rejections file from buffer")
-        self.s3_service.save_or_create_file(
-            self.staging_store_bucket, failed_file_key, BytesIO(rejected_csv_data)
+            self.staging_store_bucket, file_key, BytesIO(csv_data)
         )
 
     def get_metadata_rows_from_file(self, file_key: str, bucket_name: str):
