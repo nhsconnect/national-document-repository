@@ -30,7 +30,7 @@ const AuthCallbackPage = (props: Props) => {
             });
             if (error.response?.status === 401) {
                 console.log(error);
-                navigate(routes.UNAUTHORISED_LOGIN, { state: { someProp: error.roles } });
+                navigate(routes.UNAUTHORISED_LOGIN, { state: { someProp: 'test' } });
             } else {
                 navigate(routes.AUTH_ERROR);
             }
