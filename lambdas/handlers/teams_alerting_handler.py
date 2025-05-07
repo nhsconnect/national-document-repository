@@ -4,8 +4,9 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Optional
 
+import boto3
 import requests
-from pydantic import BaseModel, ConfigDict
+from pydantic import AliasGenerator, BaseModel, ConfigDict
 from pydantic.alias_generators import to_pascal
 from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
@@ -24,14 +25,18 @@ alarm_severities = {
 
 
 class AlarmEntry(BaseModel):
-    model_config = ConfigDict(alias_generator=to_pascal)
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(
+            validation_alias=to_pascal, serialization_alias=to_pascal
+        )
+    )
     alarm_name: str
-    time_created: str
+    time_created: int
     history: list[str] = []
-    last_updated: Optional[int]
-    slack_timestamp: Optional[float]
+    last_updated: Optional[int] = None
+    slack_timestamp: Optional[float] = None
     channel_id: str
-    time_to_exist: Optional[int]
+    time_to_exist: Optional[int] = None
 
 
 class AlarmHistoryFields(StrEnum):
@@ -83,6 +88,7 @@ def lambda_handler(event, context):
                 last_updated=create_alarm_timestamp(alarm_time),
                 channel_id=os.environ["ALERTING_SLACK_CHANNEL_ID"],
             )
+            AlarmEntry.model_validate(new_entry)
             update_alarm_state_history(new_entry, alarm_state, alarm_name)
             create_alarm_entry(dynamo_service, table_name, new_entry)
 
@@ -106,16 +112,14 @@ def format_alarm_name(alarm_name: str) -> str:
     return underscore_stripped_string.rsplit(" ", 1)[0].title()
 
 
-def format_time_string(date_string: str) -> str:
+def format_time_string(time_stamp: int) -> str:
     # needs to have timezone correct in it!
-    return datetime.strftime(datetime.fromisoformat(date_string), "%H:%M:%S %d-%m-%Y")
+    return datetime.strftime(datetime.fromtimestamp(time_stamp), "%H:%M:%S %d-%m-%Y")
 
 
 # This needs changing.
 def create_action_url(base_url: str, alarm_name: str) -> str:
-    formatted_alarm_name = format_alarm_name(alarm_name)
-    trimmed_alarm_name = formatted_alarm_name.split(" ")[1:]
-    url_extension = " ".join(trimmed_alarm_name).replace(" ", "%20")
+    url_extension = " ".join(alarm_name).replace(" ", "%20")
     search_query = "#:~:text="
 
     return f"{base_url}{search_query}{url_extension}"
@@ -131,8 +135,8 @@ def update_alarm_state_history(
             if alarm_name.endswith(key):
                 alarm_entry.history.append(alarm_severities[key])
 
-    if current_state == "OK":
-        alarm_entry.history.append("\U0001F7E2")
+    if current_state == "OK" and all_alarm_state_ok(alarm_entry):
+        alarm_entry.history.append(alarm_severities["ok"])
 
     alarm_entry.last_updated = get_current_timestamp()
 
@@ -150,7 +154,11 @@ def get_alarm_history(
         search_key="AlarmName",
         search_condition=format_alarm_name(alarm_name),
     )
-    return results if results else []
+    return (
+        [AlarmEntry.model_validate(item) for item in results["Items"]]
+        if results
+        else []
+    )
 
 
 def update_alarm_table(
@@ -161,7 +169,10 @@ def update_alarm_table(
 
     dynamo_service.update_item(
         table_name=table_name,
-        key_pair={"AlarmName": alarm_entry.alarm_name},
+        key_pair={
+            AlarmHistoryFields.ALARMNAME: alarm_entry.alarm_name,
+            AlarmHistoryFields.TIMECREATED: alarm_entry.time_created,
+        },
         updated_fields={
             AlarmHistoryFields.HISTORY: alarm_entry.history,
             AlarmHistoryFields.LASTUPDATED: int(datetime.now().timestamp()),
@@ -184,6 +195,30 @@ def create_alarm_entry(
 
 def update_new_entry_with_slack_message_id():
     pass
+
+
+def unpack_alarm_history(alarm_history: list) -> str:
+    history_string = ""
+    for item in alarm_history:
+        history_string += item + " "
+
+    return history_string
+
+
+def all_alarm_state_ok(alarm_name) -> bool:
+
+    alarm_prefix = alarm_name.rsplit("_", 1)[0]
+
+    logger.info(f"Checking state for all alarms with prefix: {alarm_prefix}")
+
+    client = boto3.client("cloudwatch")
+    response = client.describe_alarms(
+        AlarmNamePrefix=alarm_prefix,
+    )
+
+    alarm_states = [alarm["StateValue"] for alarm in response["MetricAlarms"]]
+
+    return all(state == "OK" for state in alarm_states)
 
 
 def send_teams_alert(alarm_entry: AlarmEntry):
@@ -214,13 +249,13 @@ def send_teams_alert(alarm_entry: AlarmEntry):
                             },
                             {
                                 "type": "TextBlock",
-                                "text": alarm_entry.history,
+                                "text": unpack_alarm_history(alarm_entry.history),
                                 "wrap": True,
                             },
                             {
                                 "type": "TextBlock",
                                 # look at how we are handling time entries on other models and tables.
-                                "text": f"This state change happened at: {alarm_entry.last_updated}",
+                                "text": f"This state change happened at: {format_time_string(alarm_entry.last_updated)}",
                                 "wrap": True,
                             },
                         ],
