@@ -241,7 +241,7 @@ def test_correctly_extract_date_from_bulk_upload_file_name(test_service):
         ("-12-01-2024.txt", ("12", "01", "2024", ".txt")),
         ("-12-1-2024.txt", ("12", "01", "2024", ".txt")),
         ("-1-01-2024.txt", ("01", "01", "2024", ".txt")),
-        ("-1-01-24.txt", ("01", "01", "2024", ".txt")),
+        ("13-12-2023.pdf", ("13", "12", "2023", ".pdf")),
     ]
 
     for input_str, expected in test_cases:

@@ -294,7 +294,7 @@ class MetadataPreprocessorService:
 
     @staticmethod
     def extract_date_from_bulk_upload_file_name(file_path):
-        date_number_expression = r"(\D*\d{1,2})(\D*\d{1,2})(\D*(\d{4}|\d{2}))(.*)"
+        date_number_expression = r"(\D*\d{1,2})(\D*\d{1,2})(\D*(\d{4}))(.*)"
         expression_result = regex.search(rf"{date_number_expression}", file_path)
 
         if expression_result is None:
@@ -306,12 +306,11 @@ class MetadataPreprocessorService:
         year = "".join(regex.findall(r"\d", expression_result.group(3)))
         current_file_path = expression_result.group(5)
 
-        if len(year) == 2:
-            year = "20" + year
-
-        if 1 <= int(day) >= 31 or 1 <= int(month) >= 12:
+        try:
+            datetime(day=int(day), month=int(month), year=int(year))
+        except ValueError:
             logger.info("Failed to find date in file name")
-            raise InvalidFileNameException("incorrect date format")
+            raise InvalidFileNameException("not a valid date")
 
         return day, month, year, current_file_path
 
