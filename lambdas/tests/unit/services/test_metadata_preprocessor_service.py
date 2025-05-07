@@ -109,9 +109,9 @@ def test_extract_document_path(test_service, value, expected):
     assert actual == expected
 
 
-def test_correctly_extract_document_number_from_bulk_upload_file_name(test_service):
-    # paths, expected_results
-    test_cases = [
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
         ("1 of 02_Lloyd_George_Record", (1, 2, "_Lloyd_George_Record")),
         ("1of12_Lloyd_George_Record", (1, 12, "_Lloyd_George_Record")),
         ("!~/01!of 12_Lloyd_George_Record", (1, 12, "_Lloyd_George_Record")),
@@ -124,11 +124,13 @@ def test_correctly_extract_document_number_from_bulk_upload_file_name(test_servi
             "test/nested/9730786895/01 of 01_Lloyd_George_Record",
             (1, 1, "_Lloyd_George_Record"),
         ),
-    ]
-
-    for input_str, expected in test_cases:
-        actual = test_service.extract_document_number_bulk_upload_file_name(input_str)
-        assert actual == expected
+    ],
+)
+def test_correctly_extract_document_number_from_bulk_upload_file_name(
+    test_service, input: str, expected
+):
+    actual = test_service.extract_document_number_bulk_upload_file_name(input)
+    assert actual == expected
 
 
 def test_extract_document_number_from_bulk_upload_file_name_with_no_document_number(
@@ -142,10 +144,9 @@ def test_extract_document_number_from_bulk_upload_file_name_with_no_document_num
     assert str(exc_info.value) == "incorrect document number format"
 
 
-def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
-    test_service,
-):
-    test_cases = [
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
         ("_Lloyd_George_Record_person_name", ("Lloyd_George_Record", "_person_name")),
         ("_lloyd_george_record_person_name", ("Lloyd_George_Record", "_person_name")),
         ("_LLOYD_GEORGE_RECORD_person_name", ("Lloyd_George_Record", "_person_name")),
@@ -159,13 +160,13 @@ def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
         ),
         ("_Lloyd_George-Record_person_name", ("Lloyd_George_Record", "_person_name")),
         ("_Ll0yd_Ge0rge-21Rec0rd_person_name", ("Lloyd_George_Record", "_person_name")),
-    ]
-
-    for input_str, expected in test_cases:
-        actual = test_service.extract_lloyd_george_record_from_bulk_upload_file_name(
-            input_str
-        )
-        assert actual == expected
+    ],
+)
+def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
+    test_service, input, expected
+):
+    actual = test_service.extract_lloyd_george_record_from_bulk_upload_file_name(input)
+    assert actual == expected
 
 
 def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
@@ -181,8 +182,9 @@ def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
     assert str(exc_info.value) == "incorrect Lloyd George Record format"
 
 
-def test_correctly_extract_person_name_from_bulk_upload_file_name(test_service):
-    test_cases = [
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
         ("_John_doe-1231", ("John_doe", "-1231")),
         ("-José María-1231", ("José María", "-1231")),
         (
@@ -194,11 +196,13 @@ def test_correctly_extract_person_name_from_bulk_upload_file_name(test_service):
             "_Jim Stevens_9000000001_22.10.2010.txt",
             ("Jim Stevens", "_9000000001_22.10.2010.txt"),
         ),
-    ]
-
-    for input_str, expected in test_cases:
-        actual = test_service.extract_person_name_from_bulk_upload_file_name(input_str)
-        assert actual == expected
+    ],
+)
+def test_correctly_extract_person_name_from_bulk_upload_file_name(
+    test_service, input, expected
+):
+    actual = test_service.extract_person_name_from_bulk_upload_file_name(input)
+    assert actual == expected
 
 
 def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
