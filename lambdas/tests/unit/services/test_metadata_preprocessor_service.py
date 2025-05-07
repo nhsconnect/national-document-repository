@@ -92,6 +92,12 @@ def test_correctly_extract_document_number_from_bulk_upload_file_name(test_servi
         ("X12of34YZ", (12, 34, "YZ")),
         ("8ab12of34YZ", (12, 34, "YZ")),
         ("8ab12of34YZ2442-ofladimus 900123", (12, 34, "YZ2442-ofladimus 900123")),
+        ("1 of 02_Lloyd_George_Record", (1, 2, "_Lloyd_George_Record")),
+        ("/9730786895/01 of 01_Lloyd_George_Record", (1, 1, "_Lloyd_George_Record")),
+        (
+            "test/nested/9730786895/01 of 01_Lloyd_George_Record",
+            (1, 1, "_Lloyd_George_Record"),
+        ),
     ]
 
     for input_str, expected in test_cases:
