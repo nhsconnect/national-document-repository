@@ -151,9 +151,13 @@ def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
 
 def test_correctly_extract_person_name_from_bulk_upload_file_name(test_service):
     test_cases = [
-        ("_John_doe-1231", ("John Doe", "-1231")),
-        ("-José-María-1231", ("José María", "-1231")),
-        ("-José&María-Grandola&1231", ("José María Grandola", "&1231")),
+        ("_John_doe-1231", ("John_doe", "-1231")),
+        ("-José María-1231", ("José María", "-1231")),
+        (
+            "-Sir. Roger Guilbert the third-1231",
+            ("Sir. Roger Guilbert the third", "-1231"),
+        ),
+        ("-José&María-Grandola&1231", ("José&María-Grandola", "&1231")),
         (
             "_Jim Stevens_9000000001_22.10.2010.txt",
             ("Jim Stevens", "_9000000001_22.10.2010.txt"),
@@ -254,14 +258,14 @@ def test_correctly_assembles_valid_file_name(test_service):
     first_document_number = 1
     second_document_number = 2
     lloyd_george_record = "Lloyd_George_Record"
-    person_name = "Jim Stevens"
+    person_name = "Jim-Stevens"
     nhs_number = "9000000001"
     day = "22"
     month = "10"
     year = "2010"
     file_extension = ".txt"
 
-    expected = "1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010].txt"
+    expected = "1of2_Lloyd_George_Record_[Jim-Stevens]_[9000000001]_[22-10-2010].txt"
     actual = test_service.assemble_valid_file_name(
         first_document_number,
         second_document_number,

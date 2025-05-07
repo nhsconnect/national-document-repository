@@ -203,7 +203,7 @@ class MetadataPreprocessorService:
     def extract_person_name_from_bulk_upload_file_name(
         file_path: str,
     ) -> tuple[str, str]:
-        document_number_expression = r"^.*?([\p{L}]+(?:[^\p{L}\d]+[\p{L}]+)*)(.*)"
+        document_number_expression = r".*?([\p{L}][^\d]*[\p{L}])(.*)"
         expression_result = regex.search(
             rf"{document_number_expression}", file_path, regex.IGNORECASE
         )
@@ -215,16 +215,17 @@ class MetadataPreprocessorService:
         name = expression_result.group(1)
 
         # Replace all non-letter characters (except spaces) with a space
-        cleaned_name = regex.sub(r"[^\p{L}]", " ", name)
+        # cleaned_name = regex.sub(r"[^\p{L}]", " ", name)
 
         # Replace multiple spaces with a single space
-        cleaned_name = regex.sub(r"\s+", " ", cleaned_name).strip()
+        # cleaned_name = regex.sub(r"\s+", " ", cleaned_name).strip()
 
         # Camel case name
-        cleaned_name = " ".join(word.capitalize() for word in cleaned_name.split())
+        # cleaned_name = " ".join(word.capitalize() for word in cleaned_name.split())
         current_file_path = expression_result.group(2)
 
-        return cleaned_name, current_file_path
+        # return cleaned_name, current_file_path
+        return name, current_file_path
 
     @staticmethod
     def extract_lloyd_george_record_from_bulk_upload_file_name(
