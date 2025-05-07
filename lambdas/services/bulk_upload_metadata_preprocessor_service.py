@@ -48,7 +48,10 @@ class MetadataPreprocessorService:
         self.generate_and_save_csv_file(rejected_reasons, rejected_reasons, file_key)
 
     def generate_and_save_csv_file(
-        self, dictionary_with_headers, dictionary_with_rows, file_key
+        self,
+        dictionary_with_headers: list[dict],
+        dictionary_with_rows: list[dict],
+        file_key: str,
     ):
         headers = dictionary_with_headers[0].keys() if dictionary_with_headers else []
         csv_data = self.convert_csv_dictionary_to_bytes(headers, dictionary_with_rows)
@@ -213,18 +216,8 @@ class MetadataPreprocessorService:
             raise InvalidFileNameException("incorrect person name format")
 
         name = expression_result.group(1)
-
-        # Replace all non-letter characters (except spaces) with a space
-        # cleaned_name = regex.sub(r"[^\p{L}]", " ", name)
-
-        # Replace multiple spaces with a single space
-        # cleaned_name = regex.sub(r"\s+", " ", cleaned_name).strip()
-
-        # Camel case name
-        # cleaned_name = " ".join(word.capitalize() for word in cleaned_name.split())
         current_file_path = expression_result.group(2)
 
-        # return cleaned_name, current_file_path
         return name, current_file_path
 
     @staticmethod
