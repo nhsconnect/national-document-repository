@@ -1,5 +1,5 @@
 import { routes } from '../../types/generic/routes';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ButtonLink } from 'nhsuk-react-components';
 import React from 'react';
 import useTitle from '../../helpers/hooks/useTitle';
@@ -7,9 +7,12 @@ import useTitle from '../../helpers/hooks/useTitle';
 const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();
     const pageHeader = 'Your account cannot access this service';
+    const location = useLocation();
+    const someProp = location.state?.someProp;
     useTitle({ pageTitle: 'Unauthorised account' });
     return (
         <>
+            {someProp}
             <h1>{pageHeader}</h1>
             <p>
                 Your account does not have authorisation to view or manage patient records using
