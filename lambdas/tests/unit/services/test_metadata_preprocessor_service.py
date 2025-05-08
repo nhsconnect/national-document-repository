@@ -504,3 +504,38 @@ def test_process_row_valid_filename(
     assert updated_row["FILEPATH"] == updated_filename
     assert error is None
     mock_update.assert_called_once_with(filename, updated_filename)
+
+
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
+        (
+            ([{"FILEPATH": "duplicate_file.pdf"}]),
+            (({"FILEPATH": "duplicate_file.pdf"}), ({}), ({})),
+        ),
+        # (([{"FILEPATH": "duplicate_file.pdf"},
+        #    {"FILEPATH": "duplicate_file.pdf"}]),
+        #     (({}), ({"FILEPATH": "duplicate_file.pdf"},
+        #    {"FILEPATH": "duplicate_file.pdf"}),
+        #    ({[{'FILEPATH': 'duplicate_file.pdf', 'REASON': 'Duplicate filename after renaming'}]},]}))),
+    ],
+)
+def test_generate_renaming_map(
+    test_service, mock_validate_record_filename, input, expected
+):
+    # metadata_rows = [
+    #     {"FILEPATH": "duplicate_file.pdf"},  # First instance – should be rejected
+    #     {"FILEPATH": "duplicate_file.pdf"},  # Second instance – should be accepted
+    #     {"FILEPATH": "unique_file.pdf"},  # First instance – should be rejected
+    #     {"FILEPATH": "duplicate_file.pdf"},  # Third instance – should be accepted
+    #     {"FILEPATH": "unique_file.pdf"},  # Second instance – should be accepted
+    # ]
+    # expected_file_path
+
+    renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
+        input
+    )
+
+    assert renaming_map == expected[0]
+    assert rejected_rows == expected[1]
+    assert rejected_reasons == expected[2]
