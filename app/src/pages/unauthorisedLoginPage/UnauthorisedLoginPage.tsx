@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ButtonLink } from 'nhsuk-react-components';
 import React from 'react';
 import useTitle from '../../helpers/hooks/useTitle';
+import { error } from 'console';
 
 const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();
@@ -10,9 +11,11 @@ const UnauthorisedLoginPage = () => {
     const location = useLocation();
     const errorData = location.state?.errorData;
     useTitle({ pageTitle: 'Unauthorised account' });
+    const gpAdminRoles = errorData.roles[0];
+    const gpClinicalRoles = errorData.roles[1];
+    const pcseRoles = errorData.roles[2];
     return (
         <>
-            {errorData.roles}
             <h1>{pageHeader}</h1>
             <p>
                 Your account does not have authorisation to view or manage patient records using
@@ -30,8 +33,8 @@ const UnauthorisedLoginPage = () => {
                     have one of these roles on their smart cards:
                     <br />
                     <br />
-                    <p>GP Admin Role: R8010, R8013, R1790, R8008</p>
-                    <p>GP Clinical Role: R8000</p>
+                    <p>GP Admin Role: {gpAdminRoles}</p>
+                    <p>GP Clinical Role: {gpClinicalRoles}</p>
                 </li>
                 <li>PCSE staff where a patient does not have an active registration</li>
             </ul>
