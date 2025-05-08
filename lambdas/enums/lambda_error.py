@@ -120,7 +120,7 @@ class LambdaError(Enum):
     LoginNullOrgs = {"err_code": "LIN_4005", "message": "No orgs found for user"}
     LoginNoRole = {
         "err_code": "LIN_4006",
-        "message": "Unable to remove used state value 123",
+        "message": "Unable to remove used state value",
     }
     LoginClient = {
         "err_code": "LIN_5001",

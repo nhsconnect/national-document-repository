@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ButtonLink } from 'nhsuk-react-components';
 import React from 'react';
 import useTitle from '../../helpers/hooks/useTitle';
-import { error } from 'console';
 
 const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();

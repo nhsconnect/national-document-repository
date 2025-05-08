@@ -195,7 +195,6 @@ class LoginService:
         logger.error(
             f"{LambdaError.LoginNoRole.to_str()}", {"Result": "Unsuccessful login"}
         )
-        # raise LoginException(401, {**LambdaError.LoginNoRole, "roles": ["123", "241"]})
         raise LoginException(401, LambdaError.LoginNoRole)
 
     @staticmethod
