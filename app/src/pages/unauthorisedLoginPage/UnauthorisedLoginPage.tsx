@@ -8,11 +8,11 @@ const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();
     const pageHeader = 'Your account cannot access this service';
     const location = useLocation();
-    const someProp = location.state?.someProp;
+    const errorData = location.state?.errorData;
     useTitle({ pageTitle: 'Unauthorised account' });
     return (
         <>
-            {someProp}
+            {errorData.roles}
             <h1>{pageHeader}</h1>
             <p>
                 Your account does not have authorisation to view or manage patient records using
