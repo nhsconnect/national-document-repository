@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import StrEnum
 from typing import Optional
 
@@ -95,7 +95,9 @@ def lambda_handler(event, context):
             send_teams_alert(new_entry)
 
         else:
-
+            former_entry = alarm_entries[0]
+            update_alarm_state_history(former_entry, alarm_state, alarm_name)
+            update_alarm_table(dynamo_service, table_name, former_entry)
             send_teams_alert(alarm_entries[0])
 
 
@@ -119,7 +121,7 @@ def format_time_string(time_stamp: int) -> str:
 
 # This needs changing.
 def create_action_url(base_url: str, alarm_name: str) -> str:
-    url_extension = " ".join(alarm_name).replace(" ", "%20")
+    url_extension = alarm_name.replace(" ", "%20")
     search_query = "#:~:text="
 
     return f"{base_url}{search_query}{url_extension}"
@@ -129,14 +131,18 @@ def create_action_url(base_url: str, alarm_name: str) -> str:
 def update_alarm_state_history(
     alarm_entry: AlarmEntry, current_state: str, alarm_name: str
 ):
-
+    logger.info(f"Updating alarm state history for {alarm_entry.alarm_name}")
     if current_state == "ALARM":
         for key in alarm_severities.keys():
             if alarm_name.endswith(key):
                 alarm_entry.history.append(alarm_severities[key])
 
-    if current_state == "OK" and all_alarm_state_ok(alarm_entry):
+    if current_state == "OK" and all_alarm_state_ok(alarm_name):
         alarm_entry.history.append(alarm_severities["ok"])
+        logger.info(
+            f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
+        )
+        add_ttl_to_alarm_entry(alarm_entry)
 
     alarm_entry.last_updated = get_current_timestamp()
 
@@ -167,17 +173,27 @@ def update_alarm_table(
 
     logger.info(f"Updating alarm table entry for: {alarm_entry.alarm_name}")
 
+    fields_to_update = {
+        AlarmHistoryFields.HISTORY: alarm_entry.history,
+        AlarmHistoryFields.LASTUPDATED: int(datetime.now().timestamp()),
+    }
+
+    if alarm_entry.time_to_exist:
+        fields_to_update[AlarmHistoryFields.TIMETOEXIST] = alarm_entry.time_to_exist
+
     dynamo_service.update_item(
         table_name=table_name,
         key_pair={
             AlarmHistoryFields.ALARMNAME: alarm_entry.alarm_name,
             AlarmHistoryFields.TIMECREATED: alarm_entry.time_created,
         },
-        updated_fields={
-            AlarmHistoryFields.HISTORY: alarm_entry.history,
-            AlarmHistoryFields.LASTUPDATED: int(datetime.now().timestamp()),
-        },
+        updated_fields=fields_to_update,
     )
+
+
+def add_ttl_to_alarm_entry(alarm_entry: AlarmEntry):
+
+    alarm_entry.time_to_exist = int(datetime.now() + timedelta(minutes=5).timestamp())
 
 
 def create_alarm_entry(
