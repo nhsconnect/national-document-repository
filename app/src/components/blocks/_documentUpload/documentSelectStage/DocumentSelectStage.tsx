@@ -106,7 +106,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
 
         switch (documentType) {
             case DOCUMENT_TYPE.LLOYD_GEORGE:
-                title = 'Lloyd George documents';
+                title = 'Lloyd George files';
                 break;
         }
 
@@ -124,14 +124,11 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
             <div>
                 <h2 className="nhsuk-heading-m">Before you upload</h2>
                 <p>
-                    This feature is used for uploading documents where a patient doesn't already
-                    have a record in this service that you want to be added.
+                    You can upload files for patients that do not currently have a Lloyd George
+                    record stored in this service. Make sure that all files uploaded are for this
+                    patient only.
                 </p>
-                <p>
-                    You cannot add documents to an existing document of the same type without
-                    replacing the original.
-                </p>
-                <p>Files must be uploaded in a .PDF format.</p>
+                <p>Files must be uploaded in a PDF format.</p>
                 <p>
                     The{' '}
                     <a href="" target="_blank" rel="noreferrer">
@@ -141,7 +138,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                 </p>
             </div>
             <Fieldset.Legend id="upload-fieldset-legend" size="m">
-                Select the files you wish to upload
+                Select files to upload
             </Fieldset.Legend>
             <Fieldset>
                 <div
@@ -153,7 +150,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                         e.preventDefault();
                     }}
                     onDrop={onFileDrop}
-                    className={'lloydgeorge_drag-and-drop'}
+                    className={'lloydgeorge_drag-and-drop d-flex'}
                 >
                     <strong className="lg-input-bold">
                         Drag and drop a file or multiple files here

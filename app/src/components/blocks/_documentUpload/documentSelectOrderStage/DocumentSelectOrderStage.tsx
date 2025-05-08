@@ -124,8 +124,8 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
             )}
 
             <p>
-                Enter the number each file will sit in, in the digitised Lloyd George record with 1
-                being the first file at the start of the PDF.
+                Put the files in the order you need them by changing the positin number. The file
+                marked '1' will appear at the start of the combined pdf document.
             </p>
             <form
                 onSubmit={handleSubmit(submitDocuments, handleErrors)}
