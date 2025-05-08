@@ -42,10 +42,12 @@ class IMAlertingService:
             self.handle_new_alarm_episode(alarm_name, alarm_time, alarm_state)
 
         else:
-
             if all(
                 self.is_episode_expired(alarm_entry) for alarm_entry in alarm_entries
             ):
+                logger.info(
+                    f"All alarm entries for {self.format_alarm_name(alarm_name)} have expired, creating a new one"
+                )
                 self.handle_new_alarm_episode(
                     alarm_name=alarm_name,
                     alarm_state=alarm_state,
@@ -109,18 +111,11 @@ class IMAlertingService:
             f"Checking if {self.format_alarm_name(alarm_name)} already exists on alarm table"
         )
 
-        # query_filter = DynamoQueryFilterBuilder().add_condition(
-        #     attribute=AlarmHistoryFields.TIMETOEXIST,
-        #     attr_operator=AttributeOperator.LESS_THAN,
-        #     filter_value=int(datetime.now().timestamp()),
-        # )
-
         results = self.dynamo_service.query_table_by_index(
             table_name=self.table_name,
             index_name="AlarmNameIndex",
             search_key="AlarmName",
             search_condition=self.format_alarm_name(alarm_name),
-            # query_filter=query_filter,
         )
 
         return (
@@ -234,6 +229,10 @@ class IMAlertingService:
                                     "weight": "Bolder",
                                     "text": f"{alarm_entry.alarm_name} Alert",
                                     "wrap": True,
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": f"Entry: {alarm_entry.alarm_name}:{alarm_entry.time_created}",
                                 },
                                 {
                                     "type": "TextBlock",
