@@ -27,6 +27,7 @@ class S3Service:
                 retries={"max_attempts": 3, "mode": "standard"},
                 s3={"addressing_style": "virtual"},
                 signature_version="s3v4",
+                max_pool_connections=20,
             )
             self.presigned_url_expiry = 1800
             self.client = boto3.client("s3", config=self.config)
@@ -142,12 +143,12 @@ class S3Service:
             return False
         except ClientError as e:
             error_message = str(e)
-            logger.error(str(e), {"Result": "Failed to check if file exists on s3"})
             if (
                 "An error occurred (403)" in error_message
                 or "An error occurred (404)" in error_message
             ):
                 return False
+            logger.error(str(e), {"Result": "Failed to check if file exists on s3"})
             raise e
 
     def list_all_objects(self, bucket_name: str) -> list[dict]:

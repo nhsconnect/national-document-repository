@@ -1,5 +1,6 @@
 import csv
 import os
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from io import TextIOWrapper
@@ -30,9 +31,12 @@ class MetadataPreprocessorService:
             file_key=file_key, bucket_name=self.staging_store_bucket
         )
 
+        logger.info("Generating renaming map from metadata")
+        renaming_map = self.generate_renaming_map(metadata_rows)
+
         logger.info("Processing metadata filenames")
         updated_metadata_rows, rejected_rows, rejected_reasons = (
-            self.standardize_filenames(metadata_rows)
+            self.standardize_filenames(renaming_map)
         )
 
         successfully_moved_file = self.move_original_metadata_file(file_key)
@@ -40,24 +44,20 @@ class MetadataPreprocessorService:
             self.s3_service.delete_object(
                 s3_bucket_name=self.staging_store_bucket, file_key=file_key
             )
-        # save metadata file with new lines
-        self.generate_and_save_csv_file(metadata_rows, updated_metadata_rows, file_key)
 
-        # save file with rejected lines
+        self.generate_and_save_csv_file(updated_metadata_rows, file_key)
+
         if rejected_reasons:
             file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
-            self.generate_and_save_csv_file(
-                rejected_reasons, rejected_reasons, file_key
-            )
+            self.generate_and_save_csv_file(rejected_reasons, file_key)
 
     def generate_and_save_csv_file(
         self,
-        dictionary_with_headers: list[dict],
-        dictionary_with_rows: list[dict],
+        csv_dict: list[dict],
         file_key: str,
     ):
-        headers = dictionary_with_headers[0].keys() if dictionary_with_headers else []
-        csv_data = self.convert_csv_dictionary_to_bytes(headers, dictionary_with_rows)
+        headers = csv_dict[0].keys() if csv_dict else []
+        csv_data = self.convert_csv_dictionary_to_bytes(headers, csv_dict)
         logger.info(f"Writing file from buffer to {file_key}")
         self.s3_service.save_or_create_file(
             self.staging_store_bucket, file_key, BytesIO(csv_data)
@@ -79,7 +79,9 @@ class MetadataPreprocessorService:
         metadata_rows = list(data)
         return metadata_rows
 
-    def standardize_filenames(self, metadata_rows: list[dict], max_workers=10):
+    def standardize_filenames(
+        self, renaming_map: list[tuple[dict, dict]], max_workers=20
+    ):
         logger.info("Standardizing filenames")
 
         updated_rows = []
@@ -88,7 +90,8 @@ class MetadataPreprocessorService:
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [
-                executor.submit(self.process_metadata_row, row) for row in metadata_rows
+                executor.submit(self.process_metadata_row, original, renamed)
+                for original, renamed in renaming_map
             ]
 
             for future in as_completed(futures):
@@ -104,17 +107,16 @@ class MetadataPreprocessorService:
         logger.info("Finished updating and standardizing filenames")
         return updated_rows, rejected_rows, rejected_reasons
 
-    def process_metadata_row(self, row: dict):
-        original_file_name = row.get("FILEPATH")
-        updated_row = dict(row)
+    def process_metadata_row(self, original_row: dict, updated_row: dict):
         try:
-            new_file_name = self.validate_record_filename(original_file_name)
-            updated_row["FILEPATH"] = new_file_name
-            if new_file_name != original_file_name:
+            original_file_name = original_row.get("FILEPATH")
+            new_file_name = updated_row.get("FILEPATH")
+
+            if original_file_name != new_file_name:
                 self.update_record_filename(original_file_name, new_file_name)
             return True, updated_row, None
         except InvalidFileNameException as error:
-            return False, row, str(error)
+            return False, original_row, str(error)
 
     def validate_record_filename(self, file_name) -> str:
         try:
@@ -160,10 +162,32 @@ class MetadataPreprocessorService:
             logger.error(f"Failed to process {file_name} due to error: {error}")
             raise error
 
-    def update_record_filename(self, original_file_name: str, new_file_name: str):
-        original_file_key = f"{self.practice_directory}/{original_file_name}"
-        new_file_key = f"{self.practice_directory}/{new_file_name}"
+    def generate_renaming_map(self, metadata_rows: list[dict]):
+        duplicate_counts = defaultdict(int)
+        renaming_map = []
 
+        for row in metadata_rows:
+            original_row = row
+            renamed_row = row
+
+            original_filename = original_row.get("FILEPATH")
+            validated_filename = self.validate_record_filename(original_filename)
+            file_name_base, extension = os.path.splitext(validated_filename)
+
+            count = duplicate_counts[file_name_base]
+            new_filename = (
+                f"{file_name_base}({count}){extension}"
+                if count > 0
+                else validated_filename
+            )
+            duplicate_counts[file_name_base] += 1
+
+            renamed_row["FILEPATH"] = new_filename
+            renaming_map.append((original_row, renamed_row))
+
+        return renaming_map
+
+    def update_record_filename(self, original_file_key: str, new_file_key: str):
         logger.info(f"Renaming file `{original_file_key}` to `{new_file_key}`")
 
         try:
