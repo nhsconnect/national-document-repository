@@ -156,42 +156,6 @@ class MetadataPreprocessorService:
             logger.error(f"Failed to process {file_name} due to error: {error}")
             raise error
 
-    # def generate_renaming_map2(self, metadata_rows: list[dict]):
-    #     processed_metadata_rows = {}
-    #     renaming_map = []
-    #     rejected_rows = []
-    #     rejected_reasons = []
-    #
-    #     for row in metadata_rows:
-    #         original_filename = row.get("FILEPATH")
-    #         updated_row = row
-    #         try:
-    #             validated_filename = self.validate_record_filename(original_filename)
-    #             updated_row["FILEPATH"] = validated_filename
-    #             processed_metadata_rows[validated_filename].append(
-    #                 {"original_row": row, "updated_row": updated_row}
-    #             )
-    #         except InvalidFileNameException as error:
-    #             rejected_rows.append(row)
-    #             rejected_reasons.append(
-    #                 {"FILEPATH": row.get("FILEPATH"), "REASON": error}
-    #             )
-    #
-    #     # non_duplicated_entries = {validated: records for validated, records in metadata_rows.items() if len(records) == 1}
-    #     for key, entries in processed_metadata_rows.items():
-    #         if len(entries) == 1:
-    #             renaming_map.append((entries.value["original_row"], entries.value["updated_row"]))
-    #         elif len(entries) > 1:
-    #             rejected_rows.append(entries.value["original_row"])
-    #             rejected_reasons.append(
-    #                 {
-    #                     "FILEPATH": entries.value["original_row"].get("FILEPATH"),
-    #                     "REASON": "Duplicate filename after renaming"
-    #                 }
-    #             )
-    #
-    #     return renaming_map, rejected_rows, rejected_reasons
-
     def generate_renaming_map(self, metadata_rows: list[dict]):
         duplicate_counts = defaultdict(int)
         renaming_map = []
@@ -229,8 +193,8 @@ class MetadataPreprocessorService:
         return renaming_map, rejected_rows, rejected_reasons
 
     def update_record_filename(self, original_row: dict, updated_row: dict):
-        original_file_key = original_row.get("FILEPATH")
-        new_file_key = updated_row.get("FILEPATH")
+        original_file_key = original_row.get("FILEPATH").lstrip("/")
+        new_file_key = updated_row.get("FILEPATH").lstrip("/")
 
         logger.info(f"Renaming file `{original_file_key}` to `{new_file_key}`")
 

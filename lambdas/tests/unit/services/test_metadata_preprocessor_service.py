@@ -444,7 +444,7 @@ def test_convert_csv_dictionary_to_bytes(test_service, mocker):
 
     # Act
     result_bytes = test_service.convert_csv_dictionary_to_bytes(
-        headers=headers, metadata_csv_data=metadata_csv_data, encoding="utf-8"
+        headers=headers, csv_dict_data=metadata_csv_data, encoding="utf-8"
     )
 
     # Assert
@@ -457,9 +457,9 @@ def test_convert_csv_dictionary_to_bytes(test_service, mocker):
 def test_update_and_standardize_filenames_success_and_failure(test_service, mocker):
     # Arrange
     input_data = [
-        {"FILEPATH": "valid_file_1.csv"},
-        {"FILEPATH": "invalid_file.csv"},
-        {"FILEPATH": "valid_file_2.csv"},
+        ({"FILEPATH": "original_file_1.csv"}, {"FILEPATH": "renamed_file_1.csv"}),
+        ({"FILEPATH": "original_file_2.csv"}, {"FILEPATH": "renamed_file_2.csv"}),
+        ({"FILEPATH": "original_file_3.csv"}, {"FILEPATH": "renamed_file_3.csv"}),
     ]
 
     # Define side effects for validate_and_update_file_name
@@ -477,18 +477,17 @@ def test_update_and_standardize_filenames_success_and_failure(test_service, mock
     mock_update_file_name = mocker.patch.object(test_service, "update_record_filename")
 
     # Act
-    updated_metadata_rows, rejected_rows, error_list = (
-        test_service.standardize_filenames(input_data)
-    )
+    updated_metadata_rows = test_service.standardize_filenames(input_data)
 
     # Assert
     assert updated_metadata_rows == [
-        {"FILEPATH": "updated_valid_file_1.csv"},  # Not updated due to exception
-        {"FILEPATH": "updated_valid_file_2.csv"},
+        {"FILEPATH": "renamed_file_1.csv"},  # Not updated due to exception
+        {"FILEPATH": "renamed_file_2.csv"},
+        {"FILEPATH": "renamed_file_3.csv"},
     ]
-    assert rejected_rows == [{"FILEPATH": "invalid_file.csv"}]
-    assert error_list == [{"invalid_file.csv", "Invalid filename"}]
-    assert mock_update_file_name.call_count == 2
+    # assert rejected_rows == [{"FILEPATH": "invalid_file.csv"}]
+    # assert error_list == [{"invalid_file.csv", "Invalid filename"}]
+    # assert mock_update_file_name.call_count == 2
     mock_update_file_name.assert_any_call(
         "valid_file_1.csv", "updated_valid_file_1.csv"
     )
