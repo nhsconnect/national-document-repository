@@ -32,13 +32,12 @@ class MetadataPreprocessorService:
         )
 
         logger.info("Generating renaming map from metadata")
-        updated_rows, rejected_rows, rejected_reasons = self.generate_renaming_map(
+        renaming_map, rejected_rows, rejected_reasons = self.generate_renaming_map(
             metadata_rows
         )
 
         logger.info("Processing metadata filenames")
-
-        self.standardize_filenames(updated_rows)
+        updated_metadata_rows = self.standardize_filenames(renaming_map)
 
         successfully_moved_file = self.move_original_metadata_file(file_key)
         if successfully_moved_file:
@@ -46,7 +45,7 @@ class MetadataPreprocessorService:
                 s3_bucket_name=self.staging_store_bucket, file_key=file_key
             )
 
-        # self.generate_and_save_csv_file(updated_metadata_rows, file_key)
+        self.generate_and_save_csv_file(updated_metadata_rows, file_key)
 
         if rejected_reasons:
             file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
@@ -86,38 +85,31 @@ class MetadataPreprocessorService:
         logger.info("Standardizing filenames")
 
         updated_rows = []
-        rejected_rows = []
-        rejected_reasons = []
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [
-                executor.submit(self.process_metadata_row, original, renamed)
+                executor.submit(self.update_record_filename, original, renamed)
                 for original, renamed in renaming_map
             ]
 
             for future in as_completed(futures):
-                successful, row_data, error = future.result()
-                if successful:
-                    updated_rows.append(row_data)
-                else:
-                    rejected_rows.append(row_data)
-                    rejected_reasons.append(
-                        {"FILEPATH": row_data.get("FILEPATH"), "REASON": error}
-                    )
+                updated_row = future.result()
+                if updated_row:
+                    updated_rows.append(updated_row)
 
         logger.info("Finished updating and standardizing filenames")
-        return updated_rows, rejected_rows, rejected_reasons
+        return updated_rows
 
-    def process_metadata_row(self, original_row: dict, updated_row: dict):
-        try:
-            original_file_name = original_row.get("FILEPATH")
-            new_file_name = updated_row.get("FILEPATH")
-
-            if original_file_name != new_file_name:
-                self.update_record_filename(original_file_name, new_file_name)
-            return True, updated_row, None
-        except InvalidFileNameException as error:
-            return False, original_row, str(error)
+    # def process_metadata_row(self, original_row: dict, updated_row: dict):
+    #     try:
+    #         original_file_name = original_row.get("FILEPATH")
+    #         new_file_name = updated_row.get("FILEPATH")
+    #
+    #         if original_file_name != new_file_name:
+    #             self.update_record_filename(original_file_name, new_file_name)
+    #         return True, updated_row, None
+    #     except InvalidFileNameException as error:
+    #         return False, original_row, str(error)
 
     def validate_record_filename(self, file_name) -> str:
         try:
@@ -163,40 +155,47 @@ class MetadataPreprocessorService:
             logger.error(f"Failed to process {file_name} due to error: {error}")
             raise error
 
+    # def generate_renaming_map2(self, metadata_rows: list[dict]):
+    #     processed_metadata_rows = {}
+    #     renaming_map = []
+    #     rejected_rows = []
+    #     rejected_reasons = []
+    #
+    #     for row in metadata_rows:
+    #         original_filename = row.get("FILEPATH")
+    #         updated_row = row
+    #         try:
+    #             validated_filename = self.validate_record_filename(original_filename)
+    #             updated_row["FILEPATH"] = validated_filename
+    #             processed_metadata_rows[validated_filename].append(
+    #                 {"original_row": row, "updated_row": updated_row}
+    #             )
+    #         except InvalidFileNameException as error:
+    #             rejected_rows.append(row)
+    #             rejected_reasons.append(
+    #                 {"FILEPATH": row.get("FILEPATH"), "REASON": error}
+    #             )
+    #
+    #     # non_duplicated_entries = {validated: records for validated, records in metadata_rows.items() if len(records) == 1}
+    #     for key, entries in processed_metadata_rows.items():
+    #         if len(entries) == 1:
+    #             renaming_map.append((entries.value["original_row"], entries.value["updated_row"]))
+    #         elif len(entries) > 1:
+    #             rejected_rows.append(entries.value["original_row"])
+    #             rejected_reasons.append(
+    #                 {
+    #                     "FILEPATH": entries.value["original_row"].get("FILEPATH"),
+    #                     "REASON": "Duplicate filename after renaming"
+    #                 }
+    #             )
+    #
+    #     return renaming_map, rejected_rows, rejected_reasons
+
     def generate_renaming_map(self, metadata_rows: list[dict]):
-        processed_metadata_rows = {}
-
-        updated_rows = []
-        rejected_rows = []
-        rejected_reasons = []
-
-        for row in metadata_rows:
-            original_filename = row.get("FILEPATH")
-            renamed_row = row
-            try:
-                validated_filename = self.validate_record_filename(original_filename)
-                renamed_row["FILEPATH"] = validated_filename
-                processed_metadata_rows[validated_filename].append(
-                    {"original_row": row, "validated_row": renamed_row}
-                )
-            except InvalidFileNameException as error:
-                rejected_rows.append(row)
-                rejected_reasons.append(
-                    {"FILEPATH": row.get("FILEPATH"), "REASON": error}
-                )
-
-        # non_duplicated_entries = {validated: records for validated, records in metadata_rows.items() if len(records) == 1}
-        for key, entries in processed_metadata_rows.items():
-            if len(entries) == 1:
-                updated_rows.append(entries.value["validated_row"])
-            elif len(entries) > 1:
-                rejected_rows.append(entries.value["validated_row"])
-
-        return updated_rows, rejected_rows, rejected_reasons
-
-    def generate_renaming_map2(self, metadata_rows: list[dict]):
         duplicate_counts = defaultdict(int)
         renaming_map = []
+        rejected_rows = []
+        rejected_reasons = []
 
         for row in metadata_rows:
             original_row = row
@@ -204,24 +203,28 @@ class MetadataPreprocessorService:
 
             original_filename = original_row.get("FILEPATH")
             validated_filename = self.validate_record_filename(original_filename)
-            file_name_base, extension = os.path.splitext(
-                validated_filename
-            )  # how does this work
 
-            count = duplicate_counts[file_name_base]
-            new_filename = (
-                f"{file_name_base}({count}){extension}"
-                if count > 0
-                else validated_filename
-            )
-            duplicate_counts[file_name_base] += 1
+            count = duplicate_counts[validated_filename]
 
-            renamed_row["FILEPATH"] = new_filename
-            renaming_map.append((original_row, renamed_row))
+            if count > 0:
+                renaming_map.append((original_row, renamed_row))
+            else:
+                rejected_rows.append(original_row)
+                rejected_reasons.append(
+                    {
+                        "FILEPATH": original_row.get("FILEPATH"),
+                        "REASON": "Duplicate filename after renaming",
+                    }
+                )
 
-        return renaming_map
+            duplicate_counts[validated_filename] += 1
 
-    def update_record_filename(self, original_file_key: str, new_file_key: str):
+        return renaming_map, rejected_rows, rejected_reasons
+
+    def update_record_filename(self, original_row: dict, updated_row: dict):
+        original_file_key = original_row.get("FILEPATH")
+        new_file_key = updated_row.get("FILEPATH")
+
         logger.info(f"Renaming file `{original_file_key}` to `{new_file_key}`")
 
         try:
@@ -237,7 +240,7 @@ class MetadataPreprocessorService:
             error_code = e.response["Error"]["Code"]
             if error_code == "NoSuchKey":
                 logger.info(f"File {original_file_key} doesn't exist")
-                return
+                return None
             else:
                 logger.error(f"Failed update filename for `{original_file_key}`: {e}")
                 raise MetadataPreprocessingException("Failed to update filename")
@@ -245,6 +248,8 @@ class MetadataPreprocessorService:
         self.s3_service.client.delete_object(
             Bucket=self.staging_store_bucket, Key=original_file_key
         )
+
+        return updated_row
 
     def move_original_metadata_file(self, file_key: str):
         destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/{METADATA_FILENAME}"
