@@ -115,6 +115,7 @@ class MetadataPreprocessorService:
         try:
             logger.info(f"Processing file name {file_name}")
 
+            # file_path_prefix, current_file_name = self.extract_document_path(file_name)
             file_path_prefix, current_file_name = self.extract_document_path(file_name)
             first_document_number, second_document_number, current_file_name = (
                 self.extract_document_number_bulk_upload_file_name(current_file_name)
@@ -334,15 +335,19 @@ class MetadataPreprocessorService:
         file_path: str,
     ) -> tuple[str, str]:
         document_number_expression = r"(.*[/])*((\d+)[^0-9]*of[^0-9]*(\d+)(.*))"
+
         expression_result = regex.search(rf"{document_number_expression}", file_path)
 
         if expression_result is None:
             logger.info("Failed to find the document number in file name")
             raise InvalidFileNameException("incorrect document number format")
 
-        file_path = expression_result.group(1)
         current_file_path = expression_result.group(2)
-
+        if expression_result.group(1) is None:
+            file_path = file_path.replace(current_file_path, "")
+            file_path = file_path[: file_path.rfind("/") + 1]
+        else:
+            file_path = expression_result.group(1)
         return file_path, current_file_path
 
     @staticmethod

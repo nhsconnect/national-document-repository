@@ -115,6 +115,13 @@ def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
                 "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
             ),
         ),
+        (
+            "/M89002/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+            (
+                "/M89002/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+            ),
+        ),
     ],
 )
 def test_extract_document_path(test_service, value, expected):
