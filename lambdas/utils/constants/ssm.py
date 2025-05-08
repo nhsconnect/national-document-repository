@@ -1,4 +1,4 @@
-GP_ADMIN_USER_ROLE_CODES = "/auth/smartcard/role/gp_admin_test"  ##change back when done
+GP_ADMIN_USER_ROLE_CODES = "/auth/smartcard/role/gp_admin"
 GP_CLINICAL_USER_ROLE_CODE = "/auth/smartcard/role/gp_clinical"
 PCSE_USER_ROLE_CODE = "/auth/smartcard/role/pcse"
 
