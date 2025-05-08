@@ -26,55 +26,55 @@ class IMAlertingService:
         self.confluence_base_url = os.environ["CONFLUENCE_BASE_URL"]
         self.message = message
 
-    def handle_alarm_alert(self, message):
+    def handle_alarm_alert(self):
 
-        alarm_name = message["AlarmName"]
+        alarm_name = self.message["AlarmName"]
         # alarm_description = message["AlarmDescription"]
-        alarm_state = message["NewStateValue"]
-        alarm_time = message["StateChangeTime"]
+        alarm_state = self.message["NewStateValue"]
+        alarm_time = self.message["StateChangeTime"]
 
         alarm_entries = self.get_alarm_history(alarm_name)
 
         if not alarm_entries:
-            logger.info(f"No alarm history for {alarm_name}")
+            logger.info(
+                f"No current alarm history for {self.format_alarm_name(alarm_name)}"
+            )
             self.handle_new_alarm_episode(alarm_name, alarm_time, alarm_state)
 
         else:
-            for alarm_entry in alarm_entries:
-                if self.is_active_episode(alarm_entry):
-                    self.handle_current_alarm_episode(
-                        alarm_entry=alarm_entry,
-                        alarm_name=alarm_name,
-                        alarm_state=alarm_state,
-                    )
 
-                elif self.is_episode_expired(alarm_entry):
-                    self.handle_new_alarm_episode(
-                        alarm_name=alarm_name,
-                        alarm_state=alarm_state,
-                        alarm_time=alarm_time,
-                    )
+            if all(
+                self.is_episode_expired(alarm_entry) for alarm_entry in alarm_entries
+            ):
+                self.handle_new_alarm_episode(
+                    alarm_name=alarm_name,
+                    alarm_state=alarm_state,
+                    alarm_time=alarm_time,
+                )
 
-                elif alarm_entry.time_to_exist:
-                    alarm_entry.time_to_exist = None
-                    self.handle_current_alarm_episode(
-                        alarm_entry=alarm_entry,
-                        alarm_name=alarm_name,
-                        alarm_state=alarm_state,
-                    )
+            else:
+                for alarm_entry in alarm_entries:
+                    if not self.is_episode_expired(alarm_entry):
+                        self.handle_current_alarm_episode(
+                            alarm_entry=alarm_entry,
+                            alarm_name=alarm_name,
+                            alarm_state=alarm_state,
+                        )
 
     def is_episode_expired(self, alarm_entry: AlarmEntry) -> bool:
-        current_time = datetime.now().timestamp()
 
-        return current_time >= alarm_entry.expires_at
-
-    def is_active_episode(self, alarm_entry: AlarmEntry) -> bool:
-        return False if alarm_entry.time_to_exist else True
+        if alarm_entry.time_to_exist:
+            current_time = datetime.now().timestamp()
+            return current_time >= alarm_entry.time_to_exist
+        else:
+            return False
 
     def handle_new_alarm_episode(
         self, alarm_name: str, alarm_time: str, alarm_state: str
     ):
-        logger.info(f"Creating new alarm episode {alarm_name}:{alarm_time}")
+        logger.info(
+            f"Creating new alarm episode {self.format_alarm_name(alarm_name)}:{self.create_alarm_timestamp(alarm_time)}"
+        )
         new_entry = AlarmEntry(
             alarm_name=self.format_alarm_name(alarm_name),
             time_created=self.create_alarm_timestamp(alarm_time),
@@ -84,7 +84,6 @@ class IMAlertingService:
         AlarmEntry.model_validate(new_entry)
         self.update_alarm_state_history(new_entry, alarm_state, alarm_name)
         self.create_alarm_entry(new_entry)
-        self.send_teams_alert(new_entry)
 
     def handle_current_alarm_episode(
         self, alarm_entry: AlarmEntry, alarm_state: str, alarm_name: str
@@ -93,8 +92,7 @@ class IMAlertingService:
             f"Updating alarm episode {alarm_entry.alarm_name}:{alarm_entry.time_created}"
         )
         self.update_alarm_state_history(alarm_entry, alarm_state, alarm_name)
-        self.update_alarm_state_history(alarm_entry)
-        self.send_teams_alert(alarm_entry)
+        self.update_alarm_table(alarm_entry)
 
     def create_alarm_entry(self, alarm_entry: AlarmEntry):
         new_entry = alarm_entry.model_dump(
@@ -110,12 +108,21 @@ class IMAlertingService:
         logger.info(
             f"Checking if {self.format_alarm_name(alarm_name)} already exists on alarm table"
         )
+
+        # query_filter = DynamoQueryFilterBuilder().add_condition(
+        #     attribute=AlarmHistoryFields.TIMETOEXIST,
+        #     attr_operator=AttributeOperator.LESS_THAN,
+        #     filter_value=int(datetime.now().timestamp()),
+        # )
+
         results = self.dynamo_service.query_table_by_index(
             table_name=self.table_name,
             index_name="AlarmNameIndex",
             search_key="AlarmName",
             search_condition=self.format_alarm_name(alarm_name),
+            # query_filter=query_filter,
         )
+
         return (
             [AlarmEntry.model_validate(item) for item in results["Items"]]
             if results
@@ -130,6 +137,8 @@ class IMAlertingService:
             for key in self.alarm_severities.keys():
                 if alarm_name.endswith(key):
                     alarm_entry.history.append(self.alarm_severities[key])
+            alarm_entry.time_to_exist = None
+            self.send_teams_alert(alarm_entry)
 
         if current_state == "OK" and self.all_alarm_state_ok(alarm_name):
             alarm_entry.history.append(self.alarm_severities["ok"])
@@ -137,25 +146,22 @@ class IMAlertingService:
                 f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
             )
             self.add_ttl_to_alarm_entry(alarm_entry)
+            self.send_teams_alert(alarm_entry)
 
         alarm_entry.last_updated = int(datetime.now().timestamp())
 
-    def update_alarm_table(
-        self, dynamo_service: DynamoDBService, table_name, alarm_entry: AlarmEntry
-    ) -> str:
+    def update_alarm_table(self, alarm_entry: AlarmEntry) -> str:
 
         logger.info(f"Updating alarm table entry for: {alarm_entry.alarm_name}")
 
         fields_to_update = {
             AlarmHistoryFields.HISTORY: alarm_entry.history,
             AlarmHistoryFields.LASTUPDATED: int(datetime.now().timestamp()),
+            AlarmHistoryFields.TIMETOEXIST: alarm_entry.time_to_exist,
         }
 
-        if alarm_entry.time_to_exist:
-            fields_to_update[AlarmHistoryFields.TIMETOEXIST] = alarm_entry.time_to_exist
-
-        dynamo_service.update_item(
-            table_name=table_name,
+        self.dynamo_service.update_item(
+            table_name=self.table_name,
             key_pair={
                 AlarmHistoryFields.ALARMNAME: alarm_entry.alarm_name,
                 AlarmHistoryFields.TIMECREATED: alarm_entry.time_created,
@@ -179,7 +185,7 @@ class IMAlertingService:
 
     def add_ttl_to_alarm_entry(self, alarm_entry: AlarmEntry):
         alarm_entry.time_to_exist = int(
-            datetime.now() + timedelta(minutes=5).timestamp()
+            (datetime.now() + timedelta(minutes=5)).timestamp()
         )
 
     def create_alarm_timestamp(slef, alarm_time: str) -> int:
