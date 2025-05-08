@@ -59,6 +59,7 @@ export enum routeChildren {
     PATIENT_ACCESS_AUDIT_DECEASED = '/patient/access-audit/deceased',
 
     DOCUMENT_UPLOAD_SELECT_ORDER = '/patient/document-upload/select-order',
+    DOCUMENT_UPLOAD_REMOVE_ALL = '/patient/document-upload/remove-all',
     DOCUMENT_UPLOAD_CONFIRMATION = '/patient/document-upload/confirmation',
     DOCUMENT_UPLOAD_UPLOADING = '/patient/document-upload/in-progress',
     DOCUMENT_UPLOAD_COMPLETED = '/patient/document-upload/completed',

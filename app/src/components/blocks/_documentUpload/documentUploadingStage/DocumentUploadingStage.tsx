@@ -33,7 +33,7 @@ const DocumentUploadingStage = ({ documents }: Props) => {
             >
                 <Table.Head>
                     <Table.Row>
-                        <Table.Cell>File name</Table.Cell>
+                        <Table.Cell>Filename</Table.Cell>
                         <Table.Cell>Upload progress</Table.Cell>
                     </Table.Row>
                 </Table.Head>

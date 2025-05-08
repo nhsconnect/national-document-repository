@@ -110,7 +110,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                 break;
         }
 
-        return `Select ${title} to upload for this patient`;
+        return `Select ${title} to upload`;
     };
 
     useTitle({ pageTitle: pageTitle() });
@@ -125,21 +125,19 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                 <h2 className="nhsuk-heading-m">Before you upload</h2>
                 <p>
                     This feature is used for uploading documents where a patient doesn't already
-                    have a record in this service that you want to be added{' '}
-                    <i>
-                        or to upload a record that will replace/create a newer version of the record
-                        for this patient. This is usually done when a record needs to be corrected
-                        for example if documents are found to be belonging to another patient.
-                    </i>
+                    have a record in this service that you want to be added.
                 </p>
                 <p>
                     You cannot add documents to an existing document of the same type without
                     replacing the original.
                 </p>
+                <p>Files must be uploaded in a .PDF format.</p>
                 <p>
-                    There are scanning standards that must be adhered to. Ensure documents are
-                    compliant before uploading. The Scanning Standards can be found{' '}
-                    <a target="_blank">here.</a>
+                    The{' '}
+                    <a href="" target="_blank" rel="noreferrer">
+                        Scanning standards
+                    </a>{' '}
+                    offers more guidance on standards for uploading files.
                 </p>
             </div>
             <Fieldset.Legend id="upload-fieldset-legend" size="m">
@@ -209,7 +207,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                             </Table.Row>
                             <Table.Row>
                                 <Table.Cell style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}>
-                                    File name
+                                    Filename
                                 </Table.Cell>
                                 <Table.Cell
                                     width="20%"
@@ -254,7 +252,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                         type="button"
                         style={{ paddingLeft: 0, paddingBottom: '25px' }}
                         onClick={() => {
-                            onRemove(-1);
+                            navigate(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL);
                         }}
                     >
                         Remove all

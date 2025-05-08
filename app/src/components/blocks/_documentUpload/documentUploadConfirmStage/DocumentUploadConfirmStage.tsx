@@ -11,15 +11,13 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
 import { useState } from 'react';
 import Pagination from '../../../generic/pagination/Pagination';
-import PdfViewer from '../../../generic/pdfViewer/PdfViewer';
 
 type Props = {
     documents: UploadDocument[];
-    setDocuments: SetUploadDocuments;
     startUpload: () => Promise<void>;
 };
 
-const DocumentUploadConfirmStage = ({ documents, setDocuments, startUpload }: Props) => {
+const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
     const [currentPage, setCurrentPage] = useState<number>(0);
     const navigate = useNavigate();
     const pageSize = 10;
@@ -40,7 +38,10 @@ const DocumentUploadConfirmStage = ({ documents, setDocuments, startUpload }: Pr
         <div className="document-upload-confirm">
             <BackButton />
             <h1>{pageTitle}</h1>
-            <p>Files will be uploaded as 1 continuous PDF document for:</p>
+            <p>
+                All Lloyd George files will be combined into a single PDF document to create a
+                digital Lloyd George record for:
+            </p>
             <PatientSimpleSummary />
 
             <div style={{ borderBottom: '1px solid black' }}>
@@ -65,9 +66,9 @@ const DocumentUploadConfirmStage = ({ documents, setDocuments, startUpload }: Pr
             <Table id="selected-documents-table">
                 <Table.Head>
                     <Table.Row>
-                        <Table.Cell width="80%">File name</Table.Cell>
+                        <Table.Cell width="80%">Filename</Table.Cell>
                         <Table.Cell style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}>
-                            Document position
+                            Position
                         </Table.Cell>
                     </Table.Row>
                 </Table.Head>

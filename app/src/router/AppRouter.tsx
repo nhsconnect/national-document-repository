@@ -163,6 +163,10 @@ export const childRoutes = [
         parent: DOCUMENT_UPLOAD,
     },
     {
+        route: routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
         route: routeChildren.DOCUMENT_UPLOAD_CONFIRMATION,
         parent: DOCUMENT_UPLOAD,
     },

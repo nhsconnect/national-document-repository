@@ -31,6 +31,7 @@ import DocumentUploadingStage from '../../components/blocks/_documentUpload/docu
 import JSZip from 'jszip';
 import { v4 as uuidv4 } from 'uuid';
 import DocumentUploadCompleteStage from '../../components/blocks/_documentUpload/documentUploadCompleteStage/DocumentUploadCompleteStage';
+import DocumentUploadRemoveFilesStage from '../../components/blocks/_documentUpload/documentUploadRemoveFilesStage/DocumentUploadRemoveFilesStage';
 
 function DocumentUploadPage() {
     const patientDetails = usePatient();
@@ -66,7 +67,6 @@ function DocumentUploadPage() {
             if (!uploadSession) {
                 return;
             }
-            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
             try {
                 const confirmDocumentState = isLocal
                     ? DOCUMENT_UPLOAD_STATE.SUCCEEDED
@@ -323,11 +323,20 @@ function DocumentUploadPage() {
                         }
                     />
                     <Route
+                        path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL) + '/*'}
+                        element={
+                            <DocumentUploadRemoveFilesStage
+                                documents={documents}
+                                setDocuments={setDocuments}
+                                documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                            />
+                        }
+                    />
+                    <Route
                         path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION) + '/*'}
                         element={
                             <DocumentUploadConfirmStage
                                 documents={documents}
-                                setDocuments={setDocuments}
                                 startUpload={submitDocuments}
                             />
                         }

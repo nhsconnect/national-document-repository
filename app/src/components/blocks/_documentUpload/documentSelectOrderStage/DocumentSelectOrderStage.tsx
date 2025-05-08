@@ -30,7 +30,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
-    const pageTitle = 'What order do you want the Lloyd George documents in?';
+    const pageTitle = 'What order do you want these files in?';
     useTitle({ pageTitle });
 
     const documentPositionKey = (documentId: string): string => {
@@ -137,11 +137,11 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                         <Table id="selected-documents-table">
                             <Table.Head>
                                 <Table.Row>
-                                    <Table.Cell width="45%">File name</Table.Cell>
+                                    <Table.Cell width="45%">Filename</Table.Cell>
                                     <Table.Cell
                                         style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
                                     >
-                                        Document position
+                                        Position
                                     </Table.Cell>
                                     <Table.Cell
                                         style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
@@ -218,7 +218,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                     <LinkButton
                         type="button"
                         onClick={() => {
-                            onRemove(-1);
+                            navigate(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL);
                         }}
                     >
                         Remove all
