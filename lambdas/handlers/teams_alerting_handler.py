@@ -28,4 +28,5 @@ def lambda_handler(event, context):
         message = json.loads(sns_message["Sns"]["Message"])
         logger.info(f"Processing message: {message}")
 
-        IMAlertingService.handle_alarm_alert(message)
+        message_service = IMAlertingService(message)
+        message_service.handle_alarm_alert()
