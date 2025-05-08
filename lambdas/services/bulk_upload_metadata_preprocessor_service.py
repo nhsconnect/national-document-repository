@@ -88,8 +88,8 @@ class MetadataPreprocessorService:
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [
-                executor.submit(self.update_record_filename, original, renamed)
-                for original, renamed in renaming_map
+                executor.submit(self.update_record_filename, original_row, updated_row)
+                for original_row, updated_row in renaming_map
             ]
 
             for future in as_completed(futures):
@@ -197,27 +197,33 @@ class MetadataPreprocessorService:
         rejected_rows = []
         rejected_reasons = []
 
-        for row in metadata_rows:
-            original_row = row
-            renamed_row = row
+        for original_row in metadata_rows:
+            renamed_row = original_row.copy()
 
             original_filename = original_row.get("FILEPATH")
-            validated_filename = self.validate_record_filename(original_filename)
 
-            count = duplicate_counts[validated_filename]
+            try:
+                validated_filename = self.validate_record_filename(original_filename)
+                renamed_row["FILEPATH"] = validated_filename
+                count = duplicate_counts[validated_filename]
 
-            if count > 0:
-                renaming_map.append((original_row, renamed_row))
-            else:
+                if count == 0:
+                    renaming_map.append((original_row, renamed_row))
+                else:
+                    rejected_rows.append(original_row)
+                    rejected_reasons.append(
+                        {
+                            "FILEPATH": original_filename,
+                            "REASON": "Duplicate filename after renaming",
+                        }
+                    )
+
+                duplicate_counts[validated_filename] += 1
+            except InvalidFileNameException as error:
                 rejected_rows.append(original_row)
                 rejected_reasons.append(
-                    {
-                        "FILEPATH": original_row.get("FILEPATH"),
-                        "REASON": "Duplicate filename after renaming",
-                    }
+                    {"FILEPATH": original_row.get("FILEPATH"), "REASON": error}
                 )
-
-            duplicate_counts[validated_filename] += 1
 
         return renaming_map, rejected_rows, rejected_reasons
 
