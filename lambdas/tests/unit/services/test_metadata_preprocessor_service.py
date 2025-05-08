@@ -216,17 +216,19 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
     assert str(exc_info.value) == "incorrect person name format"
 
 
-def test_correctly_extract_nhs_number_from_bulk_upload_file_name(test_service):
-    # paths, expected_results
-    test_cases = [
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
         ("_-9991211234-12012024", ("9991211234", "-12012024")),
         ("_-9-99/12?11\/234-12012024", ("9991211234", "-12012024")),
         ("_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024")),
-    ]
-
-    for input_str, expected in test_cases:
-        actual = test_service.extract_nhs_number_from_bulk_upload_file_name(input_str)
-        assert actual == expected
+    ],
+)
+def test_correctly_extract_nhs_number_from_bulk_upload_file_name(
+    test_service, input, expected
+):
+    actual = test_service.extract_nhs_number_from_bulk_upload_file_name(input)
+    assert actual == expected
 
 
 def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_service):
@@ -238,19 +240,22 @@ def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_serv
     assert str(exc_info.value) == "incorrect NHS number format"
 
 
-def test_correctly_extract_date_from_bulk_upload_file_name(test_service):
-    test_cases = [
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
         ("-12012024.txt", ("12", "01", "2024", ".txt")),
         ("-12.01.2024.csv", ("12", "01", "2024", ".csv")),
         ("-12-01-2024.txt", ("12", "01", "2024", ".txt")),
         ("-12-1-2024.txt", ("12", "01", "2024", ".txt")),
         ("-1-01-2024.txt", ("01", "01", "2024", ".txt")),
         ("13-12-2023.pdf", ("13", "12", "2023", ".pdf")),
-    ]
-
-    for input_str, expected in test_cases:
-        actual = test_service.extract_date_from_bulk_upload_file_name(input_str)
-        assert actual == expected
+    ],
+)
+def test_correctly_extract_date_from_bulk_upload_file_name(
+    test_service, input, expected
+):
+    actual = test_service.extract_date_from_bulk_upload_file_name(input)
+    assert actual == expected
 
 
 def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
@@ -264,19 +269,20 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
     assert str(exc_info.value) == "incorrect date format"
 
 
-def test_correctly_extract_file_extension_from_bulk_upload_file_name(test_service):
-    test_cases = [
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
         (".txt", ".txt"),
         ("cool_stuff.txt", ".txt"),
         ("{}.[].txt", ".txt"),
         (".csv", ".csv"),
-    ]
-
-    for input_str, expected in test_cases:
-        actual = test_service.extract_file_extension_from_bulk_upload_file_name(
-            input_str
-        )
-        assert actual == expected
+    ],
+)
+def test_correctly_extract_file_extension_from_bulk_upload_file_name(
+    test_service, input, expected
+):
+    actual = test_service.extract_file_extension_from_bulk_upload_file_name(input)
+    assert actual == expected
 
 
 def test_extract_file_extension_from_bulk_upload_file_name_with_incorrect_file_extension_format(
