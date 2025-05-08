@@ -85,7 +85,7 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
         return_value=mock_ods_responses["pcse_org"],
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_org_ods_codes", return_value=["X4S4L"]
+        TokenHandlerSSMService, "get_pcse_ods_code", return_value=["X4S4L"]
     )
     pcse_ods = "X4S4L"
     expected = {
@@ -109,10 +109,10 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
         return_value=mock_ods_responses["gp_org"],
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_org_role_codes", return_value="RO76"
+        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_org_ods_codes", return_value=["X4S4L"]
+        TokenHandlerSSMService, "get_pcse_ods_code", return_value=["X4S4L"]
     )
     gp_ods = "A9A5A"
     expected = {
@@ -138,10 +138,10 @@ def test_fetch_org_with_permitted_role_returns_empty_list_when_not_gp_or_pcse(
         return_value=mock_ods_responses["not_gp_or_pcse"],
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_org_role_codes", return_value="RO76"
+        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_org_ods_codes", return_value=["X4S4L"]
+        TokenHandlerSSMService, "get_pcse_ods_code", return_value=["X4S4L"]
     )
     ods = "OD5"
     expected = {}

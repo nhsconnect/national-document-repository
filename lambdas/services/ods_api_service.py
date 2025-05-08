@@ -55,22 +55,45 @@ class OdsApiService:
 
         logger.info(f"Org Data: {org_data}")
 
-        pcse_ods = find_and_get_pcse_ods(ods_code)
+        pcse_ods_code = token_handler_ssm_service.get_pcse_ods_code()
 
-        if pcse_ods is not None:
+        if ods_code == pcse_ods_code:
             logger.info(f"ODS code {ods_code} is PCSE, returning org data")
             response = parse_ods_response(org_data, "", "PCSE")
             return response
 
-        gpp_org = find_and_get_gpp_org_code(org_data)
+        gp_org_role_code = get_gp_org_role_code(org_data)
 
-        if gpp_org is not None:
-            logger.info(f"ODS code {ods_code} is a GPP, returning org data")
+        if gp_org_role_code is not None:
+            logger.info(f"ODS code {ods_code} is a GP, returning org data")
             icb_ods_code = find_icb_for_user(org_data["Organisation"])
-            response = parse_ods_response(org_data, gpp_org, icb_ods_code)
+            response = parse_ods_response(org_data, gp_org_role_code, icb_ods_code)
             return response
 
-        logger.info(f"ODS code {ods_code} is not a GPP or PCSE, returning empty list")
+        allowed_ods_code_list = (
+            token_handler_ssm_service.get_allowed_list_of_ods_codes()
+        )
+
+        if ods_code in allowed_ods_code_list:
+            logger.info(f"ODS code {ods_code} is in allowed list, returning org data")
+            icb_ods_code = find_icb_for_user(org_data["Organisation"])
+            prescribing_cost_centre_org_role_code = (
+                get_prescribing_cost_centre_org_role_code(org_data)
+            )
+            response = parse_ods_response(
+                org_data, prescribing_cost_centre_org_role_code, icb_ods_code
+            )
+            return response
+
+        itoc_ods_code = token_handler_ssm_service.get_itoc_ods_code()
+
+        if ods_code == itoc_ods_code:
+            logger.info(f"ODS code {ods_code} is ITOC, returning org data")
+            return parse_ods_response("", "", "ITOC")
+
+        logger.info(
+            f"ODS code {ods_code} is not a GP, PCSE, ITOC nor in allowed list, returning empty list"
+        )
         return {}
 
 
@@ -89,21 +112,27 @@ def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
     return response_dictionary
 
 
-def find_and_get_gpp_org_code(org_details):
-    logger.info("Checking GPP Roles")
-    json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
+def get_gp_org_role_code(org_data):
+    logger.info("Checking if GP organisation role is present")
+    json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
 
-    org_role_codes = token_handler_ssm_service.get_org_role_codes()
+    gp_org_role_code = token_handler_ssm_service.get_gp_org_role_code()
     for json_role in json_roles:
-        if json_role["id"] in org_role_codes:
+        if json_role["id"] == gp_org_role_code:
             return json_role["id"]
     return None
 
 
-def find_and_get_pcse_ods(ods_code):
-    logger.info("Checking PCSE Roles")
-    if ods_code == token_handler_ssm_service.get_org_ods_codes()[0]:
-        return ods_code
+def get_prescribing_cost_centre_org_role_code(org_data):
+    logger.info("Checking if Prescribing Cost Centre role is present")
+    json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
+
+    prescribing_cost_centre_role_code = (
+        token_handler_ssm_service.get_prescribing_cost_centre_role_code()
+    )
+    for json_role in json_roles:
+        if json_role["id"] in prescribing_cost_centre_role_code:
+            return json_role["id"]
     return None
 
 

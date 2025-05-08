@@ -10,7 +10,7 @@ from models.oidc_models import IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
-from services.ods_api_service import OdsApiService
+from services.ods_api_service import OdsApiService, token_handler_ssm_service
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
@@ -170,8 +170,12 @@ class LoginService:
             in self.token_handler_ssm_service.get_smartcard_role_gp_admin()
         ):
             logger.info("GP Admin: smartcard ODS identified")
-            if self.has_role_org_role_code(
-                organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
+            if (
+                self.has_role_org_role_code(
+                    organisation, self.token_handler_ssm_service.get_gp_org_role_code()
+                )
+                or organisation["icb_ods_code"]
+                == token_handler_ssm_service.get_itoc_ods_code()
             ):
                 return RepositoryRole.GP_ADMIN
 
@@ -180,15 +184,19 @@ class LoginService:
             in self.token_handler_ssm_service.get_smartcard_role_gp_clinical()
         ):
             logger.info("GP Clinical: smartcard ODS identified")
-            if self.has_role_org_role_code(
-                organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
+            if (
+                self.has_role_org_role_code(
+                    organisation, self.token_handler_ssm_service.get_gp_org_role_code()
+                )
+                or organisation["icb_ods_code"]
+                == token_handler_ssm_service.get_itoc_ods_code()
             ):
                 return RepositoryRole.GP_CLINICAL
 
         if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
             logger.info("PCSE: smartcard ODS identified")
             if self.has_role_org_ods_code(
-                organisation, self.token_handler_ssm_service.get_org_ods_codes()[0]
+                organisation, self.token_handler_ssm_service.get_pcse_ods_code()
             ):
                 return RepositoryRole.PCSE
 

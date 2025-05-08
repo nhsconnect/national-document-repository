@@ -210,25 +210,25 @@ def test_get_smartcard_role_pcse_raises_login_exception(mock_service, mock_ssm):
     assert actual.value.__dict__ == expected.__dict__
 
 
-def test_get_org_role_codes(mock_service, mock_ssm):
-    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
+def test_get_gp_org_role_code(mock_service, mock_ssm):
+    mock_ssm.get_parameter.return_value = MOCK_ROLE_CODE_RESPONSE
     expected = ["G0123"]
 
-    actual = mock_service.get_org_role_codes()
+    actual = mock_service.get_gp_org_role_code()
 
-    mock_ssm.get_parameters.assert_called_once_with(
+    mock_ssm.get_parameter.assert_called_once_with(
         Names=["/auth/org/role_code/gpp"], WithDecryption=False
     )
 
     assert actual == expected
 
 
-def test_get_org_role_codes_raises_login_exception(mock_service, mock_ssm):
-    mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, LambdaError.LoginGpODS)
+def test_get_gp_org_role_code_raises_login_exception(mock_service, mock_ssm):
+    mock_ssm.get_parameter.return_value = {"Parameters": []}
+    expected = LoginException(500, LambdaError.LoginGpOrgRoleCode)
 
     with pytest.raises(LoginException) as actual:
-        mock_service.get_org_role_codes()
+        mock_service.get_gp_org_role_code()
 
     mock_ssm.get_parameters.assert_called_once_with(
         Names=["/auth/org/role_code/gpp"], WithDecryption=False
@@ -238,10 +238,10 @@ def test_get_org_role_codes_raises_login_exception(mock_service, mock_ssm):
 
 
 def test_get_org_ods_codes(mock_service, mock_ssm):
-    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
+    mock_ssm.get_parameter.return_value = MOCK_ROLE_CODE_RESPONSE
     expected = ["P0123"]
 
-    actual = mock_service.get_org_ods_codes()
+    actual = mock_service.get_pcse_ods_code()
 
     mock_ssm.get_parameters.assert_called_once_with(
         Names=["/auth/org/ods_code/pcse"], WithDecryption=False
@@ -252,10 +252,10 @@ def test_get_org_ods_codes(mock_service, mock_ssm):
 
 def test_get_org_ods_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, LambdaError.LoginPcseODS)
+    expected = LoginException(500, LambdaError.LoginPcseOdsCode)
 
     with pytest.raises(LoginException) as actual:
-        mock_service.get_org_ods_codes()
+        mock_service.get_pcse_ods_code()
 
     mock_ssm.get_parameters.assert_called_once_with(
         Names=["/auth/org/ods_code/pcse"], WithDecryption=False
