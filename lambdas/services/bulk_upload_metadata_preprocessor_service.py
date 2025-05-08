@@ -197,28 +197,30 @@ class MetadataPreprocessorService:
         new_file_key = updated_row.get("FILEPATH").lstrip("/")
 
         logger.info(f"Renaming file `{original_file_key}` to `{new_file_key}`")
+        if original_file_key != new_file_key:
+            try:
+                self.s3_service.client.copy_object(
+                    Bucket=self.staging_store_bucket,
+                    CopySource={
+                        "Bucket": self.staging_store_bucket,
+                        "Key": original_file_key,
+                    },
+                    Key=new_file_key,
+                )
+            except ClientError as e:
+                error_code = e.response["Error"]["Code"]
+                if error_code == "NoSuchKey":
+                    logger.info(f"File {original_file_key} doesn't exist")
+                    return None
+                else:
+                    logger.error(
+                        f"Failed update filename for `{original_file_key}`: {e}"
+                    )
+                    return None
 
-        try:
-            self.s3_service.client.copy_object(
-                Bucket=self.staging_store_bucket,
-                CopySource={
-                    "Bucket": self.staging_store_bucket,
-                    "Key": original_file_key,
-                },
-                Key=new_file_key,
+            self.s3_service.client.delete_object(
+                Bucket=self.staging_store_bucket, Key=original_file_key
             )
-        except ClientError as e:
-            error_code = e.response["Error"]["Code"]
-            if error_code == "NoSuchKey":
-                logger.info(f"File {original_file_key} doesn't exist")
-                return None
-            else:
-                logger.error(f"Failed update filename for `{original_file_key}`: {e}")
-                raise MetadataPreprocessingException("Failed to update filename")
-
-        self.s3_service.client.delete_object(
-            Bucket=self.staging_store_bucket, Key=original_file_key
-        )
 
         return updated_row
 
