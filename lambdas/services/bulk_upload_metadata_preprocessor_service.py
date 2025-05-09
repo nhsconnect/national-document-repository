@@ -70,7 +70,7 @@ class MetadataPreprocessorService:
         )
         if not file_exists:
             logger.info(f"File {file_key} doesn't exist")
-            raise MetadataPreprocessingException()
+            raise MetadataPreprocessingException("Failed to retrieve metadata")
 
         response = self.s3_service.client.get_object(Bucket=bucket_name, Key=file_key)
 
@@ -99,17 +99,6 @@ class MetadataPreprocessorService:
 
         logger.info("Finished updating and standardizing filenames")
         return updated_rows
-
-    # def process_metadata_row(self, original_row: dict, updated_row: dict):
-    #     try:
-    #         original_file_name = original_row.get("FILEPATH")
-    #         new_file_name = updated_row.get("FILEPATH")
-    #
-    #         if original_file_name != new_file_name:
-    #             self.update_record_filename(original_file_name, new_file_name)
-    #         return True, updated_row, None
-    #     except InvalidFileNameException as error:
-    #         return False, original_row, str(error)
 
     def validate_record_filename(self, file_name) -> str:
         try:

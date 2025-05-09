@@ -7,7 +7,7 @@ from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
 from tests.unit.conftest import MOCK_STAGING_STORE_BUCKET, TEST_BASE_DIRECTORY
-from utils.exceptions import InvalidFileNameException
+from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
 
 from lambdas.models.staging_metadata import METADATA_FILENAME
 
@@ -70,17 +70,82 @@ def mock_metadata_file_get_object():
     return _mock_metadata_file_get_object
 
 
-def test_validate_and_update_file_name_returns_a_valid_file_path(test_service):
-    wrong_file_path = (
-        "/M89002/01 of 02_Lloyd_George_Record_Jim Stevens_9000000001_22.10.2010.txt"
+def test_validate_record_filename_successful(test_service, mocker):
+    original_filename = "/M89002/01 of 02_Lloyd_George_Record_[Dwayne The Rock Johnson]_[9730787506]_[18-09-1974].pdf"
+    smaller_path = "[9730787506]_[18-09-1974].pdf"
+
+    mocker.patch.object(
+        test_service, "extract_document_path", return_value=("/M89002/", smaller_path)
     )
-    expected_file_path = (
-        "/M89002/1of2_Lloyd_George_Record_[Jim Stevens]_[9000000001]_[22-10-2010].txt"
+    mocker.patch.object(
+        test_service,
+        "extract_document_number_bulk_upload_file_name",
+        return_value=("01", "02", smaller_path),
+    )
+    mocker.patch.object(
+        test_service,
+        "extract_lloyd_george_record_from_bulk_upload_file_name",
+        return_value=("Lloyd_George_Record", smaller_path),
+    )
+    mocker.patch.object(
+        test_service,
+        "extract_person_name_from_bulk_upload_file_name",
+        return_value=("Dwayne The Rock Johnson", smaller_path),
+    )
+    mocker.patch.object(
+        test_service,
+        "extract_nhs_number_from_bulk_upload_file_name",
+        return_value=("9730787506", smaller_path),
+    )
+    mocker.patch.object(
+        test_service,
+        "extract_date_from_bulk_upload_file_name",
+        return_value=("18", "09", "1974", smaller_path),
+    )
+    mocker.patch.object(
+        test_service,
+        "extract_file_extension_from_bulk_upload_file_name",
+        return_value="pdf",
+    )
+    mock_assemble = mocker.patch.object(
+        test_service, "assemble_valid_file_name", return_value="final_filename.pdf"
     )
 
-    actual = test_service.validate_record_filename(wrong_file_path)
+    result = test_service.validate_record_filename(original_filename)
 
-    assert actual == expected_file_path
+    assert result == "final_filename.pdf"
+    mock_assemble.assert_called_once()
+
+
+def test_validate_record_filename_invalid_digit_count(mocker, test_service, caplog):
+    bad_filename = "01 of 02_Lloyd_George_Record_[John Doe]_[12345]_[01-01-2000].pdf"
+
+    mocker.patch.object(
+        test_service, "extract_document_path", return_value=("prefix", bad_filename)
+    )
+    mocker.patch.object(
+        test_service,
+        "extract_document_number_bulk_upload_file_name",
+        return_value=("01", "02", bad_filename),
+    )
+    mocker.patch.object(
+        test_service,
+        "extract_lloyd_george_record_from_bulk_upload_file_name",
+        return_value=("LG", bad_filename),
+    )
+    mocker.patch.object(
+        test_service,
+        "extract_person_name_from_bulk_upload_file_name",
+        return_value=("John Doe", bad_filename),
+    )
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        test_service.validate_record_filename(bad_filename)
+
+    # expected_log = "Failed to find NHS or date"
+    # actual_log = caplog.records[-1].msg
+    # assert expected_log == actual_log
+    assert str(exc_info.value) == "incorrect NHS number or date format"
 
 
 @pytest.mark.parametrize(
@@ -229,6 +294,10 @@ def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
         (
             "_Jim Stevens_9000000001_22.10.2010.txt",
             ("Jim Stevens", "_9000000001_22.10.2010.txt"),
+        ),
+        (
+            'Dwain "The Rock" Johnson_9000000001_22.10.2010.txt',
+            ('Dwain "The Rock" Johnson', "_9000000001_22.10.2010.txt"),
         ),
         # (
         #     "_X Æ A-12_9000000001_22.10.2010.txt",
@@ -391,12 +460,15 @@ def test_process_metadata_file_exists(test_service, mock_metadata_file_get_objec
     test_service.process_metadata()
 
 
-def test_get_metadata_csv_from_file(test_service, mock_metadata_file_get_object):
+def test_get_metadata_csv_from_file_metadata_exists(
+    test_service, mock_metadata_file_get_object
+):
     test_preprocessed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
         "helpers/data/bulk_upload/unprocessed",
         f"unprocessed_{METADATA_FILENAME}",
     )
+    test_file_key = f"{test_service.practice_directory}/{METADATA_FILENAME}"
 
     test_service.s3_service.file_exist_on_s3.return_value = True
     test_service.s3_service.client.get_object.side_effect = (
@@ -404,12 +476,39 @@ def test_get_metadata_csv_from_file(test_service, mock_metadata_file_get_object)
             test_preprocessed_metadata_file, Bucket, Key
         )
     )
-    test_service.process_metadata()
 
     test_service.get_metadata_rows_from_file(
-        file_key=f"{test_service.practice_directory}/{METADATA_FILENAME}",
+        file_key=test_file_key,
         bucket_name=MOCK_STAGING_STORE_BUCKET,
     )
+
+    test_service.s3_service.file_exist_on_s3.assert_called_once_with(
+        s3_bucket_name=MOCK_STAGING_STORE_BUCKET, file_key=test_file_key
+    )
+    test_service.s3_service.client.get_object.assert_called_once_with(
+        Bucket=MOCK_STAGING_STORE_BUCKET, Key=test_file_key
+    )
+
+
+def test_get_metadata_csv_from_file_metadata_does_not_exist(test_service, caplog):
+    test_file_key = f"{test_service.practice_directory}/{METADATA_FILENAME}"
+
+    test_service.s3_service.file_exist_on_s3.return_value = False
+
+    with pytest.raises(MetadataPreprocessingException) as exc_info:
+        test_service.get_metadata_rows_from_file(
+            file_key=test_file_key,
+            bucket_name=MOCK_STAGING_STORE_BUCKET,
+        )
+    expected_log = f"File {test_file_key} doesn't exist"
+    actual_log = caplog.records[-1].msg
+    assert expected_log == actual_log
+    assert str(exc_info.value) == "Failed to retrieve metadata"
+
+    test_service.s3_service.file_exist_on_s3.assert_called_once_with(
+        s3_bucket_name=MOCK_STAGING_STORE_BUCKET, file_key=test_file_key
+    )
+    test_service.s3_service.client.get_object.assert_not_called()
 
 
 def test_move_original_metadata_file(test_service):
@@ -470,7 +569,6 @@ def test_update_file_name_file_not_found(test_service, mocker):
 
 
 def test_update_and_standardize_filenames_success_and_failure(test_service, mocker):
-    # Arrange
     original_row1 = {"FILEPATH": "/path/original1.pdf"}
     updated_row1 = {"FILEPATH": "/path/updated1.pdf"}
 
@@ -479,14 +577,12 @@ def test_update_and_standardize_filenames_success_and_failure(test_service, mock
 
     renaming_map = [(original_row1, updated_row1), (original_row2, updated_row2)]
 
-    # Mock update_record_filename to return the updated_row (simulate success)
     mock_update = mocker.patch.object(
         test_service,
         "update_record_filename",
         side_effect=lambda orig, upd: upd,  # Return the updated row
     )
 
-    # Act
     result = test_service.standardize_filenames(renaming_map)
 
     assert result == [updated_row1, updated_row2]
@@ -520,3 +616,81 @@ def test_generate_renaming_map(test_service, mocker):
     assert rejected_rows == []
     assert rejected_reasons == []
     assert mock_validate.call_count == 2
+
+
+def test_generate_renaming_map_happy_path(test_service, mocker):
+    row = {"FILEPATH": "valid_file.pdf"}
+
+    mocker.patch.object(
+        test_service, "validate_record_filename", return_value="standardised_name.pdf"
+    )
+
+    metadata = [row]
+    renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
+        metadata
+    )
+
+    assert len(renaming_map) == 1
+    assert renaming_map[0][0] == row
+    assert (
+        renaming_map[0][1]["FILEPATH"]
+        == f"{test_service.practice_directory}/standardised_name.pdf"
+    )
+    assert rejected_rows == []
+    assert rejected_reasons == []
+
+
+def test_generate_renaming_map_duplicate_file(mocker, test_service):
+    row1 = {"FILEPATH": "dup1.pdf"}
+    row2 = {"FILEPATH": "dup2.pdf"}
+    mocker.patch.object(
+        test_service, "validate_record_filename", return_value="standardised_name.pdf"
+    )
+
+    metadata = [row1, row2]
+    renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
+        metadata
+    )
+
+    assert len(renaming_map) == 1
+    assert len(rejected_rows) == 1
+    assert rejected_rows[0] == row2
+    assert rejected_reasons[0]["REASON"] == "Duplicate filename after renaming"
+
+
+def test_generate_renaming_map_invalid_filename(mocker, test_service):
+    row = {"FILEPATH": "invalid_file.pdf"}
+
+    mocker.patch.object(
+        test_service,
+        "validate_record_filename",
+        side_effect=InvalidFileNameException("Bad format"),
+    )
+
+    metadata = [row]
+    renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
+        metadata
+    )
+
+    assert renaming_map == []
+    assert rejected_rows == [row]
+    assert isinstance(rejected_reasons[0]["REASON"], InvalidFileNameException)
+
+
+def test_generate_renaming_map_skips_empty_row(test_service):
+    metadata = [{}]  # One empty dict
+    renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
+        metadata
+    )
+
+    assert renaming_map == []
+    assert rejected_rows == []
+    assert rejected_reasons == []
+
+
+def test_generate_and_save_csv_file_updated_metadata(test_service, mocker):
+    pass
+
+
+def test_generate_and_save_csv_file_rejected_reasons(test_service, mocker):
+    pass
