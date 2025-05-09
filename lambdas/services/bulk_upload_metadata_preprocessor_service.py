@@ -337,7 +337,7 @@ class MetadataPreprocessorService:
 
     @staticmethod
     def extract_date_from_bulk_upload_file_name(file_path):
-        date_number_expression = r"(\D*\d{1,2})(\D*\d{1,2})(\D*(\d{4}))(.*)"
+        date_number_expression = r"(\D*\d{2})(\D*\d{2})(\D*(\d{4}))(.*)"
         expression_result = regex.search(rf"{date_number_expression}", file_path)
 
         if expression_result is None:

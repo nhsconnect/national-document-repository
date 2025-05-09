@@ -280,8 +280,8 @@ def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_serv
         ("-12012024.txt", ("12", "01", "2024", ".txt")),
         ("-12.01.2024.csv", ("12", "01", "2024", ".csv")),
         ("-12-01-2024.txt", ("12", "01", "2024", ".txt")),
-        ("-12-1-2024.txt", ("12", "01", "2024", ".txt")),
-        ("-1-01-2024.txt", ("01", "01", "2024", ".txt")),
+        ("-12-01-2024.txt", ("12", "01", "2024", ".txt")),
+        ("-01-01-2024.txt", ("01", "01", "2024", ".txt")),
         ("13-12-2023.pdf", ("13", "12", "2023", ".pdf")),
     ],
 )
@@ -518,8 +518,8 @@ def test_generate_renaming_map(test_service, mocker):
 
     # Assert
     assert renaming_map == [
-        (metadata_rows[0], {"FILEPATH": "file1.pdf"}),
-        (metadata_rows[1], {"FILEPATH": "file2.pdf"}),
+        (metadata_rows[0], {"FILEPATH": "test_practice_directory/file1.pdf"}),
+        (metadata_rows[1], {"FILEPATH": "test_practice_directory/file2.pdf"}),
     ]
     assert rejected_rows == []
     assert rejected_reasons == []
