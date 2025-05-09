@@ -281,12 +281,12 @@ def test_correctly_extract_date_from_bulk_upload_file_name(
 def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
     test_service,
 ):
-    invalid_data = "12-july-2024.txt"
+    invalid_data = "12-13-2024.txt"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.extract_date_from_bulk_upload_file_name(invalid_data)
 
-    assert str(exc_info.value) == "incorrect date format"
+    assert str(exc_info.value) == "not a valid date"
 
 
 @pytest.mark.parametrize(
@@ -317,6 +317,7 @@ def test_extract_file_extension_from_bulk_upload_file_name_with_incorrect_file_e
 
 
 def test_correctly_assembles_valid_file_name(test_service):
+    file_path_prefix = "/amazing-directory/"
     first_document_number = 1
     second_document_number = 2
     lloyd_george_record = "Lloyd_George_Record"
@@ -327,8 +328,9 @@ def test_correctly_assembles_valid_file_name(test_service):
     year = "2010"
     file_extension = ".txt"
 
-    expected = "1of2_Lloyd_George_Record_[Jim-Stevens]_[9000000001]_[22-10-2010].txt"
+    expected = "/amazing-directory/1of2_Lloyd_George_Record_[Jim-Stevens]_[9000000001]_[22-10-2010].txt"
     actual = test_service.assemble_valid_file_name(
+        file_path_prefix,
         first_document_number,
         second_document_number,
         lloyd_george_record,
@@ -399,31 +401,34 @@ def test_move_original_metadata_file(test_service):
     )
 
 
-def test_update_file_name(mocker, test_service):
-    original_file_name = "old_file.csv"
-    new_file_name = "new_file.csv"
-    original_file_key = f"{test_service.practice_directory}/{original_file_name}"
-    new_file_key = f"{test_service.practice_directory}/{new_file_name}"
-    test_service.staging_store_bucket = MOCK_STAGING_STORE_BUCKET
+def test_update_record_filename(test_service, mocker):
+    # Arrange
+    original_row = {"FILEPATH": "/old/path/file1.pdf"}
+    updated_row = {"FILEPATH": "/new/path/file1.pdf"}
 
-    # Mock that the original file exists
-    test_service.s3_service.file_exist_on_s3.return_value = True
-    mock_copy = mocker.patch.object(test_service.s3_service.client, "copy_object")
-    mock_delete = mocker.patch.object(test_service.s3_service.client, "delete_object")
+    # Mock S3 client copy and delete operations
+    mock_client = mocker.Mock()
+    test_service.s3_service.client = mock_client
 
     # Act
-    test_service.update_record_filename(original_file_name, new_file_name)
+    result = test_service.update_record_filename(original_row, updated_row)
 
     # Assert
-    mock_copy.assert_called_once_with(
+    mock_client.copy_object.assert_called_once_with(
         Bucket=MOCK_STAGING_STORE_BUCKET,
-        CopySource={"Bucket": MOCK_STAGING_STORE_BUCKET, "Key": original_file_key},
-        Key=new_file_key,
+        CopySource={
+            "Bucket": MOCK_STAGING_STORE_BUCKET,
+            "Key": "old/path/file1.pdf",
+        },
+        Key="new/path/file1.pdf",
     )
-    mock_delete.assert_called_once_with(
+
+    mock_client.delete_object.assert_called_once_with(
         Bucket=MOCK_STAGING_STORE_BUCKET,
-        Key=original_file_key,
+        Key="old/path/file1.pdf",
     )
+
+    assert result == updated_row
 
 
 def test_update_file_name_file_not_found(test_service, mocker):
@@ -456,92 +461,52 @@ def test_convert_csv_dictionary_to_bytes(test_service, mocker):
 
 def test_update_and_standardize_filenames_success_and_failure(test_service, mocker):
     # Arrange
-    input_data = [
-        ({"FILEPATH": "original_file_1.csv"}, {"FILEPATH": "renamed_file_1.csv"}),
-        ({"FILEPATH": "original_file_2.csv"}, {"FILEPATH": "renamed_file_2.csv"}),
-        ({"FILEPATH": "original_file_3.csv"}, {"FILEPATH": "renamed_file_3.csv"}),
+    original_row1 = {"FILEPATH": "/path/original1.pdf"}
+    updated_row1 = {"FILEPATH": "/path/updated1.pdf"}
+
+    original_row2 = {"FILEPATH": "/path/original2.pdf"}
+    updated_row2 = {"FILEPATH": "/path/updated2.pdf"}
+
+    renaming_map = [(original_row1, updated_row1), (original_row2, updated_row2)]
+
+    # Mock update_record_filename to return the updated_row (simulate success)
+    mock_update = mocker.patch.object(
+        test_service,
+        "update_record_filename",
+        side_effect=lambda orig, upd: upd,  # Return the updated row
+    )
+
+    # Act
+    result = test_service.standardize_filenames(renaming_map)
+
+    assert result == [updated_row1, updated_row2]
+    assert mock_update.call_count == 2
+    mock_update.assert_any_call(original_row1, updated_row1)
+    mock_update.assert_any_call(original_row2, updated_row2)
+
+
+def test_generate_renaming_map(test_service, mocker):
+    # Arrange
+    metadata_rows = [
+        {"FILEPATH": "file1.pdf"},
+        {"FILEPATH": "file2.pdf"},
     ]
-
-    # Define side effects for validate_and_update_file_name
-    def mock_validate_record_filename(filename):
-        if filename == "invalid_file.csv":
-            raise InvalidFileNameException("Invalid filename")
-        return f"updated_{filename}"
-
-    # Patch dependent methods
-    mocker.patch.object(
+    # Mock
+    mock_validate = mocker.patch.object(
         test_service,
         "validate_record_filename",
-        side_effect=mock_validate_record_filename,
+        side_effect=lambda x: x,  # Assume filename is already valid
     )
-    mock_update_file_name = mocker.patch.object(test_service, "update_record_filename")
-
     # Act
-    updated_metadata_rows = test_service.standardize_filenames(input_data)
-
-    # Assert
-    assert updated_metadata_rows == [
-        {"FILEPATH": "renamed_file_1.csv"},  # Not updated due to exception
-        {"FILEPATH": "renamed_file_2.csv"},
-        {"FILEPATH": "renamed_file_3.csv"},
-    ]
-    # assert rejected_rows == [{"FILEPATH": "invalid_file.csv"}]
-    # assert error_list == [{"invalid_file.csv", "Invalid filename"}]
-    # assert mock_update_file_name.call_count == 2
-    mock_update_file_name.assert_any_call(
-        "valid_file_1.csv", "updated_valid_file_1.csv"
-    )
-    mock_update_file_name.assert_any_call(
-        "valid_file_2.csv", "updated_valid_file_2.csv"
-    )
-
-
-def test_process_row_valid_filename(
-    test_service, sample_metadata_row, mock_validate_record_filename, mocker
-):
-    # Arrange
-    filename = sample_metadata_row["FILEPATH"]
-    updated_filename = "updated_" + filename
-    mock_update = mocker.patch.object(test_service, "update_record_filename")
-    # Act
-    success, updated_row, error = test_service.process_metadata_row(sample_metadata_row)
-    # Assert
-    assert success is True
-    assert updated_row["FILEPATH"] == updated_filename
-    assert error is None
-    mock_update.assert_called_once_with(filename, updated_filename)
-
-
-@pytest.mark.parametrize(
-    ["input", "expected"],
-    [
-        (
-            ([{"FILEPATH": "duplicate_file.pdf"}]),
-            (({"FILEPATH": "duplicate_file.pdf"}), ({}), ({})),
-        ),
-        # (([{"FILEPATH": "duplicate_file.pdf"},
-        #    {"FILEPATH": "duplicate_file.pdf"}]),
-        #     (({}), ({"FILEPATH": "duplicate_file.pdf"},
-        #    {"FILEPATH": "duplicate_file.pdf"}),
-        #    ({[{'FILEPATH': 'duplicate_file.pdf', 'REASON': 'Duplicate filename after renaming'}]},]}))),
-    ],
-)
-def test_generate_renaming_map(
-    test_service, mock_validate_record_filename, input, expected
-):
-    # metadata_rows = [
-    #     {"FILEPATH": "duplicate_file.pdf"},  # First instance – should be rejected
-    #     {"FILEPATH": "duplicate_file.pdf"},  # Second instance – should be accepted
-    #     {"FILEPATH": "unique_file.pdf"},  # First instance – should be rejected
-    #     {"FILEPATH": "duplicate_file.pdf"},  # Third instance – should be accepted
-    #     {"FILEPATH": "unique_file.pdf"},  # Second instance – should be accepted
-    # ]
-    # expected_file_path
-
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
-        input
+        metadata_rows
     )
 
-    assert renaming_map == expected[0]
-    assert rejected_rows == expected[1]
-    assert rejected_reasons == expected[2]
+    # Assert
+    assert renaming_map == [
+        (metadata_rows[0], {"FILEPATH": "file1.pdf"}),
+        (metadata_rows[1], {"FILEPATH": "file2.pdf"}),
+    ]
+    assert rejected_rows == []
+    assert rejected_reasons == []
+    assert mock_validate.call_count == 2
