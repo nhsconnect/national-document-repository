@@ -115,7 +115,6 @@ class MetadataPreprocessorService:
         try:
             logger.info(f"Processing file name {file_name}")
 
-            # file_path_prefix, current_file_name = self.extract_document_path(file_name)
             file_path_prefix, current_file_name = self.extract_document_path(file_name)
             first_document_number, second_document_number, current_file_name = (
                 self.extract_document_number_bulk_upload_file_name(current_file_name)
