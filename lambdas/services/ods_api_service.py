@@ -51,16 +51,15 @@ class OdsApiService:
         ods_code = ods_code_list[0]
         logger.info(f"ods_code selected: {ods_code}")
 
+        itoc_ods_code = token_handler_ssm_service.get_itoc_ods_code()
+
+        if ods_code == itoc_ods_code:
+            logger.info(f"ODS code {ods_code} is ITOC, returning org data")
+            return parse_ods_response("", "", "ITOC")
+
         org_data = self.fetch_organisation_data(ods_code)
 
         logger.info(f"Org Data: {org_data}")
-
-        pcse_ods_code = token_handler_ssm_service.get_pcse_ods_code()
-
-        if ods_code == pcse_ods_code:
-            logger.info(f"ODS code {ods_code} is PCSE, returning org data")
-            response = parse_ods_response(org_data, "", "PCSE")
-            return response
 
         gp_org_role_code = get_gp_org_role_code(org_data)
 
@@ -68,6 +67,13 @@ class OdsApiService:
             logger.info(f"ODS code {ods_code} is a GP, returning org data")
             icb_ods_code = find_icb_for_user(org_data["Organisation"])
             response = parse_ods_response(org_data, gp_org_role_code, icb_ods_code)
+            return response
+
+        pcse_ods_code = token_handler_ssm_service.get_pcse_ods_code()
+
+        if ods_code == pcse_ods_code:
+            logger.info(f"ODS code {ods_code} is PCSE, returning org data")
+            response = parse_ods_response(org_data, "", "PCSE")
             return response
 
         allowed_ods_code_list = (
@@ -85,11 +91,7 @@ class OdsApiService:
             )
             return response
 
-        itoc_ods_code = token_handler_ssm_service.get_itoc_ods_code()
 
-        if ods_code == itoc_ods_code:
-            logger.info(f"ODS code {ods_code} is ITOC, returning org data")
-            return parse_ods_response("", "", "ITOC")
 
         logger.info(
             f"ODS code {ods_code} is not a GP, PCSE, ITOC nor in allowed list, returning empty list"
@@ -98,8 +100,12 @@ class OdsApiService:
 
 
 def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
-    org_name = org_data["Organisation"]["Name"]
-    org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
+    org_name = ""
+    org_ods_code = ""
+
+    if org_data:
+        org_name = org_data["Organisation"]["Name"]
+        org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
 
     response_dictionary = {
         "name": org_name,

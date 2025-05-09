@@ -99,7 +99,7 @@ class TokenHandlerSSMService(SSMService):
     def get_gp_org_role_code(self) -> str:
         logger.info("starting ssm request to retrieve GP organisation role code")
         response = self.get_ssm_parameter(GP_ORG_ROLE_CODE)
-        if None in response:
+        if not response :
             logger.error(
                 LambdaError.LoginGpOrgRoleCode.to_str(),
                 {"Result": "Unsuccessful login"},
@@ -123,7 +123,7 @@ class TokenHandlerSSMService(SSMService):
     def get_pcse_ods_code(self) -> str:
         logger.info("starting ssm request to retrieve PCSE ODS code")
         response = self.get_ssm_parameter(PCSE_ODS_CODE)
-        if None in response:
+        if not response:
             logger.error(
                 LambdaError.LoginPcseOdsCode.to_str(),
                 {"Result": "Unsuccessful login"},
@@ -134,7 +134,7 @@ class TokenHandlerSSMService(SSMService):
     def get_itoc_ods_code(self) -> str:
         logger.info("starting ssm request to retrieve ITOC ODS code")
         response = self.get_ssm_parameter(ITOC_ODS_CODE)
-        if None in response:
+        if not response:
             logger.error(
                 LambdaError.LoginItocOdsCode.to_str(),
                 {"Result": "Unsuccessful login"},

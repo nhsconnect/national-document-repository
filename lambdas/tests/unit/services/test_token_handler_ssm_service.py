@@ -8,11 +8,11 @@ from utils.constants.ssm import (
     GP_CLINICAL_USER_ROLE_CODE,
     GP_ORG_ROLE_CODE,
     PCSE_ODS_CODE,
-    PCSE_USER_ROLE_CODE,
+    PCSE_USER_ROLE_CODE, ITOC_ODS_CODE, ALLOWED_ODS_CODES_LIST,
 )
 from utils.lambda_exceptions import LoginException
 
-MOCK_ROLE_CODE_RESPONSE = {
+MOCK_ROLE_CODE_RESPONSES = {
     "Parameters": [
         {
             "Name": GP_ORG_ROLE_CODE,
@@ -72,6 +72,63 @@ MOCK_ROLE_CODE_RESPONSE = {
     ],
 }
 
+MOCK_GP_ORG_ROLE_CODE_RESPONSE = {
+    "Parameter": {
+        "Name": GP_ORG_ROLE_CODE,
+        "Type": "SecureString",
+        "Value": "R0010",
+        "Version": 123,
+        "Selector": "string",
+        "SourceResult": "string",
+        "LastModifiedDate": datetime(2015, 1, 1),
+        "ARN": "string",
+        "DataType": "string",
+    },
+}
+
+MOCK_PCSE_ODS_CODE_RESPONSE = {
+    "Parameter": {
+        "Name": PCSE_ODS_CODE,
+        "Type": "SecureString",
+        "Value": "R0011",
+        "Version": 123,
+        "Selector": "string",
+        "SourceResult": "string",
+        "LastModifiedDate": datetime(2015, 1, 1),
+        "ARN": "string",
+        "DataType": "string",
+    },
+}
+
+MOCK_ITOC_ODS_CODE_RESPONSE = {
+    "Parameter": {
+        "Name": ITOC_ODS_CODE,
+        "Type": "SecureString",
+        "Value": "R0012",
+        "Version": 123,
+        "Selector": "string",
+        "SourceResult": "string",
+        "LastModifiedDate": datetime(2015, 1, 1),
+        "ARN": "string",
+        "DataType": "string",
+    },
+}
+
+MOCK_ALLOWED_LIST_OF_ODS_CODES = {
+    "Parameter": {
+        "Name": ALLOWED_ODS_CODES_LIST,
+        "Type": "StringList",
+        "Value": "R0013,R0014,R0015",
+        "Version": 123,
+        "Selector": "string",
+        "SourceResult": "string",
+        "LastModifiedDate": datetime(2015, 1, 1),
+        "ARN": "string",
+        "DataType": "string",
+    },
+}
+
+
 MOCK_JWT_PK_RESPONSE = {
     "Parameter": {
         "Name": "jwt_token_private_key",
@@ -113,7 +170,7 @@ def test_get_jwt_token(mock_service, mock_ssm):
 
 
 def test_get_ssm_parameters(mock_service, mock_ssm):
-    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
+    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSES
     expected = ["R0001,R0002,R0003", "R0004,R0005,R0006", "R0007,R0008,R0009"]
 
     actual = mock_service.get_smartcard_role_codes()
@@ -130,7 +187,7 @@ def test_get_ssm_parameters(mock_service, mock_ssm):
 
 
 def test_get_smartcard_role_gp_admin(mock_service, mock_ssm):
-    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
+    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSES
     expected = ["R0001", "R0002", "R0003"]
 
     actual = mock_service.get_smartcard_role_gp_admin()
@@ -157,7 +214,7 @@ def test_get_smartcard_role_gp_admin_raises_login_exception(mock_service, mock_s
 
 
 def test_get_smartcard_role_gp_clinical(mock_service, mock_ssm):
-    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
+    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSES
     expected = ["R0004", "R0005", "R0006"]
 
     actual = mock_service.get_smartcard_role_gp_clinical()
@@ -184,7 +241,7 @@ def test_get_smartcard_role_gp_clinical_raises_login_exception(mock_service, moc
 
 
 def test_get_smartcard_role_pcse(mock_service, mock_ssm):
-    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
+    mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSES
     expected = ["R0007", "R0008", "R0009"]
 
     actual = mock_service.get_smartcard_role_pcse()
@@ -211,54 +268,103 @@ def test_get_smartcard_role_pcse_raises_login_exception(mock_service, mock_ssm):
 
 
 def test_get_gp_org_role_code(mock_service, mock_ssm):
-    mock_ssm.get_parameter.return_value = MOCK_ROLE_CODE_RESPONSE
-    expected = ["G0123"]
+    mock_ssm.get_parameter.return_value = MOCK_GP_ORG_ROLE_CODE_RESPONSE
+    expected = "R0010"
 
     actual = mock_service.get_gp_org_role_code()
 
     mock_ssm.get_parameter.assert_called_once_with(
-        Names=["/auth/org/role_code/gpp"], WithDecryption=False
+        Name="/auth/org/role_code/gpp", WithDecryption=False
     )
 
     assert actual == expected
 
 
 def test_get_gp_org_role_code_raises_login_exception(mock_service, mock_ssm):
-    mock_ssm.get_parameter.return_value = {"Parameters": []}
+    mock_ssm.get_parameter.return_value = {
+        "Parameter": {
+            "Value": ""
+    },
+    }
     expected = LoginException(500, LambdaError.LoginGpOrgRoleCode)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_gp_org_role_code()
 
-    mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/org/role_code/gpp"], WithDecryption=False
+    mock_ssm.get_parameter.assert_called_once_with(
+        Name="/auth/org/role_code/gpp", WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
 
 
-def test_get_org_ods_codes(mock_service, mock_ssm):
-    mock_ssm.get_parameter.return_value = MOCK_ROLE_CODE_RESPONSE
-    expected = ["P0123"]
+def test_get_pcse_ods_code(mock_service, mock_ssm):
+    mock_ssm.get_parameter.return_value = MOCK_PCSE_ODS_CODE_RESPONSE
+    expected = "R0011"
 
     actual = mock_service.get_pcse_ods_code()
 
-    mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/org/ods_code/pcse"], WithDecryption=False
+    mock_ssm.get_parameter.assert_called_once_with(
+        Name="/auth/org/ods_code/pcse", WithDecryption=False
     )
 
     assert actual == expected
 
 
-def test_get_org_ods_codes_raises_login_exception(mock_service, mock_ssm):
-    mock_ssm.get_parameters.return_value = {"Parameters": []}
+def test_get_pcse_ods_code_raises_login_exception(mock_service, mock_ssm):
+    mock_ssm.get_parameter.return_value = {
+        "Parameter": {
+            "Value": ""
+    },
+    }
     expected = LoginException(500, LambdaError.LoginPcseOdsCode)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_pcse_ods_code()
 
-    mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/org/ods_code/pcse"], WithDecryption=False
+    mock_ssm.get_parameter.assert_called_once_with(
+        Name="/auth/org/ods_code/pcse", WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
+
+def test_get_itoc_ods_code(mock_service, mock_ssm):
+    mock_ssm.get_parameter.return_value = MOCK_ITOC_ODS_CODE_RESPONSE
+    expected = "R0012"
+
+    actual = mock_service.get_itoc_ods_code()
+
+    mock_ssm.get_parameter.assert_called_once_with(
+        Name="/auth/org/ods_code/itoc", WithDecryption=False
+    )
+
+    assert actual == expected
+
+def test_get_itoc_ods_code_raises_login_exception(mock_service, mock_ssm):
+    mock_ssm.get_parameter.return_value = {
+        "Parameter": {
+            "Value": ""
+    },
+    }
+    expected = LoginException(500, LambdaError.LoginItocOdsCode)
+
+    with pytest.raises(LoginException) as actual:
+        mock_service.get_itoc_ods_code()
+
+    mock_ssm.get_parameter.assert_called_once_with(
+        Name="/auth/org/ods_code/itoc", WithDecryption=False
+    )
+
+    assert actual.value.__dict__ == expected.__dict__
+
+def test_get_allowed_list_of_ods_codes(mock_service, mock_ssm):
+    mock_ssm.get_parameter.return_value = MOCK_ALLOWED_LIST_OF_ODS_CODES
+    expected = "R0013,R0014,R0015"
+
+    actual = mock_service.get_allowed_list_of_ods_codes()
+
+    mock_ssm.get_parameter.assert_called_once_with(
+        Name="/auth/org/ods_code/allowed_list", WithDecryption=False
+    )
+
+    assert actual == expected

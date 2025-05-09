@@ -85,8 +85,18 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
         return_value=mock_ods_responses["pcse_org"],
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_pcse_ods_code", return_value=["X4S4L"]
+        TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_allowed_list_of_ods_codes", return_value="R0013,R0014,R0015"
+    )
+
     pcse_ods = "X4S4L"
     expected = {
         "name": "Primary Care Support England",
@@ -112,7 +122,13 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
         TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_pcse_ods_code", return_value=["X4S4L"]
+        TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_allowed_list_of_ods_codes", return_value="R0013,R0014,R0015"
     )
     gp_ods = "A9A5A"
     expected = {
@@ -128,8 +144,41 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
 
     assert expected == actual
 
+def test_fetch_org_with_permitted_role_itoc(mocker):
+    itoc_ods = "Y90123"
 
-def test_fetch_org_with_permitted_role_returns_empty_list_when_not_gp_or_pcse(
+    mocker.patch.object(
+        OdsApiService,
+        "fetch_organisation_data",
+        return_value=[itoc_ods],
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_allowed_list_of_ods_codes", return_value="R0013,R0014,R0015"
+    )
+
+    expected = {
+        "name": "",
+        "org_ods_code": "",
+        "role_code": "",
+        "icb_ods_code": "ITOC",
+    }
+
+    actual = OdsApiService.fetch_organisation_with_permitted_role(
+        OdsApiService(), [itoc_ods]
+    )
+
+    assert expected == actual
+
+def test_fetch_org_with_permitted_role_returns_empty_list_when_not_a_permitted_role(
     mock_ods_responses, mocker
 ):
     mocker.patch.object(
@@ -141,7 +190,13 @@ def test_fetch_org_with_permitted_role_returns_empty_list_when_not_gp_or_pcse(
         TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_pcse_ods_code", return_value=["X4S4L"]
+        TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_allowed_list_of_ods_codes", return_value="Y05788,DA1230,QW4560"
     )
     ods = "OD5"
     expected = {}
