@@ -51,11 +51,11 @@ class OdsApiService:
         ods_code = ods_code_list[0]
         logger.info(f"ods_code selected: {ods_code}")
 
-        itoc_ods_code = token_handler_ssm_service.get_itoc_ods_code()
+        itoc_ods_codes = token_handler_ssm_service.get_itoc_ods_code()
 
-        if ods_code == itoc_ods_code:
+        if ods_code in itoc_ods_codes:
             logger.info(f"ODS code {ods_code} is ITOC, returning org data")
-            return parse_ods_response("", "", "ITOC")
+            return parse_ods_response({}, "", "ITOC")
 
         org_data = self.fetch_organisation_data(ods_code)
 
@@ -94,12 +94,10 @@ class OdsApiService:
 
 
 def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
-    org_name = ""
-    org_ods_code = ""
-
-    if org_data:
-        org_name = org_data["Organisation"]["Name"]
-        org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
+    org_name = org_data.get("Organisation", {}).get("Name", "")
+    org_ods_code = (
+        org_data.get("Organisation", {}).get("OrgId", {}).get("extension", "")
+    )
 
     response_dictionary = {
         "name": org_name,

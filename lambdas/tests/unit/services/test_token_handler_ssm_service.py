@@ -4,11 +4,13 @@ import pytest
 from enums.lambda_error import LambdaError
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.constants.ssm import (
+    ALLOWED_ODS_CODES_LIST,
     GP_ADMIN_USER_ROLE_CODES,
     GP_CLINICAL_USER_ROLE_CODE,
     GP_ORG_ROLE_CODE,
+    ITOC_ODS_CODES,
     PCSE_ODS_CODE,
-    PCSE_USER_ROLE_CODE, ITOC_ODS_CODE, ALLOWED_ODS_CODES_LIST,
+    PCSE_USER_ROLE_CODE,
 )
 from utils.lambda_exceptions import LoginException
 
@@ -102,7 +104,7 @@ MOCK_PCSE_ODS_CODE_RESPONSE = {
 
 MOCK_ITOC_ODS_CODE_RESPONSE = {
     "Parameter": {
-        "Name": ITOC_ODS_CODE,
+        "Name": ITOC_ODS_CODES,
         "Type": "SecureString",
         "Value": "R0012",
         "Version": 123,
@@ -177,9 +179,9 @@ def test_get_ssm_parameters(mock_service, mock_ssm):
 
     mock_ssm.get_parameters.assert_called_once_with(
         Names=[
-            "/auth/smartcard/role/gp_admin",
-            "/auth/smartcard/role/gp_clinical",
-            "/auth/smartcard/role/pcse",
+            GP_ADMIN_USER_ROLE_CODES,
+            GP_CLINICAL_USER_ROLE_CODE,
+            PCSE_USER_ROLE_CODE,
         ],
         WithDecryption=False,
     )
@@ -193,7 +195,7 @@ def test_get_smartcard_role_gp_admin(mock_service, mock_ssm):
     actual = mock_service.get_smartcard_role_gp_admin()
 
     mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/gp_admin"], WithDecryption=False
+        Names=[GP_ADMIN_USER_ROLE_CODES], WithDecryption=False
     )
 
     assert actual == expected
@@ -207,7 +209,7 @@ def test_get_smartcard_role_gp_admin_raises_login_exception(mock_service, mock_s
         mock_service.get_smartcard_role_gp_admin()
 
     mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/gp_admin"], WithDecryption=False
+        Names=[GP_ADMIN_USER_ROLE_CODES], WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
@@ -220,7 +222,7 @@ def test_get_smartcard_role_gp_clinical(mock_service, mock_ssm):
     actual = mock_service.get_smartcard_role_gp_clinical()
 
     mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/gp_clinical"], WithDecryption=False
+        Names=[GP_CLINICAL_USER_ROLE_CODE], WithDecryption=False
     )
 
     assert actual == expected
@@ -234,7 +236,7 @@ def test_get_smartcard_role_gp_clinical_raises_login_exception(mock_service, moc
         mock_service.get_smartcard_role_gp_clinical()
 
     mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/gp_clinical"], WithDecryption=False
+        Names=[GP_CLINICAL_USER_ROLE_CODE], WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
@@ -247,7 +249,7 @@ def test_get_smartcard_role_pcse(mock_service, mock_ssm):
     actual = mock_service.get_smartcard_role_pcse()
 
     mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/pcse"], WithDecryption=False
+        Names=[PCSE_USER_ROLE_CODE], WithDecryption=False
     )
 
     assert actual == expected
@@ -261,7 +263,7 @@ def test_get_smartcard_role_pcse_raises_login_exception(mock_service, mock_ssm):
         mock_service.get_smartcard_role_pcse()
 
     mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/pcse"], WithDecryption=False
+        Names=[PCSE_USER_ROLE_CODE], WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
@@ -274,7 +276,7 @@ def test_get_gp_org_role_code(mock_service, mock_ssm):
     actual = mock_service.get_gp_org_role_code()
 
     mock_ssm.get_parameter.assert_called_once_with(
-        Name="/auth/org/role_code/gpp", WithDecryption=False
+        Name=GP_ORG_ROLE_CODE, WithDecryption=False
     )
 
     assert actual == expected
@@ -282,9 +284,7 @@ def test_get_gp_org_role_code(mock_service, mock_ssm):
 
 def test_get_gp_org_role_code_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = {
-        "Parameter": {
-            "Value": ""
-    },
+        "Parameter": {"Value": ""},
     }
     expected = LoginException(500, LambdaError.LoginGpOrgRoleCode)
 
@@ -292,7 +292,7 @@ def test_get_gp_org_role_code_raises_login_exception(mock_service, mock_ssm):
         mock_service.get_gp_org_role_code()
 
     mock_ssm.get_parameter.assert_called_once_with(
-        Name="/auth/org/role_code/gpp", WithDecryption=False
+        Name=GP_ORG_ROLE_CODE, WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
@@ -305,7 +305,7 @@ def test_get_pcse_ods_code(mock_service, mock_ssm):
     actual = mock_service.get_pcse_ods_code()
 
     mock_ssm.get_parameter.assert_called_once_with(
-        Name="/auth/org/ods_code/pcse", WithDecryption=False
+        Name=PCSE_ODS_CODE, WithDecryption=False
     )
 
     assert actual == expected
@@ -313,9 +313,7 @@ def test_get_pcse_ods_code(mock_service, mock_ssm):
 
 def test_get_pcse_ods_code_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = {
-        "Parameter": {
-            "Value": ""
-    },
+        "Parameter": {"Value": ""},
     }
     expected = LoginException(500, LambdaError.LoginPcseOdsCode)
 
@@ -323,10 +321,11 @@ def test_get_pcse_ods_code_raises_login_exception(mock_service, mock_ssm):
         mock_service.get_pcse_ods_code()
 
     mock_ssm.get_parameter.assert_called_once_with(
-        Name="/auth/org/ods_code/pcse", WithDecryption=False
+        Name=PCSE_ODS_CODE, WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
+
 
 def test_get_itoc_ods_code(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = MOCK_ITOC_ODS_CODE_RESPONSE
@@ -335,16 +334,15 @@ def test_get_itoc_ods_code(mock_service, mock_ssm):
     actual = mock_service.get_itoc_ods_code()
 
     mock_ssm.get_parameter.assert_called_once_with(
-        Name="/auth/org/ods_code/itoc", WithDecryption=False
+        Name=ITOC_ODS_CODES, WithDecryption=False
     )
 
     assert actual == expected
 
+
 def test_get_itoc_ods_code_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = {
-        "Parameter": {
-            "Value": ""
-    },
+        "Parameter": {"Value": ""},
     }
     expected = LoginException(500, LambdaError.LoginItocOdsCode)
 
@@ -352,10 +350,11 @@ def test_get_itoc_ods_code_raises_login_exception(mock_service, mock_ssm):
         mock_service.get_itoc_ods_code()
 
     mock_ssm.get_parameter.assert_called_once_with(
-        Name="/auth/org/ods_code/itoc", WithDecryption=False
+        Name=ITOC_ODS_CODES, WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
+
 
 def test_get_allowed_list_of_ods_codes(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = MOCK_ALLOWED_LIST_OF_ODS_CODES
@@ -364,7 +363,7 @@ def test_get_allowed_list_of_ods_codes(mock_service, mock_ssm):
     actual = mock_service.get_allowed_list_of_ods_codes()
 
     mock_ssm.get_parameter.assert_called_once_with(
-        Name="/auth/org/ods_code/allowed_list", WithDecryption=False
+        Name=ALLOWED_ODS_CODES_LIST, WithDecryption=False
     )
 
     assert actual == expected

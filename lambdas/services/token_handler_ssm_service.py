@@ -6,7 +6,7 @@ from utils.constants.ssm import (
     GP_ADMIN_USER_ROLE_CODES,
     GP_CLINICAL_USER_ROLE_CODE,
     GP_ORG_ROLE_CODE,
-    ITOC_ODS_CODE,
+    ITOC_ODS_CODES,
     PCSE_ODS_CODE,
     PCSE_USER_ROLE_CODE,
 )
@@ -119,7 +119,7 @@ class TokenHandlerSSMService(SSMService):
 
     def get_itoc_ods_code(self) -> str:
         logger.info("starting ssm request to retrieve ITOC ODS code")
-        response = self.get_ssm_parameter(ITOC_ODS_CODE)
+        response = self.get_ssm_parameter(ITOC_ODS_CODES)
         if not response:
             logger.error(
                 LambdaError.LoginItocOdsCode.to_str(),
