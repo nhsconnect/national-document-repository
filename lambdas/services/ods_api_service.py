@@ -51,32 +51,53 @@ class OdsApiService:
         ods_code = ods_code_list[0]
         logger.info(f"ods_code selected: {ods_code}")
 
+        itoc_ods_codes = token_handler_ssm_service.get_itoc_ods_codes()
+
+        if ods_code in itoc_ods_codes:
+            logger.info(f"ODS code {ods_code} is ITOC, returning org data")
+            return parse_ods_response({}, "", "ITOC")
+
         org_data = self.fetch_organisation_data(ods_code)
 
         logger.info(f"Org Data: {org_data}")
 
-        pcse_ods = find_and_get_pcse_ods(ods_code)
+        gp_org_role_code = get_gp_org_role_code(org_data)
 
-        if pcse_ods is not None:
+        if gp_org_role_code is not None:
+            logger.info(f"ODS code {ods_code} is a GP, returning org data")
+            icb_ods_code = find_icb_for_user(org_data["Organisation"])
+            response = parse_ods_response(org_data, gp_org_role_code, icb_ods_code)
+            return response
+
+        pcse_ods_code = token_handler_ssm_service.get_pcse_ods_code()
+
+        if ods_code == pcse_ods_code:
             logger.info(f"ODS code {ods_code} is PCSE, returning org data")
             response = parse_ods_response(org_data, "", "PCSE")
             return response
 
-        gpp_org = find_and_get_gpp_org_code(org_data)
+        allowed_ods_code_list = (
+            token_handler_ssm_service.get_allowed_list_of_ods_codes()
+        )
 
-        if gpp_org is not None:
-            logger.info(f"ODS code {ods_code} is a GPP, returning org data")
+        if ods_code in allowed_ods_code_list:
+            logger.info(f"ODS code {ods_code} is in allowed list, returning org data")
             icb_ods_code = find_icb_for_user(org_data["Organisation"])
-            response = parse_ods_response(org_data, gpp_org, icb_ods_code)
+            primary_org_role_code = get_primary_org_role_code(org_data)
+            response = parse_ods_response(org_data, primary_org_role_code, icb_ods_code)
             return response
 
-        logger.info(f"ODS code {ods_code} is not a GPP or PCSE, returning empty list")
+        logger.info(
+            f"ODS code {ods_code} is not a GP, PCSE, ITOC nor in allowed list, returning empty list"
+        )
         return {}
 
 
 def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
-    org_name = org_data["Organisation"]["Name"]
-    org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
+    org_name = org_data.get("Organisation", {}).get("Name", "")
+    org_ods_code = (
+        org_data.get("Organisation", {}).get("OrgId", {}).get("extension", "")
+    )
 
     response_dictionary = {
         "name": org_name,
@@ -89,21 +110,24 @@ def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
     return response_dictionary
 
 
-def find_and_get_gpp_org_code(org_details):
-    logger.info("Checking GPP Roles")
-    json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
+def get_gp_org_role_code(org_data):
+    logger.info("Checking if GP organisation role is present")
+    json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
 
-    org_role_codes = token_handler_ssm_service.get_org_role_codes()
+    gp_org_role_code = token_handler_ssm_service.get_gp_org_role_code()
     for json_role in json_roles:
-        if json_role["id"] in org_role_codes:
+        if json_role["id"] == gp_org_role_code:
             return json_role["id"]
     return None
 
 
-def find_and_get_pcse_ods(ods_code):
-    logger.info("Checking PCSE Roles")
-    if ods_code == token_handler_ssm_service.get_org_ods_codes()[0]:
-        return ods_code
+def get_primary_org_role_code(org_data):
+    logger.info("Checking if a primary organisation role is present")
+    json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
+
+    for json_role in json_roles:
+        if "primaryRole" in json_role:
+            return json_role["id"]
     return None
 
 
