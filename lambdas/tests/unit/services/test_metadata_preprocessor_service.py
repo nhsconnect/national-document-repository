@@ -418,7 +418,7 @@ def test_move_original_metadata_file(test_service):
 def test_update_record_filename(test_service, mocker):
     # Arrange
     original_row = {"FILEPATH": "/old/path/file1.pdf"}
-    updated_row = {"FILEPATH": "/new/path/file1.pdf"}
+    updated_row = {"FILEPATH": "/test_practice_directory/new/path/file1.pdf"}
 
     # Mock S3 client copy and delete operations
     mock_client = mocker.Mock()
@@ -432,14 +432,14 @@ def test_update_record_filename(test_service, mocker):
         Bucket=MOCK_STAGING_STORE_BUCKET,
         CopySource={
             "Bucket": MOCK_STAGING_STORE_BUCKET,
-            "Key": "old/path/file1.pdf",
+            "Key": "test_practice_directory/old/path/file1.pdf",
         },
-        Key="new/path/file1.pdf",
+        Key="test_practice_directory/new/path/file1.pdf",
     )
 
     mock_client.delete_object.assert_called_once_with(
         Bucket=MOCK_STAGING_STORE_BUCKET,
-        Key="old/path/file1.pdf",
+        Key="test_practice_directory/old/path/file1.pdf",
     )
 
     assert result == updated_row

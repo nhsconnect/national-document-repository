@@ -168,7 +168,10 @@ class MetadataPreprocessorService:
 
             try:
                 validated_filename = self.validate_record_filename(original_filename)
-                renamed_row["FILEPATH"] = validated_filename
+                stripped_file_path = validated_filename.lstrip("/")
+                renamed_row["FILEPATH"] = (
+                    f"{self.practice_directory}/{stripped_file_path}"
+                )
                 count = duplicate_counts[validated_filename]
 
                 if count == 0:
@@ -192,7 +195,8 @@ class MetadataPreprocessorService:
         return renaming_map, rejected_rows, rejected_reasons
 
     def update_record_filename(self, original_row: dict, updated_row: dict):
-        original_file_key = original_row.get("FILEPATH").lstrip("/")
+        stripped_file_path = original_row.get("FILEPATH").lstrip("/")
+        original_file_key = self.practice_directory + "/" + stripped_file_path
         new_file_key = updated_row.get("FILEPATH").lstrip("/")
 
         logger.info(f"Renaming file `{original_file_key}` to `{new_file_key}`")
