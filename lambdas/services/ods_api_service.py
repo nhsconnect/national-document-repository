@@ -83,15 +83,9 @@ class OdsApiService:
         if ods_code in allowed_ods_code_list:
             logger.info(f"ODS code {ods_code} is in allowed list, returning org data")
             icb_ods_code = find_icb_for_user(org_data["Organisation"])
-            prescribing_cost_centre_org_role_code = (
-                get_prescribing_cost_centre_org_role_code(org_data)
-            )
-            response = parse_ods_response(
-                org_data, prescribing_cost_centre_org_role_code, icb_ods_code
-            )
+            primary_org_role_code = get_primary_org_role_code(org_data)
+            response = parse_ods_response(org_data, primary_org_role_code, icb_ods_code)
             return response
-
-
 
         logger.info(
             f"ODS code {ods_code} is not a GP, PCSE, ITOC nor in allowed list, returning empty list"
@@ -129,15 +123,12 @@ def get_gp_org_role_code(org_data):
     return None
 
 
-def get_prescribing_cost_centre_org_role_code(org_data):
-    logger.info("Checking if Prescribing Cost Centre role is present")
+def get_primary_org_role_code(org_data):
+    logger.info("Checking if a primary organisation role is present")
     json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
 
-    prescribing_cost_centre_role_code = (
-        token_handler_ssm_service.get_prescribing_cost_centre_role_code()
-    )
     for json_role in json_roles:
-        if json_role["id"] in prescribing_cost_centre_role_code:
+        if "primaryRole" in json_role:
             return json_role["id"]
     return None
 

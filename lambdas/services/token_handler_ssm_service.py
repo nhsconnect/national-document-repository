@@ -9,7 +9,6 @@ from utils.constants.ssm import (
     ITOC_ODS_CODE,
     PCSE_ODS_CODE,
     PCSE_USER_ROLE_CODE,
-    PRESCRIBING_COST_CENTRE_ORG_ROLE_CODE,
 )
 from utils.lambda_exceptions import LoginException
 
@@ -99,25 +98,12 @@ class TokenHandlerSSMService(SSMService):
     def get_gp_org_role_code(self) -> str:
         logger.info("starting ssm request to retrieve GP organisation role code")
         response = self.get_ssm_parameter(GP_ORG_ROLE_CODE)
-        if not response :
+        if not response:
             logger.error(
                 LambdaError.LoginGpOrgRoleCode.to_str(),
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(500, LambdaError.LoginGpOrgRoleCode)
-        return response
-
-    def get_prescribing_cost_centre_role_code(self) -> str:
-        logger.info(
-            "starting ssm request to retrieve prescribing cost centre role code"
-        )
-        response = self.get_ssm_parameter(PRESCRIBING_COST_CENTRE_ORG_ROLE_CODE)
-        if None in response:
-            logger.error(
-                LambdaError.LoginPrescribingCostCentreOrgRoleCode.to_str(),
-                {"Result": "Unsuccessful login"},
-            )
-            raise LoginException(500, LambdaError.LoginPrescribingCostCentreOrgRoleCode)
         return response
 
     def get_pcse_ods_code(self) -> str:

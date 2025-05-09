@@ -163,14 +163,6 @@ class LambdaError(Enum):
         "err_code": "LIN_5011",
         "message": "SSM parameter value for ITOC ODS code may not exist",
     }
-    LoginPrescribingCostCentreOrgRoleCode = {
-        "err_code": "LIN_5012",
-        "message": "SSM parameter value for prescribing cost centre organisation role code may not exist",
-    }
-    Login = {
-        "err_code": "LIN_5013",
-        "message": "SSM parameter value for prescribing cost centre organisation role code may not exist",
-    }
 
     """
        Errors for DocumentManifestJobServiceException

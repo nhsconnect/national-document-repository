@@ -3,7 +3,6 @@ GP_CLINICAL_USER_ROLE_CODE = "/auth/smartcard/role/gp_clinical"
 PCSE_USER_ROLE_CODE = "/auth/smartcard/role/pcse"
 
 GP_ORG_ROLE_CODE = "/auth/org/role_code/gpp"
-PRESCRIBING_COST_CENTRE_ORG_ROLE_CODE = "/auth/org/role_code/pcc"
 
 PCSE_ODS_CODE = "/auth/org/ods_code/pcse"
 ITOC_ODS_CODE = "/auth/org/ods_code/itoc"
