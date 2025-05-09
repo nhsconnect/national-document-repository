@@ -1,9 +1,12 @@
+import base64
+
 from enums.lambda_error import LambdaError
 from oauthlib.oauth2 import WebApplicationClient
 from services.base.ssm_service import SSMService
 from services.dynamic_configuration_service import DynamicConfigurationService
 from services.get_fhir_document_reference_service import GetFhirDocumentReferenceService
 from services.oidc_service import OidcService
+from services.search_patient_details_service import SearchPatientDetailsService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -33,7 +36,6 @@ def lambda_handler(event, context):
             raise GetFhirDocumentReferenceException(
                 400, LambdaError.DocumentReferenceInvalidRequest
             )
-
         bearer_token = event.get("headers", {}).get("Authorization", None)
         selected_role_id = event.get("headers", {}).get("cis2-urid", None)
         if not bearer_token:
@@ -48,28 +50,60 @@ def lambda_handler(event, context):
             raise GetFhirDocumentReferenceException(
                 404, LambdaError.DocumentReferenceNotFound
             )
+        smartcard_role_code = None
+        org_ods_code = None
+        if selected_role_id:
 
-        configuration_service = DynamicConfigurationService()
-        configuration_service.set_auth_ssm_prefix()
+            configuration_service = DynamicConfigurationService()
+            configuration_service.set_auth_ssm_prefix()
 
-        oidc_service = OidcService()
-        oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
-        userinfo = oidc_service.fetch_userinfo(bearer_token)
-        org_ods_code = oidc_service.fetch_user_org_code(userinfo, selected_role_id)
-        smartcard_role_code, user_id = oidc_service.fetch_user_role_code(
-            userinfo, selected_role_id, "R"
-        )
-        get_document_service = GetFhirDocumentReferenceService(
-            smartcard_role_code, org_ods_code
-        )
-        document_ref = get_document_service.handle_get_document_reference_request(
+            oidc_service = OidcService()
+            oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
+            userinfo = oidc_service.fetch_userinfo(bearer_token)
+            org_ods_code = oidc_service.fetch_user_org_code(userinfo, selected_role_id)
+            smartcard_role_code, user_id = oidc_service.fetch_user_role_code(
+                userinfo, selected_role_id, "R"
+            )
+        get_document_service = GetFhirDocumentReferenceService()
+        document_reference = get_document_service.handle_get_document_reference_request(
             snomed_code,
             document_id,
         )
 
-        return ApiGatewayResponse(
-            status_code=200, body=document_ref, methods="GET"
-        ).create_api_gateway_response()
+        search_patient_service = SearchPatientDetailsService(
+            smartcard_role_code, org_ods_code
+        )
+        try:
+            search_patient_service.handle_search_patient_request(
+                document_reference.nhs_number, True
+            )
+
+        except Exception:
+            raise GetFhirDocumentReferenceException(
+                403, LambdaError.DocumentReferenceForbidden
+            )
+
+        document_reference_response, is_return_file_binary = (
+            get_document_service.create_document_reference_fhir_response(
+                document_reference
+            )
+        )
+        if is_return_file_binary:
+            return ApiGatewayResponse(
+                status_code=200,
+                body=base64.b64encode(document_reference_response).decode("utf-8"),
+                methods="GET",
+            ).create_api_gateway_response(
+                base_64_encoded=True,
+                headers={
+                    "Content-Type": "application/pdf",
+                    "Content-Disposition": f"inline; filename={document_reference.file_name}",
+                },
+            )
+        else:
+            return ApiGatewayResponse(
+                status_code=200, body=document_reference_response, methods="GET"
+            ).create_api_gateway_response()
     except (GetFhirDocumentReferenceException, OidcApiException) as e:
         return ApiGatewayResponse(
             status_code=e.status_code,

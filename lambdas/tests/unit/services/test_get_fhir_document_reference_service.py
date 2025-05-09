@@ -146,10 +146,7 @@ def patched_service(mocker, set_env, context):
     mocker.patch("services.get_fhir_document_reference_service.S3Service")
     mocker.patch("services.get_fhir_document_reference_service.SSMService")
     mocker.patch("services.get_fhir_document_reference_service.DocumentService")
-    mocker.patch(
-        "services.get_fhir_document_reference_service.SearchPatientDetailsService"
-    )
-    service = GetFhirDocumentReferenceService("R8000", "B9A5A")
+    service = GetFhirDocumentReferenceService()
 
     yield service
 
@@ -171,12 +168,8 @@ def test_handle_get_document_reference_request(patched_service, mocker, set_env)
     mocker.patch.object(
         patched_service, "get_document_references", return_value=mock_document_ref
     )
-    mocker.patch.object(
-        patched_service.search_patient_service, "handle_search_patient_request"
-    )
-    mocker.patch.object(
-        patched_service, "create_document_presigned_url", return_value=FAKE_URL
-    )
+
+    mocker.patch.object(patched_service, "get_presigned_url", return_value=FAKE_URL)
     mocker.patch.object(
         patched_service,
         "create_document_reference_fhir_response",
@@ -200,14 +193,7 @@ def test_handle_get_document_reference_request_when_user_is_not_allowed_access(
     mocker.patch.object(
         patched_service, "get_document_references", return_value=mock_document_ref
     )
-    mocker.patch.object(
-        patched_service.search_patient_service,
-        "handle_search_patient_request",
-        side_effect=SearchPatientException(403, LambdaError.DocumentReferenceForbidden),
-    )
-    mocker.patch.object(
-        patched_service, "create_document_presigned_url", return_value=FAKE_URL
-    )
+    mocker.patch.object(patched_service, "get_presigned_url", return_value=FAKE_URL)
     mocker.patch.object(patched_service, "create_document_reference_fhir_response")
 
     with pytest.raises(GetFhirDocumentReferenceException):
@@ -236,7 +222,7 @@ def test_create_document_reference_fhir_response(patched_service):
     assert json.loads(actual) == expected
 
 
-def test_create_document_presigned_url(patched_service, mocker):
+def test_get_presigned_url(patched_service, mocker):
     expected_url = "https://d12345.cloudfront.net/path/to/resource"
 
     patched_service.s3_service.create_download_presigned_url.return_value = (
@@ -246,9 +232,7 @@ def test_create_document_presigned_url(patched_service, mocker):
         "services.get_fhir_document_reference_service.format_cloudfront_url"
     ).return_value = "https://d12345.cloudfront.net/path/to/resource"
 
-    result = patched_service.create_document_presigned_url(
-        create_test_doc_store_refs()[0]
-    )
+    result = patched_service.get_presigned_url(create_test_doc_store_refs()[0])
     assert result == expected_url
 
     patched_service.s3_service.create_download_presigned_url.assert_called_once_with(
@@ -289,7 +273,7 @@ def test_handle_get_document_reference_request_pds_error(patched_service, mocker
     assert exc_info.value.status_code == 403
 
 
-def test_create_document_presigned_url_failure(patched_service, mocker):
+def test_get_presigned_url_failure(patched_service, mocker):
     # Test when S3 service raises an exception
     document_ref = create_test_doc_store_refs()[0]
     patched_service.s3_service.create_download_presigned_url.side_effect = Exception(
@@ -297,7 +281,7 @@ def test_create_document_presigned_url_failure(patched_service, mocker):
     )
 
     with pytest.raises(Exception) as exc_info:
-        patched_service.create_document_presigned_url(document_ref)
+        patched_service.get_presigned_url(document_ref)
 
     assert str(exc_info.value) == "S3 error"
     patched_service.s3_service.create_download_presigned_url.assert_called_once()
@@ -335,9 +319,7 @@ def test_handle_get_document_reference_request_integration(patched_service, mock
     mocker.patch.object(
         patched_service.search_patient_service, "handle_search_patient_request"
     )
-    mocker.patch.object(
-        patched_service, "create_document_presigned_url", return_value=FAKE_URL
-    )
+    mocker.patch.object(patched_service, "get_presigned_url", return_value=FAKE_URL)
 
     # Don't mock create_document_reference_fhir_response to test the actual implementation
     mocker.patch(

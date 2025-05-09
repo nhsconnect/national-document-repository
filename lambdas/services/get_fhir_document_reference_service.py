@@ -7,12 +7,8 @@ from models.fhir.R4.fhir_document_reference import Attachment, DocumentReference
 from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
-from services.search_patient_details_service import SearchPatientDetailsService
 from utils.audit_logging_setup import LoggingService
-from utils.lambda_exceptions import (
-    GetFhirDocumentReferenceException,
-    SearchPatientException,
-)
+from utils.lambda_exceptions import GetFhirDocumentReferenceException
 from utils.request_context import request_context
 from utils.utilities import format_cloudfront_url
 
@@ -20,7 +16,7 @@ logger = LoggingService(__name__)
 
 
 class GetFhirDocumentReferenceService:
-    def __init__(self, user_role, user_ods_code):
+    def __init__(self):
         self.tables = {
             SnomedCodes.LLOYD_GEORGE.value.code: os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         }
@@ -32,9 +28,6 @@ class GetFhirDocumentReferenceService:
         )
         self.ssm_service = SSMService()
         self.document_service = DocumentService()
-        self.search_patient_service = SearchPatientDetailsService(
-            user_role, user_ods_code
-        )
 
     def handle_get_document_reference_request(self, snomed_code, document_id):
         table = self.tables.get(snomed_code, None)
@@ -43,20 +36,8 @@ class GetFhirDocumentReferenceService:
                 404, LambdaError.DocumentReferenceNotFound
             )
         document_reference = self.get_document_references(document_id, table)
-        try:
-            self.search_patient_service.handle_search_patient_request(
-                document_reference.nhs_number, True
-            )
-        except SearchPatientException:
-            raise GetFhirDocumentReferenceException(
-                403, LambdaError.DocumentReferenceForbidden
-            )
 
-        presign_url = self.create_document_presigned_url(document_reference)
-        response = self.create_document_reference_fhir_response(
-            document_reference, presign_url
-        )
-        return response
+        return document_reference
 
     def get_document_references(self, document_id: str, table) -> DocumentReference:
         documents = self.document_service.fetch_documents_from_table(
@@ -71,9 +52,17 @@ class GetFhirDocumentReferenceService:
                 404, LambdaError.DocumentReferenceNotFound
             )
 
-    def create_document_presigned_url(self, document_reference: DocumentReference):
-        bucket_name = document_reference.get_file_bucket()
-        file_location = document_reference.get_file_key()
+    def get_presigned_url(self, bucket_name, file_location):
+        """
+        generates a presigned URL for downloading a file from S3 and formats it with a CloudFront URL.
+
+        Args:
+            bucket_name (str): The name of the S3 bucket where the file is stored.
+            file_location (str): The key (path) of the file in the S3 bucket.
+
+        Returns:
+            str: A formatted CloudFront URL for the presigned S3 download link.
+        """
         presign_url_response = self.s3_service.create_download_presigned_url(
             s3_bucket_name=bucket_name,
             file_key=file_location,
@@ -81,20 +70,57 @@ class GetFhirDocumentReferenceService:
         return format_cloudfront_url(presign_url_response, self.cloudfront_url)
 
     def create_document_reference_fhir_response(
-        self, document_reference: DocumentReference, presign_url: str
-    ) -> str:
-        document_details = Attachment(
-            url=presign_url,
-            title=document_reference.file_name,
-            creation=document_reference.created,
+        self, document_reference: DocumentReference
+    ) -> (str, bool):
+        """
+        Creates a FHIR-compliant DocumentReference response for a given document.
+
+        If the file size is less than 8MB, the binary file is returned directly.
+        Otherwise, a presigned URL is generated and included in the response.
+
+        Args:
+            document_reference (DocumentReference): The document reference object containing metadata
+                about the file (e.g. bucket name, file key, file size, etc.).
+
+        Returns:
+            str: A JSON string representing the FHIR DocumentReference object.
+        """
+        bucket_name = document_reference.get_file_bucket()
+        file_location = document_reference.get_file_key()
+        file_size = self.s3_service.get_file_size(
+            s3_bucket_name=bucket_name,
+            object_key=file_location,
         )
-        fhir_document_reference = (
-            DocumentReferenceInfo(
-                nhsNumber=document_reference.nhs_number,
-                custodian=document_reference.current_gp_ods,
-                attachment=document_details,
+        is_return_file_binary = False
+        if file_size < 8 * 10**6:
+            is_return_file_binary = True
+            # If the file size is less than 8MB, return the binary file as a base64 encoded string.
+            return (
+                self.s3_service.get_binary_file(
+                    s3_bucket_name=bucket_name,
+                    file_key=file_location,
+                ),
+                is_return_file_binary,
             )
-            .create_fhir_document_reference_object()
-            .model_dump_json(exclude_none=True)
-        )
-        return fhir_document_reference
+        else:
+            # Generate a presigned URL for larger files.
+            presign_url = self.get_presigned_url(bucket_name, file_location)
+
+            # Create an Attachment object with the presigned URL and document metadata.
+            document_details = Attachment(
+                url=presign_url,
+                title=document_reference.file_name,
+                creation=document_reference.created,
+            )
+
+            # Create and return the FHIR DocumentReference object as a JSON string.
+            fhir_document_reference = (
+                DocumentReferenceInfo(
+                    nhsNumber=document_reference.nhs_number,
+                    custodian=document_reference.current_gp_ods,
+                    attachment=document_details,
+                )
+                .create_fhir_document_reference_object()
+                .model_dump_json(exclude_none=True)
+            )
+            return fhir_document_reference, is_return_file_binary
