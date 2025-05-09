@@ -130,7 +130,6 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
     mocker.patch.object(
         TokenHandlerSSMService, "get_allowed_list_of_ods_codes", return_value="R0013,R0014,R0015"
     )
-
     gp_ods = "A9A5A"
     expected = {
         "name": "Mock GP Practice",
