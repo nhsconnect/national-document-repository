@@ -26,86 +26,130 @@ class SearchPatientDetailsService:
         self.manage_user_session_service = ManageUserSessionAccess()
         self.feature_flag_service = FeatureFlagService()
 
-    def handle_search_patient_request(self, nhs_number):
+    def handle_search_patient_request(self, nhs_number, update_session=True):
+        """
+        Handle search patient request and return patient details if authorised.
+
+        Args:
+            nhs_number: The NHS number to search for
+            update_session: Flag to control whether to update the session (default: True)
+
+        Returns:
+            PatientDetails object if found and the user is authorised
+
+        Raises:
+            SearchPatientException: With appropriate error code and message
+        """
         try:
-            pds_service = get_pds_service()
-            patient_details = pds_service.fetch_patient_details(nhs_number)
+            patient_details = self._fetch_patient_details(nhs_number)
+
             if not patient_details.deceased:
-                self.check_if_user_authorise(
-                    gp_ods_for_patient=patient_details.general_practice_ods
-                )
+                self._check_authorization(patient_details.general_practice_ods)
 
             logger.audit_splunk_info(
                 "Searched for patient details", {"Result": "Patient found"}
             )
 
-            self.manage_user_session_service.update_auth_session_with_permitted_search(
-                user_role=self.user_role,
-                nhs_number=nhs_number,
-                write_to_deceased_column=patient_details.deceased,
-            )
+            if update_session:
+                self._update_session(nhs_number, patient_details.deceased)
 
-            response = patient_details.model_dump_json(
-                by_alias=True,
-                exclude={
-                    "death_notification_status",
-                    "general_practice_ods",
-                },
-            )
-            return response
+            # Return the patient details object directly
+            return patient_details
+
         except PatientNotFoundException as e:
-            logger.error(
-                f"{LambdaError.SearchPatientNoPDS.to_str()}: {str(e)}",
-                {"Result": "Patient not found"},
+            self._handle_error(
+                e, LambdaError.SearchPatientNoPDS, 404, "Patient not found"
             )
-            raise SearchPatientException(404, LambdaError.SearchPatientNoPDS)
+            return None
 
         except UserNotAuthorisedException as e:
-            logger.error(
-                f"{LambdaError.SearchPatientNoAuth.to_str()}: {str(e)}",
-                {"Result": "Patient found, User not authorised to view patient"},
+            self._handle_error(
+                e,
+                LambdaError.SearchPatientNoAuth,
+                404,
+                "Patient found, User not authorised to view patient",
             )
-            raise SearchPatientException(404, LambdaError.SearchPatientNoAuth)
+            return None
 
         except (InvalidResourceIdException, PdsErrorException) as e:
-            logger.error(
-                f"{LambdaError.SearchPatientNoId.to_str()}: {str(e)}",
-                {"Result": "Patient not found"},
+            self._handle_error(
+                e, LambdaError.SearchPatientNoId, 400, "Patient not found"
             )
-            raise SearchPatientException(400, LambdaError.SearchPatientNoId)
+            return None
 
         except (ValidationError, PydanticSerializationError) as e:
-            logger.error(
-                f"{LambdaError.SearchPatientNoParse.to_str()}: {str(e)}",
-                {"Result": "Patient not found"},
+            self._handle_error(
+                e, LambdaError.SearchPatientNoParse, 400, "Patient not found"
             )
-            raise SearchPatientException(400, LambdaError.SearchPatientNoParse)
+            return None
 
-    def check_if_user_authorise(self, gp_ods_for_patient):
+    def _fetch_patient_details(self, nhs_number):
+        """Fetch patient details from PDS service"""
+        pds_service = get_pds_service()
+        return pds_service.fetch_patient_details(nhs_number)
+
+    def _check_authorization(self, gp_ods_for_patient):
+        """
+        Check if the current user is authorised to view the patient details.
+
+        Args:
+            gp_ods_for_patient: The ODS code of the patient's GP practice
+
+        Raises:
+            UserNotAuthorisedException: If the user is not authorised
+        """
         patient_is_active = is_ods_code_active(gp_ods_for_patient)
-        upload_flag_name = FeatureFlags.UPLOAD_ARF_WORKFLOW_ENABLED.value
-        upload_lambda_enabled_flag_object = (
-            self.feature_flag_service.get_feature_flags_by_flag(upload_flag_name)
-        )
-        is_arf_journey_on = upload_lambda_enabled_flag_object[upload_flag_name]
+        is_arf_journey_on = self._is_arf_upload_enabled()
+
         match self.user_role:
             case RepositoryRole.GP_ADMIN.value:
-                # Not raising error here if gp_ods is null / empty
                 if patient_is_active and gp_ods_for_patient != self.user_ods_code:
                     raise UserNotAuthorisedException
                 elif not patient_is_active and not is_arf_journey_on:
                     raise UserNotAuthorisedException
 
             case RepositoryRole.GP_CLINICAL.value:
-                # If the GP Clinical ods code is null then the patient is not registered.
-                # The patient must be registered and registered to the users ODS practise
                 if not patient_is_active or gp_ods_for_patient != self.user_ods_code:
                     raise UserNotAuthorisedException
 
             case RepositoryRole.PCSE.value:
-                # If there is a GP ODS field then the patient is registered, PCSE users should be denied access
                 if patient_is_active:
                     raise UserNotAuthorisedException
 
             case _:
                 raise UserNotAuthorisedException
+
+    def _is_arf_upload_enabled(self):
+        """Check if ARF upload workflow is enabled via feature flags"""
+        upload_flag_name = FeatureFlags.UPLOAD_ARF_WORKFLOW_ENABLED.value
+        upload_lambda_enabled_flag_object = (
+            self.feature_flag_service.get_feature_flags_by_flag(upload_flag_name)
+        )
+        return upload_lambda_enabled_flag_object[upload_flag_name]
+
+    def _update_session(self, nhs_number, is_deceased):
+        """Update the user session with permitted search information"""
+        self.manage_user_session_service.update_auth_session_with_permitted_search(
+            user_role=self.user_role,
+            nhs_number=nhs_number,
+            write_to_deceased_column=is_deceased,
+        )
+
+    def _handle_error(self, exception, error_code, status_code, result_message):
+        """
+        Handle error logging and raise the appropriate exception
+
+        Args:
+            exception: The caught exception
+            error_code: Lambda error code to use
+            status_code: HTTP status code to use
+            result_message: Message to log as a result
+
+        Raises:
+            SearchPatientException: With appropriate error details
+        """
+        logger.error(
+            f"{error_code.to_str()}: {str(exception)}",
+            {"Result": result_message},
+        )
+        raise SearchPatientException(status_code, error_code)

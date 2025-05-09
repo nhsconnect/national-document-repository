@@ -1,7 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
+from enums.repository_role import RepositoryRole
 from models.pds_models import PatientDetails
 from services.search_patient_details_service import SearchPatientDetailsService
-from tests.unit.conftest import TEST_UUID
 from utils.exceptions import (
     InvalidResourceIdException,
     PatientNotFoundException,
@@ -9,183 +11,167 @@ from utils.exceptions import (
     UserNotAuthorisedException,
 )
 from utils.lambda_exceptions import SearchPatientException
-from utils.request_context import request_context
 
-USER_VALID_ODS_CODE = "ABC123"
-PATIENT_VALID_ODS_CODE = "XYZ789"
+USER_VALID_ODS_CODE = "X12345"
+USER_INVALID_ODS_CODE = "X54321"
 EMPTY_ODS_CODE = ""
+NHS_NUMBER = "9000000009"
 
 
-@pytest.fixture(scope="function")
-def mock_service(set_env, request, mocker):
-    request_context.authorization = {"ndr_session_id": TEST_UUID}
-    user_role, user_ods_code = request.param
-    service = SearchPatientDetailsService(user_role, user_ods_code)
-    mocker.patch.object(service, "manage_user_session_service")
-
-    mocker.patch.object(service, "feature_flag_service")
-    return service
-
-
-@pytest.fixture()
-def mock_pds_service_fetch(mocker):
-    pds_service_response = PatientDetails(
-        givenName=["Jane"],
-        familyName="Smith",
-        birthDate="2010-10-22",
-        postalCode="LS1 6AE",
-        nhsNumber="9000000009",
+@pytest.fixture
+def mock_patient_details():
+    return PatientDetails(
+        givenName=["John"],
+        familyName="Doe",
+        birthDate="1980-01-01",
+        postalCode="AB1 2CD",
+        nhsNumber=NHS_NUMBER,
         superseded=False,
         restricted=False,
-        generalPracticeOds="Y12345",
+        generalPracticeOds=USER_VALID_ODS_CODE,
         active=True,
-    )
-    mock_pds_service_fetch = mocker.patch(
-        "services.patient_search_service.PatientSearch.fetch_patient_details"
-    )
-    mock_pds_service_fetch.return_value = pds_service_response
-    yield mock_pds_service_fetch
-
-
-@pytest.fixture()
-def mock_check_if_user_authorise(mocker, mock_service):
-    yield mocker.patch.object(mock_service, "check_if_user_authorise")
-
-
-@pytest.mark.parametrize(
-    "mock_service",
-    (
-        ("GP_ADMIN", USER_VALID_ODS_CODE),
-        ("GP_CLINICAL", USER_VALID_ODS_CODE),
-        ("PCSE", ""),
-    ),
-    indirect=True,
-)
-def test_check_if_user_authorise_valid(mock_service):
-    try:
-        expected_ods = mock_service.user_ods_code
-        mock_service.check_if_user_authorise(expected_ods)
-    except UserNotAuthorisedException as e:
-        assert False, e
-
-
-@pytest.mark.parametrize(
-    "mock_service",
-    (
-        ("GP_ADMIN", USER_VALID_ODS_CODE),
-        ("PCSE", ""),
-    ),
-    indirect=True,
-)
-def test_check_if_user_authorise_valid_when_arf_is_on(mocker, mock_service):
-    try:
-        mock_function = mocker.patch.object(
-            mock_service.feature_flag_service, "get_feature_flags_by_flag"
-        )
-        mock_function.return_value = {"uploadArfWorkflowEnabled": True}
-        mock_service.check_if_user_authorise("SUSP")
-    except UserNotAuthorisedException as e:
-        assert False, e
-
-
-@pytest.mark.parametrize(
-    "mock_service",
-    (
-        ("GP_ADMIN", USER_VALID_ODS_CODE),
-        ("GP_ADMIN", EMPTY_ODS_CODE),
-        ("GP_CLINICAL", USER_VALID_ODS_CODE),
-        ("GP_CLINICAL", EMPTY_ODS_CODE),
-        ("PCSE", EMPTY_ODS_CODE),
-        ("PCSE", PATIENT_VALID_ODS_CODE),
-        ("Not_valid", PATIENT_VALID_ODS_CODE),
-        ("Not_valid", EMPTY_ODS_CODE),
-    ),
-    indirect=True,
-)
-def test_check_if_user_authorise_raise_error(mock_service):
-    with pytest.raises(UserNotAuthorisedException):
-        mock_service.check_if_user_authorise(PATIENT_VALID_ODS_CODE)
-
-
-@pytest.mark.parametrize(
-    "mock_service",
-    (
-        ("GP_ADMIN", USER_VALID_ODS_CODE),
-        ("GP_ADMIN", EMPTY_ODS_CODE),
-        ("GP_CLINICAL", USER_VALID_ODS_CODE),
-        ("GP_CLINICAL", EMPTY_ODS_CODE),
-    ),
-    indirect=True,
-)
-def test_check_if_user_authorise_raise_error_arf_off_inactive_patient(
-    mocker, mock_service
-):
-    mock_function = mocker.patch.object(
-        mock_service.feature_flag_service, "get_feature_flags_by_flag"
-    )
-    mock_function.return_value = {"uploadArfWorkflowEnabled": False}
-    with pytest.raises(UserNotAuthorisedException):
-        mock_service.check_if_user_authorise("")
-
-
-@pytest.mark.parametrize(
-    "mock_service",
-    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
-    indirect=True,
-)
-def test_handle_search_patient_request_valid(
-    mock_service,
-    mock_pds_service_fetch,
-    mock_check_if_user_authorise,
-):
-
-    expected_response = (
-        '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22","postalCode":"LS1 '
-        '6AE","nhsNumber":"9000000009","superseded":false,"restricted":false,'
-        '"active":true,"deceased":false}'
+        deceased=False,
+        deathNotificationStatus=None,
     )
 
-    actual_response = mock_service.handle_search_patient_request("9000000009")
 
-    mock_check_if_user_authorise.assert_called()
-    mock_pds_service_fetch.assert_called_with("9000000009")
-    assert actual_response == expected_response
-
-
-@pytest.mark.parametrize(
-    "mock_service",
-    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
-    indirect=True,
-)
-def test_handle_search_patient_request_valid_skip_authorisation_check_when_patient_is_deceased(
-    mock_service,
-    mock_pds_service_fetch,
-    mock_check_if_user_authorise,
-):
-    pds_service_response = PatientDetails(
-        givenName=["Jane"],
-        familyName="Smith",
-        birthDate="2010-10-22",
-        postalCode="LS1 6AE",
-        nhsNumber="9000000009",
+@pytest.fixture
+def mock_deceased_patient_details():
+    return PatientDetails(
+        givenName=["John"],
+        familyName="Doe",
+        birthDate="1980-01-01",
+        postalCode="AB1 2CD",
+        nhsNumber=NHS_NUMBER,
         superseded=False,
         restricted=False,
-        generalPracticeOds="Y12345",
+        generalPracticeOds=USER_VALID_ODS_CODE,
         active=True,
         deceased=True,
     )
-    expected_response = (
-        '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22","postalCode":"LS1 '
-        '6AE","nhsNumber":"9000000009","superseded":false,"restricted":false,'
-        '"active":true,"deceased":true}'
+
+
+@pytest.fixture
+def mock_pds_service_fetch(mock_patient_details):
+    with patch("services.search_patient_details_service.get_pds_service") as mock:
+        mock_pds = MagicMock()
+        mock_pds.fetch_patient_details.return_value = mock_patient_details
+        mock.return_value = mock_pds
+        yield mock_pds.fetch_patient_details
+
+
+@pytest.fixture
+def mock_feature_flag_service():
+    with patch("services.search_patient_details_service.FeatureFlagService"):
+        mock_service = MagicMock()
+        mock_service().get_feature_flags_by_flag.return_value = {
+            "UPLOAD_ARF_WORKFLOW_ENABLED": True
+        }
+        yield mock_service
+
+
+@pytest.fixture
+def mock_check_if_user_authorise():
+    with patch.object(
+        SearchPatientDetailsService, "_check_authorization"
+    ) as mock_check:
+        yield mock_check
+
+
+@pytest.fixture
+def mock_update_session():
+    with patch.object(SearchPatientDetailsService, "_update_session") as mock_update:
+        yield mock_update
+
+
+@pytest.fixture
+def mock_service(request, mock_feature_flag_service):
+    role, ods_code = (
+        request.param
+        if hasattr(request, "param")
+        else (
+            "GP_ADMIN",
+            USER_VALID_ODS_CODE,
+        )
     )
-    mock_pds_service_fetch.return_value = pds_service_response
+    with patch(
+        "services.search_patient_details_service.ManageUserSessionAccess"
+    ) as mock:
+        mock_session = MagicMock()
+        mock.return_value = mock_session
+        service = SearchPatientDetailsService(role, ods_code)
+        yield service
 
-    actual_response = mock_service.handle_search_patient_request("9000000009")
 
+@pytest.mark.parametrize(
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE),),
+    indirect=True,
+)
+def test_handle_search_patient_request_returns_patient_details(
+    mock_service,
+    mock_patient_details,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_update_session,
+):
+    # Act
+    result = mock_service.handle_search_patient_request(NHS_NUMBER)
+
+    # Assert
+    mock_pds_service_fetch.assert_called_with(NHS_NUMBER)
+    mock_check_if_user_authorise.assert_called_once()
+    mock_update_session.assert_called_once()
+    assert result == mock_patient_details
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE),),
+    indirect=True,
+)
+def test_handle_search_patient_request_with_update_session_false(
+    mock_service,
+    mock_patient_details,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_update_session,
+):
+    # Act
+    result = mock_service.handle_search_patient_request(
+        NHS_NUMBER, update_session=False
+    )
+
+    # Assert
+    mock_pds_service_fetch.assert_called_with(NHS_NUMBER)
+    mock_check_if_user_authorise.assert_called_once()
+    mock_update_session.assert_not_called()
+    assert result == mock_patient_details
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE),),
+    indirect=True,
+)
+def test_handle_search_patient_deceased_skips_authorization_check(
+    mock_service,
+    mock_deceased_patient_details,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_update_session,
+):
+    # Arrange
+    mock_pds_service_fetch.return_value = mock_deceased_patient_details
+
+    # Act
+    result = mock_service.handle_search_patient_request(NHS_NUMBER)
+
+    # Assert
+    mock_pds_service_fetch.assert_called_with(NHS_NUMBER)
     mock_check_if_user_authorise.assert_not_called()
-    mock_pds_service_fetch.assert_called_with("9000000009")
-    assert actual_response == expected_response
+    mock_update_session.assert_called_once()
+    assert result == mock_deceased_patient_details
 
 
 @pytest.mark.parametrize(
@@ -194,29 +180,21 @@ def test_handle_search_patient_request_valid_skip_authorisation_check_when_patie
     indirect=True,
 )
 def test_handle_search_patient_request_raise_error_when_patient_not_found(
-    mock_service, mock_pds_service_fetch
+    mock_service,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_update_session,
 ):
+    # Arrange
     mock_pds_service_fetch.side_effect = PatientNotFoundException()
+
+    # Act & Assert
     with pytest.raises(SearchPatientException):
-        mock_service.handle_search_patient_request("9000000009")
+        mock_service.handle_search_patient_request(NHS_NUMBER)
 
-    mock_pds_service_fetch.assert_called_with("9000000009")
-
-
-@pytest.mark.parametrize(
-    "mock_service",
-    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
-    indirect=True,
-)
-def test_handle_search_patient_request_raise_error_when_user_is_not_auth(
-    mock_service, mock_pds_service_fetch, mock_check_if_user_authorise
-):
-    mock_check_if_user_authorise.side_effect = UserNotAuthorisedException()
-    with pytest.raises(SearchPatientException):
-        mock_service.handle_search_patient_request("9000000009")
-
-    mock_pds_service_fetch.assert_called_with("9000000009")
-    mock_check_if_user_authorise.assert_called()
+    mock_pds_service_fetch.assert_called_with(NHS_NUMBER)
+    mock_check_if_user_authorise.assert_not_called()
+    mock_update_session.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -225,14 +203,21 @@ def test_handle_search_patient_request_raise_error_when_user_is_not_auth(
     indirect=True,
 )
 def test_handle_search_patient_request_raise_error_when_invalid_patient(
-    mock_service, mock_pds_service_fetch, mock_check_if_user_authorise
+    mock_service,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_update_session,
 ):
+    # Arrange
     mock_pds_service_fetch.side_effect = InvalidResourceIdException()
-    with pytest.raises(SearchPatientException):
-        mock_service.handle_search_patient_request("9000000009")
 
-    mock_pds_service_fetch.assert_called_with("9000000009")
+    # Act & Assert
+    with pytest.raises(SearchPatientException):
+        mock_service.handle_search_patient_request(NHS_NUMBER)
+
+    mock_pds_service_fetch.assert_called_with(NHS_NUMBER)
     mock_check_if_user_authorise.assert_not_called()
+    mock_update_session.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -241,12 +226,177 @@ def test_handle_search_patient_request_raise_error_when_invalid_patient(
     indirect=True,
 )
 def test_handle_search_patient_request_raise_error_when_pds_error(
-    mock_service, mock_pds_service_fetch, mock_check_if_user_authorise
+    mock_service,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_update_session,
 ):
-    mock_pds_service_fetch.side_effect = PdsErrorException()
+    # Arrange
+    mock_pds_service_fetch.side_effect = PdsErrorException("PDS Error")
 
+    # Act & Assert
     with pytest.raises(SearchPatientException):
-        mock_service.handle_search_patient_request("9000000009")
+        mock_service.handle_search_patient_request(NHS_NUMBER)
 
-    mock_pds_service_fetch.assert_called_with("9000000009")
+    mock_pds_service_fetch.assert_called_with(NHS_NUMBER)
     mock_check_if_user_authorise.assert_not_called()
+    mock_update_session.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=True,
+)
+def test_handle_search_patient_request_raise_error_when_validation_error(
+    mock_service,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_update_session,
+    validation_error,
+):
+    # Arrange
+    mock_pds_service_fetch.side_effect = validation_error
+
+    # Act & Assert
+    with pytest.raises(SearchPatientException):
+        mock_service.handle_search_patient_request(NHS_NUMBER)
+
+    mock_pds_service_fetch.assert_called_with(NHS_NUMBER)
+    mock_check_if_user_authorise.assert_not_called()
+    mock_update_session.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE),),
+    indirect=True,
+)
+def test_handle_search_patient_request_raise_error_when_user_not_authorised(
+    mock_service,
+    mock_patient_details,
+    mock_pds_service_fetch,
+    mock_check_if_user_authorise,
+    mock_update_session,
+):
+    # Arrange
+    mock_check_if_user_authorise.side_effect = UserNotAuthorisedException()
+
+    # Act & Assert
+    with pytest.raises(SearchPatientException):
+        mock_service.handle_search_patient_request(NHS_NUMBER)
+
+    mock_pds_service_fetch.assert_called_with(NHS_NUMBER)
+    mock_check_if_user_authorise.assert_called_once()
+    mock_update_session.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "user_role, user_ods, patient_ods, patient_active, arf_enabled, exception_expected",
+    [
+        # GP_ADMIN tests
+        (
+            RepositoryRole.GP_ADMIN.value,
+            USER_VALID_ODS_CODE,
+            USER_VALID_ODS_CODE,
+            True,
+            True,
+            False,
+        ),
+        (
+            RepositoryRole.GP_ADMIN.value,
+            USER_VALID_ODS_CODE,
+            USER_INVALID_ODS_CODE,
+            True,
+            True,
+            True,
+        ),
+        (
+            RepositoryRole.GP_ADMIN.value,
+            USER_VALID_ODS_CODE,
+            USER_VALID_ODS_CODE,
+            False,
+            True,
+            False,
+        ),
+        (
+            RepositoryRole.GP_ADMIN.value,
+            USER_VALID_ODS_CODE,
+            USER_VALID_ODS_CODE,
+            False,
+            False,
+            False,
+        ),
+        # GP_CLINICAL tests
+        (
+            RepositoryRole.GP_CLINICAL.value,
+            USER_VALID_ODS_CODE,
+            USER_VALID_ODS_CODE,
+            True,
+            True,
+            False,
+        ),
+        (
+            RepositoryRole.GP_CLINICAL.value,
+            USER_VALID_ODS_CODE,
+            USER_INVALID_ODS_CODE,
+            True,
+            True,
+            True,
+        ),
+        (
+            RepositoryRole.GP_CLINICAL.value,
+            USER_VALID_ODS_CODE,
+            USER_VALID_ODS_CODE,
+            False,
+            True,
+            True,
+        ),
+        # PCSE tests
+        (
+            RepositoryRole.PCSE.value,
+            USER_VALID_ODS_CODE,
+            USER_VALID_ODS_CODE,
+            True,
+            True,
+            True,
+        ),
+        (
+            RepositoryRole.PCSE.value,
+            USER_VALID_ODS_CODE,
+            USER_VALID_ODS_CODE,
+            False,
+            True,
+            False,
+        ),
+        # Unknown role
+        ("UNKNOWN_ROLE", USER_VALID_ODS_CODE, USER_VALID_ODS_CODE, True, True, True),
+    ],
+)
+def test_check_authorization(
+    user_role,
+    user_ods,
+    patient_ods,
+    patient_active,
+    arf_enabled,
+    exception_expected,
+    mock_feature_flag_service,
+):
+    # Arrange
+    with patch(
+        "services.search_patient_details_service.is_ods_code_active"
+    ) as mock_is_active:
+        mock_is_active.return_value = patient_active
+        mock_feature_flag_service().get_feature_flags_by_flag.return_value = {
+            "UPLOAD_ARF_WORKFLOW_ENABLED": arf_enabled
+        }
+
+        service = SearchPatientDetailsService(user_role, user_ods)
+
+        # Act & Assert
+        if exception_expected:
+            with pytest.raises(UserNotAuthorisedException):
+                service._check_authorization(patient_ods)
+        else:
+            # Should not raise exception
+            service._check_authorization(patient_ods)

@@ -126,8 +126,6 @@ def test_fetch_tokens_raises_AuthorisationException_for_invalid_id_token(
 
 
 def test_fetch_user_org_code(mocker, oidc_service, mock_userinfo):
-    mock_access_token = "fake_access_token"
-
     mock_decoded_claim_set = {
         "sid": "fake_cis2_session_id",
         "sub": "fake_cis2_login_id",
@@ -139,17 +137,15 @@ def test_fetch_user_org_code(mocker, oidc_service, mock_userinfo):
 
     mocker.patch("requests.get", return_value=mock_response)
 
-    actual = oidc_service.fetch_user_org_codes(
-        mock_access_token, IdTokenClaimSet(**mock_decoded_claim_set)
+    actual = oidc_service.fetch_user_org_code(
+        mock_userinfo["user_info"], mock_decoded_claim_set["selected_roleid"]
     )
-    assert actual[0] == mock_userinfo["org_code"]
+    assert actual == mock_userinfo["org_code"]
 
 
 def test_fetch_user_org_codes_raises_exception_for_invalid_access_token(
     mocker, oidc_service
 ):
-    mock_token = "fake_access_token"
-
     mock_response = MockResponse(
         status_code=401,
         json_data={
@@ -161,7 +157,7 @@ def test_fetch_user_org_codes_raises_exception_for_invalid_access_token(
     mocker.patch("requests.get", return_value=mock_response)
 
     with pytest.raises(OidcApiException):
-        oidc_service.fetch_user_org_codes(mock_token, "not a real role")
+        oidc_service.fetch_userinfo("fake access token")
 
 
 @pytest.fixture(name="mock_id_tokens", scope="session")
@@ -309,74 +305,39 @@ def test_fetch_tokens_response_throws_authorisation_exception_when_access_token_
 
 
 def test_fetch_user_role_code(oidc_service, mock_userinfo, mock_id_tokens, mocker):
-    mock_access_token = "access_token"
-    mock_claim_set = "mock_claim_set"
     prefix_char = "R"
-
-    mock_fetch_userinfo = mocker.patch.object(
-        OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"]
-    )
-    mock_oidc_get_selected_role = mocker.patch(
-        "services.oidc_service.get_selected_roleid",
-        return_value=mock_userinfo["role_id"],
-    )
 
     expected = (mock_userinfo["role_code"], mock_userinfo["user_id"])
 
     actual = oidc_service.fetch_user_role_code(
-        mock_access_token, mock_claim_set, prefix_char
+        mock_userinfo["user_info"], mock_userinfo["role_id"], prefix_char
     )
 
     assert actual == expected
-    mock_fetch_userinfo.assert_called_once()
-    mock_oidc_get_selected_role.assert_called_once()
 
 
 def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes(
     oidc_service, mock_userinfo, mock_id_tokens, mocker
 ):
-    mock_access_token = "access_token"
     mock_claim_set = "mock_claim_set"
     prefix_char = "R"
 
-    mock_fetch_userinfo = mocker.patch.object(
-        OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"]
-    )
-    mock_oidc_get_selected_role = mocker.patch(
-        "services.oidc_service.get_selected_roleid", return_value="not_in_data"
-    )
-
     with pytest.raises(AuthorisationException):
         oidc_service.fetch_user_role_code(
-            mock_access_token, mock_claim_set, prefix_char
+            mock_userinfo["user_info"], mock_claim_set, prefix_char
         )
-
-    mock_fetch_userinfo.assert_called_once()
-    mock_oidc_get_selected_role.assert_called_once()
 
 
 def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes_with_specified_prefix(
     oidc_service, mock_userinfo, mock_id_tokens, mocker
 ):
-    mock_access_token = "access_token"
-    mock_claim_set = "mock_claim_set"
+    mock_user_info = {"key": "value"}
     prefix_char = "invalid_prefix"
-
-    mock_fetch_userinfo = mocker.patch.object(
-        OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"]
-    )
-    mock_oidc_get_selected_role = mocker.patch(
-        "services.oidc_service.get_selected_roleid",
-        return_value=mock_userinfo["role_id"],
-    )
 
     with pytest.raises(AuthorisationException):
         oidc_service.fetch_user_role_code(
-            mock_access_token, mock_claim_set, prefix_char
+            mock_user_info, mock_userinfo["role_id"], prefix_char
         )
-
-    mock_fetch_userinfo.assert_called_once()
-    mock_oidc_get_selected_role.assert_called_once()
 
 
 def test_fetch_user_info(oidc_service, mocker, mock_userinfo):
