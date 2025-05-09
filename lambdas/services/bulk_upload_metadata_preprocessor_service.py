@@ -3,15 +3,15 @@ import os
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-from io import TextIOWrapper
+from io import BytesIO
 
 import regex
 from botocore.exceptions import ClientError
 from models.staging_metadata import METADATA_FILENAME
 from services.base.s3_service import S3Service
-from six import BytesIO
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
+from utils.file_utils import convert_csv_dictionary_to_bytes
 
 logger = LoggingService(__name__)
 
@@ -57,7 +57,7 @@ class MetadataPreprocessorService:
         file_key: str,
     ):
         headers = csv_dict[0].keys() if csv_dict else []
-        csv_data = self.convert_csv_dictionary_to_bytes(headers, csv_dict)
+        csv_data = convert_csv_dictionary_to_bytes(headers, csv_dict)
         logger.info(f"Writing file from buffer to {file_key}")
         self.s3_service.save_or_create_file(
             self.staging_store_bucket, file_key, BytesIO(csv_data)
@@ -167,8 +167,10 @@ class MetadataPreprocessorService:
         rejected_reasons = []
 
         for original_row in metadata_rows:
-            renamed_row = original_row.copy()
+            if not original_row:
+                continue
 
+            renamed_row = original_row.copy()
             original_filename = original_row.get("FILEPATH")
 
             try:
@@ -399,24 +401,3 @@ class MetadataPreprocessorService:
             f"[{day}-{month}-{year}]"
             f"{file_extension}"
         )
-
-    # todo move to library or util file
-    @staticmethod
-    def convert_csv_dictionary_to_bytes(
-        headers: list[str], csv_dict_data: list[dict], encoding: str = "utf-8"
-    ) -> bytes:
-        csv_buffer = BytesIO()
-        csv_text_wrapper = TextIOWrapper(csv_buffer, encoding=encoding, newline="")
-        fieldnames = headers if headers else []
-
-        writer = csv.DictWriter(csv_text_wrapper, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(csv_dict_data)
-
-        csv_text_wrapper.flush()
-        csv_buffer.seek(0)
-
-        result = csv_buffer.getvalue()
-        csv_buffer.close()
-
-        return result

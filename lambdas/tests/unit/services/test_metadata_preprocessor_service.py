@@ -469,26 +469,6 @@ def test_update_file_name_file_not_found(test_service, mocker):
     test_service.s3_service.client.delete_object.assert_not_called()
 
 
-def test_convert_csv_dictionary_to_bytes(test_service, mocker):
-    # Arrange
-    headers = ["id", "name", "age"]
-    metadata_csv_data = [
-        {"id": "1", "name": "Alice", "age": "30"},
-        {"id": "2", "name": "Bob", "age": "25"},
-    ]
-
-    # Act
-    result_bytes = test_service.convert_csv_dictionary_to_bytes(
-        headers=headers, csv_dict_data=metadata_csv_data, encoding="utf-8"
-    )
-
-    # Assert
-    result_str = result_bytes.decode("utf-8")
-    expected_output = "id,name,age\r\n1,Alice,30\r\n2,Bob,25\r\n"
-
-    assert result_str == expected_output
-
-
 def test_update_and_standardize_filenames_success_and_failure(test_service, mocker):
     # Arrange
     original_row1 = {"FILEPATH": "/path/original1.pdf"}
