@@ -327,11 +327,11 @@ def test_get_pcse_ods_code_raises_login_exception(mock_service, mock_ssm):
     assert actual.value.__dict__ == expected.__dict__
 
 
-def test_get_itoc_ods_code(mock_service, mock_ssm):
+def test_get_itoc_ods_codes(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = MOCK_ITOC_ODS_CODE_RESPONSE
     expected = "R0012"
 
-    actual = mock_service.get_itoc_ods_code()
+    actual = mock_service.get_itoc_ods_codes()
 
     mock_ssm.get_parameter.assert_called_once_with(
         Name=ITOC_ODS_CODES, WithDecryption=False
@@ -340,14 +340,14 @@ def test_get_itoc_ods_code(mock_service, mock_ssm):
     assert actual == expected
 
 
-def test_get_itoc_ods_code_raises_login_exception(mock_service, mock_ssm):
+def test_get_itoc_ods_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = {
         "Parameter": {"Value": ""},
     }
     expected = LoginException(500, LambdaError.LoginItocOdsCode)
 
     with pytest.raises(LoginException) as actual:
-        mock_service.get_itoc_ods_code()
+        mock_service.get_itoc_ods_codes()
 
     mock_ssm.get_parameter.assert_called_once_with(
         Name=ITOC_ODS_CODES, WithDecryption=False

@@ -117,7 +117,7 @@ class TokenHandlerSSMService(SSMService):
             raise LoginException(500, LambdaError.LoginPcseOdsCode)
         return response
 
-    def get_itoc_ods_code(self) -> str:
+    def get_itoc_ods_codes(self) -> str:
         logger.info("starting ssm request to retrieve ITOC ODS code")
         response = self.get_ssm_parameter(ITOC_ODS_CODES)
         if not response:

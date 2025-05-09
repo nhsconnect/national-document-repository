@@ -51,7 +51,7 @@ class OdsApiService:
         ods_code = ods_code_list[0]
         logger.info(f"ods_code selected: {ods_code}")
 
-        itoc_ods_codes = token_handler_ssm_service.get_itoc_ods_code()
+        itoc_ods_codes = token_handler_ssm_service.get_itoc_ods_codes()
 
         if ods_code in itoc_ods_codes:
             logger.info(f"ODS code {ods_code} is ITOC, returning org data")

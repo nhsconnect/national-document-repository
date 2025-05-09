@@ -91,7 +91,7 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
         TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+        TokenHandlerSSMService, "get_itoc_ods_codes", return_value="Y90123"
     )
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -127,7 +127,7 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+        TokenHandlerSSMService, "get_itoc_ods_codes", return_value="Y90123"
     )
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -164,7 +164,7 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+        TokenHandlerSSMService, "get_itoc_ods_codes", return_value="Y90123"
     )
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -202,7 +202,7 @@ def test_fetch_org_with_permitted_role_allowed_list(mock_ods_responses, mocker):
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+        TokenHandlerSSMService, "get_itoc_ods_codes", return_value="Y90123"
     )
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -239,7 +239,7 @@ def test_fetch_org_with_permitted_role_returns_empty_list_when_not_a_permitted_r
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_itoc_ods_code", return_value="Y90123"
+        TokenHandlerSSMService, "get_itoc_ods_codes", return_value="Y90123"
     )
     mocker.patch.object(
         TokenHandlerSSMService,
