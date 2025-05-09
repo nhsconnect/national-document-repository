@@ -127,6 +127,11 @@ class MetadataPreprocessorService:
             patient_name, current_file_name = (
                 self.extract_person_name_from_bulk_upload_file_name(current_file_name)
             )
+
+            if sum(c.isdigit() for c in current_file_name) != 18:
+                logger.info("Failed to find NHS or date")
+                raise InvalidFileNameException("incorrect NHS number or date format")
+
             nhs_number, current_file_name = (
                 self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
             )
@@ -323,7 +328,7 @@ class MetadataPreprocessorService:
     def extract_nhs_number_from_bulk_upload_file_name(
         file_path: str,
     ) -> tuple[str, str]:
-        nhs_number_expression = r"((?:.*?\d){10})(.*)"
+        nhs_number_expression = r"((?:[^_]*?\d){10})(.*)"
         expression_result = regex.search(rf"{nhs_number_expression}", file_path)
 
         if expression_result is None:
@@ -337,7 +342,7 @@ class MetadataPreprocessorService:
 
     @staticmethod
     def extract_date_from_bulk_upload_file_name(file_path):
-        date_number_expression = r"(\D*\d{2})(\D*\d{2})(\D*(\d{4}))(.*)"
+        date_number_expression = r"(\D+\d{2})(\D*\d{2})(\D*(\d{4}))(.*)"
         expression_result = regex.search(rf"{date_number_expression}", file_path)
 
         if expression_result is None:
