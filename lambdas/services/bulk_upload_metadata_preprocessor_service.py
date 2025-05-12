@@ -160,6 +160,7 @@ class MetadataPreprocessorService:
                 continue
 
             renamed_row = original_row.copy()
+            renamed_row = self.update_date_in_row(renamed_row)
             original_filename = original_row.get("FILEPATH")
 
             try:
@@ -189,6 +190,13 @@ class MetadataPreprocessorService:
                 )
 
         return renaming_map, rejected_rows, rejected_reasons
+
+    def update_date_in_row(self, metadata_row: dict):
+
+        metadata_row["SCAN-DATE"] = metadata_row["SCAN-DATE"].replace(".", "/")
+        metadata_row["UPLOAD"] = metadata_row["UPLOAD"].replace(".", "/")
+
+        return metadata_row
 
     def update_record_filename(self, original_row: dict, updated_row: dict):
         stripped_file_path = original_row.get("FILEPATH").lstrip("/")

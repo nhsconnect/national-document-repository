@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from botocore.exceptions import ClientError
 from freezegun import freeze_time
 from msgpack.fallback import BytesIO
 from services.bulk_upload_metadata_preprocessor_service import (
@@ -208,6 +209,17 @@ def test_extract_document_path(test_service, value, expected):
     assert actual == expected
 
 
+def test_extract_document_path_with_no_document_path(
+    test_service,
+):
+    invalid_data = "12-12-2024"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        test_service.extract_document_path(invalid_data)
+
+    assert str(exc_info.value) == "incorrect document number format"
+
+
 @pytest.mark.parametrize(
     ["input", "expected"],
     [
@@ -368,6 +380,8 @@ def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_serv
         ("-12-01-2024.txt", ("12", "01", "2024", ".txt")),
         ("-01-01-2024.txt", ("01", "01", "2024", ".txt")),
         ("_13-12-2023.pdf", ("13", "12", "2023", ".pdf")),
+        ("_13.12.2023.pdf", ("13", "12", "2023", ".pdf")),
+        ("_13/12/2023.pdf", ("13", "12", "2023", ".pdf")),
     ],
 )
 def test_correctly_extract_date_from_bulk_upload_file_name(
@@ -530,19 +544,35 @@ def test_move_original_metadata_file(test_service):
     )
 
 
+def test_move_original_metadata_file_handles_exception(test_service):
+    file_key = "input/unprocessed/metadata.csv"
+
+    error_response = {"Error": {"Code": "NoSuchKey", "Message": "File not found"}}
+    operation_name = "CopyObject"
+
+    test_service.s3_service.copy_across_bucket.side_effect = ClientError(
+        error_response, operation_name
+    )
+    # mock_copy_across_bucket = mocker.patch.object(
+    #     test_service.s3_service, "copy_across_bucket"
+    # )
+    # mock_copy_across_bucket.side_effect = ClientError(error_response, operation_name)
+
+    result = test_service.move_original_metadata_file(file_key)
+
+    assert result is False
+    test_service.s3_service.copy_across_bucket.assert_called_once()
+
+
 def test_update_record_filename(test_service, mocker):
-    # Arrange
     original_row = {"FILEPATH": "/old/path/file1.pdf"}
     updated_row = {"FILEPATH": "/test_practice_directory/new/path/file1.pdf"}
 
-    # Mock S3 client copy and delete operations
     mock_client = mocker.Mock()
     test_service.s3_service.client = mock_client
 
-    # Act
     result = test_service.update_record_filename(original_row, updated_row)
 
-    # Assert
     mock_client.copy_object.assert_called_once_with(
         Bucket=MOCK_STAGING_STORE_BUCKET,
         CopySource={
@@ -558,6 +588,25 @@ def test_update_record_filename(test_service, mocker):
     )
 
     assert result == updated_row
+
+
+def test_update_record_filename_exception(test_service, mocker):
+    original_row = {"FILEPATH": "/old/path/file1.pdf"}
+    updated_row = {"FILEPATH": "/test_practice_directory/new/path/file1.pdf"}
+
+    mock_client = mocker.Mock()
+    test_service.s3_service.client = mock_client
+
+    error_response = {"Error": {"Code": "NoSuchKey", "Message": "File not found"}}
+    operation_name = "CopyObject"
+
+    mock_client.copy_object.side_effect = ClientError(error_response, operation_name)
+
+    result = test_service.update_record_filename(original_row, updated_row)
+
+    assert result is None
+    mock_client.copy_object.assert_called_once()
+    mock_client.delete_object.assert_not_called()
 
 
 def test_update_file_name_file_not_found(test_service, mocker):
@@ -594,8 +643,8 @@ def test_update_and_standardize_filenames_success_and_failure(test_service, mock
 def test_generate_renaming_map(test_service, mocker):
     # Arrange
     metadata_rows = [
-        {"FILEPATH": "file1.pdf"},
-        {"FILEPATH": "file2.pdf"},
+        {"FILEPATH": "file1.pdf", "SCAN-DATE": "01/01/2000", "UPLOAD": "10/10/2010"},
+        {"FILEPATH": "file2.pdf", "SCAN-DATE": "01/01/2000", "UPLOAD": "10/10/2010"},
     ]
     # Mock
     mock_validate = mocker.patch.object(
@@ -610,8 +659,22 @@ def test_generate_renaming_map(test_service, mocker):
 
     # Assert
     assert renaming_map == [
-        (metadata_rows[0], {"FILEPATH": "test_practice_directory/file1.pdf"}),
-        (metadata_rows[1], {"FILEPATH": "test_practice_directory/file2.pdf"}),
+        (
+            metadata_rows[0],
+            {
+                "FILEPATH": "test_practice_directory/file1.pdf",
+                "SCAN-DATE": "01/01/2000",
+                "UPLOAD": "10/10/2010",
+            },
+        ),
+        (
+            metadata_rows[1],
+            {
+                "FILEPATH": "test_practice_directory/file2.pdf",
+                "SCAN-DATE": "01/01/2000",
+                "UPLOAD": "10/10/2010",
+            },
+        ),
     ]
     assert rejected_rows == []
     assert rejected_reasons == []
@@ -624,6 +687,7 @@ def test_generate_renaming_map_happy_path(test_service, mocker):
     mocker.patch.object(
         test_service, "validate_record_filename", return_value="standardised_name.pdf"
     )
+    mocker.patch.object(test_service, "update_date_in_row", return_value=row)
 
     metadata = [row]
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
@@ -646,6 +710,9 @@ def test_generate_renaming_map_duplicate_file(mocker, test_service):
     mocker.patch.object(
         test_service, "validate_record_filename", return_value="standardised_name.pdf"
     )
+    mocker.patch.object(
+        test_service, "update_date_in_row", side_effect=lambda x: x
+    )  # Mock update_date_in_row to return the row as is
 
     metadata = [row1, row2]
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
@@ -666,6 +733,9 @@ def test_generate_renaming_map_invalid_filename(mocker, test_service):
         "validate_record_filename",
         side_effect=InvalidFileNameException("Bad format"),
     )
+    mocker.patch.object(
+        test_service, "update_date_in_row", side_effect=lambda x: x
+    )  # Mock update_date_in_row to return the row as is
 
     metadata = [row]
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
@@ -688,9 +758,37 @@ def test_generate_renaming_map_skips_empty_row(test_service):
     assert rejected_reasons == []
 
 
+def test_update_date_in_row(test_service):
+    metadata_row = {"SCAN-DATE": "2025.01.01", "UPLOAD": "2025.01.01"}
+
+    updated_row = test_service.update_date_in_row(metadata_row)
+
+    # Assert
+    assert updated_row["SCAN-DATE"] == "2025/01/01"
+    assert updated_row["UPLOAD"] == "2025/01/01"
+
+
 def test_generate_and_save_csv_file_updated_metadata(test_service, mocker):
-    pass
+    csv_dict = [
+        {
+            "FILEPATH": "01 of 02_Lloyd_George_Record_[Dwayne Basil COWIE]_[9730787506]_[18-09-1974].pdf",
+            "GP-PRACTICE-CODE": "M85143",
+        }
+    ]
+    file_key = "path/to/file.csv"
+    # expected_csv_data = b"col1,col2\nvalue1,value2\nvalue3,value4\n"
 
+    # utils_mocker = mocker.patch("utils.file_utils.convert_csv_dictionary_to_bytes", return_value=expected_csv_data)
+    mock_convert_csv = mocker.patch("utils.file_utils.convert_csv_dictionary_to_bytes")
+    mock_save_or_create_file = mocker.patch.object(
+        test_service.s3_service, "save_or_create_file"
+    )
 
-def test_generate_and_save_csv_file_rejected_reasons(test_service, mocker):
-    pass
+    test_service.generate_and_save_csv_file(csv_dict, file_key)
+
+    # utils_mocker.assert_called_once_with(csv_dict[0].keys(), csv_dict)
+    mock_convert_csv.assert_called_once_with(csv_dict[0].keys(), csv_dict)
+    mock_save_or_create_file.assert_called_once()
+    # mock_save_or_create_file.assert_called_once_with(
+    #     test_service.staging_store_bucket, file_key, BytesIO(expected_csv_data)
+    # )
