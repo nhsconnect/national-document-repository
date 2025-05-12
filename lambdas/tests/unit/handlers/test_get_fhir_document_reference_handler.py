@@ -85,8 +85,7 @@ def test_lambda_handler_happy_path(
     context,
 ):
     mock_document_service.create_document_reference_fhir_response.return_value = (
-        "test_document_reference",
-        False,
+        "test_document_reference"
     )
     response = lambda_handler(MOCK_VALID_EVENT, context)
     assert response["statusCode"] == 200
