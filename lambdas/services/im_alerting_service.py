@@ -428,6 +428,4 @@ class IMAlertingService:
                 }
             },
         ]
-        return {
-            "blocks": blocks,
-        }
+        return blocks
