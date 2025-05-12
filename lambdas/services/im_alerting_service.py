@@ -108,9 +108,9 @@ class IMAlertingService:
             self.handle_alarm_action_trigger(
                 alarm_name=alarm_name, alarm_entry=alarm_entry
             )
-            self.update_alarm_table(alarm_entry)
             self.send_teams_alert(alarm_entry)
             self.send_slack_response(alarm_entry)
+            self.update_alarm_table(alarm_entry)
 
         if alarm_state == "OK":
             self.handle_ok_action_trigger(
@@ -331,7 +331,7 @@ class IMAlertingService:
 
     def send_initial_slack_alert(self, alarm_entry: AlarmEntry):
         slack_message = {}
-        slack_message["channel"] = alarm_entry.slack_channel
+        slack_message["channel"] = alarm_entry.channel_id
         slack_message["blocks"] = self.compose_slack_message(alarm_entry)
 
         headers = {
@@ -420,12 +420,11 @@ class IMAlertingService:
                 },
             },
             {
-                "accessory": {
-                    "type": "image",
-                    "image_url": "https://singlecolorimage.com/get/"
-                    + alarm_entry.history[-1]
-                    + "/1x1",
-                }
+                "type": "image",
+                "image_url": "https://singlecolorimage.com/get/"
+                + alarm_entry.history[-1]
+                + "/1x1",
+                "alt_text": f"{self.slack_emojis.get(alarm_entry.history[-1])}",
             },
         ]
         return blocks
