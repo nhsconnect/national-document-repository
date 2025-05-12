@@ -52,22 +52,25 @@ def mock_deceased_patient_details():
 
 
 @pytest.fixture
+def mock_upload_lambda_enabled(mocker):
+    mock_flag_service = mocker.MagicMock()
+    mocker.patch(
+        "services.search_patient_details_service.FeatureFlagService",
+        return_value=mock_flag_service,
+    )
+    mock_flag_service.get_feature_flags_by_flag.return_value = {
+        "uploadArfWorkflowEnabled": True
+    }
+    yield mock_flag_service
+
+
+@pytest.fixture
 def mock_pds_service_fetch(mock_patient_details):
     with patch("services.search_patient_details_service.get_pds_service") as mock:
         mock_pds = MagicMock()
         mock_pds.fetch_patient_details.return_value = mock_patient_details
         mock.return_value = mock_pds
         yield mock_pds.fetch_patient_details
-
-
-@pytest.fixture
-def mock_feature_flag_service():
-    with patch("services.search_patient_details_service.FeatureFlagService"):
-        mock_service = MagicMock()
-        mock_service().get_feature_flags_by_flag.return_value = {
-            "UPLOAD_ARF_WORKFLOW_ENABLED": True
-        }
-        yield mock_service
 
 
 @pytest.fixture
@@ -85,7 +88,7 @@ def mock_update_session():
 
 
 @pytest.fixture
-def mock_service(request, mock_feature_flag_service):
+def mock_service(request, mock_upload_lambda_enabled, mocker):
     role, ods_code = (
         request.param
         if hasattr(request, "param")
@@ -94,13 +97,9 @@ def mock_service(request, mock_feature_flag_service):
             USER_VALID_ODS_CODE,
         )
     )
-    with patch(
-        "services.search_patient_details_service.ManageUserSessionAccess"
-    ) as mock:
-        mock_session = MagicMock()
-        mock.return_value = mock_session
-        service = SearchPatientDetailsService(role, ods_code)
-        yield service
+    mocker.patch("services.search_patient_details_service.ManageUserSessionAccess")
+    service = SearchPatientDetailsService(role, ods_code)
+    yield service
 
 
 @pytest.mark.parametrize(
@@ -380,16 +379,13 @@ def test_check_authorization(
     patient_active,
     arf_enabled,
     exception_expected,
-    mock_feature_flag_service,
+    mock_upload_lambda_enabled,
 ):
     # Arrange
     with patch(
         "services.search_patient_details_service.is_ods_code_active"
     ) as mock_is_active:
         mock_is_active.return_value = patient_active
-        mock_feature_flag_service().get_feature_flags_by_flag.return_value = {
-            "UPLOAD_ARF_WORKFLOW_ENABLED": arf_enabled
-        }
 
         service = SearchPatientDetailsService(user_role, user_ods)
 
@@ -400,3 +396,35 @@ def test_check_authorization(
         else:
             # Should not raise exception
             service._check_authorization(patient_ods)
+
+
+@pytest.mark.parametrize("flag_value", [True, False])
+def returns_flag_value_based_on_arf_upload_flag(mocker, flag_value):
+    mock_flag_service = mocker.MagicMock()
+    mocker.patch(
+        "services.search_patient_details_service.FeatureFlagService",
+        return_value=mock_flag_service,
+    )
+    mock_flag_service.get_feature_flags_by_flag.return_value = {
+        "uploadArfWorkflowEnabled": flag_value
+    }
+
+    service = SearchPatientDetailsService("GP_ADMIN", "ODS123")
+
+    result = service._is_arf_upload_enabled()
+
+    assert result is flag_value
+    mock_flag_service.get_feature_flags_by_flag.assert_called_once_with(
+        "uploadArfWorkflowEnabled"
+    )
+
+
+def test_updates_session_with_correct_parameters(mock_service):
+
+    mock_service._update_session("1234567890", True)
+
+    mock_service.manage_user_session_service.update_auth_session_with_permitted_search.assert_called_once_with(
+        user_role="GP_ADMIN",
+        nhs_number="1234567890",
+        write_to_deceased_column=True,
+    )
