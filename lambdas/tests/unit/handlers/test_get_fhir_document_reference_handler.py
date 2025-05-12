@@ -10,7 +10,7 @@ from handlers.get_fhir_document_reference_handler import (
 )
 from models.document_reference import DocumentReference
 from tests.unit.conftest import TEST_UUID
-from unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
+from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
 from utils.lambda_exceptions import GetFhirDocumentReferenceException
 
 SNOMED_CODE = SnomedCodes.LLOYD_GEORGE.value.code
