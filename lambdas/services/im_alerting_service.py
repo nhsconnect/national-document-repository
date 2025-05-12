@@ -351,7 +351,7 @@ class IMAlertingService:
 
     def send_slack_response(self, alarm_entry: AlarmEntry):
         slack_message = {}
-        slack_message["channel"] = alarm_entry.slack_channel
+        slack_message["channel"] = alarm_entry.channel_id
         slack_message["thread_ts"] = alarm_entry.slack_timestamp
         slack_message["blocks"] = self.compose_slack_message(alarm_entry)
 
@@ -374,7 +374,7 @@ class IMAlertingService:
             else self.slack_emojis.get(alarm_entry.history[-1])
         )
         change_message["name"] = emoji
-        change_message["channel"] = alarm_entry.slack_channel
+        change_message["channel"] = alarm_entry.channel_id
         change_message["timestamp"] = alarm_entry.slack_timestamp
         changeResponse = requests.post(
             "https://slack.com/api/reactions." + action,
