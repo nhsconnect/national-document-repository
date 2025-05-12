@@ -45,7 +45,7 @@ class IMAlertingService:
             logger.info(
                 f"No current alarm history for {self.format_alarm_name(alarm_name)}"
             )
-            self.handle_new_alarm_episode(alarm_name, alarm_time, alarm_state)
+            self.handle_new_alarm_episode(alarm_name, alarm_time)
 
         else:
             all_alarms_expired = all(
@@ -88,6 +88,7 @@ class IMAlertingService:
         AlarmEntry.model_validate(new_entry)
         self.handle_alarm_action_trigger(new_entry, alarm_name)
         self.create_alarm_entry(new_entry)
+        self.send_teams_alert(new_entry)
 
     def handle_current_alarm_episode(
         self, alarm_entry: AlarmEntry, alarm_state: str, alarm_name: str
