@@ -20,32 +20,23 @@ import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+import { UploadSession } from '../../types/generic/uploadResult';
+import { AxiosResponse } from 'axios';
+import waitForSeconds from '../../helpers/utils/waitForSeconds';
 
-jest.mock('../../helpers/requests/uploadDocuments');
-jest.mock('../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../helpers/hooks/usePatient');
-jest.mock('../../helpers/utils/waitForSeconds');
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
+vi.mock('../../helpers/requests/uploadDocuments');
+vi.mock('../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../helpers/hooks/usePatient');
+vi.mock('../../helpers/utils/waitForSeconds');
+vi.mock('react-router-dom', async () => ({
+    ...(await vi.importActual('react-router-dom')),
     useNavigate: () => mockNavigate,
 }));
-jest.mock('moment', () => {
-    return (arg: MomentInput) => {
-        if (!arg) {
-            arg = '2020-01-01T00:00:00.000Z';
-        }
-        return jest.requireActual('moment')(arg);
-    };
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
-const mockedUsePatient = usePatient as jest.Mock;
-const mockUploadDocuments = uploadDocuments as jest.Mock;
-const mockS3Upload = uploadDocumentToS3 as jest.Mock;
-const mockVirusScan = virusScan as jest.Mock;
-const mockUploadConfirmation = uploadConfirmation as jest.Mock;
-const mockUpdateDocumentState = updateDocumentState as jest.Mock;
-const mockNavigate = jest.fn();
+const mockNavigate = vi.fn();
 const mockPatient = buildPatientDetails();
 
 const lgFile = buildLgFile(1, 1, 'John Doe');
@@ -68,13 +59,15 @@ describe('LloydGeorgeUploadPage', () => {
             initialIndex: 0,
         });
 
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
-        mockedUsePatient.mockReturnValue(mockPatient);
-        mockUploadDocuments.mockImplementation(({ documents }) => buildUploadSession(documents));
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
+        vi.mocked(usePatient).mockReturnValue(mockPatient);
+        vi.mocked(uploadDocuments).mockImplementation(({ documents }) =>
+            Promise.resolve(buildUploadSession(documents)),
+        );
     });
     afterEach(() => {
-        jest.clearAllMocks();
-        jest.useRealTimers();
+        vi.clearAllMocks();
+        vi.useRealTimers();
     });
     describe('Rendering', () => {
         it('renders initial file input stage', () => {
@@ -89,8 +82,10 @@ describe('LloydGeorgeUploadPage', () => {
         });
 
         it('renders file infected stage when virus scan fails', async () => {
-            mockS3Upload.mockReturnValue(Promise.resolve());
-            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.INFECTED);
+            vi.mocked(uploadDocumentToS3).mockImplementation(() =>
+                Promise.resolve({} as AxiosResponse),
+            );
+            vi.mocked(virusScan).mockResolvedValue(DOCUMENT_UPLOAD_STATE.INFECTED);
             renderPage(history);
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
@@ -106,11 +101,11 @@ describe('LloydGeorgeUploadPage', () => {
             });
 
             expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
-            expect(mockUploadDocuments).toHaveBeenCalled();
+            expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
             await waitFor(() => {
-                expect(mockS3Upload).toHaveBeenCalled();
+                expect(vi.mocked(uploadDocumentToS3)).toHaveBeenCalled();
             });
-            expect(mockVirusScan).toHaveBeenCalled();
+            expect(vi.mocked(virusScan)).toHaveBeenCalled();
             await waitFor(() => {
                 expect(mockNavigate).toHaveBeenCalledWith(
                     routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED,
@@ -123,9 +118,9 @@ describe('LloydGeorgeUploadPage', () => {
                 initialEntries: ['/'],
                 initialIndex: 0,
             });
-            mockS3Upload.mockReturnValue(Promise.resolve());
-            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
-            mockUploadConfirmation.mockImplementation(() =>
+            vi.mocked(uploadDocumentToS3).mockResolvedValue({} as AxiosResponse);
+            vi.mocked(virusScan).mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+            vi.mocked(uploadConfirmation).mockImplementation(() =>
                 Promise.reject({
                     response: {
                         status: 400,
@@ -147,13 +142,13 @@ describe('LloydGeorgeUploadPage', () => {
             });
 
             expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
-            expect(mockUploadDocuments).toHaveBeenCalled();
+            expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
             await waitFor(() => {
-                expect(mockS3Upload).toHaveBeenCalled();
+                expect(vi.mocked(uploadDocumentToS3)).toHaveBeenCalled();
             });
-            expect(mockVirusScan).toHaveBeenCalled();
+            expect(vi.mocked(virusScan)).toHaveBeenCalled();
             await waitFor(() => {
-                expect(mockUploadConfirmation).toHaveBeenCalled();
+                expect(vi.mocked(uploadConfirmation)).toHaveBeenCalled();
             });
             await waitFor(() => {
                 // expect(screen.getByText('Mock file failed stage')).toBeInTheDocument();
@@ -164,43 +159,62 @@ describe('LloydGeorgeUploadPage', () => {
         it.each([1, 2, 3, 4, 5])(
             'renders uploading stage and make call to update state endpoint when submit documents is uploading for more than 2 min',
             async (numberOfTimes: number) => {
-                jest.useFakeTimers();
+                vi.useFakeTimers();
 
                 const expectedTimeTaken =
                     (FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD + 1) * numberOfTimes;
-                mockS3Upload.mockImplementationOnce(() => {
-                    jest.advanceTimersByTime(expectedTimeTaken + 100);
-                    return Promise.resolve();
-                });
 
-                mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
-                mockUploadConfirmation.mockReturnValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+                const mockAxiosResponse = (): Promise<AxiosResponse> => {
+                    vi.advanceTimersByTime(expectedTimeTaken + 100);
+                    return Promise.resolve({} as AxiosResponse);
+                };
+
+                vi.mocked(uploadDocumentToS3).mockImplementationOnce(mockAxiosResponse);
+                vi.mocked(virusScan).mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+                vi.mocked(uploadConfirmation).mockResolvedValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+
                 renderPage(history);
+
                 expect(
                     screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
                 ).toBeInTheDocument();
+
                 act(() => {
                     userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
                 });
+
                 expect(screen.getByText(lgFile.name)).toBeInTheDocument();
+
                 act(() => {
                     userEvent.click(screen.getByRole('button', { name: 'Upload' }));
                 });
-                expect(mockUploadDocuments).toHaveBeenCalled();
-                await waitFor(() => expect(mockS3Upload).toHaveBeenCalled(), {
-                    timeout: expectedTimeTaken + 1000,
+
+                expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
+                await waitFor(() => {
+                    expect(vi.mocked(uploadDocumentToS3)).toHaveBeenCalled();
                 });
 
-                expect(mockUpdateDocumentState).toHaveBeenCalledTimes(numberOfTimes);
-                const updateDocumentStateArguments = mockUpdateDocumentState.mock.calls[0][0];
+                await waitFor(() => {
+                    expect(waitForSeconds).toHaveBeenCalled();
+                });
+
+                expect(vi.mocked(updateDocumentState)).toHaveBeenCalledTimes(numberOfTimes);
+                const updateDocumentStateArguments =
+                    vi.mocked(updateDocumentState).mock.calls[0][0];
                 updateDocumentStateArguments.documents.forEach((doc: UploadDocument) => {
                     expect(doc).toMatchObject({
                         docType: 'LG',
                         ref: expect.stringContaining('uuid_for_file'),
                     });
                 });
-                expect(mockVirusScan).toHaveBeenCalled();
-                expect(mockUploadConfirmation).toHaveBeenCalled();
+
+                await waitFor(() => {
+                    expect(vi.mocked(virusScan)).toHaveBeenCalled();
+                });
+
+                await waitFor(() => expect(vi.mocked(uploadConfirmation)).toHaveBeenCalled(), {
+                    timeout: expectedTimeTaken + 1000,
+                });
                 expect(mockNavigate).toHaveBeenCalledWith(
                     routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED,
                 );
@@ -218,13 +232,13 @@ describe('LloydGeorgeUploadPage', () => {
     });
 
     describe('Navigating', () => {
-        const postponeByOneTick = () =>
+        const postponeByOneTick = (): Promise<UploadSession> =>
             new Promise((resolve) => {
                 setTimeout(resolve, 0);
             });
 
         it('navigates to uploading stage when submit documents is clicked', async () => {
-            mockUploadDocuments.mockImplementationOnce(postponeByOneTick);
+            vi.mocked(uploadDocuments).mockImplementationOnce(postponeByOneTick);
 
             renderPage(history);
             expect(
@@ -239,13 +253,13 @@ describe('LloydGeorgeUploadPage', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
-            expect(mockUploadDocuments).toHaveBeenCalled();
+            expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
             expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
         });
 
         it('navigates to confirmation stage when submit documents is processing', async () => {
-            mockS3Upload.mockReturnValue(Promise.resolve());
-            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+            vi.mocked(uploadDocumentToS3).mockResolvedValue({} as AxiosResponse);
+            vi.mocked(virusScan).mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
             renderPage(history);
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
@@ -259,20 +273,20 @@ describe('LloydGeorgeUploadPage', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
-            expect(mockUploadDocuments).toHaveBeenCalled();
+            expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
             await waitFor(() => {
-                expect(mockS3Upload).toHaveBeenCalled();
+                expect(vi.mocked(uploadDocumentToS3)).toHaveBeenCalled();
             });
-            expect(mockVirusScan).toHaveBeenCalled();
-            expect(mockUploadConfirmation).toHaveBeenCalled();
+            expect(vi.mocked(virusScan)).toHaveBeenCalled();
+            expect(vi.mocked(uploadConfirmation)).toHaveBeenCalled();
             expect(mockNavigate).toHaveBeenCalledWith(
                 routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION,
             );
         });
         it('navigates to complete stage when submit documents is finished', async () => {
-            mockS3Upload.mockReturnValue(Promise.resolve());
-            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
-            mockUploadConfirmation.mockReturnValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+            vi.mocked(uploadDocumentToS3).mockResolvedValue({} as AxiosResponse);
+            vi.mocked(virusScan).mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+            vi.mocked(uploadConfirmation).mockResolvedValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
 
             renderPage(history);
             expect(
@@ -287,15 +301,15 @@ describe('LloydGeorgeUploadPage', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
-            expect(mockUploadDocuments).toHaveBeenCalled();
+            expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
             await waitFor(() => {
-                expect(mockS3Upload).toHaveBeenCalled();
+                expect(vi.mocked(uploadDocumentToS3)).toHaveBeenCalled();
             });
             await waitFor(() => {
-                expect(mockVirusScan).toHaveBeenCalled();
+                expect(vi.mocked(virusScan)).toHaveBeenCalled();
             });
             await waitFor(() => {
-                expect(mockUploadConfirmation).toHaveBeenCalled();
+                expect(vi.mocked(uploadConfirmation)).toHaveBeenCalled();
             });
             expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
         });
@@ -307,7 +321,7 @@ describe('LloydGeorgeUploadPage', () => {
                     data: { message: 'An error occurred', err_code: 'SP_1001' },
                 },
             };
-            mockUploadDocuments.mockImplementation(() => Promise.reject(errorResponse));
+            vi.mocked(uploadDocuments).mockImplementation(() => Promise.reject(errorResponse));
 
             renderPage(history);
             expect(
@@ -322,7 +336,7 @@ describe('LloydGeorgeUploadPage', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
-            expect(mockUploadDocuments).toHaveBeenCalled();
+            expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
 
             await waitFor(() => {
                 expect(mockNavigate).toHaveBeenCalledWith(
@@ -337,7 +351,7 @@ describe('LloydGeorgeUploadPage', () => {
                     data: { message: 'An error occurred', err_code: 'SP_1001' },
                 },
             };
-            mockUploadDocuments.mockImplementation(() => Promise.reject(errorResponse));
+            vi.mocked(uploadDocuments).mockImplementation(() => Promise.reject(errorResponse));
 
             renderPage(history);
             expect(
@@ -352,16 +366,16 @@ describe('LloydGeorgeUploadPage', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
-            expect(mockUploadDocuments).toHaveBeenCalled();
+            expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
 
             await waitFor(() => {
                 expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
         it('navigates to session expire page when confirmation returns 403', async () => {
-            mockS3Upload.mockReturnValue(Promise.resolve());
-            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
-            mockUploadConfirmation.mockImplementation(() =>
+            vi.mocked(uploadDocumentToS3).mockResolvedValue({} as AxiosResponse);
+            vi.mocked(virusScan).mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+            vi.mocked(uploadConfirmation).mockImplementation(() =>
                 Promise.reject({
                     response: {
                         status: 403,
@@ -381,13 +395,13 @@ describe('LloydGeorgeUploadPage', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
-            expect(mockUploadDocuments).toHaveBeenCalled();
+            expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
             await waitFor(() => {
-                expect(mockS3Upload).toHaveBeenCalled();
+                expect(vi.mocked(uploadDocumentToS3)).toHaveBeenCalled();
             });
-            expect(mockVirusScan).toHaveBeenCalled();
+            expect(vi.mocked(virusScan)).toHaveBeenCalled();
             await waitFor(() => {
-                expect(mockUploadConfirmation).toHaveBeenCalled();
+                expect(vi.mocked(uploadConfirmation)).toHaveBeenCalled();
             });
             await waitFor(() => {
                 expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);

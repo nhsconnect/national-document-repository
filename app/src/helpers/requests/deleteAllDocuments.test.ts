@@ -1,10 +1,11 @@
 import axios, { AxiosError } from 'axios';
 import deleteAllDocuments, { DeleteResponse } from './deleteAllDocuments';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
+import { describe, expect, test, vi, Mocked } from 'vitest';
 
 // Mock out all top level functions, such as get, put, delete and post:
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as Mocked<typeof axios>;
 
 // ...
 
