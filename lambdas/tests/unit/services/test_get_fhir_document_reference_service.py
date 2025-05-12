@@ -1,3 +1,4 @@
+import base64
 import copy
 import json
 
@@ -5,17 +6,9 @@ import pytest
 from enums.lambda_error import LambdaError
 from enums.snomed_codes import SnomedCodes
 from services.get_fhir_document_reference_service import GetFhirDocumentReferenceService
-from tests.unit.conftest import (
-    FAKE_URL,
-    MOCK_LG_TABLE_NAME,
-    TEST_CURRENT_GP_ODS,
-    TEST_UUID,
-)
+from tests.unit.conftest import MOCK_LG_TABLE_NAME, TEST_CURRENT_GP_ODS, TEST_UUID
 from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
-from utils.lambda_exceptions import (
-    GetFhirDocumentReferenceException,
-    SearchPatientException,
-)
+from utils.lambda_exceptions import GetFhirDocumentReferenceException
 
 MOCK_USER_INFO = {
     "nhsid_useruid": TEST_UUID,
@@ -163,17 +156,10 @@ def test_get_document_reference_service(patched_service):
 
 
 def test_handle_get_document_reference_request(patched_service, mocker, set_env):
-    expected = "test_response"
+    expected = create_test_doc_store_refs()[0]
     mock_document_ref = create_test_doc_store_refs()[0]
     mocker.patch.object(
         patched_service, "get_document_references", return_value=mock_document_ref
-    )
-
-    mocker.patch.object(patched_service, "get_presigned_url", return_value=FAKE_URL)
-    mocker.patch.object(
-        patched_service,
-        "create_document_reference_fhir_response",
-        return_value=expected,
     )
 
     actual = patched_service.handle_get_document_reference_request(
@@ -181,28 +167,6 @@ def test_handle_get_document_reference_request(patched_service, mocker, set_env)
     )
 
     assert expected == actual
-    patched_service.create_document_reference_fhir_response.assert_called_once_with(
-        mock_document_ref, FAKE_URL
-    )
-
-
-def test_handle_get_document_reference_request_when_user_is_not_allowed_access(
-    patched_service, mocker
-):
-    mock_document_ref = create_test_doc_store_refs()[0]
-    mocker.patch.object(
-        patched_service, "get_document_references", return_value=mock_document_ref
-    )
-    mocker.patch.object(patched_service, "get_presigned_url", return_value=FAKE_URL)
-    mocker.patch.object(patched_service, "create_document_reference_fhir_response")
-
-    with pytest.raises(GetFhirDocumentReferenceException):
-        patched_service.handle_get_document_reference_request(
-            SnomedCodes.LLOYD_GEORGE.value.code,
-            "test-id",
-        )
-
-    patched_service.create_document_reference_fhir_response.assert_not_called()
 
 
 def test_get_document_reference_request_no_table_associated_to_snomed_code_throws_exception(
@@ -210,16 +174,6 @@ def test_get_document_reference_request_no_table_associated_to_snomed_code_throw
 ):
     with pytest.raises(GetFhirDocumentReferenceException):
         patched_service.handle_get_document_reference_request("12345678", "test-id")
-
-
-def test_create_document_reference_fhir_response(patched_service):
-    expected = MOCK_FHIR_DOCUMENT
-    actual = patched_service.create_document_reference_fhir_response(
-        create_test_doc_store_refs()[0], FAKE_URL
-    )
-
-    assert json.loads(actual)["content"][0]["attachment"]["url"] == FAKE_URL
-    assert json.loads(actual) == expected
 
 
 def test_get_presigned_url(patched_service, mocker):
@@ -232,7 +186,9 @@ def test_get_presigned_url(patched_service, mocker):
         "services.get_fhir_document_reference_service.format_cloudfront_url"
     ).return_value = "https://d12345.cloudfront.net/path/to/resource"
 
-    result = patched_service.get_presigned_url(create_test_doc_store_refs()[0])
+    result = patched_service.get_presigned_url(
+        "test-s3-bucket", "9000000009/test-key-123"
+    )
     assert result == expected_url
 
     patched_service.s3_service.create_download_presigned_url.assert_called_once_with(
@@ -252,54 +208,34 @@ def test_get_document_references_empty_result(patched_service):
     assert exc_info.value.status_code == 404
 
 
-def test_handle_get_document_reference_request_pds_error(patched_service, mocker):
-    # Test when search_patient_service raises a SearchPatientException
-    mock_document_ref = create_test_doc_store_refs()[0]
-    mocker.patch.object(
-        patched_service, "get_document_references", return_value=mock_document_ref
-    )
-    mocker.patch.object(
-        patched_service.search_patient_service,
-        "handle_search_patient_request",
-        side_effect=SearchPatientException(500, LambdaError.SearchPatientNoPDS),
-    )
-
-    with pytest.raises(GetFhirDocumentReferenceException) as exc_info:
-        patched_service.handle_get_document_reference_request(
-            SnomedCodes.LLOYD_GEORGE.value.code, "test-id"
-        )
-
-    assert exc_info.value.error == LambdaError.DocumentReferenceForbidden
-    assert exc_info.value.status_code == 403
-
-
 def test_get_presigned_url_failure(patched_service, mocker):
     # Test when S3 service raises an exception
-    document_ref = create_test_doc_store_refs()[0]
     patched_service.s3_service.create_download_presigned_url.side_effect = Exception(
         "S3 error"
     )
 
     with pytest.raises(Exception) as exc_info:
-        patched_service.get_presigned_url(document_ref)
+        patched_service.get_presigned_url("file-key", "bucket-name")
 
     assert str(exc_info.value) == "S3 error"
     patched_service.s3_service.create_download_presigned_url.assert_called_once()
 
 
-def test_create_document_reference_fhir_response_with_different_document_data(
-    patched_service,
+def test_create_document_reference_fhir_response_with_presign_url_document_data(
+    patched_service, mocker
 ):
     # Test creating FHIR response with different document data
     test_doc = create_test_doc_store_refs()[0]
+
     # Modify the document reference to test different values
     modified_doc = copy.deepcopy(test_doc)
     modified_doc.file_name = "different_file.pdf"
     modified_doc.created = "2023-05-15T10:30:00.000Z"
-
-    result = patched_service.create_document_reference_fhir_response(
-        modified_doc, "https://new-test-url.com"
+    patched_service.s3_service.get_file_size.return_value = 8000000
+    patched_service.get_presigned_url = mocker.MagicMock(
+        return_value="https://new-test-url.com"
     )
+    result = patched_service.create_document_reference_fhir_response(modified_doc)
 
     result_json = json.loads(result)
     assert result_json["content"][0]["attachment"]["url"] == "https://new-test-url.com"
@@ -310,36 +246,26 @@ def test_create_document_reference_fhir_response_with_different_document_data(
     )
 
 
-def test_handle_get_document_reference_request_integration(patched_service, mocker):
-    # More comprehensive integration test of the full request handling flow
-    mock_document_ref = create_test_doc_store_refs()[0]
-    mocker.patch.object(
-        patched_service, "get_document_references", return_value=mock_document_ref
-    )
-    mocker.patch.object(
-        patched_service.search_patient_service, "handle_search_patient_request"
-    )
-    mocker.patch.object(patched_service, "get_presigned_url", return_value=FAKE_URL)
+def test_create_document_reference_fhir_response_with_binary_document_data(
+    patched_service,
+):
+    # Test creating FHIR response with different document data
+    test_doc = create_test_doc_store_refs()[0]
+    # Modify the document reference to test different values
+    modified_doc = copy.deepcopy(test_doc)
+    modified_doc.file_name = "different_file.pdf"
+    modified_doc.created = "2023-05-15T10:30:00.000Z"
+    patched_service.s3_service.get_file_size.return_value = 7999999
+    mock_binary_file = b"binary data"
+    patched_service.s3_service.get_binary_file.return_value = mock_binary_file
 
-    # Don't mock create_document_reference_fhir_response to test the actual implementation
-    mocker.patch(
-        "services.get_fhir_document_reference_service.format_cloudfront_url",
-        return_value=FAKE_URL,
-    )
-
-    result = patched_service.handle_get_document_reference_request(
-        SnomedCodes.LLOYD_GEORGE.value.code, "test-id"
-    )
-
+    result = patched_service.create_document_reference_fhir_response(modified_doc)
     result_json = json.loads(result)
-    # Verify result structure
-    assert result_json["resourceType"] == "DocumentReference"
-    assert result_json["subject"]["identifier"]["value"] == mock_document_ref.nhs_number
+    assert result_json["content"][0]["attachment"]["data"] == base64.b64encode(
+        mock_binary_file
+    ).decode("utf-8")
+    assert result_json["content"][0]["attachment"]["title"] == "different_file.pdf"
     assert (
-        result_json["custodian"]["identifier"]["value"]
-        == mock_document_ref.current_gp_ods
-    )
-    assert result_json["content"][0]["attachment"]["url"] == FAKE_URL
-    assert (
-        result_json["content"][0]["attachment"]["title"] == mock_document_ref.file_name
+        result_json["content"][0]["attachment"]["creation"]
+        == "2023-05-15T10:30:00.000Z"
     )

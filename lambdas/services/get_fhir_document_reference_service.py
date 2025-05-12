@@ -72,7 +72,7 @@ class GetFhirDocumentReferenceService:
 
     def create_document_reference_fhir_response(
         self, document_reference: DocumentReference
-    ) -> (str, bool):
+    ) -> str:
         """
         Creates a FHIR-compliant DocumentReference response for a given document.
 
