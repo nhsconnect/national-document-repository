@@ -23,9 +23,16 @@ class IMAlertingService:
             "low": "\U0001F7E1",
             "ok": "\U0001F7E2",
         }
+        self.slack_emojis = {
+            self.alarm_severities["high"]: "red_circle",
+            self.alarm_severities["medium"]: "large_orange_circle",
+            self.alarm_severities["low"]: "large_yellow_circle",
+            self.alarm_severities["ok"]: "large_green_circle",
+        }
         self.webhook_url = os.environ["WEBHOOK_URL"]
         self.confluence_base_url = os.environ["CONFLUENCE_BASE_URL"]
         self.message = message
+        self.slack_bot_token = os.environ["ALERTING_SLACK_BOT_TOKEN"]
 
     def handle_alarm_alert(self):
 
@@ -87,8 +94,9 @@ class IMAlertingService:
         )
         AlarmEntry.model_validate(new_entry)
         self.handle_alarm_action_trigger(new_entry, alarm_name)
-        self.create_alarm_entry(new_entry)
         self.send_teams_alert(new_entry)
+        self.send_initial_slack_alert(new_entry)
+        self.create_alarm_entry(new_entry)
 
     def handle_current_alarm_episode(
         self, alarm_entry: AlarmEntry, alarm_state: str, alarm_name: str
@@ -102,6 +110,7 @@ class IMAlertingService:
             )
             self.update_alarm_table(alarm_entry)
             self.send_teams_alert(alarm_entry)
+            self.send_slack_response(alarm_entry)
 
         if alarm_state == "OK":
             self.handle_ok_action_trigger(
@@ -130,6 +139,10 @@ class IMAlertingService:
                 self.add_ttl_to_alarm_entry(alarm_entry)
                 self.update_alarm_table(alarm_entry)
                 self.send_teams_alert(alarm_entry)
+                self.send_slack_response(alarm_entry)
+            else:
+                logger.info("Alarm entry has been updated since reaching OK state")
+                return
 
     def handle_alarm_action_trigger(self, alarm_entry: AlarmEntry, alarm_name: str):
         logger.info(f"Handling Alarm action for {alarm_name}")
@@ -158,29 +171,31 @@ class IMAlertingService:
             else []
         )
 
-    def update_alarm_state_history(
-        self, alarm_entry: AlarmEntry, current_state: str, alarm_name: str
-    ):
-        logger.info(
-            f"Updating alarm state history for {alarm_entry.alarm_name}:{alarm_entry.time_created}"
-        )
-        alarm_entry.last_updated = int(datetime.now().timestamp())
-        if current_state == "ALARM":
-            for key in self.alarm_severities.keys():
-                if alarm_name.endswith(key):
-                    alarm_entry.history.append(self.alarm_severities[key])
-            alarm_entry.time_to_exist = None
-            self.send_teams_alert(alarm_entry)
-
-        if current_state == "OK" and self.all_alarm_state_ok(alarm_name):
-            sleep(180)
-            if self.is_last_updated(alarm_entry):
-                alarm_entry.history.append(self.alarm_severities["ok"])
-                logger.info(
-                    f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
-                )
-                self.add_ttl_to_alarm_entry(alarm_entry)
-                self.send_teams_alert(alarm_entry)
+    # def update_alarm_state_history(
+    #     self, alarm_entry: AlarmEntry, current_state: str, alarm_name: str
+    # ):
+    #     logger.info(
+    #         f"Updating alarm state history for {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+    #     )
+    #     alarm_entry.last_updated = int(datetime.now().timestamp())
+    #     if current_state == "ALARM":
+    #         for key in self.alarm_severities.keys():
+    #             if alarm_name.endswith(key):
+    #                 alarm_entry.history.append(self.alarm_severities[key])
+    #         alarm_entry.time_to_exist = None
+    #         self.send_teams_alert(alarm_entry)
+    #
+    #
+    #     if current_state == "OK" and self.all_alarm_state_ok(alarm_name):
+    #         sleep(180)
+    #         if self.is_last_updated(alarm_entry):
+    #             alarm_entry.history.append(self.alarm_severities["ok"])
+    #             logger.info(
+    #                 f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
+    #             )
+    #             self.add_ttl_to_alarm_entry(alarm_entry)
+    #             self.send_teams_alert(alarm_entry)
+    #             self.send_slack_response(alarm_entry)
 
     def is_last_updated(self, alarm_entry: AlarmEntry) -> bool:
         response = self.dynamo_service.get_item(
@@ -313,3 +328,106 @@ class IMAlertingService:
         headers = {"Content-Type": "application/json"}
 
         requests.request("POST", self.webhook_url, headers=headers, data=payload)
+
+    def send_initial_slack_alert(self, alarm_entry: AlarmEntry):
+        slack_message = {}
+        slack_message["channel"] = alarm_entry.slack_channel
+        slack_message["blocks"] = self.compose_slack_message(alarm_entry)
+
+        headers = {
+            "Authorization": "Bearer " + self.slack_bot_token,
+            "Content-type": "application/json; charset=utf-8",
+        }
+        slack_post_chat_api = "https://slack.com/api/chat.postMessage"
+        response = requests.request(
+            "POST", slack_post_chat_api, data=json.dumps(slack_message), headers=headers
+        )
+        logger.info(f"Slack response: {response.text}")
+        response_json = json.loads(response.content)
+        slack_timestamp = response_json["ts"]
+        alarm_entry.slack_timestamp = slack_timestamp
+
+        self.change_reaction(alarm_entry, "add", headers)
+
+    def send_slack_response(self, alarm_entry: AlarmEntry):
+        slack_message = {}
+        slack_message["channel"] = alarm_entry.slack_channel
+        slack_message["thread_ts"] = alarm_entry.slack_timestamp
+        slack_message["blocks"] = self.compose_slack_message(alarm_entry)
+
+        headers = {
+            "Authorization": "Bearer " + self.slack_bot_token,
+            "Content-type": "application/json; charset=utf-8",
+        }
+        slack_post_chat_api = "https://slack.com/api/chat.postMessage"
+        requests.request(
+            "POST", slack_post_chat_api, data=json.dumps(slack_message), headers=headers
+        )
+        self.change_reaction(alarm_entry, "remove", headers)
+        self.change_reaction(alarm_entry, "add", headers)
+
+    def change_reaction(self, alarm_entry: AlarmEntry, action: str, headers: dict):
+        change_message = {}
+        emoji = (
+            self.slack_emojis.get(alarm_entry.history[-2])
+            if action == "remove"
+            else self.slack_emojis.get(alarm_entry.history[-1])
+        )
+        change_message["name"] = emoji
+        change_message["channel"] = alarm_entry.slack_channel
+        change_message["timestamp"] = alarm_entry.slack_timestamp
+        changeResponse = requests.post(
+            "https://slack.com/api/reactions." + action,
+            json=change_message,
+            headers=headers,
+        )
+        logger.info(
+            action + " " + emoji + " reaction response: " + str(changeResponse.content)
+        )
+        return changeResponse
+
+    def compose_slack_message(self, alarm_entry: AlarmEntry):
+        blocks = [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"{alarm_entry.alarm_name} Alert",
+                },
+            },
+            {
+                "type": "divider",
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"Alarm History: {self.unpack_alarm_history(alarm_entry.history)}",
+                },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"This state change happened at: {self.format_time_string(alarm_entry.last_updated)}",
+                },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*What to do:*\n <{self.create_action_url(self.confluence_base_url, alarm_entry.alarm_name)}>",
+                },
+            },
+            {
+                "accessory": {
+                    "type": "image",
+                    "image_url": "https://singlecolorimage.com/get/"
+                    + alarm_entry.history[-1]
+                    + "/1x1",
+                }
+            },
+        ]
+        return {
+            "blocks": blocks,
+        }
