@@ -1,3 +1,4 @@
+import base64
 import os
 
 from enums.lambda_error import LambdaError
@@ -75,7 +76,7 @@ class GetFhirDocumentReferenceService:
         """
         Creates a FHIR-compliant DocumentReference response for a given document.
 
-        If the file size is less than 8MB, the binary file is returned directly.
+        If the file size is less than 8MB, the binary file is returned in the response.
         Otherwise, a presigned URL is generated and included in the response.
 
         Args:
@@ -91,22 +92,20 @@ class GetFhirDocumentReferenceService:
             s3_bucket_name=bucket_name,
             object_key=file_location,
         )
-        is_return_file_binary = False
         if file_size < 8 * 10**6:
-            is_return_file_binary = True
-            # If the file size is less than 8MB, return the binary file as a base64 encoded string.
-            return (
-                self.s3_service.get_binary_file(
-                    s3_bucket_name=bucket_name,
-                    file_key=file_location,
-                ),
-                is_return_file_binary,
+            binary_file = self.s3_service.get_binary_file(
+                s3_bucket_name=bucket_name,
+                file_key=file_location,
             )
-        else:
-            # Generate a presigned URL for larger files.
-            presign_url = self.get_presigned_url(bucket_name, file_location)
+            base64_encoded_file = base64.b64encode(binary_file)
+            document_details = Attachment(
+                data=base64_encoded_file,
+                title=document_reference.file_name,
+                creation=document_reference.created,
+            )
 
-            # Create an Attachment object with the presigned URL and document metadata.
+        else:
+            presign_url = self.get_presigned_url(bucket_name, file_location)
             document_details = Attachment(
                 url=presign_url,
                 title=document_reference.file_name,
@@ -114,13 +113,13 @@ class GetFhirDocumentReferenceService:
             )
 
             # Create and return the FHIR DocumentReference object as a JSON string.
-            fhir_document_reference = (
-                DocumentReferenceInfo(
-                    nhsNumber=document_reference.nhs_number,
-                    custodian=document_reference.current_gp_ods,
-                    attachment=document_details,
-                )
-                .create_fhir_document_reference_object()
-                .model_dump_json(exclude_none=True)
+        fhir_document_reference = (
+            DocumentReferenceInfo(
+                nhsNumber=document_reference.nhs_number,
+                custodian=document_reference.current_gp_ods,
+                attachment=document_details,
             )
-            return fhir_document_reference, is_return_file_binary
+            .create_fhir_document_reference_object()
+            .model_dump_json(exclude_none=True)
+        )
+        return fhir_document_reference

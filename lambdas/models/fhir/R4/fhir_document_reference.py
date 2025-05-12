@@ -32,6 +32,7 @@ class Attachment(BaseModel):
     hash: Optional[str] = None
     title: Optional[str] = None
     creation: Optional[str] = None
+    data: Optional[bytes] = None
 
 
 class ContentStabilityExtensionCoding(Coding):

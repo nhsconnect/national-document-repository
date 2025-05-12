@@ -1,5 +1,3 @@
-import base64
-
 from enums.lambda_error import LambdaError
 from oauthlib.oauth2 import WebApplicationClient
 from services.base.ssm_service import SSMService
@@ -12,7 +10,10 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import OidcApiException
-from utils.lambda_exceptions import GetFhirDocumentReferenceException
+from utils.lambda_exceptions import (
+    GetFhirDocumentReferenceException,
+    SearchPatientException,
+)
 from utils.lambda_response import ApiGatewayResponse
 
 logger = LoggingService(__name__)
@@ -78,32 +79,20 @@ def lambda_handler(event, context):
                 document_reference.nhs_number, True
             )
 
-        except Exception:
+        except SearchPatientException:
             raise GetFhirDocumentReferenceException(
                 403, LambdaError.DocumentReferenceForbidden
             )
 
-        document_reference_response, is_return_file_binary = (
+        document_reference_response = (
             get_document_service.create_document_reference_fhir_response(
                 document_reference
             )
         )
-        if is_return_file_binary:
-            return ApiGatewayResponse(
-                status_code=200,
-                body=base64.b64encode(document_reference_response).decode("utf-8"),
-                methods="GET",
-            ).create_api_gateway_response(
-                base_64_encoded=True,
-                headers={
-                    "Content-Type": "application/pdf",
-                    "Content-Disposition": f"inline; filename={document_reference.file_name}",
-                },
-            )
-        else:
-            return ApiGatewayResponse(
-                status_code=200, body=document_reference_response, methods="GET"
-            ).create_api_gateway_response()
+
+        return ApiGatewayResponse(
+            status_code=200, body=document_reference_response, methods="GET"
+        ).create_api_gateway_response()
     except (GetFhirDocumentReferenceException, OidcApiException) as e:
         return ApiGatewayResponse(
             status_code=e.status_code,
