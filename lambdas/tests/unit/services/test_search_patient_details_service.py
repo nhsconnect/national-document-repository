@@ -291,14 +291,13 @@ def test_handle_search_patient_request_raise_error_when_user_not_authorised(
 
 
 @pytest.mark.parametrize(
-    "user_role, user_ods, patient_ods, patient_active, arf_enabled, exception_expected",
+    "user_role, user_ods, patient_ods, patient_active, exception_expected",
     [
         # GP_ADMIN tests
         (
             RepositoryRole.GP_ADMIN.value,
             USER_VALID_ODS_CODE,
             USER_VALID_ODS_CODE,
-            True,
             True,
             False,
         ),
@@ -308,21 +307,18 @@ def test_handle_search_patient_request_raise_error_when_user_not_authorised(
             USER_INVALID_ODS_CODE,
             True,
             True,
-            True,
         ),
         (
             RepositoryRole.GP_ADMIN.value,
             USER_VALID_ODS_CODE,
             USER_VALID_ODS_CODE,
             False,
-            True,
             False,
         ),
         (
             RepositoryRole.GP_ADMIN.value,
             USER_VALID_ODS_CODE,
             USER_VALID_ODS_CODE,
-            False,
             False,
             False,
         ),
@@ -332,7 +328,6 @@ def test_handle_search_patient_request_raise_error_when_user_not_authorised(
             USER_VALID_ODS_CODE,
             USER_VALID_ODS_CODE,
             True,
-            True,
             False,
         ),
         (
@@ -341,14 +336,12 @@ def test_handle_search_patient_request_raise_error_when_user_not_authorised(
             USER_INVALID_ODS_CODE,
             True,
             True,
-            True,
         ),
         (
             RepositoryRole.GP_CLINICAL.value,
             USER_VALID_ODS_CODE,
             USER_VALID_ODS_CODE,
             False,
-            True,
             True,
         ),
         # PCSE tests
@@ -358,18 +351,16 @@ def test_handle_search_patient_request_raise_error_when_user_not_authorised(
             USER_VALID_ODS_CODE,
             True,
             True,
-            True,
         ),
         (
             RepositoryRole.PCSE.value,
             USER_VALID_ODS_CODE,
             USER_VALID_ODS_CODE,
             False,
-            True,
             False,
         ),
         # Unknown role
-        ("UNKNOWN_ROLE", USER_VALID_ODS_CODE, USER_VALID_ODS_CODE, True, True, True),
+        ("UNKNOWN_ROLE", USER_VALID_ODS_CODE, USER_VALID_ODS_CODE, True, True),
     ],
 )
 def test_check_authorization(
@@ -377,7 +368,6 @@ def test_check_authorization(
     user_ods,
     patient_ods,
     patient_active,
-    arf_enabled,
     exception_expected,
     mock_upload_lambda_enabled,
 ):
