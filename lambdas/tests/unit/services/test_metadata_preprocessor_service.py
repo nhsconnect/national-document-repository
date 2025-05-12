@@ -580,6 +580,8 @@ def test_update_record_filename(test_service, mocker):
             "Key": "test_practice_directory/old/path/file1.pdf",
         },
         Key="test_practice_directory/new/path/file1.pdf",
+        MetadataDirective="COPY",
+        TaggingDirective="COPY",
     )
 
     mock_client.delete_object.assert_called_once_with(

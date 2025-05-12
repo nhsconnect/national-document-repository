@@ -75,7 +75,7 @@ class MetadataPreprocessorService:
         response = self.s3_service.client.get_object(Bucket=bucket_name, Key=file_key)
 
         logger.info(f"Reading {file_key}")
-        data = csv.DictReader(response["Body"].read().decode("utf-8").splitlines())
+        data = csv.DictReader(response["Body"].read().decode("utf-8-sig").splitlines())
         metadata_rows = list(data)
         return metadata_rows
 
@@ -192,7 +192,6 @@ class MetadataPreprocessorService:
         return renaming_map, rejected_rows, rejected_reasons
 
     def update_date_in_row(self, metadata_row: dict):
-
         metadata_row["SCAN-DATE"] = metadata_row["SCAN-DATE"].replace(".", "/")
         metadata_row["UPLOAD"] = metadata_row["UPLOAD"].replace(".", "/")
 
@@ -213,6 +212,8 @@ class MetadataPreprocessorService:
                         "Key": original_file_key,
                     },
                     Key=new_file_key,
+                    MetadataDirective="COPY",
+                    TaggingDirective="COPY",
                 )
             except ClientError as e:
                 error_code = e.response["Error"]["Code"]
