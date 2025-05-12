@@ -12,7 +12,6 @@ const UnauthorisedLoginPage = () => {
     useTitle({ pageTitle: 'Unauthorised account' });
     const gpAdminRoles = errorData.roles[0];
     const gpClinicalRoles = errorData.roles[1];
-    const pcseRoles = errorData.roles[2];
     return (
         <>
             <h1>{pageHeader}</h1>
