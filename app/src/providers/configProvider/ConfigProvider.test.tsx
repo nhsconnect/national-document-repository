@@ -2,13 +2,14 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ConfigProvider, { GlobalConfig, useConfigContext } from './ConfigProvider';
 import { defaultFeatureFlags } from '../../types/generic/featureFlags';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('SessionProvider', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('is able to set and retrieve auth data when user has logged in', async () => {

@@ -16,30 +16,41 @@ import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import { DownloadManifestError } from '../../../../types/generic/errors';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+    Mock,
+    Mocked,
+    MockedFunction,
+} from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockedUsePatient = usePatient as jest.Mock;
-const mockUseConfig = useConfig as jest.Mock;
+const mockedUseNavigate = vi.fn();
+const mockedAxios = axios as Mocked<typeof axios>;
+const mockedUsePatient = usePatient as Mock;
+const mockUseConfig = useConfig as Mock;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
-const mockGetPresignedUrlForZip = getPresignedUrlForZip as jest.MockedFunction<
+const mockGetPresignedUrlForZip = getPresignedUrlForZip as MockedFunction<
     typeof getPresignedUrlForZip
 >;
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', async () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
-    ...jest.requireActual('react-router-dom'),
+    ...(await vi.importActual('react-router-dom')),
     useNavigate: () => mockedUseNavigate,
 }));
-jest.mock('moment', () => {
+vi.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
-jest.mock('axios');
-jest.mock('../../../../helpers/requests/getPresignedUrlForZip');
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('../../../../helpers/hooks/useConfig');
+vi.mock('axios');
+vi.mock('../../../../helpers/requests/getPresignedUrlForZip');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('../../../../helpers/hooks/useConfig');
 
 let history = createMemoryHistory({
     initialEntries: ['/'],
@@ -53,13 +64,13 @@ describe('LloydGeorgeDownloadStage', () => {
             initialIndex: 0,
         });
 
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
         mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
-        jest.useRealTimers();
-        jest.clearAllMocks();
+        vi.useRealTimers();
+        vi.clearAllMocks();
     });
 
     it('renders the component', () => {
@@ -90,10 +101,10 @@ describe('LloydGeorgeDownloadStage', () => {
     });
 
     it('renders download complete on zip success', async () => {
-        window.HTMLAnchorElement.prototype.click = jest.fn();
+        window.HTMLAnchorElement.prototype.click = vi.fn();
         mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presignedUrl);
 
-        jest.useFakeTimers();
+        vi.useFakeTimers();
 
         renderComponent(history);
 
@@ -101,7 +112,7 @@ describe('LloydGeorgeDownloadStage', () => {
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
 
         act(() => {
-            jest.advanceTimersByTime(500);
+            vi.advanceTimersByTime(500);
         });
 
         await waitFor(() => {
@@ -141,10 +152,10 @@ describe('LloydGeorgeDownloadStage', () => {
             },
         };
         mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         renderComponent(history);
         act(() => {
-            jest.advanceTimersByTime(500);
+            vi.advanceTimersByTime(500);
         });
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(
@@ -156,10 +167,10 @@ describe('LloydGeorgeDownloadStage', () => {
     it('navigates to Error page when GetPresignedUrlForZip throw DownloadManifestError', async () => {
         const mockError = new DownloadManifestError('some error msg');
         mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(mockError));
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         renderComponent(history);
         act(() => {
-            jest.advanceTimersByTime(500);
+            vi.advanceTimersByTime(500);
         });
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(
@@ -176,10 +187,10 @@ describe('LloydGeorgeDownloadStage', () => {
             },
         };
         mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         renderComponent(history);
         act(() => {
-            jest.advanceTimersByTime(500);
+            vi.advanceTimersByTime(500);
         });
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);

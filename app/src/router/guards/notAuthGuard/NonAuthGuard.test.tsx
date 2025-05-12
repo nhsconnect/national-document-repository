@@ -5,16 +5,17 @@ import { History, createMemoryHistory } from 'history';
 import { buildUserAuth } from '../../../helpers/test/testBuilders';
 import NonAuthGuard from './NonAuthGuard';
 import { routes } from '../../../types/generic/routes';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const guardPage = '/';
 describe('NonAuthGuard', () => {
     beforeEach(() => {
         sessionStorage.setItem('UserSession', '');
 
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
     it('navigates user to supplied route when user is logged in', async () => {
         const auth: Session = {

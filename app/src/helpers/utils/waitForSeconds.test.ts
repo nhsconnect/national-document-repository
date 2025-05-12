@@ -1,8 +1,9 @@
 import waitForSeconds from './waitForSeconds';
+import { describe, expect, it, vi } from 'vitest';
 
 describe('waitForSeconds', () => {
     it('postpone code execution by given number of seconds', async () => {
-        const mockFunction = jest.fn();
+        const mockFunction = vi.fn();
         const secondsToWait = 2;
         const testCode = async () => {
             await waitForSeconds(secondsToWait);

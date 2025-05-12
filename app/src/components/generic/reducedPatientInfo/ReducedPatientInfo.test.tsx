@@ -2,16 +2,17 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { render, screen } from '@testing-library/react';
 import ReducedPatientInfo from './ReducedPatientInfo';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../helpers/hooks/usePatient');
-const mockedUsePatient = usePatient as jest.Mock;
+vi.mock('../../../helpers/hooks/usePatient');
+const mockedUsePatient = usePatient as Mock;
 
 describe('PatientDetails', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders provided patient information', () => {

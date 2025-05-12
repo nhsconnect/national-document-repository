@@ -6,22 +6,23 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-jest.mock('../../helpers/hooks/useRole');
-const mockedUseRole = useRole as jest.Mock;
-jest.mock('react-router-dom', () => ({
+const mockedUseNavigate = vi.fn();
+vi.mock('../../helpers/hooks/useRole');
+const mockedUseRole = useRole as Mock;
+vi.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockedUseNavigate,
 }));
 
 describe('PrivacyPage', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
         mockedUseRole.mockReturnValue(null);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Rendering', () => {

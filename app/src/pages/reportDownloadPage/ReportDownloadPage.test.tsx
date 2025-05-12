@@ -5,23 +5,24 @@ import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router-dom';
 import useConfig from '../../helpers/hooks/useConfig';
 import { buildConfig } from '../../helpers/test/testBuilders';
+import { beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', async () => ({
+    ...(await vi.importActual('react-router-dom')),
     useNavigate: () => mockedUseNavigate,
     useSearchParams: () => [
         {
-            get: jest.fn().mockReturnValue('0'),
+            get: vi.fn().mockReturnValue('0'),
         },
     ],
 }));
-jest.mock('../../types/generic/reports', () => ({
-    getReportByType: jest.fn().mockReturnValue({}),
+vi.mock('../../types/generic/reports', () => ({
+    getReportByType: vi.fn().mockReturnValue({}),
 }));
-jest.mock('../../helpers/hooks/useConfig');
+vi.mock('../../helpers/hooks/useConfig');
 
-const mockUseConfig = useConfig as jest.Mock;
+const mockUseConfig = useConfig as Mock;
 
 let history = createMemoryHistory({
     initialEntries: ['/'],
@@ -38,7 +39,7 @@ describe('ReportDownloadPage', () => {
     });
 
     it('should redirect to home page if report type is missing', async () => {
-        jest.mock('react-router-dom', () => ({
+        vi.mock('react-router-dom', () => ({
             useSearchParams: () => [],
         }));
 
@@ -50,8 +51,8 @@ describe('ReportDownloadPage', () => {
     });
 
     it('should redirect to home page if report type does not find a match', async () => {
-        jest.mock('../../types/generic/reports', () => ({
-            getReportByType: jest.fn().mockReturnValue(null),
+        vi.mock('../../types/generic/reports', () => ({
+            getReportByType: vi.fn().mockReturnValue(null),
         }));
 
         renderPage(history);

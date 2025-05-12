@@ -4,23 +4,24 @@ import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { buildConfig } from '../../helpers/test/testBuilders';
 import useConfig from '../../helpers/hooks/useConfig';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
-jest.mock('../../helpers/hooks/useRole');
-jest.mock('../../helpers/hooks/useConfig');
-const mockUseRole = useRole as jest.Mock;
-const mockUseConfig = useConfig as jest.Mock;
+vi.mock('../../helpers/hooks/useRole');
+vi.mock('../../helpers/hooks/useConfig');
+const mockUseRole = useRole as Mock;
+const mockUseConfig = useConfig as Mock;
 
 describe('HomePage', () => {
     beforeEach(() => {
         mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     const gpRoles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL];

@@ -3,13 +3,14 @@ import PatientAccessAuditProvider from '../../providers/patientAccessAuditProvid
 import { PatientAccessAudit } from '../../types/generic/accessAudit';
 import usePatientAccessAudit from './usePatientAccessAudit';
 import { buildPatientAccessAudit } from '../test/testBuilders';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('usePatient', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('returns patient access audit details when it is in the context', () => {

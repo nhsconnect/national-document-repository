@@ -7,12 +7,13 @@ import { LinkProps } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { routes } from '../../../types/generic/routes';
 import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../helpers/hooks/useRole');
-const mockSetStage = jest.fn();
-const mockedUseNavigate = jest.fn();
-const mockedUseRole = useRole as jest.Mock;
-const mockShowDownloadAndRemoveConfirmation = jest.fn();
+vi.mock('../../../helpers/hooks/useRole');
+const mockSetStage = vi.fn();
+const mockedUseNavigate = vi.fn();
+const mockedUseRole = useRole as Mock;
+const mockShowDownloadAndRemoveConfirmation = vi.fn();
 
 const mockLinks: Array<LGRecordActionLink> = [
     {
@@ -49,19 +50,19 @@ const mockLinks: Array<LGRecordActionLink> = [
     },
 ];
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockedUseNavigate,
 }));
 
 describe('RecordMenuCard', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Rendering', () => {

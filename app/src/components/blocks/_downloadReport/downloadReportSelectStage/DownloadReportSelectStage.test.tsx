@@ -7,25 +7,29 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { routes } from '../../../../types/generic/routes';
 import downloadReport from '../../../../helpers/requests/downloadReport';
+import { beforeEach, describe, expect, it, vi, MockedFunction } from 'vitest';
 
-const mockDownloadReport = downloadReport as jest.MockedFunction<typeof downloadReport>;
+const mockDownloadReport = downloadReport as MockedFunction<typeof downloadReport>;
 
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-    Link: (props: LinkProps) => <a {...props} role="link" />,
-    ...jest.requireActual('react-router-dom'),
-    useNavigate: () => mockedUseNavigate,
-}));
-jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/requests/downloadReport');
-jest.mock('../../../../helpers/utils/isLocal', () => ({
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        Link: (props: LinkProps) => <a {...props} role="link" />,
+        useNavigate: () => mockedUseNavigate,
+    };
+});
+vi.mock('../../../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/requests/downloadReport');
+vi.mock('../../../../helpers/utils/isLocal', () => ({
     isMock: () => false,
 }));
 
 describe('DownloadReportSelectStage', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
 
     describe('Rendering', () => {
@@ -55,8 +59,8 @@ describe('DownloadReportSelectStage', () => {
 
             const report = getReportByType(REPORT_TYPE.ODS_PATIENT_SUMMARY);
 
-            const setDownloadError = jest.fn();
-            jest.spyOn(React, 'useState').mockImplementation(() => ['', setDownloadError]);
+            const setDownloadError = vi.fn();
+            vi.spyOn(React, 'useState').mockImplementation(() => ['', setDownloadError]);
 
             render(<DownloadReportSelectStage report={report!} />);
 
@@ -77,8 +81,8 @@ describe('DownloadReportSelectStage', () => {
 
             const report = getReportByType(REPORT_TYPE.ODS_PATIENT_SUMMARY);
 
-            const setDownloadError = jest.fn();
-            jest.spyOn(React, 'useState').mockImplementation(() => ['', setDownloadError]);
+            const setDownloadError = vi.fn();
+            vi.spyOn(React, 'useState').mockImplementation(() => ['', setDownloadError]);
 
             render(<DownloadReportSelectStage report={report!} />);
 

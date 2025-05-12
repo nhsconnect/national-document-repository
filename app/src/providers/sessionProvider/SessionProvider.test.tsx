@@ -2,6 +2,8 @@ import { act, render, screen } from '@testing-library/react';
 import SessionProvider, { useSessionContext } from './SessionProvider';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
 const loggedIn = {
     auth: buildUserAuth(),
     isLoggedIn: true,
@@ -12,10 +14,10 @@ const loggedOut = {
 };
 describe('SessionProvider', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('is able to set and retrieve auth data when user has logged in', async () => {

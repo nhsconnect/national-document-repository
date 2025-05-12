@@ -5,16 +5,17 @@ import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import PatientSimpleSummary from './PatientSimpleSummary';
 import { render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../helpers/hooks/usePatient');
-const mockedUsePatient = usePatient as jest.Mock;
+vi.mock('../../../helpers/hooks/usePatient');
+const mockedUsePatient = usePatient as Mock;
 
 describe('PatientSummary', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
     const mockDetails = buildPatientDetails({
         familyName: 'Jones',

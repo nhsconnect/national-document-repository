@@ -7,26 +7,27 @@ import { routes } from '../../../../types/generic/routes';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router-dom';
 import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock, Mocked } from 'vitest';
 
-jest.mock('axios');
-jest.mock('moment', () => {
+vi.mock('axios');
+vi.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
+vi.mock('react-router-dom', async () => ({
+    ...(await vi.importActual('react-router-dom')),
     useNavigate: () => mockUseNavigate,
 }));
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('../../../../helpers/hooks/useRole');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('../../../../helpers/hooks/useRole');
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockUseNavigate = jest.fn();
-const mockUsePatient = usePatient as jest.Mock;
+const mockedAxios = axios as Mocked<typeof axios>;
+const mockUseNavigate = vi.fn();
+const mockUsePatient = usePatient as Mock;
 const mockPatientDetails = buildPatientDetails();
-const mockDownloadStage = jest.fn();
-const mockResetDocState = jest.fn();
+const mockDownloadStage = vi.fn();
+const mockResetDocState = vi.fn();
 
 const testFileName1 = 'John_1';
 const testFileName2 = 'John_2';
@@ -47,11 +48,11 @@ describe('RemoveRecordStage', () => {
             initialEntries: ['/'],
             initialIndex: 0,
         });
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
         mockUsePatient.mockReturnValue(mockPatientDetails);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
     describe('Render', () => {
         it('renders the component', () => {

@@ -18,13 +18,14 @@ import {
     uploadDocumentToS3,
 } from './uploadDocuments';
 import waitForSeconds from '../utils/waitForSeconds';
+import { describe, expect, it, vi } from 'vitest';
 
 // Mock out all top level functions, such as get, put, delete and post:
-jest.mock('axios');
-jest.mock('../utils/waitForSeconds');
+vi.mock('axios');
+vi.mock('../utils/waitForSeconds');
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockedWaitForSeconds = waitForSeconds as jest.Mocked<typeof waitForSeconds>;
+const mockedAxios = axios as Mocked<typeof axios>;
+const mockedWaitForSeconds = waitForSeconds as Mocked<typeof waitForSeconds>;
 
 describe('[POST] updateDocumentState', () => {
     test('updateDocumentState handles a 2XX response', async () => {
@@ -52,7 +53,7 @@ describe('uploadDocumentToS3', () => {
         DOCUMENT_TYPE.LLOYD_GEORGE,
     );
     const mockUploadSession = buildUploadSession([testDocument]);
-    const mockSetDocuments = jest.fn();
+    const mockSetDocuments = vi.fn();
 
     it('make POST request to s3 bucket', async () => {
         await uploadDocumentToS3({

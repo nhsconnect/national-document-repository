@@ -2,14 +2,15 @@ import { render, screen } from '@testing-library/react';
 import useConfig from './useConfig';
 import ConfigProvider, { GlobalConfig } from '../../providers/configProvider/ConfigProvider';
 import { defaultFeatureFlags } from '../../types/generic/featureFlags';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('useConfig', () => {
     beforeEach(() => {
         sessionStorage.setItem('FeatureFlags', '');
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('returns true when feature flag in context', () => {

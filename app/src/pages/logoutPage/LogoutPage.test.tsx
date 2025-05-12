@@ -4,21 +4,22 @@ import SessionProvider, { Session } from '../../providers/sessionProvider/Sessio
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import axios from 'axios';
 import { routes } from '../../types/generic/routes';
+import { afterEach, beforeEach, describe, expect, it, vi, Mocked } from 'vitest';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockSetSession = jest.fn();
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+vi.mock('axios');
+const mockedAxios = axios as Mocked<typeof axios>;
+const mockSetSession = vi.fn();
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
 describe('logoutPage', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('returns a loading state until logout redirect', () => {
@@ -58,7 +59,7 @@ describe('logoutPage', () => {
     });
 
     it('clears the session from session provider', async () => {
-        Storage.prototype.setItem = jest.fn();
+        Storage.prototype.setItem = vi.fn();
         const successResponse = {
             response: {
                 status: 200,

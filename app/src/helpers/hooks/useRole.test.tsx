@@ -3,14 +3,15 @@ import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from './useRole';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 import { buildUserAuth } from '../test/testBuilders';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('useRole', () => {
     beforeEach(() => {
         sessionStorage.setItem('UserSession', '');
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it.each(authorisedRoles)(
