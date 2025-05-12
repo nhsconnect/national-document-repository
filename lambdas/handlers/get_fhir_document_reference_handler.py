@@ -62,7 +62,7 @@ def lambda_handler(event, context):
             oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
             userinfo = oidc_service.fetch_userinfo(bearer_token)
             org_ods_code = oidc_service.fetch_user_org_code(userinfo, selected_role_id)
-            smartcard_role_code, user_id = oidc_service.fetch_user_role_code(
+            smartcard_role_code, _ = oidc_service.fetch_user_role_code(
                 userinfo, selected_role_id, "R"
             )
         get_document_service = GetFhirDocumentReferenceService()
