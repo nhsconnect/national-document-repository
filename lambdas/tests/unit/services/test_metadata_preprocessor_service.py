@@ -776,19 +776,17 @@ def test_generate_and_save_csv_file_updated_metadata(test_service, mocker):
         }
     ]
     file_key = "path/to/file.csv"
-    # expected_csv_data = b"col1,col2\nvalue1,value2\nvalue3,value4\n"
+    expected_csv_data = b"col1,col2\nvalue1,value2\nvalue3,value4\n"
+    mock_convert_csv = mocker.patch(
+        "services.bulk_upload_metadata_preprocessor_service.convert_csv_dictionary_to_bytes",
+        return_value=expected_csv_data,
+    )
 
-    # utils_mocker = mocker.patch("utils.file_utils.convert_csv_dictionary_to_bytes", return_value=expected_csv_data)
-    mock_convert_csv = mocker.patch("utils.file_utils.convert_csv_dictionary_to_bytes")
     mock_save_or_create_file = mocker.patch.object(
         test_service.s3_service, "save_or_create_file"
     )
 
     test_service.generate_and_save_csv_file(csv_dict, file_key)
 
-    # utils_mocker.assert_called_once_with(csv_dict[0].keys(), csv_dict)
     mock_convert_csv.assert_called_once_with(csv_dict[0].keys(), csv_dict)
     mock_save_or_create_file.assert_called_once()
-    # mock_save_or_create_file.assert_called_once_with(
-    #     test_service.staging_store_bucket, file_key, BytesIO(expected_csv_data)
-    # )
