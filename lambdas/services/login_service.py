@@ -196,9 +196,7 @@ class LoginService:
 
     @staticmethod
     def has_pcse_org_ods_code(organisation: dict, ods_code: str) -> bool:
-        if organisation["org_ods_code"].upper() == ods_code.upper():
-            return True
-        return False
+        return organisation["org_ods_code"].upper() == ods_code.upper()
 
     def issue_auth_token(
         self,

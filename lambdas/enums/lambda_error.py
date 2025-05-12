@@ -161,7 +161,7 @@ class LambdaError(Enum):
     }
     LoginItocOdsCodes = {
         "err_code": "LIN_5011",
-        "message": "SSM parameter value for ITOC ODS codes may not exist",
+        "message": "SSM parameter value for ITOC ODS code may not exist",
     }
 
     """

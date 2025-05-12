@@ -1,4 +1,4 @@
-from typing import Dict, List, NamedTuple
+from typing import Dict, List, NamedTuple, Optional
 
 import requests
 from enums.repository_role import OrganisationRelationship
@@ -110,7 +110,7 @@ def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
     return response_dictionary
 
 
-def get_user_gp_org_role_code(org_data):
+def get_user_gp_org_role_code(org_data) -> Optional[str]:
     logger.info("Checking if GP organisation role is present")
     json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
 
@@ -121,7 +121,7 @@ def get_user_gp_org_role_code(org_data):
     return None
 
 
-def get_user_primary_org_role_code(org_data):
+def get_user_primary_org_role_code(org_data) -> str:
     logger.info("Checking if a primary organisation role is present")
     json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
 
@@ -131,7 +131,7 @@ def get_user_primary_org_role_code(org_data):
     return ""
 
 
-def find_icb_for_user(org_data):
+def find_icb_for_user(org_data) -> str:
     logger.info("Checking relationships")
     try:
         relationships: List[Dict] = org_data["Rels"]["Rel"]

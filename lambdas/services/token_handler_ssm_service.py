@@ -98,35 +98,40 @@ class TokenHandlerSSMService(SSMService):
     def get_gp_org_role_code(self) -> str:
         logger.info("starting ssm request to retrieve GP organisation role code")
         response = self.get_ssm_parameter(GP_ORG_ROLE_CODE)
-        if not response:
+
+        if response:
+            return response
+        else:
             logger.error(
                 LambdaError.LoginGpOrgRoleCode.to_str(),
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(500, LambdaError.LoginGpOrgRoleCode)
-        return response
 
     def get_pcse_ods_code(self) -> str:
         logger.info("starting ssm request to retrieve PCSE ODS code")
         response = self.get_ssm_parameter(PCSE_ODS_CODE)
-        if not response:
+
+        if response:
+            return response
+        else:
             logger.error(
                 LambdaError.LoginPcseOdsCode.to_str(),
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(500, LambdaError.LoginPcseOdsCode)
-        return response
 
     def get_itoc_ods_codes(self) -> str:
         logger.info("starting ssm request to retrieve ITOC ODS codes")
         response = self.get_ssm_parameter(ITOC_ODS_CODES)
-        if not response:
+        if response:
+            return response
+        else:
             logger.error(
                 LambdaError.LoginItocOdsCodes.to_str(),
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(500, LambdaError.LoginItocOdsCodes)
-        return response
 
     def get_jwt_private_key(self) -> list[str]:
         logger.info("starting ssm request to retrieve NDR private key")
@@ -136,4 +141,7 @@ class TokenHandlerSSMService(SSMService):
 
     def get_allowed_list_of_ods_codes(self) -> str:
         logger.info("starting ssm request to retrieve allowed list of ODS codes")
-        return self.get_ssm_parameter(ALLOWED_ODS_CODES_LIST)
+        response = self.get_ssm_parameter(ALLOWED_ODS_CODES_LIST)
+        if not response:
+            logger.warning("No ODS codes found in allowed list")
+        return response
