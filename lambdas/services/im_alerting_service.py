@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
+from time import sleep
 
 import boto3
 import requests
@@ -29,31 +30,35 @@ class IMAlertingService:
     def handle_alarm_alert(self):
 
         alarm_name = self.message["AlarmName"]
-        # alarm_description = message["AlarmDescription"]
         alarm_state = self.message["NewStateValue"]
         alarm_time = self.message["StateChangeTime"]
 
         alarm_entries = self.get_alarm_history(alarm_name)
 
-        if not alarm_entries:
+        if not alarm_entries and alarm_state == "OK":
+            logger.info(
+                f"Alarm {alarm_name} is in OK state and no entries found for {self.format_alarm_name(alarm_name)}"
+            )
+            return
+
+        if not alarm_entries and alarm_state == "ALARM":
             logger.info(
                 f"No current alarm history for {self.format_alarm_name(alarm_name)}"
             )
             self.handle_new_alarm_episode(alarm_name, alarm_time, alarm_state)
 
         else:
-            if all(
+            all_alarms_expired = all(
                 self.is_episode_expired(alarm_entry) for alarm_entry in alarm_entries
-            ):
+            )
+            if all_alarms_expired:
                 logger.info(
                     f"All alarm entries for {self.format_alarm_name(alarm_name)} have expired, creating a new one"
                 )
                 self.handle_new_alarm_episode(
                     alarm_name=alarm_name,
-                    alarm_state=alarm_state,
                     alarm_time=alarm_time,
                 )
-
             else:
                 for alarm_entry in alarm_entries:
                     if not self.is_episode_expired(alarm_entry):
@@ -64,16 +69,13 @@ class IMAlertingService:
                         )
 
     def is_episode_expired(self, alarm_entry: AlarmEntry) -> bool:
-
         if alarm_entry.time_to_exist:
             current_time = datetime.now().timestamp()
             return current_time >= alarm_entry.time_to_exist
         else:
             return False
 
-    def handle_new_alarm_episode(
-        self, alarm_name: str, alarm_time: str, alarm_state: str
-    ):
+    def handle_new_alarm_episode(self, alarm_name: str, alarm_time: str):
         logger.info(
             f"Creating new alarm episode {self.format_alarm_name(alarm_name)}:{self.create_alarm_timestamp(alarm_time)}"
         )
@@ -84,7 +86,7 @@ class IMAlertingService:
             channel_id=os.environ["ALERTING_SLACK_CHANNEL_ID"],
         )
         AlarmEntry.model_validate(new_entry)
-        self.update_alarm_state_history(new_entry, alarm_state, alarm_name)
+        self.handle_alarm_action_trigger(new_entry, alarm_name)
         self.create_alarm_entry(new_entry)
 
     def handle_current_alarm_episode(
@@ -93,18 +95,49 @@ class IMAlertingService:
         logger.info(
             f"Updating alarm episode {alarm_entry.alarm_name}:{alarm_entry.time_created}"
         )
-        self.update_alarm_state_history(alarm_entry, alarm_state, alarm_name)
-        self.update_alarm_table(alarm_entry)
+        if alarm_state == "ALARM":
+            self.handle_alarm_action_trigger(
+                alarm_name=alarm_name, alarm_entry=alarm_entry
+            )
+            self.update_alarm_table(alarm_entry)
+            self.send_teams_alert(alarm_entry)
+
+        if alarm_state == "OK":
+            self.handle_ok_action_trigger(
+                alarm_name=alarm_name, alarm_entry=alarm_entry
+            )
 
     def create_alarm_entry(self, alarm_entry: AlarmEntry):
         new_entry = alarm_entry.model_dump(
             by_alias=True,
             exclude_none=True,
         )
-
         logger.info(f"Creating new alarm entry for {alarm_entry.alarm_name}")
-
         self.dynamo_service.create_item(table_name=self.table_name, item=new_entry)
+
+    def handle_ok_action_trigger(self, alarm_name: str, alarm_entry: AlarmEntry):
+        logger.info(f"Handling OK action trigger for {alarm_name}")
+
+        if self.all_alarm_state_ok(alarm_name):
+            sleep(180)
+            if self.is_last_updated(alarm_entry):
+                logger.info(
+                    f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
+                )
+                alarm_entry.history.append(self.alarm_severities["ok"])
+                alarm_entry.last_updated = int(datetime.now().timestamp())
+                self.add_ttl_to_alarm_entry(alarm_entry)
+                self.update_alarm_table(alarm_entry)
+                self.send_teams_alert(alarm_entry)
+
+    def handle_alarm_action_trigger(self, alarm_entry: AlarmEntry, alarm_name: str):
+        logger.info(f"Handling Alarm action for {alarm_name}")
+
+        for key in self.alarm_severities.keys():
+            if alarm_name.endswith(key):
+                alarm_entry.history.append(self.alarm_severities[key])
+        alarm_entry.time_to_exist = None
+        alarm_entry.last_updated = int(datetime.now().timestamp())
 
     def get_alarm_history(self, alarm_name: str):
         logger.info(
@@ -127,7 +160,10 @@ class IMAlertingService:
     def update_alarm_state_history(
         self, alarm_entry: AlarmEntry, current_state: str, alarm_name: str
     ):
-        logger.info(f"Updating alarm state history for {alarm_entry.alarm_name}")
+        logger.info(
+            f"Updating alarm state history for {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+        )
+        alarm_entry.last_updated = int(datetime.now().timestamp())
         if current_state == "ALARM":
             for key in self.alarm_severities.keys():
                 if alarm_name.endswith(key):
@@ -136,14 +172,26 @@ class IMAlertingService:
             self.send_teams_alert(alarm_entry)
 
         if current_state == "OK" and self.all_alarm_state_ok(alarm_name):
-            alarm_entry.history.append(self.alarm_severities["ok"])
-            logger.info(
-                f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
-            )
-            self.add_ttl_to_alarm_entry(alarm_entry)
-            self.send_teams_alert(alarm_entry)
+            sleep(180)
+            if self.is_last_updated(alarm_entry):
+                alarm_entry.history.append(self.alarm_severities["ok"])
+                logger.info(
+                    f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
+                )
+                self.add_ttl_to_alarm_entry(alarm_entry)
+                self.send_teams_alert(alarm_entry)
 
-        alarm_entry.last_updated = int(datetime.now().timestamp())
+    def is_last_updated(self, alarm_entry: AlarmEntry) -> bool:
+        response = self.dynamo_service.get_item(
+            table_name=self.table_name,
+            key={
+                AlarmHistoryFields.ALARMNAME: alarm_entry.alarm_name,
+                AlarmHistoryFields.TIMECREATED: alarm_entry.time_created,
+            },
+        )
+        entry_to_compare = AlarmEntry.model_validate(response["Item"])
+
+        return alarm_entry.last_updated >= entry_to_compare.last_updated
 
     def update_alarm_table(self, alarm_entry: AlarmEntry) -> str:
 
@@ -227,7 +275,7 @@ class IMAlertingService:
                                     "type": "TextBlock",
                                     "size": "Medium",
                                     "weight": "Bolder",
-                                    "text": f"{alarm_entry.alarm_name} Alert",
+                                    "text": f"{alarm_entry.alarm_name} Alert: {alarm_entry.history[-1]}",
                                     "wrap": True,
                                 },
                                 {
