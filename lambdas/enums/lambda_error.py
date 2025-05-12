@@ -159,9 +159,9 @@ class LambdaError(Enum):
         "err_code": "LIN_5010",
         "message": "SSM parameter value for PCSE ODS code may not exist",
     }
-    LoginItocOdsCode = {
+    LoginItocOdsCodes = {
         "err_code": "LIN_5011",
-        "message": "SSM parameter value for ITOC ODS code may not exist",
+        "message": "SSM parameter value for ITOC ODS codes may not exist",
     }
 
     """

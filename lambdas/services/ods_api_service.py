@@ -61,7 +61,7 @@ class OdsApiService:
 
         logger.info(f"Org Data: {org_data}")
 
-        gp_org_role_code = get_gp_org_role_code(org_data)
+        gp_org_role_code = get_user_gp_org_role_code(org_data)
 
         if gp_org_role_code is not None:
             logger.info(f"ODS code {ods_code} is a GP, returning org data")
@@ -83,7 +83,7 @@ class OdsApiService:
         if ods_code in allowed_ods_code_list:
             logger.info(f"ODS code {ods_code} is in allowed list, returning org data")
             icb_ods_code = find_icb_for_user(org_data["Organisation"])
-            primary_org_role_code = get_primary_org_role_code(org_data)
+            primary_org_role_code = get_user_primary_org_role_code(org_data)
             response = parse_ods_response(org_data, primary_org_role_code, icb_ods_code)
             return response
 
@@ -110,7 +110,7 @@ def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
     return response_dictionary
 
 
-def get_gp_org_role_code(org_data):
+def get_user_gp_org_role_code(org_data):
     logger.info("Checking if GP organisation role is present")
     json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
 
@@ -121,14 +121,14 @@ def get_gp_org_role_code(org_data):
     return None
 
 
-def get_primary_org_role_code(org_data):
+def get_user_primary_org_role_code(org_data):
     logger.info("Checking if a primary organisation role is present")
     json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
 
     for json_role in json_roles:
         if "primaryRole" in json_role:
             return json_role["id"]
-    return None
+    return ""
 
 
 def find_icb_for_user(org_data):

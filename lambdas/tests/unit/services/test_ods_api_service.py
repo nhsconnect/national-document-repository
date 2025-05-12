@@ -5,6 +5,8 @@ from requests import Response
 from services.ods_api_service import (
     OdsApiService,
     find_icb_for_user,
+    get_user_gp_org_role_code,
+    get_user_primary_org_role_code,
     parse_ods_response,
 )
 from services.token_handler_ssm_service import TokenHandlerSSMService
@@ -275,4 +277,30 @@ def test_fetch_org_with_permitted_role_raises_exception_if_more_than_one_org_for
 )
 def test_find_org_relationship_icb_responses(org_data, expected):
     actual = find_icb_for_user(org_data)
+    assert actual == expected
+
+
+def test_get_user_primary_org_role_code(mock_ods_responses):
+    expected = "fake_role_code"
+    actual = get_user_primary_org_role_code(mock_ods_responses["not_gp_or_pcse"])
+    assert actual == expected
+
+
+def test_get_user_gp_org_role_code(mock_ods_responses, mocker):
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
+    )
+    expected = "RO76"
+    actual = get_user_gp_org_role_code(mock_ods_responses["gp_org"])
+    assert actual == expected
+
+
+def test_get_user_gp_org_role_code_returns_none_when_not_found(
+    mock_ods_responses, mocker
+):
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_gp_org_role_code", return_value="fake_role_code"
+    )
+    expected = None
+    actual = get_user_gp_org_role_code(mock_ods_responses["gp_org"])
     assert actual == expected

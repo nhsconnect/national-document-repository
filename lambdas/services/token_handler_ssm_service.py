@@ -118,14 +118,14 @@ class TokenHandlerSSMService(SSMService):
         return response
 
     def get_itoc_ods_codes(self) -> str:
-        logger.info("starting ssm request to retrieve ITOC ODS code")
+        logger.info("starting ssm request to retrieve ITOC ODS codes")
         response = self.get_ssm_parameter(ITOC_ODS_CODES)
         if not response:
             logger.error(
-                LambdaError.LoginItocOdsCode.to_str(),
+                LambdaError.LoginItocOdsCodes.to_str(),
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(500, LambdaError.LoginItocOdsCode)
+            raise LoginException(500, LambdaError.LoginItocOdsCodes)
         return response
 
     def get_jwt_private_key(self) -> list[str]:

@@ -344,7 +344,7 @@ def test_get_itoc_ods_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = {
         "Parameter": {"Value": ""},
     }
-    expected = LoginException(500, LambdaError.LoginItocOdsCode)
+    expected = LoginException(500, LambdaError.LoginItocOdsCodes)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_itoc_ods_codes()
