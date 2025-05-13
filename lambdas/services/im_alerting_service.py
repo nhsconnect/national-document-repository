@@ -98,6 +98,9 @@ class IMAlertingService:
         self.send_initial_slack_alert(new_entry)
         self.create_alarm_entry(new_entry)
 
+    #     feels like alarm entry should be done first so that it exists in dynamo before send message
+    # means adding in extra update when the slack response comes in so the correct object has the slack thread_ts needed
+
     def handle_current_alarm_episode(
         self, alarm_entry: AlarmEntry, alarm_state: str, alarm_name: str
     ):
@@ -129,6 +132,7 @@ class IMAlertingService:
         logger.info(f"Handling OK action trigger for {alarm_name}")
 
         if self.all_alarm_state_ok(alarm_name):
+            logger.info("Waiting for other alarms to be triggered before setting TTL.")
             sleep(180)
             if self.is_last_updated(alarm_entry):
                 logger.info(
@@ -207,7 +211,16 @@ class IMAlertingService:
         )
         entry_to_compare = AlarmEntry.model_validate(response["Item"])
 
-        return alarm_entry.last_updated >= entry_to_compare.last_updated
+        if alarm_entry.last_updated >= entry_to_compare.last_updated:
+            logger.info(
+                f"No other alarm has been triggered since {alarm_entry.alarm_name}:{alarm_entry.time_created} was last updated"
+            )
+            return True
+        else:
+            logger.info(
+                f"Another alarm for {alarm_entry.alarm_name}:{alarm_entry.time_created} has been triggered since last updated"
+            )
+            return False
 
     def update_alarm_table(self, alarm_entry: AlarmEntry) -> str:
 
@@ -330,6 +343,9 @@ class IMAlertingService:
         requests.request("POST", self.webhook_url, headers=headers, data=payload)
 
     def send_initial_slack_alert(self, alarm_entry: AlarmEntry):
+        logger.info(
+            f"Sending initial slack alert for: {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+        )
         slack_message = {}
         slack_message["channel"] = alarm_entry.channel_id
         slack_message["blocks"] = self.compose_slack_message(alarm_entry)
@@ -350,6 +366,9 @@ class IMAlertingService:
         self.change_reaction(alarm_entry, "add", headers)
 
     def send_slack_response(self, alarm_entry: AlarmEntry):
+        logger.info(
+            f"Sending slack thread response for: {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+        )
         slack_message = {}
         slack_message["channel"] = alarm_entry.channel_id
         slack_message["thread_ts"] = alarm_entry.slack_timestamp
@@ -367,6 +386,9 @@ class IMAlertingService:
         self.change_reaction(alarm_entry, "add", headers)
 
     def change_reaction(self, alarm_entry: AlarmEntry, action: str, headers: dict):
+        logger.info(
+            f"Changing slack reaction for alarm: {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+        )
         change_message = {}
         emoji = (
             self.slack_emojis.get(alarm_entry.history[-2])
@@ -384,7 +406,7 @@ class IMAlertingService:
         logger.info(
             action + " " + emoji + " reaction response: " + str(changeResponse.content)
         )
-        return changeResponse
+        # return changeResponse
 
     def compose_slack_message(self, alarm_entry: AlarmEntry):
         blocks = [
@@ -392,7 +414,7 @@ class IMAlertingService:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"{alarm_entry.alarm_name} Alert",
+                    "text": f"{alarm_entry.alarm_name} Alert: {alarm_entry.history[-1]}",
                 },
             },
             {
@@ -419,12 +441,12 @@ class IMAlertingService:
                     "text": f"*What to do:*\n <{self.create_action_url(self.confluence_base_url, alarm_entry.alarm_name)}>",
                 },
             },
-            {
-                "type": "image",
-                "image_url": "https://singlecolorimage.com/get/"
-                + alarm_entry.history[-1]
-                + "/1x1",
-                "alt_text": f"{self.slack_emojis.get(alarm_entry.history[-1])}",
-            },
+            # {
+            #     "type": "image",
+            #     "image_url": "https://singlecolorimage.com/get/"
+            #     + alarm_entry.history[-1]
+            #     + "/1x1",
+            #     "alt_text": f"{self.slack_emojis.get(alarm_entry.history[-1])}",
+            # },
         ]
         return blocks
