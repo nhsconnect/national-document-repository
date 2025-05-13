@@ -10,6 +10,6 @@ class AlarmEntry(BaseModel):
     time_created: int
     history: list[str] = []
     last_updated: Optional[int] = None
-    slack_timestamp: Optional[float] = None
+    slack_timestamp: Optional[str] = None
     channel_id: str
     time_to_exist: Optional[int] = None
