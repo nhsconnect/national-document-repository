@@ -13,7 +13,7 @@ from utils.exceptions import InvalidFileNameException, MetadataPreprocessingExce
 from lambdas.models.staging_metadata import METADATA_FILENAME
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 @freeze_time("2025-01-01T12:00:00")
 def test_service(mocker, set_env):
     service = MetadataPreprocessorService(practice_directory="test_practice_directory")
@@ -69,6 +69,20 @@ def mock_metadata_file_get_object():
         return {"Body": BytesIO(test_file_data)}
 
     return _mock_metadata_file_get_object
+
+
+@pytest.fixture
+def mock_update_date_in_row(mocker, test_service):
+    return mocker.patch.object(
+        test_service, "update_date_in_row", side_effect=lambda x: x
+    )
+
+
+@pytest.fixture
+def mock_valid_record_filename(mocker, test_service):
+    return mocker.patch.object(
+        test_service, "validate_record_filename", side_effect=lambda x: x
+    )
 
 
 def test_validate_record_filename_successful(test_service, mocker):
@@ -143,9 +157,6 @@ def test_validate_record_filename_invalid_digit_count(mocker, test_service, capl
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.validate_record_filename(bad_filename)
 
-    # expected_log = "Failed to find NHS or date"
-    # actual_log = caplog.records[-1].msg
-    # assert expected_log == actual_log
     assert str(exc_info.value) == "incorrect NHS number or date format"
 
 
@@ -311,10 +322,6 @@ def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
             'Dwain "The Rock" Johnson_9000000001_22.10.2010.txt',
             ('Dwain "The Rock" Johnson', "_9000000001_22.10.2010.txt"),
         ),
-        # (
-        #     "_X Æ A-12_9000000001_22.10.2010.txt",
-        #     ("X Æ A-12", "_9000000001_22.10.2010.txt"),
-        # ),
     ],
 )
 def test_correctly_extract_person_name_from_bulk_upload_file_name(
@@ -474,6 +481,42 @@ def test_process_metadata_file_exists(test_service, mock_metadata_file_get_objec
     test_service.process_metadata()
 
 
+def test_process_metadata_success(test_service, mocker):
+    get_metadata_mock = mocker.patch.object(
+        test_service,
+        "get_metadata_rows_from_file",
+        return_value=[{"FILEPATH": "file1.pdf"}],
+    )
+    generate_map_mock = mocker.patch.object(
+        test_service,
+        "generate_renaming_map",
+        return_value=(
+            [({"FILEPATH": "file1.pdf"}, {"FILEPATH": "new_file1.pdf"})],
+            [{"FILEPATH": "bad_file.pdf"}],
+            [{"REASON": "invalid"}],
+        ),
+    )
+    standardize_mock = mocker.patch.object(
+        test_service,
+        "standardize_filenames",
+        return_value=[{"FILEPATH": "new_file1.pdf"}],
+    )
+    move_file_mock = mocker.patch.object(
+        test_service, "move_original_metadata_file", return_value=True
+    )
+    delete_mock = mocker.patch.object(test_service.s3_service, "delete_object")
+    generate_csv_mock = mocker.patch.object(test_service, "generate_and_save_csv_file")
+
+    test_service.process_metadata()
+
+    assert get_metadata_mock.called
+    assert generate_map_mock.called
+    assert standardize_mock.called
+    assert move_file_mock.called
+    assert delete_mock.called
+    assert generate_csv_mock.called
+
+
 def test_get_metadata_csv_from_file_metadata_exists(
     test_service, mock_metadata_file_get_object
 ):
@@ -532,10 +575,8 @@ def test_move_original_metadata_file(test_service):
         f"/{test_service.processed_folder_name}/{test_service.processed_date}/{METADATA_FILENAME}"
     )
 
-    # Act
     test_service.move_original_metadata_file(file_key)
 
-    # Assert
     test_service.s3_service.copy_across_bucket.assert_called_once_with(
         MOCK_STAGING_STORE_BUCKET,
         file_key,
@@ -553,10 +594,6 @@ def test_move_original_metadata_file_handles_exception(test_service):
     test_service.s3_service.copy_across_bucket.side_effect = ClientError(
         error_response, operation_name
     )
-    # mock_copy_across_bucket = mocker.patch.object(
-    #     test_service.s3_service, "copy_across_bucket"
-    # )
-    # mock_copy_across_bucket.side_effect = ClientError(error_response, operation_name)
 
     result = test_service.move_original_metadata_file(file_key)
 
@@ -642,24 +679,16 @@ def test_update_and_standardize_filenames_success_and_failure(test_service, mock
     mock_update.assert_any_call(original_row2, updated_row2)
 
 
-def test_generate_renaming_map(test_service, mocker):
-    # Arrange
+def test_generate_renaming_map(test_service, mocker, mock_valid_record_filename):
     metadata_rows = [
         {"FILEPATH": "file1.pdf", "SCAN-DATE": "01/01/2000", "UPLOAD": "10/10/2010"},
         {"FILEPATH": "file2.pdf", "SCAN-DATE": "01/01/2000", "UPLOAD": "10/10/2010"},
     ]
-    # Mock
-    mock_validate = mocker.patch.object(
-        test_service,
-        "validate_record_filename",
-        side_effect=lambda x: x,  # Assume filename is already valid
-    )
-    # Act
+
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
         metadata_rows
     )
 
-    # Assert
     assert renaming_map == [
         (
             metadata_rows[0],
@@ -680,16 +709,13 @@ def test_generate_renaming_map(test_service, mocker):
     ]
     assert rejected_rows == []
     assert rejected_reasons == []
-    assert mock_validate.call_count == 2
+    assert mock_valid_record_filename.call_count == 2
 
 
-def test_generate_renaming_map_happy_path(test_service, mocker):
+def test_generate_renaming_map_happy_path(
+    test_service, mock_update_date_in_row, mock_valid_record_filename
+):
     row = {"FILEPATH": "valid_file.pdf"}
-
-    mocker.patch.object(
-        test_service, "validate_record_filename", return_value="standardised_name.pdf"
-    )
-    mocker.patch.object(test_service, "update_date_in_row", return_value=row)
 
     metadata = [row]
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
@@ -700,21 +726,17 @@ def test_generate_renaming_map_happy_path(test_service, mocker):
     assert renaming_map[0][0] == row
     assert (
         renaming_map[0][1]["FILEPATH"]
-        == f"{test_service.practice_directory}/standardised_name.pdf"
+        == f"{test_service.practice_directory}/valid_file.pdf"
     )
     assert rejected_rows == []
     assert rejected_reasons == []
 
 
-def test_generate_renaming_map_duplicate_file(mocker, test_service):
-    row1 = {"FILEPATH": "dup1.pdf"}
-    row2 = {"FILEPATH": "dup2.pdf"}
-    mocker.patch.object(
-        test_service, "validate_record_filename", return_value="standardised_name.pdf"
-    )
-    mocker.patch.object(
-        test_service, "update_date_in_row", side_effect=lambda x: x
-    )  # Mock update_date_in_row to return the row as is
+def test_generate_renaming_map_duplicate_file(
+    test_service, mock_update_date_in_row, mock_valid_record_filename
+):
+    row1 = {"FILEPATH": "dup.pdf"}
+    row2 = {"FILEPATH": "dup.pdf"}
 
     metadata = [row1, row2]
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
@@ -727,7 +749,9 @@ def test_generate_renaming_map_duplicate_file(mocker, test_service):
     assert rejected_reasons[0]["REASON"] == "Duplicate filename after renaming"
 
 
-def test_generate_renaming_map_invalid_filename(mocker, test_service):
+def test_generate_renaming_map_invalid_filename(
+    mocker, test_service, mock_update_date_in_row
+):
     row = {"FILEPATH": "invalid_file.pdf"}
 
     mocker.patch.object(
@@ -735,9 +759,6 @@ def test_generate_renaming_map_invalid_filename(mocker, test_service):
         "validate_record_filename",
         side_effect=InvalidFileNameException("Bad format"),
     )
-    mocker.patch.object(
-        test_service, "update_date_in_row", side_effect=lambda x: x
-    )  # Mock update_date_in_row to return the row as is
 
     metadata = [row]
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
@@ -765,7 +786,6 @@ def test_update_date_in_row(test_service):
 
     updated_row = test_service.update_date_in_row(metadata_row)
 
-    # Assert
     assert updated_row["SCAN-DATE"] == "2025/01/01"
     assert updated_row["UPLOAD"] == "2025/01/01"
 
