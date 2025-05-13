@@ -2,6 +2,7 @@ import json
 
 import pytest
 from requests import Response
+from services.base.ssm_service import SSMService
 from services.ods_api_service import (
     OdsApiService,
     find_icb_for_user,
@@ -89,9 +90,7 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
     mocker.patch.object(
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
-    )
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
     mocker.patch.object(
         TokenHandlerSSMService, "get_itoc_ods_codes", return_value="Y90123"
     )
@@ -122,9 +121,7 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
         "fetch_organisation_data",
         return_value=mock_ods_responses["gp_org"],
     )
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
-    )
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
     mocker.patch.object(
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
@@ -159,9 +156,7 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
         "fetch_organisation_data",
         return_value=[itoc_ods],
     )
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
-    )
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
     mocker.patch.object(
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
@@ -197,9 +192,7 @@ def test_fetch_org_with_permitted_role_allowed_list(mock_ods_responses, mocker):
         return_value=mock_ods_responses["not_gp_or_pcse"],
     )
 
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
-    )
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
     mocker.patch.object(
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
@@ -234,9 +227,7 @@ def test_fetch_org_with_permitted_role_returns_empty_list_when_not_a_permitted_r
         "fetch_organisation_data",
         return_value=mock_ods_responses["not_gp_or_pcse"],
     )
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
-    )
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
     mocker.patch.object(
         TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
     )
@@ -286,21 +277,10 @@ def test_get_user_primary_org_role_code(mock_ods_responses):
     assert actual == expected
 
 
-def test_get_user_gp_org_role_code(mock_ods_responses, mocker):
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value="RO76"
-    )
-    expected = "RO76"
-    actual = get_user_gp_org_role_code(mock_ods_responses["gp_org"])
-    assert actual == expected
-
-
 def test_get_user_gp_org_role_code_returns_none_when_not_found(
     mock_ods_responses, mocker
 ):
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value="fake_role_code"
-    )
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="fake_role_code")
     expected = None
     actual = get_user_gp_org_role_code(mock_ods_responses["gp_org"])
     assert actual == expected

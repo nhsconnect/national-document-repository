@@ -1,18 +1,23 @@
 from typing import Any, Dict, List, NamedTuple, Optional
 
 import requests
+from enums.lambda_error import LambdaError
 from enums.repository_role import OrganisationRelationship
+from services.base.ssm_service import SSMService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
+from utils.constants.ssm import GP_ORG_ROLE_CODE
 from utils.exceptions import (
     OdsErrorException,
     OrganisationNotFoundException,
     TooManyOrgsException,
 )
+from utils.lambda_exceptions import LoginException
 
 logger = LoggingService(__name__)
 
 token_handler_ssm_service = TokenHandlerSSMService()
+ssm_service = SSMService()
 
 
 class Organisation(NamedTuple):
@@ -111,14 +116,22 @@ def parse_ods_response(org_data, role_code, icb_ods_code) -> dict:
 
 
 def get_user_gp_org_role_code(org_data: Dict[str, Any]) -> Optional[str]:
-    logger.info("Checking if GP organisation role is present")
-    json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
+    logger.info("starting ssm request to retrieve GP organisation role code")
+    gp_org_role_code = ssm_service.get_ssm_parameter(GP_ORG_ROLE_CODE)
 
-    gp_org_role_code = token_handler_ssm_service.get_gp_org_role_code()
-    for json_role in json_roles:
-        if json_role["id"] == gp_org_role_code:
-            return json_role["id"]
-    return None
+    if gp_org_role_code:
+        logger.info("Checking if GP organisation role is present")
+        json_roles: List[Dict] = org_data["Organisation"]["Roles"]["Role"]
+        for json_role in json_roles:
+            if json_role["id"] == gp_org_role_code:
+                return json_role["id"]
+        return None
+
+    logger.error(
+        LambdaError.LoginGpOrgRoleCode.to_str(),
+        {"Result": "Unsuccessful login"},
+    )
+    raise LoginException(500, LambdaError.LoginGpOrgRoleCode)
 
 
 def get_user_primary_org_role_code(org_data: Dict[str, Any]) -> str:
