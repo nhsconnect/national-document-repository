@@ -101,12 +101,12 @@ class TokenHandlerSSMService(SSMService):
 
         if response:
             return response
-        else:
-            logger.error(
-                LambdaError.LoginGpOrgRoleCode.to_str(),
-                {"Result": "Unsuccessful login"},
-            )
-            raise LoginException(500, LambdaError.LoginGpOrgRoleCode)
+
+        logger.error(
+            LambdaError.LoginGpOrgRoleCode.to_str(),
+            {"Result": "Unsuccessful login"},
+        )
+        raise LoginException(500, LambdaError.LoginGpOrgRoleCode)
 
     def get_pcse_ods_code(self) -> str:
         logger.info("starting ssm request to retrieve PCSE ODS code")
@@ -114,24 +114,24 @@ class TokenHandlerSSMService(SSMService):
 
         if response:
             return response
-        else:
-            logger.error(
-                LambdaError.LoginPcseOdsCode.to_str(),
-                {"Result": "Unsuccessful login"},
-            )
-            raise LoginException(500, LambdaError.LoginPcseOdsCode)
+
+        logger.error(
+            LambdaError.LoginPcseOdsCode.to_str(),
+            {"Result": "Unsuccessful login"},
+        )
+        raise LoginException(500, LambdaError.LoginPcseOdsCode)
 
     def get_itoc_ods_codes(self) -> str:
         logger.info("starting ssm request to retrieve ITOC ODS codes")
         response = self.get_ssm_parameter(ITOC_ODS_CODES)
         if response:
             return response
-        else:
-            logger.error(
-                LambdaError.LoginItocOdsCodes.to_str(),
-                {"Result": "Unsuccessful login"},
-            )
-            raise LoginException(500, LambdaError.LoginItocOdsCodes)
+
+        logger.error(
+            LambdaError.LoginItocOdsCodes.to_str(),
+            {"Result": "Unsuccessful login"},
+        )
+        raise LoginException(500, LambdaError.LoginItocOdsCodes)
 
     def get_jwt_private_key(self) -> list[str]:
         logger.info("starting ssm request to retrieve NDR private key")
