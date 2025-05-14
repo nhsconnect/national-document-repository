@@ -51,8 +51,12 @@ def lambda_handler(event, context):
             raise GetFhirDocumentReferenceException(
                 404, LambdaError.DocumentReferenceNotFound
             )
-        smartcard_role_code = None
-        org_ods_code = None
+        get_document_service = GetFhirDocumentReferenceService()
+        document_reference = get_document_service.handle_get_document_reference_request(
+            snomed_code,
+            document_id,
+        )
+
         if selected_role_id:
 
             configuration_service = DynamicConfigurationService()
@@ -65,24 +69,19 @@ def lambda_handler(event, context):
             smartcard_role_code, _ = oidc_service.fetch_user_role_code(
                 userinfo, selected_role_id, "R"
             )
-        get_document_service = GetFhirDocumentReferenceService()
-        document_reference = get_document_service.handle_get_document_reference_request(
-            snomed_code,
-            document_id,
-        )
 
-        search_patient_service = SearchPatientDetailsService(
-            smartcard_role_code, org_ods_code
-        )
-        try:
-            search_patient_service.handle_search_patient_request(
-                document_reference.nhs_number, False
+            search_patient_service = SearchPatientDetailsService(
+                smartcard_role_code, org_ods_code
             )
+            try:
+                search_patient_service.handle_search_patient_request(
+                    document_reference.nhs_number, False
+                )
 
-        except SearchPatientException:
-            raise GetFhirDocumentReferenceException(
-                403, LambdaError.DocumentReferenceForbidden
-            )
+            except SearchPatientException:
+                raise GetFhirDocumentReferenceException(
+                    403, LambdaError.DocumentReferenceForbidden
+                )
 
         document_reference_response = (
             get_document_service.create_document_reference_fhir_response(

@@ -131,9 +131,7 @@ def test_lambda_handler_happy_path_with_application_login(
     mock_document_service.handle_get_document_reference_request.assert_called_once_with(
         SNOMED_CODE, TEST_UUID
     )
-    mock_search_patient_service.handle_search_patient_request.assert_called_once_with(
-        "9000000009", False
-    )
+    mock_search_patient_service.handle_search_patient_request.assert_not_called()
     mock_document_service.create_document_reference_fhir_response.assert_called_once_with(
         MOCK_DOCUMENT_REFERENCE
     )
@@ -166,7 +164,9 @@ def test_lambda_handler_id_malformed(
     mock_document_service.handle_get_document_reference_request.assert_not_called()
 
 
-def test_lambda_handler_oidc_error(set_env, mock_config_service, context, mocker):
+def test_lambda_handler_oidc_error(
+    set_env, mock_config_service, mock_document_service, context, mocker
+):
     # Test when OIDC service setup fails
     mocker.patch(
         "handlers.get_fhir_document_reference_handler.OidcService.set_up_oidc_parameters",
