@@ -43,20 +43,6 @@ def sample_metadata_row():
 
 
 @pytest.fixture
-def mock_validate_record_filename(mocker, test_service):
-    def _mock_validate(filename):
-        if filename == "invalid_file.csv":
-            raise InvalidFileNameException("Invalid filename")
-        return f"updated_{filename}"
-
-    return mocker.patch.object(
-        test_service,
-        "validate_record_filename",
-        side_effect=_mock_validate,
-    )
-
-
-@pytest.fixture
 def mock_metadata_file_get_object():
     def _mock_metadata_file_get_object(
         test_file_path: str,
@@ -74,14 +60,18 @@ def mock_metadata_file_get_object():
 @pytest.fixture
 def mock_update_date_in_row(mocker, test_service):
     return mocker.patch.object(
-        test_service, "update_date_in_row", side_effect=lambda x: x
+        test_service,
+        "update_date_in_row",
+        side_effect=lambda original_date: original_date,
     )
 
 
 @pytest.fixture
 def mock_valid_record_filename(mocker, test_service):
     return mocker.patch.object(
-        test_service, "validate_record_filename", side_effect=lambda x: x
+        test_service,
+        "validate_record_filename",
+        side_effect=lambda original_filename: original_filename,
     )
 
 
