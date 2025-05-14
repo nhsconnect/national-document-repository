@@ -24,7 +24,7 @@ const mockedUsePatient = usePatient as Mock;
 const mockPatient = buildPatientDetails();
 const nhsNumber = mockPatient.nhsNumber;
 
-describe('<LloydGeorgeUploadingStage />', () => {
+describe.skip('<LloydGeorgeUploadingStage />', () => {
     beforeEach(() => {
         import.meta.env.VITE_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);

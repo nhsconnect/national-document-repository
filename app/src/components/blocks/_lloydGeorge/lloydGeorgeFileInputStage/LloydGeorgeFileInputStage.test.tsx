@@ -21,14 +21,7 @@ vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
-vi.mock('moment', () => {
-    return (arg: MomentInput) => {
-        if (!arg) {
-            arg = '2020-01-01T00:00:00.000Z';
-        }
-        return jest.requireActual('moment')(arg);
-    };
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 window.scrollTo = vi.fn() as Mock;
 

@@ -6,10 +6,12 @@ import { JOB_STATUS, PollingResponse } from '../../types/generic/downloadManifes
 import waitForSeconds from '../utils/waitForSeconds';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { DownloadManifestError } from '../../types/generic/errors';
-import { describe, expect, it, vi, Mocked, MockedFunction } from 'vitest';
+import { describe, expect, it, vi, Mocked, MockedFunction, afterEach } from 'vitest';
 
 vi.mock('axios');
-vi.mock('../utils/waitForSeconds');
+vi.mock('../utils/waitForSeconds', () => ({
+    default: vi.fn(),
+}));
 
 const mockedAxios = axios as Mocked<typeof axios>;
 const mockWaitForSeconds = waitForSeconds as MockedFunction<typeof waitForSeconds>;
@@ -132,6 +134,11 @@ describe('getPresignedUrlForZip', () => {
             getPresignedUrlForZip({ nhsNumber, baseHeaders, baseUrl }),
         ).rejects.toThrowError(DownloadManifestError);
     });
+
+    afterEach(() => {
+        //vi.clearAllMocks();
+        //vi.clearmod
+    });
 });
 
 describe('requestJobId', () => {
@@ -186,6 +193,10 @@ describe('requestJobId', () => {
             docReferences,
             patientId: nhsNumber,
         });
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
     });
 });
 

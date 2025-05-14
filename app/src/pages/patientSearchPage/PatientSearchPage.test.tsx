@@ -21,9 +21,15 @@ vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => vi.fn(),
 }));
-vi.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+vi.mock('../../helpers/hooks/useConfig', () => ({
+    default: () => ({
+        featureFlags: {
+            uploadArfWorkflowEnabled: false,
+        },
+    }),
+}));
+
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 const mockedAxios = axios as Mocked<typeof axios>;
 const mockedUseRole = useRole as Mock;
 
@@ -314,13 +320,6 @@ describe('PatientSearchPage', () => {
         });
 
         it('display input error when patient is inactive and upload feature is disabled', async () => {
-            vi.mock('../../helpers/hooks/useConfig', () => ({
-                useConfig: () => ({
-                    featureFlags: {
-                        uploadArfWorkflowEnabled: false,
-                    },
-                }),
-            }));
             const role = REPOSITORY_ROLE.GP_ADMIN;
             mockedUseRole.mockReturnValue(role);
             mockedAxios.get.mockImplementation(() =>

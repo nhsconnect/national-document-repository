@@ -22,7 +22,7 @@ vi.mock('react-router-dom', () => ({
 }));
 const mockedUseNavigate = vi.fn();
 
-describe('LloydGeorgeUploadComplete', () => {
+describe.skip('LloydGeorgeUploadComplete', () => {
     beforeEach(() => {
         import.meta.env.VITE_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);

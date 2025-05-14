@@ -4,7 +4,6 @@ import {
     buildLgSearchResult,
     buildPatientDetails,
 } from '../../../../helpers/test/testBuilders';
-import axios from 'axios';
 import userEvent from '@testing-library/user-event';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
@@ -16,20 +15,9 @@ import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import { DownloadManifestError } from '../../../../types/generic/errors';
-import {
-    afterEach,
-    beforeEach,
-    describe,
-    expect,
-    it,
-    vi,
-    Mock,
-    Mocked,
-    MockedFunction,
-} from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock, MockedFunction } from 'vitest';
 
 const mockedUseNavigate = vi.fn();
-const mockedAxios = axios as Mocked<typeof axios>;
 const mockedUsePatient = usePatient as Mock;
 const mockUseConfig = useConfig as Mock;
 const mockPdf = buildLgSearchResult();
@@ -38,14 +26,15 @@ const mockGetPresignedUrlForZip = getPresignedUrlForZip as MockedFunction<
     typeof getPresignedUrlForZip
 >;
 
-vi.mock('react-router-dom', async () => ({
-    Link: (props: LinkProps) => <a {...props} role="link" />,
-    ...(await vi.importActual('react-router-dom')),
-    useNavigate: () => mockedUseNavigate,
-}));
-vi.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        Link: (props: LinkProps) => <a {...props} role="link" />,
+        useNavigate: () => mockedUseNavigate,
+    };
 });
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 vi.mock('axios');
 vi.mock('../../../../helpers/requests/getPresignedUrlForZip');
 vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -67,6 +56,7 @@ describe('LloydGeorgeDownloadStage', () => {
         import.meta.env.VITE_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
         mockUseConfig.mockReturnValue(buildConfig());
+        vi.useFakeTimers();
     });
     afterEach(() => {
         vi.useRealTimers();
@@ -103,8 +93,6 @@ describe('LloydGeorgeDownloadStage', () => {
     it('renders download complete on zip success', async () => {
         window.HTMLAnchorElement.prototype.click = vi.fn();
         mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presignedUrl);
-
-        vi.useFakeTimers();
 
         renderComponent(history);
 
@@ -152,7 +140,7 @@ describe('LloydGeorgeDownloadStage', () => {
             },
         };
         mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
-        vi.useFakeTimers();
+
         renderComponent(history);
         act(() => {
             vi.advanceTimersByTime(500);
@@ -167,7 +155,7 @@ describe('LloydGeorgeDownloadStage', () => {
     it('navigates to Error page when GetPresignedUrlForZip throw DownloadManifestError', async () => {
         const mockError = new DownloadManifestError('some error msg');
         mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(mockError));
-        vi.useFakeTimers();
+
         renderComponent(history);
         act(() => {
             vi.advanceTimersByTime(500);
@@ -187,14 +175,20 @@ describe('LloydGeorgeDownloadStage', () => {
             },
         };
         mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
-        vi.useFakeTimers();
+
         renderComponent(history);
+
         act(() => {
             vi.advanceTimersByTime(500);
         });
+
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 });
 

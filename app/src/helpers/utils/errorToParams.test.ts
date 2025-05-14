@@ -2,9 +2,7 @@ import { errorToParams } from './errorToParams';
 import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 describe('errorToParams util function', () => {
     beforeEach(() => {

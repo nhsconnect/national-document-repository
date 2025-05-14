@@ -4,7 +4,7 @@ import DeleteSubmitStage, { Props } from './DeleteSubmitStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
-import axios from 'axios/index';
+import axios from 'axios';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../../../types/generic/authRole';
 import { routes, routeChildren } from '../../../../types/generic/routes';
@@ -16,7 +16,6 @@ import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock, Mocked } from 'vitest';
 
 vi.mock('../../../../helpers/hooks/useConfig');
-vi.mock('../deleteResultStage/DeleteResultStage', () => () => <div>Deletion complete</div>);
 vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 vi.mock('../../../../helpers/hooks/useRole');
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -24,13 +23,14 @@ vi.mock('axios');
 
 const mockedUseNavigate = vi.fn();
 
-vi.mock('react-router-dom', async () => ({
-    ...(await vi.importActual('react-router-dom')),
-    useNavigate: () => mockedUseNavigate,
-}));
-vi.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockedUseNavigate,
+    };
 });
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 let history: MemoryHistory = createMemoryHistory({
     initialEntries: ['/'],

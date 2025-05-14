@@ -18,9 +18,7 @@ vi.mock('react-router-dom', async () => ({
 }));
 
 vi.mock('axios');
-vi.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 vi.mock('../../helpers/hooks/useBaseAPIHeaders');
 vi.mock('../../helpers/hooks/usePatient');
 vi.mock('../../helpers/hooks/useConfig');

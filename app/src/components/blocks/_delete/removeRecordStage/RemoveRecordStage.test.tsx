@@ -10,9 +10,7 @@ import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock, Mocked } from 'vitest';
 
 vi.mock('axios');
-vi.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 vi.mock('react-router-dom', async () => ({
     ...(await vi.importActual('react-router-dom')),
     useNavigate: () => mockUseNavigate,

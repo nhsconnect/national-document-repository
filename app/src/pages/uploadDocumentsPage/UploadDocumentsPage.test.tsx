@@ -1,38 +1,23 @@
 import { act, render, RenderResult, screen, waitFor } from '@testing-library/react';
 import UploadDocumentsPage from './UploadDocumentsPage';
-import {
-    buildConfig,
-    buildDocument,
-    buildTextFile,
-    buildUploadSession,
-} from '../../helpers/test/testBuilders';
+import { buildConfig, buildTextFile, buildUploadSession } from '../../helpers/test/testBuilders';
 import useConfig from '../../helpers/hooks/useConfig';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import {
-    DOCUMENT_TYPE,
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
-import uploadDocuments, {
-    updateDocumentState,
-    uploadConfirmation,
-    uploadDocumentToS3,
-    virusScan,
-} from '../../helpers/requests/uploadDocuments';
+import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
 const mockConfigContext = useConfig as Mock;
 const mockedUseNavigate = vi.fn();
-const mockUploadDocuments = uploadDocuments as Mock;
-const mockS3Upload = uploadDocumentToS3 as Mock;
-const mockVirusScan = virusScan as Mock;
-const mockUpdateDocumentState = updateDocumentState as Mock;
-const mockUploadConfirmation = uploadConfirmation as Mock;
+const mockUploadDocuments = vi.fn();
+const mockS3Upload = vi.fn();
+const mockVirusScan = vi.fn();
+const mockUpdateDocumentState = vi.fn();
+const mockUploadConfirmation = vi.fn();
 
 vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual('react-router-dom');
@@ -41,7 +26,17 @@ vi.mock('react-router-dom', async () => {
         useNavigate: () => mockedUseNavigate,
     };
 });
-vi.mock('../../helpers/requests/uploadDocuments');
+vi.mock('../../helpers/requests/uploadDocuments', async () => {
+    const actual = await vi.importActual('../../helpers/requests/uploadDocuments');
+    return {
+        ...actual,
+        default: (params: any) => mockUploadDocuments(params),
+        updateDocumentState: (params: any) => mockUpdateDocumentState(params),
+        uploadConfirmation: (params: any) => mockUploadConfirmation(params),
+        uploadDocumentToS3: (params: any) => mockS3Upload(params),
+        virusScan: (params: any) => mockVirusScan(params),
+    };
+});
 vi.mock('../../helpers/hooks/usePatient');
 vi.mock('../../helpers/hooks/useBaseAPIHeaders');
 vi.mock('../../helpers/hooks/useBaseAPIUrl');
@@ -69,6 +64,20 @@ describe('UploadDocumentsPage', () => {
         mockConfigContext.mockReturnValue(
             buildConfig({}, { uploadArfWorkflowEnabled: true, uploadLambdaEnabled: true }),
         );
+
+        vi.spyOn(console, 'error').mockImplementation((...args) => {
+            const message = typeof args[0] === 'string' ? args[0] : '';
+            if (
+                message.includes(
+                    'When testing, code that causes React state updates should be wrapped into act(...)',
+                ) ||
+                message.includes('antd')
+            ) {
+                return;
+            }
+
+            return console.error.call(console, args);
+        });
     });
     afterEach(() => {
         vi.clearAllMocks();
@@ -186,6 +195,7 @@ describe('UploadDocumentsPage', () => {
 
             it('[happy path] navigate to confirmation page if all files are clean', async () => {
                 mockVirusScan.mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+                mockUploadConfirmation.mockResolvedValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
 
                 const { rerender } = renderPage(history);
 
@@ -213,7 +223,7 @@ describe('UploadDocumentsPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_COMPLETED);
             });
 
-            it.skip('[semi-happy path] navigate to confirmation page if files are a mix of clean and infected', async () => {
+            it('[semi-happy path] navigate to confirmation page if files are a mix of clean and infected', async () => {
                 mockVirusScan
                     .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.CLEAN)
                     .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.INFECTED)

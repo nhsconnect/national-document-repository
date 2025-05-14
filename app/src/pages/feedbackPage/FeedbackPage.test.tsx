@@ -16,9 +16,7 @@ const mockedUseNavigate = vi.fn();
 const mockedAxios = axios as Mocked<typeof axios>;
 const mockedBaseURL = useBaseAPIUrl as Mock;
 const baseURL = 'http://test';
-vi.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,

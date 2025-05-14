@@ -23,9 +23,7 @@ vi.mock('react-router-dom', async () => ({
     ...(await vi.importActual('react-router-dom')),
     useNavigate: () => mockNavigate,
 }));
-vi.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 let history: MemoryHistory = createMemoryHistory({
     initialEntries: ['/'],

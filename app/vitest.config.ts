@@ -10,5 +10,6 @@ export default defineConfig({
             reporter: ['text', 'json', 'html'], // Optional: Add coverage reports
         },
         setupFiles: 'src/setupTests.ts',
+        clearMocks: true,
     },
 });
