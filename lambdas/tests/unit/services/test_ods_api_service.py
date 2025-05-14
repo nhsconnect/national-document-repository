@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from enums.lambda_error import LambdaError
 from requests import Response
 from services.base.ssm_service import SSMService
 from services.ods_api_service import (
@@ -23,6 +24,7 @@ from utils.exceptions import (
     OrganisationNotFoundException,
     TooManyOrgsException,
 )
+from utils.lambda_exceptions import LoginException
 
 
 def test_fetch_organisation_data_returns_organisation_data(mocker):
@@ -284,3 +286,20 @@ def test_get_user_gp_org_role_code_returns_none_when_not_found(
     expected = None
     actual = get_user_gp_org_role_code(mock_ods_responses["gp_org"])
     assert actual == expected
+
+
+def test_get_user_gp_org_role_code(mocker, mock_ods_responses):
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
+    expected = "RO76"
+    actual = get_user_gp_org_role_code(mock_ods_responses["gp_org"])
+    assert actual == expected
+
+
+def test_get_user_gp_org_role_code_raises_login_exception(mocker, mock_ods_responses):
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="")
+    expected = LoginException(500, LambdaError.LoginGpOrgRoleCode)
+
+    with pytest.raises(LoginException) as actual:
+        get_user_gp_org_role_code(mock_ods_responses["gp_org"])
+
+    assert actual.value.__dict__ == expected.__dict__

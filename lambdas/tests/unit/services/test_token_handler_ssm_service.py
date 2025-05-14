@@ -74,20 +74,6 @@ MOCK_ROLE_CODE_RESPONSES = {
     ],
 }
 
-MOCK_GP_ORG_ROLE_CODE_RESPONSE = {
-    "Parameter": {
-        "Name": GP_ORG_ROLE_CODE,
-        "Type": "SecureString",
-        "Value": "R0010",
-        "Version": 123,
-        "Selector": "string",
-        "SourceResult": "string",
-        "LastModifiedDate": datetime(2015, 1, 1),
-        "ARN": "string",
-        "DataType": "string",
-    },
-}
-
 MOCK_PCSE_ODS_CODE_RESPONSE = {
     "Parameter": {
         "Name": PCSE_ODS_CODE,
@@ -264,35 +250,6 @@ def test_get_smartcard_role_pcse_raises_login_exception(mock_service, mock_ssm):
 
     mock_ssm.get_parameters.assert_called_once_with(
         Names=[PCSE_USER_ROLE_CODE], WithDecryption=False
-    )
-
-    assert actual.value.__dict__ == expected.__dict__
-
-
-def test_get_gp_org_role_code(mock_service, mock_ssm):
-    mock_ssm.get_parameter.return_value = MOCK_GP_ORG_ROLE_CODE_RESPONSE
-    expected = "R0010"
-
-    actual = mock_service.get_gp_org_role_code()
-
-    mock_ssm.get_parameter.assert_called_once_with(
-        Name=GP_ORG_ROLE_CODE, WithDecryption=False
-    )
-
-    assert actual == expected
-
-
-def test_get_gp_org_role_code_raises_login_exception(mock_service, mock_ssm):
-    mock_ssm.get_parameter.return_value = {
-        "Parameter": {"Value": ""},
-    }
-    expected = LoginException(500, LambdaError.LoginGpOrgRoleCode)
-
-    with pytest.raises(LoginException) as actual:
-        mock_service.get_gp_org_role_code()
-
-    mock_ssm.get_parameter.assert_called_once_with(
-        Name=GP_ORG_ROLE_CODE, WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
