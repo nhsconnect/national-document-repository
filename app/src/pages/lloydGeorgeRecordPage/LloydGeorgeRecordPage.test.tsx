@@ -194,7 +194,7 @@ describe('LloydGeorgeRecordPage', () => {
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks at page entry point', async () => {
             const lgResult = buildLgSearchResult();
             mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Pending' } });

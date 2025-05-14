@@ -48,7 +48,7 @@ describe('<FeedbackPage />', () => {
         expect(screen.getByTestId('feedback-details-section')).toBeInTheDocument();
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks at page entry point', async () => {
             render(<FeedbackPage />);
             const results = await runAxeTest(document.body);

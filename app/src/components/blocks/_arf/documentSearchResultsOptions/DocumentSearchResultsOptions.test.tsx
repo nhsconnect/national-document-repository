@@ -132,7 +132,7 @@ describe('DocumentSearchResultsOptions', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks at page entry point', async () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 

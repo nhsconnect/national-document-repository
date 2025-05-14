@@ -232,7 +232,7 @@ describe.skip('<LloydGeorgeUploadingStage />', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks during upload', async () => {
             const uploadDocument = {
                 file: buildTextFile('one', 100),

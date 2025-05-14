@@ -165,7 +165,7 @@ describe('<SelectStage />', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility check when some files are selected', async () => {
             renderApp();
 

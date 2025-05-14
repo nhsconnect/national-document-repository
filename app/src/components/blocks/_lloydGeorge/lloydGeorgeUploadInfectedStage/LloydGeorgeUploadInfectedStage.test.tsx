@@ -66,7 +66,7 @@ describe.skip('LloydGeorgeUploadInfectedStage', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks', async () => {
             render(
                 <LloydGeorgeUploadInfectedStage

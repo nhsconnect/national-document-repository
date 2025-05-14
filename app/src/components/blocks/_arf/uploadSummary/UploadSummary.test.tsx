@@ -201,7 +201,7 @@ describe('UploadSummary', () => {
         ).toBeInTheDocument();
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks when upload result are all successful', async () => {
             const files = [buildTextFile('one', 100), buildTextFile('two', 101)];
             const documents = files.map((file) =>

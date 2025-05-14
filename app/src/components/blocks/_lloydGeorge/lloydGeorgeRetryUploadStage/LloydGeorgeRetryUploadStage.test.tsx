@@ -38,7 +38,7 @@ describe.skip('LloydGeorgeRetryUploadStage', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks', async () => {
             render(<LloydGeorgeRetryUploadStage />);
 

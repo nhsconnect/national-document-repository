@@ -197,7 +197,7 @@ describe('DeleteResultStage', () => {
         );
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         const roles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
         it.each(roles)('pass accessibility checks for role %s', async (role) => {
             mockedUseRole.mockReturnValue(role);

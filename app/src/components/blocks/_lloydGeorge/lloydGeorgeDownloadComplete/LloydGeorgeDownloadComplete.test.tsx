@@ -106,7 +106,7 @@ describe('LloydGeorgeDownloadComplete', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('passes accessibility checks', async () => {
             render(<LloydGeorgeDownloadComplete numberOfFiles={numberOfFiles} />);
             const results = await runAxeTest(document.body);

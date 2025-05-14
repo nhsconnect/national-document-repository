@@ -166,7 +166,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         ).not.toBeInTheDocument();
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks when no LG record are displayed', async () => {
             renderComponent({
                 downloadStage: DOWNLOAD_STAGE.NO_RECORDS,

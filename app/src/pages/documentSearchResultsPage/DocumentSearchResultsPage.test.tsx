@@ -182,7 +182,7 @@ describe('<DocumentSearchResultsPage />', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks at loading screen', async () => {
             mockedAxios.get.mockReturnValueOnce(
                 new Promise((resolve) => setTimeout(resolve, 100000)),

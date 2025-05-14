@@ -109,7 +109,7 @@ describe('LloydGeorgeRecordError', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks for DOWNLOAD_STAGE.TIMEOUT', async () => {
             render(<LloydGeorgeRecordError downloadStage={DOWNLOAD_STAGE.TIMEOUT} />);
 

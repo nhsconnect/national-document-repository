@@ -7,6 +7,18 @@ import { describe, expect, it, vi, Mocked } from 'vitest';
 vi.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
 
+const mockResponse = vi.fn();
+Object.defineProperty(window, 'location', {
+    value: {
+        hash: {
+            endsWith: mockResponse,
+            includes: mockResponse,
+        },
+        assign: mockResponse,
+    },
+    writable: true,
+});
+
 describe('downloadReport', () => {
     const report = {
         endpoint: '/download',

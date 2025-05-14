@@ -298,7 +298,7 @@ describe('DeleteSubmitStage', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks at page entry point', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);

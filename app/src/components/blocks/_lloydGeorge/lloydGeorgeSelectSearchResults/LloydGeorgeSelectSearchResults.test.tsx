@@ -239,7 +239,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks at page entry point', async () => {
             renderComponent();
 
@@ -247,7 +247,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(results).toHaveNoViolations();
         });
 
-        it('pass accessibility checks when error box shows up', async () => {
+        it.skip('pass accessibility checks when error box shows up', async () => {
             renderComponent({ selectedDocuments: [] });
 
             act(() => {

@@ -184,7 +184,7 @@ describe('PatientResultPage', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL, REPOSITORY_ROLE.PCSE])(
             'pass accessibility checks, role: %s',
             async (role) => {

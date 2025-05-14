@@ -12,7 +12,7 @@ describe('Layout', () => {
     beforeEach(() => {
         window.sessionStorage.clear();
     });
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks when not logged in', async () => {
             renderTestApp('/', false);
 

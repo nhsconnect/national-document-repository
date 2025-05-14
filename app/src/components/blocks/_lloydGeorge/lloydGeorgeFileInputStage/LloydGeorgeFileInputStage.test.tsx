@@ -626,7 +626,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
     });
 
-    describe.skip('Accessibility', () => {
+    describe('Accessibility', () => {
         it('pass accessibility checks at page entry point', async () => {
             renderApp();
 
