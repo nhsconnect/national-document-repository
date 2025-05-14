@@ -197,10 +197,8 @@ def build_valid_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
     return (
-        f"0{file_count} of 0{total_number}"
-        f"_Lloyd_George_Record_{patient.full_name}"
-        f"_{patient.nhs_number}"
-        f"_{patient.date_of_birth.replace('-', '.')}.pdf"
+        f"{file_count}of{total_number}_Lloyd_George_Record"
+        f"_[{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
     )
 
 
@@ -208,9 +206,8 @@ def build_invalid_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
     return (
-        f"{file_count}of{total_number}"
-        f"_Lloyd_George_Record_[{patient.nhs_number}]"
-        f"_[{patient.full_name}]_[{patient.date_of_birth}].pdf"
+        f"{file_count}of{total_number}_Lloyd_George_Record"
+        f"_[{patient.nhs_number}]_[{patient.full_name}]_[{patient.date_of_birth}].pdf"
     )
 
 
@@ -218,9 +215,8 @@ def build_invalid_file_number_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
     return (
-        f"{file_count}of{total_number - 1}"
-        f"_Lloyd_George_Record[{patient.full_name}]"
-        f"_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
+        f"{file_count}of{total_number - 1}_Lloyd_George_Record"
+        f"[{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
     )
 
 
@@ -228,9 +224,8 @@ def build_invalid_nhs_number_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
     return (
-        f"{file_count}of{total_number}"
-        f"_Lloyd_George_Record_[{patient.full_name}]"
-        f"_[{str(patient.nhs_number)[:-2]}01]_[{patient.date_of_birth}].pdf"
+        f"{file_count}of{total_number}_Lloyd_George_Record"
+        f"_[{patient.full_name}]_[{str(patient.nhs_number)[:-2]}01]_[{patient.date_of_birth}].pdf"
     )
 
 
@@ -267,7 +262,7 @@ def return_build_function_by_nhs_number(nhs_number: str):
 
 
 def build_file_path(patient: Patient, file_name: str) -> str:
-    return f"/test/{patient.nhs_number}/{file_name}"
+    return f"/{patient.nhs_number}/{file_name}"
 
 
 def build_file_paths_for_all_patients(
@@ -323,15 +318,8 @@ def build_metadata_csv(
     patient_list: List[Patient], total_number_for_each: int = 3
 ) -> str:
     header_row = (
-        "FILEPATH,"
-        "PAGE COUNT,"
-        "GP-PRACTICE-CODE,"
-        "NHS-NO,SECTION,"
-        "SUB-SECTION,"
-        "SCAN-DATE,"
-        "SCAN-ID,"
-        "USER-ID,"
-        "UPLOAD"
+        "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,"
+        "SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD"
     )
     all_rows = []
     for patient in patient_list:
@@ -607,14 +595,18 @@ if __name__ == "__main__":
     if (
         args.upload
         or input(
-            "Upload the test files to S3 and add the virus-scan tag? (y/N) "
+            "Would you like to upload the test"
+            " files to S3 and add the virus-scan tag? (y/N) "
         ).lower()
         == "y"
     ):
         upload_lg_files_to_staging()
     if (
         args.empty_lloydgeorge_store
-        or input("Remove all records from the LloydGeorgeRecord Bucket? (y/N) ").lower()
+        or input(
+            "Would you like to remove all records "
+            "from the LloydGeorgeRecord Bucket (y/N) "
+        ).lower()
         == "y"
     ):
         clear_lg_store()
