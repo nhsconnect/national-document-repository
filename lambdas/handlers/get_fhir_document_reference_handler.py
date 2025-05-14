@@ -76,7 +76,7 @@ def lambda_handler(event, context):
         )
         try:
             search_patient_service.handle_search_patient_request(
-                document_reference.nhs_number, True
+                document_reference.nhs_number, False
             )
 
         except SearchPatientException:
