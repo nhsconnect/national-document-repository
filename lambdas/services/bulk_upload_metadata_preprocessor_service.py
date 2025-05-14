@@ -3,7 +3,6 @@ import os
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-from io import BytesIO
 
 import regex
 from botocore.exceptions import ClientError
@@ -45,11 +44,15 @@ class MetadataPreprocessorService:
                 s3_bucket_name=self.staging_store_bucket, file_key=file_key
             )
 
-        self.generate_and_save_csv_file(updated_metadata_rows, file_key)
+        self.generate_and_save_csv_file(
+            csv_dict=updated_metadata_rows, file_key=file_key
+        )
 
         if rejected_reasons:
             file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
-            self.generate_and_save_csv_file(rejected_reasons, file_key)
+            self.generate_and_save_csv_file(
+                csv_dict=rejected_reasons, file_key=file_key
+            )
 
     def generate_and_save_csv_file(
         self,
@@ -60,7 +63,7 @@ class MetadataPreprocessorService:
         csv_data = convert_csv_dictionary_to_bytes(headers, csv_dict)
         logger.info(f"Writing file from buffer to {file_key}")
         self.s3_service.save_or_create_file(
-            self.staging_store_bucket, file_key, BytesIO(csv_data)
+            source_bucket=self.staging_store_bucket, file_key=file_key, body=csv_data
         )
 
     def get_metadata_rows_from_file(self, file_key: str, bucket_name: str):
@@ -186,7 +189,7 @@ class MetadataPreprocessorService:
             except InvalidFileNameException as error:
                 rejected_rows.append(original_row)
                 rejected_reasons.append(
-                    {"FILEPATH": original_row.get("FILEPATH"), "REASON": error}
+                    {"FILEPATH": original_row.get("FILEPATH"), "REASON": str(error)}
                 )
 
         return renaming_map, rejected_rows, rejected_reasons
@@ -262,7 +265,7 @@ class MetadataPreprocessorService:
 
         if expression_result is None:
             logger.info("Failed to find the person name in the file name")
-            raise InvalidFileNameException("incorrect person name format")
+            raise InvalidFileNameException("Invalid patient name")
 
         name = expression_result.group(1)
         current_file_path = expression_result.group(2)
@@ -279,7 +282,7 @@ class MetadataPreprocessorService:
         )
         if lloyd_george_record is None:
             logger.info("Failed to find Lloyd George Record")
-            raise InvalidFileNameException("incorrect Lloyd George Record format")
+            raise InvalidFileNameException("Invalid Lloyd_George_Record separator")
 
         current_file_path = lloyd_george_record.group(1)
 
@@ -296,7 +299,7 @@ class MetadataPreprocessorService:
 
         if expression_result is None:
             logger.info("Failed to find the document number in file name")
-            raise InvalidFileNameException("incorrect document number format")
+            raise InvalidFileNameException("Incorrect document number format")
 
         first_document_number = int(expression_result.group(1))
         second_document_number = int(expression_result.group(2))
@@ -314,7 +317,7 @@ class MetadataPreprocessorService:
 
         if expression_result is None:
             logger.info("Failed to find the document number in file name")
-            raise InvalidFileNameException("incorrect document number format")
+            raise InvalidFileNameException("Incorrect document number format")
 
         current_file_path = expression_result.group(2)
         if expression_result.group(1) is None:
@@ -333,7 +336,7 @@ class MetadataPreprocessorService:
 
         if expression_result is None:
             logger.info("Failed to find NHS number in file name")
-            raise InvalidFileNameException("incorrect NHS number format")
+            raise InvalidFileNameException("Invalid NHS number")
 
         nhs_number = "".join(regex.findall(r"\d", expression_result.group(1)))
         current_file_path = expression_result.group(2)
@@ -347,7 +350,7 @@ class MetadataPreprocessorService:
 
         if expression_result is None:
             logger.info("Failed to find date in file name")
-            raise InvalidFileNameException("incorrect date format")
+            raise InvalidFileNameException("Invalid date format")
 
         day = "".join(regex.findall(r"\d", expression_result.group(1))).zfill(2)
         month = "".join(regex.findall(r"\d", expression_result.group(2))).zfill(2)
@@ -356,9 +359,9 @@ class MetadataPreprocessorService:
 
         try:
             datetime(day=int(day), month=int(month), year=int(year))
-        except ValueError:
-            logger.info("Failed to find date in file name")
-            raise InvalidFileNameException("not a valid date")
+        except ValueError as e:
+            logger.info(f"Failed to parse date from filename: {e}")
+            raise InvalidFileNameException("Invalid date format")
 
         return day, month, year, current_file_path
 
@@ -371,7 +374,7 @@ class MetadataPreprocessorService:
 
         if expression_result is None:
             logger.info("Failed to find a file extension")
-            raise InvalidFileNameException("incorrect file extension format")
+            raise InvalidFileNameException("Invalid file extension")
 
         file_extension = expression_result.group(1)
 

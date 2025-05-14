@@ -162,5 +162,7 @@ class S3Service:
         response = self.client.head_object(Bucket=s3_bucket_name, Key=object_key)
         return response.get("ContentLength", 0)
 
-    def save_or_create_file(self, source_bucket: str, file_key: str, body: BytesIO):
-        return self.client.put_object(Bucket=source_bucket, Key=file_key, Body=body)
+    def save_or_create_file(self, source_bucket: str, file_key: str, body: bytes):
+        return self.client.put_object(
+            Bucket=source_bucket, Key=file_key, Body=BytesIO(body)
+        )

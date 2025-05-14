@@ -15,8 +15,16 @@ logger = LoggingService(__name__)
 @ensure_environment_variables(names=["STAGING_STORE_BUCKET_NAME"])
 @handle_lambda_exceptions
 def lambda_handler(event, _context):
-    logger.info("Starting metadata pre-processor")
-
     practice_directory = event.get("practiceDirectory")
+
+    if not practice_directory:
+        logger.info(
+            "Failed to start metadata pre-processor due to missing practice directory"
+        )
+        return
+
+    logger.info(
+        f"Starting metadata pre-processor for practice directory: {practice_directory}"
+    )
     metadata_service = MetadataPreprocessorService(practice_directory)
     metadata_service.process_metadata()

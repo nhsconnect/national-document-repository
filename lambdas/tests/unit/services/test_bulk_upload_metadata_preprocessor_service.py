@@ -1,4 +1,6 @@
+import csv
 import os
+from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
@@ -24,6 +26,11 @@ def test_service(mocker, set_env):
 @pytest.fixture
 def mock_get_metadata_rows_from_file(mocker, test_service):
     return mocker.patch.object(test_service, "get_metadata_rows_from_file")
+
+
+@pytest.fixture
+def mock_generate_and_save_csv_file(mocker, test_service):
+    return mocker.patch.object(test_service, "generate_and_save_csv_file")
 
 
 @pytest.fixture
@@ -218,7 +225,7 @@ def test_extract_document_path_with_no_document_path(
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.extract_document_path(invalid_data)
 
-    assert str(exc_info.value) == "incorrect document number format"
+    assert str(exc_info.value) == "Incorrect document number format"
 
 
 @pytest.mark.parametrize(
@@ -239,7 +246,7 @@ def test_extract_document_path_with_no_document_path(
     ],
 )
 def test_correctly_extract_document_number_from_bulk_upload_file_name(
-    test_service, input: str, expected
+    test_service, input, expected
 ):
     actual = test_service.extract_document_number_bulk_upload_file_name(input)
     assert actual == expected
@@ -253,7 +260,7 @@ def test_extract_document_number_from_bulk_upload_file_name_with_no_document_num
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.extract_document_number_bulk_upload_file_name(invalid_data)
 
-    assert str(exc_info.value) == "incorrect document number format"
+    assert str(exc_info.value) == "Incorrect document number format"
 
 
 @pytest.mark.parametrize(
@@ -274,14 +281,14 @@ def test_extract_document_number_from_bulk_upload_file_name_with_no_document_num
         ("_Ll0yd_Ge0rge-21Rec0rd_person_name", ("Lloyd_George_Record", "_person_name")),
     ],
 )
-def test_correctly_extract_Lloyd_George_Record_from_bulk_upload_file_name(
+def test_correctly_extract_lloyd_george_record_from_bulk_upload_file_name(
     test_service, input, expected
 ):
     actual = test_service.extract_lloyd_george_record_from_bulk_upload_file_name(input)
     assert actual == expected
 
 
-def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
+def test_extract_lloyd_george_from_bulk_upload_file_name_with_no_lloyd_george(
     test_service,
 ):
     invalid_data = "12-12-2024"
@@ -291,7 +298,7 @@ def test_extract_Lloyd_george_from_bulk_upload_file_name_with_no_Lloyd_george(
             invalid_data
         )
 
-    assert str(exc_info.value) == "incorrect Lloyd George Record format"
+    assert str(exc_info.value) == "Invalid Lloyd_George_Record separator"
 
 
 @pytest.mark.parametrize(
@@ -329,7 +336,7 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.extract_person_name_from_bulk_upload_file_name(invalid_data)
 
-    assert str(exc_info.value) == "incorrect person name format"
+    assert str(exc_info.value) == "Invalid patient name"
 
 
 @pytest.mark.parametrize(
@@ -365,7 +372,7 @@ def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_serv
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.extract_nhs_number_from_bulk_upload_file_name(invalid_data)
 
-    assert str(exc_info.value) == "incorrect NHS number format"
+    assert str(exc_info.value) == "Invalid NHS number"
 
 
 @pytest.mark.parametrize(
@@ -396,7 +403,7 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.extract_date_from_bulk_upload_file_name(invalid_data)
 
-    assert str(exc_info.value) == "not a valid date"
+    assert str(exc_info.value) == "Invalid date format"
 
 
 @pytest.mark.parametrize(
@@ -423,7 +430,7 @@ def test_extract_file_extension_from_bulk_upload_file_name_with_incorrect_file_e
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.extract_file_extension_from_bulk_upload_file_name(invalid_data)
 
-    assert str(exc_info.value) == "incorrect file extension format"
+    assert str(exc_info.value) == "Invalid file extension"
 
 
 def test_correctly_assembles_valid_file_name(test_service):
@@ -454,11 +461,34 @@ def test_correctly_assembles_valid_file_name(test_service):
     assert actual == expected
 
 
-def test_process_metadata_file_exists(test_service, mock_metadata_file_get_object):
+@freeze_time("2025-01-01T12:00:00")
+def test_process_metadata_file_exists(
+    test_service, mock_metadata_file_get_object, mock_generate_and_save_csv_file
+):
+    test_processed_metadata_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        f"{METADATA_FILENAME}",
+    )
+
+    test_rejections_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        "rejected.csv",
+    )
+
+    with open(test_processed_metadata_file, "rb") as file:
+        test_file_data = file.read()
+    expected_metadata_bytes = test_file_data
+
+    with open(test_rejections_file, "rb") as file:
+        test_file_data = file.read()
+    expected_rejected_bytes = test_file_data
+
     test_preprocessed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
-        "helpers/data/bulk_upload/unprocessed",
-        f"unprocessed_{METADATA_FILENAME}",
+        "helpers/data/bulk_upload/preprocessed",
+        f"preprocessed_{METADATA_FILENAME}",
     )
 
     test_service.s3_service.file_exist_on_s3.return_value = True
@@ -469,6 +499,26 @@ def test_process_metadata_file_exists(test_service, mock_metadata_file_get_objec
     )
 
     test_service.process_metadata()
+
+    expected_updated_rows = list(
+        csv.DictReader(expected_metadata_bytes.decode("utf-8-sig").splitlines())
+    )
+    expected_rejected_reasons = list(
+        csv.DictReader(expected_rejected_bytes.decode("utf-8-sig").splitlines())
+    )
+
+    expected_calls = [
+        call(
+            csv_dict=expected_updated_rows,
+            file_key=f"test_practice_directory/{METADATA_FILENAME}",
+        ),
+        call(
+            csv_dict=expected_rejected_reasons,
+            file_key="test_practice_directory/processed/2025-01-01 12:00/rejections.csv",
+        ),
+    ]
+
+    mock_generate_and_save_csv_file.assert_has_calls(expected_calls, any_order=True)
 
 
 def test_process_metadata_success(test_service, mocker):
@@ -512,8 +562,8 @@ def test_get_metadata_csv_from_file_metadata_exists(
 ):
     test_preprocessed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
-        "helpers/data/bulk_upload/unprocessed",
-        f"unprocessed_{METADATA_FILENAME}",
+        "helpers/data/bulk_upload/preprocessed",
+        f"preprocessed_{METADATA_FILENAME}",
     )
     test_file_key = f"{test_service.practice_directory}/{METADATA_FILENAME}"
 
@@ -559,7 +609,7 @@ def test_get_metadata_csv_from_file_metadata_does_not_exist(test_service, caplog
 
 
 def test_move_original_metadata_file(test_service):
-    file_key = "input/unprocessed/metadata.csv"
+    file_key = "input/preprocessed/metadata.csv"
     expected_destination_key = (
         f"{test_service.practice_directory}"
         f"/{test_service.processed_folder_name}/{test_service.processed_date}/{METADATA_FILENAME}"
@@ -576,7 +626,7 @@ def test_move_original_metadata_file(test_service):
 
 
 def test_move_original_metadata_file_handles_exception(test_service):
-    file_key = "input/unprocessed/metadata.csv"
+    file_key = "input/preprocessed/metadata.csv"
 
     error_response = {"Error": {"Code": "NoSuchKey", "Message": "File not found"}}
     operation_name = "CopyObject"
@@ -757,7 +807,7 @@ def test_generate_renaming_map_invalid_filename(
 
     assert renaming_map == []
     assert rejected_rows == [row]
-    assert isinstance(rejected_reasons[0]["REASON"], InvalidFileNameException)
+    assert rejected_reasons[0]["REASON"], "Bad format"
 
 
 def test_generate_renaming_map_skips_empty_row(test_service):
