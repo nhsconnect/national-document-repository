@@ -11,5 +11,6 @@ export default defineConfig({
         },
         setupFiles: 'src/setupTests.ts',
         clearMocks: true,
+        restoreMocks: true,
     },
 });
