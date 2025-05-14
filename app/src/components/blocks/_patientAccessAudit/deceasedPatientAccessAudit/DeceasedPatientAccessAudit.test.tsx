@@ -30,11 +30,9 @@ vi.mock('../../../../helpers/hooks/useRole');
 vi.mock('../../../../helpers/hooks/useBaseAPIUrl');
 vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 vi.mock('../../../../helpers/hooks/usePatient');
-vi.mock('../../../../helpers/requests/postPatientAccessAudit', () => {
-    return () => {
-        return { response: { status: 200 } };
-    };
-});
+vi.mock('../../../../helpers/requests/postPatientAccessAudit', () => ({
+    default: vi.fn().mockReturnValue({ response: { status: 200 } }),
+}));
 
 const mockedUseRole = useRole as Mock;
 const mockedUsePatient = usePatient as Mock;
@@ -131,7 +129,7 @@ describe('DeceasedPatientAccessAudit', () => {
     describe('Navigation', () => {
         it('should navigate to the patient search page if there is no patient in the context', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-
+            mockedUsePatient.mockReturnValue(undefined);
             renderDeceasedPatientAccessAudit();
 
             await waitFor(() => {

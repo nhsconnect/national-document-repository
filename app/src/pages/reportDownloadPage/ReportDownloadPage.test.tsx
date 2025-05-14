@@ -3,6 +3,7 @@ import ReportDownloadPage from './ReportDownloadPage';
 import { routes } from '../../types/generic/routes';
 import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router-dom';
+import * as reportsModule from '../../types/generic/reports';
 import useConfig from '../../helpers/hooks/useConfig';
 import { buildConfig } from '../../helpers/test/testBuilders';
 import { beforeEach, describe, expect, it, vi, Mock } from 'vitest';
@@ -39,9 +40,11 @@ describe('ReportDownloadPage', () => {
     });
 
     it('should redirect to home page if report type is missing', async () => {
-        vi.mock('react-router-dom', () => ({
-            useSearchParams: () => [],
-        }));
+        vi.spyOn(ReactRouter, 'useSearchParams').mockReturnValue([
+            {
+                get: vi.fn().mockReturnValue(undefined),
+            },
+        ] as any);
 
         renderPage(history);
 
@@ -51,9 +54,7 @@ describe('ReportDownloadPage', () => {
     });
 
     it('should redirect to home page if report type does not find a match', async () => {
-        vi.mock('../../types/generic/reports', () => ({
-            getReportByType: vi.fn().mockReturnValue(null),
-        }));
+        vi.spyOn(reportsModule, 'getReportByType').mockReturnValue(undefined);
 
         renderPage(history);
 

@@ -7,9 +7,13 @@ import useConfig from '../../helpers/hooks/useConfig';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
 const mockedUseNavigate = vi.fn();
-vi.mock('react-router-dom', () => ({
-    useNavigate: () => mockedUseNavigate,
-}));
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockedUseNavigate,
+    };
+});
 
 vi.mock('../../helpers/hooks/useRole');
 vi.mock('../../helpers/hooks/useConfig');
@@ -23,7 +27,6 @@ describe('HomePage', () => {
     afterEach(() => {
         vi.clearAllMocks();
     });
-
     const gpRoles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL];
 
     const validateHomePageRendered = () => {
