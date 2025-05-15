@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from enums.snomed_codes import SnomedCode, SnomedCodes
 from models.fhir.R4.base_models import (
@@ -8,14 +8,25 @@ from models.fhir.R4.base_models import (
     Period,
     Reference,
 )
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
+# Constants
+FHIR_BASE_URL = "https://fhir.nhs.uk/Id"
+SNOMED_URL = "http://snomed.info/sct"
+NRL_FORMAT_CODE_SYSTEM = "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode"
+NRL_CONTENT_STABILITY_SYSTEM = (
+    "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability"
+)
+CONTENT_STABILITY_URL = (
+    "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability"
+)
 
-class NRLFormatCode(Coding):
-    system: Literal["https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode"] = (
-        "https://fhir.nhs.uk/England/CodeSystem/England-NRLFormatCode"
-    )
+
+class FormatCode(Coding):
+    """Coding for specifying a document format type."""
+
+    system: Optional[str] = None
     code: Literal["urn:nhs-ic:record-contact", "urn:nhs-ic:unstructured"] = (
         "urn:nhs-ic:unstructured"
     )
@@ -25,6 +36,8 @@ class NRLFormatCode(Coding):
 
 
 class Attachment(BaseModel):
+    """Represents a document attachment in FHIR."""
+
     contentType: str = "application/pdf"
     language: str = "en-GB"
     url: Optional[str] = None
@@ -36,33 +49,41 @@ class Attachment(BaseModel):
 
 
 class ContentStabilityExtensionCoding(Coding):
-    system: Literal[
-        "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability"
-    ] = "https://fhir.nhs.uk/England/CodeSystem/England-NRLContentStability"
+    """Coding for content stability extension."""
+
+    system: Literal[NRL_CONTENT_STABILITY_SYSTEM] = NRL_CONTENT_STABILITY_SYSTEM
     code: Literal["static", "dynamic"] = "static"
     display: Literal["Static", "Dynamic"] = "Static"
 
 
 class ContentStabilityExtensionValueCodeableConcept(CodeableConcept):
-    coding: List[ContentStabilityExtensionCoding] = [ContentStabilityExtensionCoding()]
+    """CodeableConcept for content stability."""
+
+    coding: List[ContentStabilityExtensionCoding] = Field(
+        default_factory=lambda: [ContentStabilityExtensionCoding()]
+    )
 
 
 class ContentStabilityExtension(Extension):
-    url: Literal[
-        "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability"
-    ] = "https://fhir.nhs.uk/England/StructureDefinition/Extension-England-ContentStability"
-    valueCodeableConcept: ContentStabilityExtensionValueCodeableConcept = (
-        ContentStabilityExtensionValueCodeableConcept()
+    """Extension for content stability in NHS FHIR profiles."""
+
+    url: Literal[CONTENT_STABILITY_URL] = CONTENT_STABILITY_URL
+    valueCodeableConcept: ContentStabilityExtensionValueCodeableConcept = Field(
+        default_factory=ContentStabilityExtensionValueCodeableConcept
     )
 
 
 class DocumentReferenceContent(BaseModel):
+    """Content section of a DocumentReference resource."""
+
     attachment: Attachment
-    format: NRLFormatCode = NRLFormatCode()
-    extension: List[ContentStabilityExtension] = [ContentStabilityExtension()]
+    format: Optional[FormatCode] = None
+    extension: Optional[List[ContentStabilityExtension]] = None
 
 
 class DocumentReferenceContext(BaseModel):
+    """Context information for a DocumentReference."""
+
     encounter: Optional[List[Reference]] = None
     event: Optional[List[CodeableConcept]] = None
     period: Optional[Period] = None
@@ -73,6 +94,8 @@ class DocumentReferenceContext(BaseModel):
 
 
 class DocumentReference(BaseModel):
+    """FHIR DocumentReference resource."""
+
     resourceType: Literal["DocumentReference"] = "DocumentReference"
     status: Literal["current"] = "current"
     type: Optional[CodeableConcept] = None
@@ -87,72 +110,104 @@ class DocumentReference(BaseModel):
 
 
 class DocumentReferenceInfo(BaseModel):
+    """Information needed to create a DocumentReference resource."""
+
     model_config = ConfigDict(alias_generator=to_camel)
+
     nhs_number: str
-    custodian: str
+    custodian: Optional[str] = None
     snomed_code_doc_type: SnomedCode = SnomedCodes.LLOYD_GEORGE.value
     snomed_code_category: SnomedCode = SnomedCodes.CARE_PLAN.value
     snomed_code_practice_setting: SnomedCode = (
         SnomedCodes.GENERAL_MEDICAL_PRACTICE.value
     )
-    attachment: Optional[Attachment] = Attachment()
+    attachment: Attachment = Field(default_factory=Attachment)
 
-    def create_fhir_document_reference_object(self):
-        fhir_base_url = "https://fhir.nhs.uk/Id"
-        snomed_url = "http://snomed.info/sct"
+    def _create_identifier(self, system_suffix: str, value: str) -> Dict[str, Any]:
+        """Helper method to create FHIR identifiers.
+
+        Args:
+            system_suffix: The suffix to append to FHIR_BASE_URL
+            value: The identifier value
+
+        Returns:
+            Dictionary representing a FHIR identifier
+        """
+        return {
+            "identifier": {
+                "system": f"{FHIR_BASE_URL}/{system_suffix}",
+                "value": value,
+            }
+        }
+
+    def _create_snomed_coding(self, snomed_code: SnomedCode) -> List[Dict[str, str]]:
+        """Helper method to create SNOMED CT codings.
+
+        Args:
+            snomed_code: The SNOMED code object
+
+        Returns:
+            List of dictionaries representing FHIR codings
+        """
+        return [
+            {
+                "system": SNOMED_URL,
+                "code": snomed_code.code,
+                "display": snomed_code.display_name,
+            }
+        ]
+
+    def create_nrl_fhir_document_reference_object(self) -> DocumentReference:
+        """Create a fully populated FHIR DocumentReference for the NHS NRL.
+
+        Returns:
+            DocumentReference: A FHIR DocumentReference resource
+        """
+        if not self.custodian:
+            raise ValueError("Custodian is required for NRL document references")
+
+        nrl_format_code = FormatCode(system=NRL_FORMAT_CODE_SYSTEM)
+        nrl_content_stability_extension = [ContentStabilityExtension()]
 
         fhir_document_ref = DocumentReference(
-            subject={
-                "identifier": {
-                    "system": fhir_base_url + "/nhs-number",
-                    "value": self.nhs_number,
-                }
-            },
-            custodian={
-                "identifier": {
-                    "system": fhir_base_url + "/ods-organization-code",
-                    "value": self.custodian,
-                },
-            },
-            type={
-                "coding": [
-                    {
-                        "system": snomed_url,
-                        "code": self.snomed_code_doc_type.code,
-                        "display": self.snomed_code_doc_type.display_name,
-                    }
-                ]
-            },
-            content=[{"attachment": self.attachment}],
+            subject=Reference(**self._create_identifier("nhs-number", self.nhs_number)),
+            content=[DocumentReferenceContent(attachment=self.attachment)],
+            custodian=Reference(
+                **self._create_identifier("ods-organization-code", self.custodian)
+            ),
+            type=CodeableConcept(
+                coding=self._create_snomed_coding(self.snomed_code_doc_type)
+            ),
             category=[
-                {
-                    "coding": [
-                        {
-                            "system": snomed_url,
-                            "code": self.snomed_code_category.code,
-                            "display": self.snomed_code_category.display_name,
-                        }
-                    ]
-                }
+                CodeableConcept(
+                    coding=self._create_snomed_coding(self.snomed_code_category)
+                )
             ],
             author=[
-                {
-                    "identifier": {
-                        "system": fhir_base_url + "/ods-organization-code",
-                        "value": self.custodian,
-                    }
-                }
+                Reference(
+                    **self._create_identifier("ods-organization-code", self.custodian)
+                )
             ],
-            context={
-                "practiceSetting": {
-                    "coding": [
-                        {
-                            "system": snomed_url,
-                            "code": self.snomed_code_practice_setting.code,
-                            "display": self.snomed_code_practice_setting.display_name,
-                        }
-                    ]
-                }
-            },
+            context=DocumentReferenceContext(
+                practiceSetting=CodeableConcept(
+                    coding=self._create_snomed_coding(self.snomed_code_practice_setting)
+                )
+            ),
         )
+
+        # Add NRL-specific format and extension
+        fhir_document_ref.content[0].format = nrl_format_code
+        fhir_document_ref.content[0].extension = nrl_content_stability_extension
+
         return fhir_document_ref
+
+    def create_minimal_fhir_document_reference_object(self) -> DocumentReference:
+        """Create a minimal FHIR DocumentReference with only required fields.
+
+        Returns:
+            DocumentReference: A minimal FHIR DocumentReference resource
+        """
+        return DocumentReference(
+            subject=Reference(**self._create_identifier("nhs-number", self.nhs_number)),
+            content=[DocumentReferenceContent(attachment=self.attachment)],
+        )
