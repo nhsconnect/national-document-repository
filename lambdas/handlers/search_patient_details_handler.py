@@ -34,7 +34,7 @@ def lambda_handler(event, context):
     if not user_role or not user_ods_code:
         logger.error(
             f"{LambdaError.SearchPatientMissing.to_str()}",
-            {"Result": "Patient not found"},
+            {"Result": "You do not have the required permissions to view this patient."},
         )
         raise SearchPatientException(400, LambdaError.SearchPatientMissing)
 
