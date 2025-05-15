@@ -1,6 +1,7 @@
 import base64
 import os
 
+from enums.file_size import FileSize
 from enums.lambda_error import LambdaError
 from enums.snomed_codes import SnomedCodes
 from models.document_reference import DocumentReference
@@ -92,7 +93,7 @@ class GetFhirDocumentReferenceService:
             s3_bucket_name=bucket_name,
             object_key=file_location,
         )
-        if file_size < 8 * 10**6:
+        if file_size < FileSize.MAX_FILE_SIZE:
             binary_file = self.s3_service.get_binary_file(
                 s3_bucket_name=bucket_name,
                 file_key=file_location,
@@ -112,7 +113,7 @@ class GetFhirDocumentReferenceService:
                 creation=document_reference.created,
             )
 
-            # Create and return the FHIR DocumentReference object as a JSON string.
+        # Create and return the FHIR DocumentReference object as a JSON string.
         fhir_document_reference = (
             DocumentReferenceInfo(
                 nhsNumber=document_reference.nhs_number,

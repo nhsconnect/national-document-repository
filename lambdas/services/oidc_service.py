@@ -165,7 +165,7 @@ class OidcService:
         selected_role = self._find_selected_role(userinfo, selected_role_id)
 
         if not selected_role:
-            raise AuthorisationException("No role codes found for user's selected role")
+            raise AuthorisationException("No selected role was found for user's")
 
         role_codes = selected_role.get("role_code", "")
         if not role_codes:
