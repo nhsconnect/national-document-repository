@@ -79,7 +79,7 @@ def test_get_nhs_numbers_by_ods(
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
     ]
 
-    ods_report_service.get_nhs_numbers_by_ods("ODS123")
+    ods_report_service.create_and_save_ods_report_based_on_ods("ODS123")
 
     mock_query_table_by_index.assert_called_once_with("ODS123")
     mock_create_and_save_ods_report.assert_called_once_with(
@@ -95,7 +95,9 @@ def test_get_nhs_numbers_by_ods_with_temp_folder(
         {DocumentReferenceMetadataFields.NHS_NUMBER.value: "NHS456"},
     ]
 
-    ods_report_service.get_nhs_numbers_by_ods("ODS123", is_upload_to_s3_needed=True)
+    ods_report_service.create_and_save_ods_report_based_on_ods(
+        "ODS123", is_upload_to_s3_needed=True
+    )
 
     mock_query_table_by_index.assert_called_once_with("ODS123")
     mock_create_and_save_ods_report.assert_called_once_with(
