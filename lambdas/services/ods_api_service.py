@@ -60,7 +60,10 @@ class OdsApiService:
 
         if ods_code in itoc_ods_codes:
             logger.info(f"ODS code {ods_code} is ITOC, returning org data")
-            return parse_ods_response({}, "", "ITOC")
+
+            itoc_org_data = {"Organisation": {"OrgId": {"extension": ods_code}}}
+
+            return parse_ods_response(itoc_org_data, "", "ITOC")
 
         org_data = self.fetch_organisation_data(ods_code)
 
