@@ -8,6 +8,9 @@ import { runAxeTest } from '../../helpers/test/axeTestHelper';
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
+    useLocation: () => ({
+        state: { errorData: { roles: ['R8010, R8013, R1790, R8008', 'R8000', 'R8015, R8008'] } },
+    }),
     Link: (props: LinkProps) => <a {...props} role="link" />,
 }));
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
