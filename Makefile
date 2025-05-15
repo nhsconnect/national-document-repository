@@ -123,6 +123,12 @@ install:
 clean-install:
 	npm --prefix ./app ci --legacy-peer-deps
 
+install-pdfjs:
+	mkdir -p ./app/public/pdfjs
+	wget https://github.com/mozilla/pdf.js/releases/download/v4.10.38/pdfjs-4.10.38-dist.zip -O ./app/public/pdfjs/pdfjs.zip
+	unzip -o -d ./app/public/pdfjs ./app/public/pdfjs/pdfjs.zip
+	rm ./app/public/pdfjs/pdfjs.zip
+
 start:
 	npm --prefix ./app start
 

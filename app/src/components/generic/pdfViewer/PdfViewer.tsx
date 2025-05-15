@@ -1,16 +1,17 @@
-import { useEffect } from 'react';
-
-type Props = { fileUrl: String };
+type Props = { fileUrl: string };
 
 const PdfViewer = ({ fileUrl }: Props) => {
-    useEffect(() => {
-        const pdfObject = require('pdfobject');
-        pdfObject.embed(fileUrl + '#toolbar', '#pdf-viewer');
-    }, [fileUrl]);
-
     if (!fileUrl) return null;
+
     return (
-        <div id="pdf-viewer" data-testid="pdf-viewer" tabIndex={0} className="pdf-viewer-div"></div>
+        <pdfjs-viewer-element
+            id="pdf-viewer"
+            data-testid="pdf-viewer"
+            src={fileUrl}
+            title="Embedded PDF Viewer"
+            viewer-path="/pdfjs"
+            viewer-extra-styles-urls="['/pdf-viewer.css']"
+        ></pdfjs-viewer-element>
     );
 };
 
