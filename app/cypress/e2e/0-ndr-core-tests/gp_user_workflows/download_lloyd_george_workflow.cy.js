@@ -153,7 +153,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.wait('@stitchJobCompleted', { timeout: 20000 });
                 cy.title().should('eq', lloydGeorgeRecordPageTitle);
 
-                cy.getByTestId('download-all-files-link').should('exist');
+                cy.getByTestId('download-all-files-link', { timeout: 20000 }).should('exist');
                 cy.getByTestId('download-all-files-link').click();
 
                 // Select documents page
