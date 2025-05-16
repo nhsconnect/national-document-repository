@@ -15,7 +15,6 @@ import uploadDocuments, {
     virusScan,
 } from '../../helpers/requests/uploadDocuments';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
-import { MomentInput } from 'moment/moment';
 import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';

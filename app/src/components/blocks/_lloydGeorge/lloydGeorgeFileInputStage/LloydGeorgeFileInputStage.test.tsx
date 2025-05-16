@@ -6,7 +6,6 @@ import userEvent from '@testing-library/user-event';
 import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
 import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
-import { MomentInput } from 'moment';
 
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';

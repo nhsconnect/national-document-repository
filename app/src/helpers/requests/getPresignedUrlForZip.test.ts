@@ -134,11 +134,6 @@ describe('getPresignedUrlForZip', () => {
             getPresignedUrlForZip({ nhsNumber, baseHeaders, baseUrl }),
         ).rejects.toThrowError(DownloadManifestError);
     });
-
-    afterEach(() => {
-        //vi.clearAllMocks();
-        //vi.clearmod
-    });
 });
 
 describe('requestJobId', () => {

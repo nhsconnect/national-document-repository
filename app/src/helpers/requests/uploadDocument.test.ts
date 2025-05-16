@@ -20,7 +20,6 @@ import {
 import waitForSeconds from '../utils/waitForSeconds';
 import { describe, expect, it, Mocked, vi } from 'vitest';
 
-// Mock out all top level functions, such as get, put, delete and post:
 vi.mock('axios');
 vi.mock('../utils/waitForSeconds', () => ({
     default: vi.fn(),

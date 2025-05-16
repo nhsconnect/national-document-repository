@@ -4,7 +4,6 @@ import { SearchResult } from '../../types/generic/searchResult';
 import { buildSearchResult } from '../test/testBuilders';
 import { describe, expect, test, vi, Mocked } from 'vitest';
 
-// Mock out all top level functions, such as get, put, delete and post:
 vi.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
 

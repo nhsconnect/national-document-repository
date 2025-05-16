@@ -64,20 +64,6 @@ describe('UploadDocumentsPage', () => {
         mockConfigContext.mockReturnValue(
             buildConfig({}, { uploadArfWorkflowEnabled: true, uploadLambdaEnabled: true }),
         );
-
-        vi.spyOn(console, 'error').mockImplementation((...args) => {
-            const message = typeof args[0] === 'string' ? args[0] : '';
-            if (
-                message.includes(
-                    'When testing, code that causes React state updates should be wrapped into act(...)',
-                ) ||
-                message.includes('antd')
-            ) {
-                return;
-            }
-
-            return console.error.call(console, args);
-        });
     });
     afterEach(() => {
         vi.clearAllMocks();
