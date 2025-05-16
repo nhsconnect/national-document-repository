@@ -23,11 +23,13 @@ from tests.unit.conftest import (
     TEST_NHS_NUMBER,
     TEST_UUID,
 )
+from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
 from tests.unit.helpers.data.sqs.test_messages import stitching_queue_message_event
 from tests.unit.helpers.data.test_documents import (
     create_singular_test_lloyd_george_doc_store_ref,
     create_test_lloyd_george_doc_store_refs,
 )
+from utils.common_query_filters import NotDeleted
 from utils.lambda_exceptions import PdfStitchingException
 
 from lambdas.services.pdf_stitching_service import PdfStitchingService
@@ -657,8 +659,8 @@ def test_process_manual_trigger_calls_process_message_for_each_nhs_number(
     test_ods_code = "A12345"
     test_nhs_numbers = ["1234567890", "9876543210"]
 
-    mock_ods_report_service = mocker.patch.object(
-        mock_service.ods_report_service,
+    mock_get_nhs_numbers = mocker.patch.object(
+        mock_service,
         "get_nhs_numbers_based_on_ods_code",
         return_value=test_nhs_numbers,
     )
@@ -666,5 +668,28 @@ def test_process_manual_trigger_calls_process_message_for_each_nhs_number(
 
     mock_service.process_manual_trigger(ods_code=test_ods_code)
 
-    mock_ods_report_service.assert_called_once_with(ods_code=test_ods_code)
+    mock_get_nhs_numbers.assert_called_once_with(ods_code=test_ods_code)
     assert mock_process_message.call_count == len(test_nhs_numbers)
+
+
+def test_get_nhs_numbers_based_on_ods_code(mock_service, mocker):
+    ods_code = "Y12345"
+
+    mocker.patch.object(
+        mock_service.document_service,
+        "fetch_documents_from_table",
+        return_value=MOCK_SEARCH_RESPONSE["Items"],
+    )
+
+    mocker.patch.object(mock_service, "process_message")
+
+    result = mock_service.get_nhs_numbers_based_on_ods_code(ods_code)
+    assert result == ["9000000009"]
+
+    mock_service.document_service.fetch_documents_from_table.assert_called_once_with(
+        table=os.environ["UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME"],
+        index_name="OdsCodeIndex",
+        search_key="DocumentReferenceMetadataFields.CURRENT_GP_ODS.value",
+        search_condition=ods_code,
+        query_filter=NotDeleted,
+    )

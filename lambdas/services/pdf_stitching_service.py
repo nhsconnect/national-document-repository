@@ -22,7 +22,7 @@ from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from services.ods_report_service import OdsReportService
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import UploadCompleted
+from utils.common_query_filters import NotDeleted, UploadCompleted
 from utils.lambda_exceptions import PdfStitchingException
 from utils.utilities import DATE_FORMAT, create_reference_id
 
@@ -320,12 +320,23 @@ class PdfStitchingService:
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
 
     def process_manual_trigger(self, ods_code: str):
-        nhs_numbers = self.ods_report_service.get_nhs_numbers_based_on_ods_code(
-            ods_code=ods_code
-        )
+        nhs_numbers = self.get_nhs_numbers_based_on_ods_code(ods_code=ods_code)
+
         for nhs_number in nhs_numbers:
             pdf_stitching_sqs_message = PdfStitchingSqsMessage(
                 nhs_number=nhs_number,
                 snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
             )
             self.process_message(stitching_message=pdf_stitching_sqs_message)
+
+    def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
+        # self.table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
+        documents = self.document_service.fetch_documents_from_table(
+            table=os.environ["UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME"],
+            index_name="OdsCodeIndex",
+            search_key="DocumentReferenceMetadataFields.CURRENT_GP_ODS.value",
+            search_condition=ods_code,
+            query_filter=NotDeleted,
+        )
+        nhs_numbers = list({document["NhsNumber"] for document in documents})
+        return nhs_numbers
