@@ -171,26 +171,64 @@ def test_get_document_references_exception(mock_document_service, mocker):
     assert exc_info.value.error == LambdaError.DocRefClient
 
 
-def test_search_tables_for_documents(mock_document_service, mocker):
+def test_search_tables_for_documents_non_fhir(mock_document_service, mocker):
     mock_fetch_document_method = mocker.MagicMock(return_value=MOCK_DOCUMENT_REFERENCE)
     mock_document_service._fetch_documents = mock_fetch_document_method
-    mock_document_id = {"id": "123"}
-    mock_process_document = mocker.MagicMock(return_value=[mock_document_id])
-    mock_document_service._process_documents = mock_process_document
 
-    result = mock_document_service._search_tables_for_documents(
+    mock_document_id = {"id": "123"}
+    mock_process_document_non_fhir = mocker.MagicMock(return_value=[mock_document_id])
+
+    mock_document_service._process_documents = mock_process_document_non_fhir
+    result_non_fhir = mock_document_service._search_tables_for_documents(
         "1234567890", ["table1", "table2"], return_fhir=False
     )
 
-    assert result == [mock_document_id, mock_document_id]
+    assert result_non_fhir == [mock_document_id, mock_document_id]
+
+    mock_process_document_non_fhir.assert_has_calls(
+        [
+            call(MOCK_DOCUMENT_REFERENCE, return_fhir=False),
+            call(MOCK_DOCUMENT_REFERENCE, return_fhir=False),
+        ]
+    )
     mock_fetch_document_method.assert_has_calls(
         [
             call("1234567890", "table1", NotDeleted),
             call("1234567890", "table2", NotDeleted),
         ]
     )
-    mock_process_document.assert_has_calls(
-        [call(MOCK_DOCUMENT_REFERENCE, False), call(MOCK_DOCUMENT_REFERENCE, False)]
+
+
+def test_search_tables_for_documents_fhir(mock_document_service, mocker):
+    mock_fetch_document_method = mocker.MagicMock(return_value=MOCK_DOCUMENT_REFERENCE)
+    mock_document_service._fetch_documents = mock_fetch_document_method
+
+    mock_fhir_doc = {"resourceType": "DocumentReference", "id": "123"}
+    mock_process_document_fhir = mocker.MagicMock(return_value=[mock_fhir_doc])
+
+    mock_document_service._process_documents = mock_process_document_fhir
+    result_fhir = mock_document_service._search_tables_for_documents(
+        "1234567890", ["table1", "table2"], return_fhir=True
+    )
+
+    assert result_fhir["resourceType"] == "Bundle"
+    assert result_fhir["type"] == "searchset"
+    assert result_fhir["total"] == 2
+    assert len(result_fhir["entry"]) == 2
+    assert result_fhir["entry"][0]["resource"] == mock_fhir_doc
+    assert result_fhir["entry"][1]["resource"] == mock_fhir_doc
+
+    mock_fetch_document_method.assert_has_calls(
+        [
+            call("1234567890", "table1", NotDeleted),
+            call("1234567890", "table2", NotDeleted),
+        ]
+    )
+    mock_process_document_fhir.assert_has_calls(
+        [
+            call(MOCK_DOCUMENT_REFERENCE, return_fhir=True),
+            call(MOCK_DOCUMENT_REFERENCE, return_fhir=True),
+        ]
     )
 
 

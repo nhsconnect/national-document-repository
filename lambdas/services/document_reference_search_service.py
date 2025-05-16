@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
@@ -7,6 +8,7 @@ from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from inflection import underscore
 from models.document_reference import DocumentReference, SearchDocumentReference
+from models.fhir.R4.bundle import Bundle, BundleEntry
 from models.fhir.R4.nrl_fhir_document_reference import Attachment, DocumentReferenceInfo
 from pydantic import ValidationError
 from services.document_service import DocumentService
@@ -55,13 +57,31 @@ class DocumentReferenceSearchService(DocumentService):
     def _search_tables_for_documents(
         self, nhs_number: str, table_names: list[str], return_fhir: bool
     ):
-        results = []
+        document_resources = []
         for table_name in table_names:
             logger.info(f"Searching for results in {table_name}")
             documents = self._fetch_documents(nhs_number, table_name, NotDeleted)
             self._validate_upload_status(documents)
-            results.extend(self._process_documents(documents, return_fhir))
-        return results
+            document_resources.extend(
+                self._process_documents(documents, return_fhir=return_fhir)
+            )
+
+        if not return_fhir:
+            return document_resources
+
+        entries = []
+        for doc_resource in document_resources:
+            entry = BundleEntry(resource=doc_resource)
+            entries.append(entry)
+
+        bundle = Bundle(
+            type="searchset",
+            timestamp=datetime.now(),
+            total=len(entries),
+            entry=entries,
+        ).model_dump(exclude_none=True)
+
+        return bundle
 
     def _fetch_documents(self, nhs_number: str, table_name: str, filter_expression):
         return self.fetch_documents_from_table_with_nhs_number(
