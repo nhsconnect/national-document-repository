@@ -101,7 +101,7 @@ def test_validate_record_filename_successful(test_service, mocker):
     )
     mocker.patch.object(
         test_service,
-        "extract_person_name_from_bulk_upload_file_name",
+        "extract_patient_name_from_bulk_upload_file_name",
         return_value=("Dwayne The Rock Johnson", smaller_path),
     )
     mocker.patch.object(
@@ -147,14 +147,14 @@ def test_validate_record_filename_invalid_digit_count(mocker, test_service, capl
     )
     mocker.patch.object(
         test_service,
-        "extract_person_name_from_bulk_upload_file_name",
+        "extract_patient_name_from_bulk_upload_file_name",
         return_value=("John Doe", bad_filename),
     )
 
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.validate_record_filename(bad_filename)
 
-    assert str(exc_info.value) == "incorrect NHS number or date format"
+    assert str(exc_info.value) == "Incorrect NHS number or date format"
 
 
 @pytest.mark.parametrize(
@@ -225,7 +225,7 @@ def test_extract_document_path_with_no_document_path(
     with pytest.raises(InvalidFileNameException) as exc_info:
         test_service.extract_document_path(invalid_data)
 
-    assert str(exc_info.value) == "Incorrect document number format"
+    assert str(exc_info.value) == "Incorrect document path format"
 
 
 @pytest.mark.parametrize(
@@ -324,7 +324,7 @@ def test_extract_lloyd_george_from_bulk_upload_file_name_with_no_lloyd_george(
 def test_correctly_extract_person_name_from_bulk_upload_file_name(
     test_service, input, expected
 ):
-    actual = test_service.extract_person_name_from_bulk_upload_file_name(input)
+    actual = test_service.extract_patient_name_from_bulk_upload_file_name(input)
     assert actual == expected
 
 
@@ -334,7 +334,7 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
     invalid_data = "12-12-2024"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
-        test_service.extract_person_name_from_bulk_upload_file_name(invalid_data)
+        test_service.extract_patient_name_from_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "Invalid patient name"
 
@@ -657,8 +657,6 @@ def test_update_record_filename(test_service, mocker):
             "Key": "test_practice_directory/old/path/file1.pdf",
         },
         Key="test_practice_directory/new/path/file1.pdf",
-        MetadataDirective="COPY",
-        TaggingDirective="COPY",
     )
 
     mock_client.delete_object.assert_called_once_with(

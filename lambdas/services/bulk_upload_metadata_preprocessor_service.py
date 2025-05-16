@@ -117,12 +117,12 @@ class MetadataPreprocessorService:
                 )
             )
             patient_name, current_file_name = (
-                self.extract_person_name_from_bulk_upload_file_name(current_file_name)
+                self.extract_patient_name_from_bulk_upload_file_name(current_file_name)
             )
 
             if sum(c.isdigit() for c in current_file_name) != 18:
-                logger.info("Failed to find NHS or date")
-                raise InvalidFileNameException("incorrect NHS number or date format")
+                logger.info("Failed to find NHS number or date")
+                raise InvalidFileNameException("Incorrect NHS number or date format")
 
             nhs_number, current_file_name = (
                 self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
@@ -215,8 +215,6 @@ class MetadataPreprocessorService:
                         "Key": original_file_key,
                     },
                     Key=new_file_key,
-                    MetadataDirective="COPY",
-                    TaggingDirective="COPY",
                 )
             except ClientError as e:
                 error_code = e.response["Error"]["Code"]
@@ -255,7 +253,7 @@ class MetadataPreprocessorService:
             return False
 
     @staticmethod
-    def extract_person_name_from_bulk_upload_file_name(
+    def extract_patient_name_from_bulk_upload_file_name(
         file_path: str,
     ) -> tuple[str, str]:
         document_number_expression = r".*?([\p{L}][^\d]*[\p{L}])(.*)"
@@ -264,13 +262,13 @@ class MetadataPreprocessorService:
         )
 
         if expression_result is None:
-            logger.info("Failed to find the person name in the file name")
+            logger.info("Failed to find the patient name in the file name")
             raise InvalidFileNameException("Invalid patient name")
 
-        name = expression_result.group(1)
+        patient_name = expression_result.group(1)
         current_file_path = expression_result.group(2)
 
-        return name, current_file_path
+        return patient_name, current_file_path
 
     @staticmethod
     def extract_lloyd_george_record_from_bulk_upload_file_name(
@@ -281,7 +279,7 @@ class MetadataPreprocessorService:
             rf"{_expression}", file_path, regex.IGNORECASE
         )
         if lloyd_george_record is None:
-            logger.info("Failed to find Lloyd George Record")
+            logger.info("Failed to extract Lloyd George Record from file name")
             raise InvalidFileNameException("Invalid Lloyd_George_Record separator")
 
         current_file_path = lloyd_george_record.group(1)
@@ -316,8 +314,8 @@ class MetadataPreprocessorService:
         expression_result = regex.search(rf"{document_number_expression}", file_path)
 
         if expression_result is None:
-            logger.info("Failed to find the document number in file name")
-            raise InvalidFileNameException("Incorrect document number format")
+            logger.info("Failed to find the document path in file name")
+            raise InvalidFileNameException("Incorrect document path format")
 
         current_file_path = expression_result.group(2)
         if expression_result.group(1) is None:
