@@ -49,7 +49,7 @@ def lambda_handler(event, context):
 
         if not document_id or not snomed_code:
             raise GetFhirDocumentReferenceException(
-                404, LambdaError.DocumentReferenceNotFound
+                400, LambdaError.DocumentReferenceInvalidRequest
             )
         get_document_service = GetFhirDocumentReferenceService()
         document_reference = get_document_service.handle_get_document_reference_request(
