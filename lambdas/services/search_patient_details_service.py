@@ -10,6 +10,7 @@ from utils.exceptions import (
     InvalidResourceIdException,
     PatientNotFoundException,
     PdsErrorException,
+    PdsTooManyRequestsException,
     UserNotAuthorisedException,
 )
 from utils.lambda_exceptions import SearchPatientException
@@ -81,10 +82,12 @@ class SearchPatientDetailsService:
             )
             raise SearchPatientException(400, LambdaError.SearchPatientNoParse)
 
-        except PdsErrorException as e:
+        except (PdsErrorException, PdsTooManyRequestsException) as e:
             logger.error(
                 f"{LambdaError.SearchPatientNoPDS.to_str()}: {str(e)}",
-                {"Result": "Patient not found, Error code returned from PDS: {e.error_code}"},
+                {
+                    "Result": "Patient not found, Error code returned from PDS: {e.error_code}"
+                },
             )
             raise SearchPatientException(500, LambdaError.SearchPatientPDSError)
 
