@@ -78,10 +78,8 @@ def lambda_handler(event, context):
                     document_reference.nhs_number, False
                 )
 
-            except SearchPatientException:
-                raise GetFhirDocumentReferenceException(
-                    403, LambdaError.DocumentReferenceForbidden
-                )
+            except SearchPatientException as e:
+                raise GetFhirDocumentReferenceException(e.status_code, e.error)
 
         document_reference_response = (
             get_document_service.create_document_reference_fhir_response(
