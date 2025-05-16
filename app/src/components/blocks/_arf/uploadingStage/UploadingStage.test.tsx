@@ -8,6 +8,7 @@ import {
 import { buildTextFile } from '../../../../helpers/test/testBuilders';
 import UploadingStage from './UploadingStage';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { describe, expect, it } from 'vitest';
 
 describe('<UploadDocumentsPage />', () => {
     describe('with NHS number', () => {

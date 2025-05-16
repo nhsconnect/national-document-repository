@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import PdfViewer from './PdfViewer';
+import { describe, expect, it } from 'vitest';
 
 describe('PdfViewer', () => {
     it('renders an embed element', () => {

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import SpinnerButton from './SpinnerButton';
 import { runAxeTest } from '../../../helpers/test/axeTestHelper';
+import { describe, expect, it } from 'vitest';
 
 describe('SpinnerButton', () => {
     it('displays status text for the spinner button', () => {

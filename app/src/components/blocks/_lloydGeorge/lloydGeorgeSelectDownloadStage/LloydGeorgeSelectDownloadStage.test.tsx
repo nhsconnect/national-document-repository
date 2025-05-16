@@ -7,24 +7,23 @@ import { routeChildren, routes } from '../../../../types/generic/routes';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router-dom';
 import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock, Mocked } from 'vitest';
 
-const mockAxios = axios as jest.Mocked<typeof axios>;
+const mockAxios = axios as Mocked<typeof axios>;
 const mockPatient = buildPatientDetails();
-const mockedUsePatient = usePatient as jest.Mock;
-const mockNavigate = jest.fn();
-const mockSetDownloadStage = jest.fn();
+const mockedUsePatient = usePatient as Mock;
+const mockNavigate = vi.fn();
+const mockSetDownloadStage = vi.fn();
 
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('axios');
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('axios');
 
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
+vi.mock('react-router-dom', async () => ({
+    ...(await vi.importActual('react-router-dom')),
     useNavigate: () => mockNavigate,
 }));
-jest.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 let history: MemoryHistory = createMemoryHistory({
     initialEntries: ['/'],
@@ -53,11 +52,11 @@ describe('LloydGeorgeSelectDownloadStage', () => {
             initialIndex: 0,
         });
 
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatient);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders the page header, patient details and loading text on page load', async () => {

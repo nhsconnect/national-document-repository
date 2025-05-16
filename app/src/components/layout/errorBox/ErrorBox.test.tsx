@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import ErrorBox from './ErrorBox';
+import { describe, expect, it } from 'vitest';
 
 describe('ErrorBox', () => {
     it('renders the error box', () => {

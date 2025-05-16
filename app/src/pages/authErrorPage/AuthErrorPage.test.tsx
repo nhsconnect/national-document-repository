@@ -2,8 +2,9 @@ import { render, screen } from '@testing-library/react';
 import AuthErrorPage from './AuthErrorPage';
 import { LinkProps } from 'react-router-dom';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { describe, expect, it, vi } from 'vitest';
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
 }));
 describe('AuthErrorPage', () => {

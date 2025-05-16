@@ -56,4 +56,4 @@ jobs:
         with:
           name: build
           if-no-files-found: error
-          path: ./app/build
+          path: ./app/dist

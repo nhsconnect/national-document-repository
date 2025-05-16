@@ -1,5 +1,6 @@
 import useTitle from './useTitle';
 import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
 describe('useTitle', () => {
     describe('Set page title', () => {

@@ -1,44 +1,44 @@
 require('dotenv').config();
 console.log('checking envs...');
 
-if ('REACT_APP_DOC_STORE_API_ENDPOINT' in process.env) {
-    console.log('REACT_APP_DOC_STORE_API_ENDPOINT is set');
+if ('VITE_DOC_STORE_API_ENDPOINT' in import.meta.env) {
+    console.log('VITE_DOC_STORE_API_ENDPOINT is set');
 } else {
-    console.log('REACT_APP_DOC_STORE_API_ENDPOINT not set');
+    console.log('VITE_DOC_STORE_API_ENDPOINT not set');
 }
 
-if ('REACT_APP_AWS_REGION' in process.env) {
-    console.log('REACT_APP_AWS_REGION is set');
+if ('VITE_AWS_REGION' in import.meta.env) {
+    console.log('VITE_AWS_REGION is set');
 } else {
-    console.log('REACT_APP_AWS_REGION not set');
+    console.log('VITE_AWS_REGION not set');
 }
 
-if ('REACT_APP_OIDC_PROVIDER_ID' in process.env) {
-    console.log('REACT_APP_OIDC_PROVIDER_ID is set');
+if ('VITE_OIDC_PROVIDER_ID' in import.meta.env) {
+    console.log('VITE_OIDC_PROVIDER_ID is set');
 } else {
-    console.log('REACT_APP_OIDC_PROVIDER_ID not set');
+    console.log('VITE_OIDC_PROVIDER_ID not set');
 }
 
-if ('REACT_APP_IDENTITY_PROVIDER_POOL_ID') {
-    console.log('REACT_APP_IDENTITY_PROVIDER_POOL_ID is set');
+if ('VITE_IDENTITY_PROVIDER_POOL_ID' in import.meta.env) {
+    console.log('VITE_IDENTITY_PROVIDER_POOL_ID is set');
 } else {
-    console.log('REACT_APP_IDENTITY_PROVIDER_POOL_ID not set');
+    console.log('VITE_IDENTITY_PROVIDER_POOL_ID not set');
 }
 
-if ('REACT_APP_MONITOR_ACCOUNT_ID') {
-    console.log('REACT_APP_MONITOR_ACCOUNT_ID is set');
+if ('VITE_MONITOR_ACCOUNT_ID' in import.meta.env) {
+    console.log('VITE_MONITOR_ACCOUNT_ID is set');
 } else {
-    console.log('REACT_APP_MONITOR_ACCOUNT_ID not set');
+    console.log('VITE_MONITOR_ACCOUNT_ID not set');
 }
 
-if ('REACT_APP_ENVIRONMENT' in process.env) {
-    console.log('REACT_APP_ENVIRONMENT is set');
+if ('VITE_ENVIRONMENT' in import.meta.env) {
+    console.log('VITE_ENVIRONMENT is set');
 } else {
-    console.log('REACT_APP_ENVIRONMENT not set');
+    console.log('VITE_ENVIRONMENT not set');
 }
 
-if ('REACT_APP_IMAGE_VERSION' in process.env) {
-    console.log('REACT_APP_IMAGE_VERSION is set');
+if ('VITE_IMAGE_VERSION' in import.meta.env) {
+    console.log('VITE_IMAGE_VERSION is set');
 } else {
-    console.log('REACT_APP_IMAGE_VERSION not set');
+    console.log('VITE_IMAGE_VERSION not set');
 }

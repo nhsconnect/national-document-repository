@@ -5,13 +5,14 @@ import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
 import LgDownloadComplete from './LloydGeorgeDownloadComplete';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import React from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../../helpers/hooks/usePatient');
+vi.mock('../../../../helpers/hooks/usePatient');
 
-const mockedUseNavigate = jest.fn();
+const mockedUseNavigate = vi.fn();
 const mockPatient = buildPatientDetails();
-const mockedUsePatient = usePatient as jest.Mock;
-const mockSetDownloadStage = jest.fn();
+const mockedUsePatient = usePatient as Mock;
+const mockSetDownloadStage = vi.fn();
 
 const numberOfFiles = 7;
 const selectedDocuments = ['test-id-1', 'test-id-2'];
@@ -22,17 +23,17 @@ const searchResults = [
     buildSearchResult({ fileName: '1of1_test.pdf', id: 'test-id-3' }),
 ];
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
 describe('LloydGeorgeDownloadComplete', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatient);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('LloydGeorgeDownloadComplete journeys', () => {

@@ -18,29 +18,28 @@ import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import PatientAccessAuditProvider from '../../../../providers/patientAccessAuditProvider/PatientAccessAuditProvider';
 import ConfigProvider from '../../../../providers/configProvider/ConfigProvider';
 import PatientDetailsProvider from '../../../../providers/patientProvider/PatientProvider';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', async () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
-    ...jest.requireActual('react-router-dom'),
+    ...(await vi.importActual('react-router-dom')),
     useNavigate: () => mockedUseNavigate,
 }));
-jest.mock('../../../../helpers/hooks/useRole');
-jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('../../../../helpers/requests/postPatientAccessAudit', () => {
-    return () => {
-        return { response: { status: 200 } };
-    };
-});
+vi.mock('../../../../helpers/hooks/useRole');
+vi.mock('../../../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('../../../../helpers/requests/postPatientAccessAudit', () => ({
+    default: vi.fn().mockReturnValue({ response: { status: 200 } }),
+}));
 
-const mockedUseRole = useRole as jest.Mock;
-const mockedUsePatient = usePatient as jest.Mock;
+const mockedUseRole = useRole as Mock;
+const mockedUsePatient = usePatient as Mock;
 
 describe('DeceasedPatientAccessAudit', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
 
     describe('Rendering', () => {
@@ -130,7 +129,7 @@ describe('DeceasedPatientAccessAudit', () => {
     describe('Navigation', () => {
         it('should navigate to the patient search page if there is no patient in the context', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-
+            mockedUsePatient.mockReturnValue(undefined);
             renderDeceasedPatientAccessAudit();
 
             await waitFor(() => {

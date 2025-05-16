@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import ServiceDeskLink from './ServiceDeskLink';
+import { describe, expect, it } from 'vitest';
 
 describe('Service desk link', () => {
     it('renders a service desk link that opens in a new tab', () => {

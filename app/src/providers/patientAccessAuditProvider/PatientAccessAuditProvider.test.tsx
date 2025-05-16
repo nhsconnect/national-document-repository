@@ -4,6 +4,7 @@ import { PatientAccessAudit } from '../../types/generic/accessAudit';
 import PatientAccessAuditProvider, {
     usePatientAccessAuditContext,
 } from './PatientAccessAuditProvider';
+import { describe, expect, it } from 'vitest';
 
 describe('PatientAccessAuditProvider', () => {
     it('provides patient access audit data', () => {
