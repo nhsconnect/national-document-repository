@@ -20,6 +20,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
+from services.ods_report_service import OdsReportService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
 from utils.lambda_exceptions import PdfStitchingException
@@ -39,6 +40,7 @@ class PdfStitchingService:
         self.s3_service = S3Service()
         self.document_service = DocumentService()
         self.sqs_service = SQSService()
+        self.ods_report_service = OdsReportService()
         self.multipart_references: list[DocumentReference] = []
         self.stitched_reference: DocumentReference = None
 
@@ -316,3 +318,14 @@ class PdfStitchingService:
         except Exception as e:
             logger.error(f"Failed to rollback multipart migration process: {e}")
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
+
+    def process_manual_trigger(self, ods_code: str):
+        nhs_numbers = self.ods_report_service.get_nhs_numbers_based_on_ods_code(
+            ods_code=ods_code
+        )
+        for nhs_number in nhs_numbers:
+            pdf_stitching_sqs_message = PdfStitchingSqsMessage(
+                nhs_number=nhs_number,
+                snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+            )
+            self.process_message(stitching_message=pdf_stitching_sqs_message)

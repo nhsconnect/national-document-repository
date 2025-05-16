@@ -2,11 +2,13 @@ import json
 import logging
 
 import pytest
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from handlers.get_report_by_ods_handler import (
     handle_api_gateway_request,
     handle_manual_trigger,
     lambda_handler,
 )
+from services.ods_report_service import OdsReportService
 from utils.exceptions import OdsErrorException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -157,3 +159,24 @@ def test_handle_manual_trigger_invalid_ods_code_format(mock_service):
 
     with pytest.raises(OdsErrorException, match="Invalid ODS code format"):
         handle_manual_trigger(event)
+
+
+def test_get_nhs_numbers_based_on_ods_code_returns_unique_nhs_numbers(mocker):
+    mock_query_result = [
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "1234567890"},
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "0987654321"},
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: "1234567890"},  # duplicate
+        {DocumentReferenceMetadataFields.NHS_NUMBER.value: None},  # should be ignored
+        {},  # missing field, should be ignored
+    ]
+    service = OdsReportService()
+    mocker.patch.object(service, "dynamo_service")
+
+    mock_query_method = mocker.patch.object(
+        service, "query_table_by_index", return_value=mock_query_result
+    )
+
+    result = service.get_nhs_numbers_based_on_ods_code("A12345")
+
+    assert result == {"1234567890", "0987654321"}
+    mock_query_method.assert_called_once_with("A12345")

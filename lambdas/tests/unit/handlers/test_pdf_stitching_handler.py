@@ -2,7 +2,7 @@ from json import JSONDecodeError
 
 import pytest
 from enums.lambda_error import LambdaError
-from handlers.pdf_stitching_handler import lambda_handler
+from handlers.pdf_stitching_handler import lambda_handler, route_pdf_stitching
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pydantic import ValidationError
 from services.pdf_stitching_service import PdfStitchingService
@@ -18,10 +18,57 @@ from utils.request_context import request_context
 
 @pytest.fixture
 def mock_process_message(set_env, mocker):
-    yield mocker.patch.object(PdfStitchingService, "process_message")
+    mock_process = mocker.patch.object(PdfStitchingService, "process_message")
+    mock_process_manual_trigger = mocker.patch.object(
+        PdfStitchingService, "process_manual_trigger"
+    )
+    yield mock_process, mock_process_manual_trigger
+
+
+def test_lambda_handler_routes_to_sqs(mocker, context, mock_process_message):
+    event = {"aws:sqs": True, "Records": []}
+
+    result = route_pdf_stitching(event, context)
+
+    assert result == {
+        "statusCode": 200,
+        "body": "Successfully processed PDF stitching SQS message",
+        "headers": {
+            "Access-Control-Allow-Methods": "GET",
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/fhir+json",
+            "Strict-Transport-Security": "max-age=63072000",
+        },
+        "isBase64Encoded": False,
+    }
+
+
+def test_lambda_handler_manually_triggers(mocker, context, mock_process_message):
+    event = {"": True, "Records": []}
+    mock_request_context = mocker.patch(
+        "handlers.pdf_stitching_handler.request_context"
+    )
+    mock_request_context.authorization = {
+        "selected_organisation": {"org_ods_code": "12345"}
+    }
+
+    result = route_pdf_stitching(event, context)
+
+    assert result == {
+        "statusCode": 200,
+        "body": "Successfully processed PDF stitching for a manual trigger",
+        "headers": {
+            "Access-Control-Allow-Methods": "GET",
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/fhir+json",
+            "Strict-Transport-Security": "max-age=63072000",
+        },
+        "isBase64Encoded": False,
+    }
 
 
 def test_handler_processes_valid_stitching_message(mock_process_message, context):
+    mock_process, _ = mock_process_message
     message = {
         "nhs_number": f"{TEST_NHS_NUMBER}",
         "snomed_code_doc_type": {
@@ -40,11 +87,13 @@ def test_handler_processes_valid_stitching_message(mock_process_message, context
     actual = lambda_handler(stitching_queue_message_event, context)
 
     assert actual == expected
-    mock_process_message.assert_called_once_with(stitching_message=test_message)
+    mock_process.assert_called_once()
+    mock_process.assert_called_once_with(stitching_message=test_message)
 
 
 @pytest.mark.parametrize("invalid_event", [{}, {"Records": []}])
 def test_handler_handles_empty_message(context, mock_process_message, invalid_event):
+    mock_process, _ = mock_process_message
     request_context.request_id = MOCK_INTERACTION_ID
     expected = ApiGatewayResponse(
         status_code=400,
@@ -55,7 +104,7 @@ def test_handler_handles_empty_message(context, mock_process_message, invalid_ev
     actual = lambda_handler(invalid_event, context)
 
     assert actual == expected
-    mock_process_message.assert_not_called()
+    mock_process.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -63,7 +112,14 @@ def test_handler_handles_empty_message(context, mock_process_message, invalid_ev
     [
         (no_body_message_event, JSONDecodeError),
         (
-            {"Records": [{"body": f'{{"nhs_number": "{TEST_NHS_NUMBER}"}}'}]},
+            {
+                "Records": [
+                    {
+                        "body": f'{{"nhs_number": "{TEST_NHS_NUMBER}"}}',
+                        "eventSource": "aws:sqs",
+                    }
+                ]
+            },
             ValidationError,
         ),
     ],
@@ -71,12 +127,13 @@ def test_handler_handles_empty_message(context, mock_process_message, invalid_ev
 def test_handler_handles_invalid_message_raises_exception(
     context, mock_process_message, invalid_event, exception
 ):
+    mock_process, _ = mock_process_message
     request_context.request_id = MOCK_INTERACTION_ID
 
     with pytest.raises(exception):
         lambda_handler(invalid_event, context)
 
-    mock_process_message.assert_not_called()
+    mock_process.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -89,16 +146,18 @@ def test_handler_handles_invalid_message_raises_exception(
 def test_handler_handles_service_error_raises_exception(
     context, mock_process_message, service_exception
 ):
+    mock_process, _ = mock_process_message
     request_context.request_id = MOCK_INTERACTION_ID
-    mock_process_message.side_effect = service_exception
+    mock_process.side_effect = service_exception
 
     with pytest.raises(PdfStitchingException):
         lambda_handler(stitching_queue_message_event, context)
 
 
 def test_handler_handles_rollback_exception(context, mock_process_message):
+    mock_process, _ = mock_process_message
     request_context.request_id = MOCK_INTERACTION_ID
-    mock_process_message.side_effect = PdfStitchingException(
+    mock_process.side_effect = PdfStitchingException(
         500, LambdaError.StitchRollbackError
     )
 
