@@ -81,7 +81,7 @@ class CloudFrontEdgeException(LambdaException):
     pass
 
 
-class NRLGetDocumentReferenceException(LambdaException):
+class GetFhirDocumentReferenceException(LambdaException):
     pass
 
 

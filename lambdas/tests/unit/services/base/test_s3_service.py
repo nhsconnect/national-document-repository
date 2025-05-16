@@ -6,6 +6,7 @@ from freezegun import freeze_time
 from services.base.s3_service import S3Service
 from tests.unit.conftest import (
     MOCK_BUCKET,
+    MOCK_CLIENT_ERROR,
     TEST_FILE_KEY,
     TEST_FILE_NAME,
     TEST_NHS_NUMBER,
@@ -397,3 +398,23 @@ def test_file_size_return_int(mock_service, mock_client):
         Bucket=MOCK_BUCKET,
         Key=TEST_FILE_NAME,
     )
+
+
+def test_returns_binary_file_content_when_file_exists(
+    mock_service, mock_client, mocker
+):
+    mock_client.get_object.return_value = {
+        "Body": mocker.Mock(read=lambda: b"file-content")
+    }
+
+    result = mock_service.get_binary_file("test-bucket", "test-key")
+
+    assert result == b"file-content"
+    mock_client.get_object.assert_called_once_with(Bucket="test-bucket", Key="test-key")
+
+
+def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
+    mock_client.get_object.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(ClientError):
+        mock_service.get_binary_file("test-bucket", "nonexistent-key")
