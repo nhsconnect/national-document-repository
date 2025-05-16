@@ -49,7 +49,7 @@ def lambda_handler(event, context):
                     document = DocumentReferenceInfo(
                         **nrl_verified_message,
                         custodian=nrl_api_service.end_user_ods_code,
-                    ).create_fhir_document_reference_object()
+                    ).create_nrl_fhir_document_reference_object()
                     logger.info(
                         f"Trying to create pointer request: Body: {document.model_dump_json(exclude_none=True)}, "
                         f"RequestURL: {nrl_api_service.endpoint}, "
