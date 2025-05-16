@@ -5,7 +5,7 @@ import requests
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from requests.adapters import HTTPAdapter
-from requests.exceptions import ConnectionError, HTTPError, Timeout
+from requests.exceptions import RetryError
 from services.patient_search_service import PatientSearch
 from urllib3 import Retry
 from utils.audit_logging_setup import LoggingService
@@ -20,7 +20,7 @@ class PdsApiService(PatientSearch):
         self.auth_service = auth_service
         retry_strategy = Retry(
             total=3,
-            status_forcelist=[429, 500, 502, 503, 504],
+            status_forcelist=[429],
             allowed_methods=["GET"],
             backoff_factor=1,
         )
@@ -42,9 +42,12 @@ class PdsApiService(PatientSearch):
             }
 
             url_endpoint = endpoint + "Patient/" + nhs_number
+
+            logger.info("PDS Call Initiated")
             pds_response = self.session.get(
                 url=url_endpoint, headers=authorization_header
             )
+            logger.info("PDS Call Completed")
 
             if pds_response.status_code == 401 and retry_on_expired:
                 return self.pds_request(nhs_number, retry_on_expired=False)
@@ -55,9 +58,11 @@ class PdsApiService(PatientSearch):
             logger.error(str(e), {"Result": "Error when getting ssm parameters"})
             raise PdsErrorException("Failed to perform patient search")
 
-        except (ConnectionError, Timeout, HTTPError) as e:
-            logger.error(str(e), {"Result": "Error when calling PDS"})
-            raise PdsTooManyRequestsException("Failed to perform patient search")
+        except RetryError as e:
+            logger.error(str(e), {"Result": "Error in call to PDS, too many requests"})
+            raise PdsTooManyRequestsException(
+                "Failed to perform patient search, too many requests"
+            )
 
     def get_endpoint_for_pds_api_request(self):
         parameter = SSMParameter.PDS_API_ENDPOINT.value

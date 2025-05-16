@@ -29,6 +29,7 @@ class LambdaError(Enum):
     """
 
     SearchPatientMissing = {"err_code": "SP_4001", "message": "Missing user details"}
+
     SearchPatientNoPDS = {
         "err_code": "SP_4002",
         "message": "Patient does not exist for given NHS number",
@@ -44,6 +45,10 @@ class LambdaError(Enum):
     SearchPatientNoParse = {
         "err_code": "SP_4005",
         "message": "Failed to parse PDS data",
+    }
+    SearchPatientPDSError = {
+        "err_code": "SP_4006",
+        "message": "An error occurred while fetching patient details from PDS",
     }
 
     """

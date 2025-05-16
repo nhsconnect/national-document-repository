@@ -10,6 +10,7 @@ from utils.exceptions import (
     InvalidResourceIdException,
     PatientNotFoundException,
     PdsErrorException,
+    PdsTooManyRequestsException,
     UserNotAuthorisedException,
 )
 from utils.lambda_exceptions import SearchPatientException
@@ -67,7 +68,7 @@ class SearchPatientDetailsService:
             )
             raise SearchPatientException(404, LambdaError.SearchPatientNoAuth)
 
-        except (InvalidResourceIdException, PdsErrorException) as e:
+        except InvalidResourceIdException as e:
             logger.error(
                 f"{LambdaError.SearchPatientNoId.to_str()}: {str(e)}",
                 {"Result": "Patient not found"},
@@ -80,6 +81,15 @@ class SearchPatientDetailsService:
                 {"Result": "Patient not found"},
             )
             raise SearchPatientException(400, LambdaError.SearchPatientNoParse)
+
+        except (PdsErrorException, PdsTooManyRequestsException) as e:
+            logger.error(
+                f"{LambdaError.SearchPatientNoPDS.to_str()}: {str(e)}",
+                {
+                    "Result": "Patient not found, Error code returned from PDS: {e.error_code}"
+                },
+            )
+            raise SearchPatientException(500, LambdaError.SearchPatientPDSError)
 
     def check_if_user_authorise(self, gp_ods_for_patient):
         patient_is_active = is_ods_code_active(gp_ods_for_patient)
