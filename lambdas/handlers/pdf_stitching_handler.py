@@ -11,6 +11,7 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_sqs_message_event import validate_sqs_event
+from utils.exceptions import OdsErrorException
 from utils.lambda_exceptions import PdfStitchingException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -30,8 +31,17 @@ logger = LoggingService(__name__)
     ]
 )
 @override_error_check
-@validate_sqs_event
 def lambda_handler(event, context):
+    if any(
+        record.get("eventSource") == "aws:sqs" for record in event.get("Records", [])
+    ):
+        return handle_sqs_request(event)
+    else:
+        return handle_manual_trigger(event)
+
+
+@validate_sqs_event
+def handle_sqs_request(event):
     request_context.app_interaction = LoggingAppInteraction.STITCH_RECORD.value
 
     logger.info("Received PDF Stitching SQS message event")
@@ -61,4 +71,21 @@ def lambda_handler(event, context):
 
     return ApiGatewayResponse(
         200, "Successfully processed PDF stitching SQS message", "GET"
+    ).create_api_gateway_response()
+
+
+def handle_manual_trigger(event):
+    logger.info("Received PDF Stitching manual trigger event")
+    ods_code = event.get("ods_code")
+    # ods_code = request_context.authorization.get("selected_organisation", {}).get(
+    #     "org_ods_code"
+    # )
+    if not ods_code:
+        raise OdsErrorException("No ODS code provided")
+
+    pdf_stitching_service = PdfStitchingService()
+    pdf_stitching_service.process_manual_trigger(ods_code=ods_code)
+
+    return ApiGatewayResponse(
+        200, "Successfully processed PDF stitching for a manual trigger", "GET"
     ).create_api_gateway_response()
