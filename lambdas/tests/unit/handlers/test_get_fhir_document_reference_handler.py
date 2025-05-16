@@ -160,7 +160,7 @@ def test_lambda_handler_id_malformed(
     set_env, mock_oidc_service, mock_config_service, mock_document_service, context
 ):
     response = lambda_handler(MOCK_INVALID_EVENT_ID_MALFORMED, context)
-    assert response["statusCode"] == 404
+    assert response["statusCode"] == 400
     mock_document_service.handle_get_document_reference_request.assert_not_called()
 
 
@@ -186,7 +186,7 @@ def test_lambda_handler_invalid_path_parameters(
     event_with_invalid_path["pathParameters"] = {"id": "invalid_format_no_tilde"}
 
     response = lambda_handler(event_with_invalid_path, context)
-    assert response["statusCode"] == 404
+    assert response["statusCode"] == 400
     mock_document_service.handle_get_document_reference_request.assert_not_called()
 
 
