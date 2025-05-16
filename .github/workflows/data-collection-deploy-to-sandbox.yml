@@ -1,4 +1,4 @@
-name: 'SANDBOX Batch Update - Publish Batch Update Image to ECR'
+name: 'SANDBOX Data Collection - Publish Data Collection Image to ECR'
 
 on:
   workflow_dispatch:
@@ -47,7 +47,7 @@ permissions:
 jobs:
   push_image:
     name: Push Image
-    uses: ./.github/workflows/base-batch-update.yml
+    uses: ./.github/workflows/base-data-collection.yml
     with:
       build_branch: ${{ inputs.build_branch }}
       environment: ${{ inputs.environment }}
