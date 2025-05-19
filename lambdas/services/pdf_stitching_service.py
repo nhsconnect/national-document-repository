@@ -326,10 +326,15 @@ class PdfStitchingService:
                 nhs_number=nhs_number,
                 snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
             )
+            logger.info(f"Processing manual trigger for nhs number {nhs_number}")
             sqs_service.send_message_standard(
                 queue_url=queue_url,
                 message_body=pdf_stitching_sqs_message.model_dump_json(),
             )
+            # self.sqs_repository.send_message_to_pdf_stitching_queue(
+            #     queue_url=self.pdf_stitching_queue_url,
+            #     message=pdf_stitching_sqs_message,
+            # )
 
     def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
         documents = self.document_service.fetch_documents_from_table(
@@ -340,4 +345,7 @@ class PdfStitchingService:
             query_filter=NotDeleted,
         )
         nhs_numbers = list({document.nhs_number for document in documents})
+        logger.info(
+            f"got the following nhs_numbers for ods code {ods_code}:{nhs_numbers}"
+        )
         return nhs_numbers
