@@ -21,7 +21,7 @@ from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import NotDeleted, UploadCompleted
+from utils.common_query_filters import UploadCompleted
 from utils.lambda_exceptions import PdfStitchingException
 from utils.utilities import DATE_FORMAT, create_reference_id
 
@@ -318,7 +318,9 @@ class PdfStitchingService:
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
 
     def process_manual_trigger(self, ods_code: str, queue_url):
-        nhs_numbers = self.get_nhs_numbers_based_on_ods_code(ods_code=ods_code)
+        nhs_numbers = self.document_service.get_nhs_numbers_based_on_ods_code(
+            ods_code=ods_code
+        )
 
         sqs_service = SQSService()
         for nhs_number in nhs_numbers:
@@ -332,16 +334,16 @@ class PdfStitchingService:
                 message_body=pdf_stitching_sqs_message.model_dump_json(),
             )
 
-    def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
-        documents = self.document_service.fetch_documents_from_table(
-            table=os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
-            index_name="OdsCodeIndex",
-            search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
-            search_condition=ods_code,
-            query_filter=NotDeleted,
-        )
-        nhs_numbers = list({document.nhs_number for document in documents})
-        logger.info(
-            f"got the following nhs_numbers for ods code {ods_code}:{nhs_numbers}"
-        )
-        return nhs_numbers
+    # def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
+    #     documents = self.document_service.fetch_documents_from_table(
+    #         table=os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
+    #         index_name="OdsCodeIndex",
+    #         search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+    #         search_condition=ods_code,
+    #         query_filter=NotDeleted,
+    #     )
+    #     nhs_numbers = list({document.nhs_number for document in documents})
+    #     logger.info(
+    #         f"got the following nhs_numbers for ods code {ods_code}:{nhs_numbers}"
+    #     )
+    #     return nhs_numbers
