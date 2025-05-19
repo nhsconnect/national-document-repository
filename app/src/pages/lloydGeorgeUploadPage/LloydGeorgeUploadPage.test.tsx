@@ -19,7 +19,7 @@ import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
-import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UploadSession } from '../../types/generic/uploadResult';
 import { AxiosResponse } from 'axios';
 import waitForSeconds from '../../helpers/utils/waitForSeconds';
