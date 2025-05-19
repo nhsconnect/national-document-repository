@@ -4,11 +4,11 @@ from typing import Any, Dict
 from services.document_reference_search_service import DocumentReferenceSearchService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions_fhir
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event,
-    validate_patient_id,
+    validate_patient_id_fhir,
 )
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -20,8 +20,8 @@ logger = LoggingService(__name__)
     names=["DYNAMODB_TABLE_LIST", "DOCUMENT_RETRIEVE_ENDPOINT_APIM"]
 )
 @set_request_context_for_logging
-@handle_lambda_exceptions
-@validate_patient_id
+@validate_patient_id_fhir
+@handle_lambda_exceptions_fhir
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     Lambda handler for searching document references by NHS number.
