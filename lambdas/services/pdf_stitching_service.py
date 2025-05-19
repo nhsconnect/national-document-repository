@@ -16,12 +16,10 @@ from models.fhir.R4.nrl_fhir_document_reference import Attachment
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pypdf import PdfReader, PdfWriter
-from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
-from services.ods_report_service import OdsReportService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadCompleted
 from utils.lambda_exceptions import PdfStitchingException
@@ -41,7 +39,6 @@ class PdfStitchingService:
         self.s3_service = S3Service()
         self.document_service = DocumentService()
         self.sqs_service = SQSService()
-        self.ods_report_service = OdsReportService()
         self.multipart_references: list[DocumentReference] = []
         self.stitched_reference: DocumentReference = None
 
@@ -323,24 +320,24 @@ class PdfStitchingService:
     def process_manual_trigger(self, ods_code: str, queue_url):
         nhs_numbers = self.get_nhs_numbers_based_on_ods_code(ods_code=ods_code)
 
-        sqs_repository = BulkUploadSqsRepository()
+        sqs_service = SQSService()
         for nhs_number in nhs_numbers:
             pdf_stitching_sqs_message = PdfStitchingSqsMessage(
                 nhs_number=nhs_number,
                 snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
             )
-            sqs_repository.send_message_to_pdf_stitching_queue(
+            sqs_service.send_message_standard(
                 queue_url=queue_url,
-                message=pdf_stitching_sqs_message,
+                message_body=pdf_stitching_sqs_message.model_dump_json(),
             )
 
     def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
         documents = self.document_service.fetch_documents_from_table(
             table=os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
             index_name="OdsCodeIndex",
-            search_key="DocumentReferenceMetadataFields.CURRENT_GP_ODS.value",
+            search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
             search_condition=ods_code,
             query_filter=NotDeleted,
         )
-        nhs_numbers = list({document["NhsNumber"] for document in documents})
+        nhs_numbers = list({document.nhs_number for document in documents})
         return nhs_numbers

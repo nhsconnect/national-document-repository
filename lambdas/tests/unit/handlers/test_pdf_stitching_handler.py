@@ -2,7 +2,7 @@ from json import JSONDecodeError
 
 import pytest
 from enums.lambda_error import LambdaError
-from handlers.pdf_stitching_handler import lambda_handler
+from handlers.pdf_stitching_handler import handle_sqs_request, lambda_handler
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pydantic import ValidationError
 from services.pdf_stitching_service import PdfStitchingService
@@ -108,7 +108,7 @@ def test_handler_handles_empty_message(context, mock_process_message, invalid_ev
         methods="GET",
     ).create_api_gateway_response()
 
-    actual = lambda_handler(invalid_event, context)
+    actual = handle_sqs_request(invalid_event, context)
 
     assert actual == expected
     mock_process.assert_not_called()
