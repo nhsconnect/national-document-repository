@@ -159,13 +159,17 @@ class LambdaError(Enum):
         "err_code": "LIN_5008",
         "message": "SSM parameter values for PCSE user role may not exist",
     }
-    LoginGpODS = {
+    LoginGpOrgRoleCode = {
         "err_code": "LIN_5009",
-        "message": "SSM parameter values for GP organisation role code may not exist",
+        "message": "SSM parameter value for GP organisation role code may not exist",
     }
-    LoginPcseODS = {
+    LoginPcseOdsCode = {
         "err_code": "LIN_5010",
-        "message": "SSM parameter values for PSCE ODS code may not exist",
+        "message": "SSM parameter value for PCSE ODS code may not exist",
+    }
+    LoginItocOdsCodes = {
+        "err_code": "LIN_5011",
+        "message": "SSM parameter value for ITOC ODS code may not exist",
     }
 
     """
