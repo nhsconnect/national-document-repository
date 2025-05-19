@@ -333,17 +333,3 @@ class PdfStitchingService:
                 queue_url=queue_url,
                 message_body=pdf_stitching_sqs_message.model_dump_json(),
             )
-
-    # def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
-    #     documents = self.document_service.fetch_documents_from_table(
-    #         table=os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
-    #         index_name="OdsCodeIndex",
-    #         search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
-    #         search_condition=ods_code,
-    #         query_filter=NotDeleted,
-    #     )
-    #     nhs_numbers = list({document.nhs_number for document in documents})
-    #     logger.info(
-    #         f"got the following nhs_numbers for ods code {ods_code}:{nhs_numbers}"
-    #     )
-    #     return nhs_numbers
