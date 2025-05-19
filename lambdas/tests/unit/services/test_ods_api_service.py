@@ -156,7 +156,7 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
     mocker.patch.object(
         OdsApiService,
         "fetch_organisation_data",
-        return_value=[itoc_ods],
+        return_value=itoc_ods,
     )
     mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
     mocker.patch.object(
@@ -215,7 +215,7 @@ def test_fetch_org_with_permitted_role_allowed_list(mock_ods_responses, mocker):
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [allowed_ods_code]
+        OdsApiService(), allowed_ods_code
     )
 
     assert expected == actual
