@@ -63,9 +63,9 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
-  deploy_ods_batch_update:
-    name: Deploy ODS Batch Update
-    uses: ./.github/workflows/base-batch-update.yml
+  deploy_data_collection:
+    name: Deploy ODS Data Collection
+    uses: ./.github/workflows/base-data-collection.yml
     with:
       build_branch: ${{ inputs.tag_version }}
       environment: prod

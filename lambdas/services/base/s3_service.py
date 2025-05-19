@@ -101,6 +101,7 @@ class S3Service:
             Bucket=dest_bucket,
             Key=dest_file_key,
             CopySource={"Bucket": source_bucket, "Key": source_file_key},
+            StorageClass="INTELLIGENT_TIERING",
         )
 
     def delete_object(self, s3_bucket_name: str, file_key: str):

@@ -197,8 +197,8 @@ def build_valid_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
     return (
-        f"{file_count}of{total_number}_Lloyd_George_Record"
-        f"_[{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
+        f"{file_count}of{total_number}_Lloyd_George_Record_["
+        f"{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
     )
 
 
@@ -206,8 +206,8 @@ def build_invalid_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
     return (
-        f"{file_count}of{total_number}_Lloyd_George_Record"
-        f"_[{patient.nhs_number}]_[{patient.full_name}]_[{patient.date_of_birth}].pdf"
+        f"{file_count}of{total_number}_Lloyd_George_Record_["
+        f"{patient.nhs_number}]_[{patient.full_name}]_[{patient.date_of_birth}].pdf"
     )
 
 
@@ -215,8 +215,8 @@ def build_invalid_file_number_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
     return (
-        f"{file_count}of{total_number - 1}_Lloyd_George_Record"
-        f"[{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
+        f"{file_count}of{total_number - 1}_Lloyd_George_Record["
+        f"{patient.full_name}]_[{patient.nhs_number}]_[{patient.date_of_birth}].pdf"
     )
 
 
@@ -224,8 +224,8 @@ def build_invalid_nhs_number_lg_file_name(
     patient: Patient, file_count: int = 1, total_number: int = 3
 ) -> str:
     return (
-        f"{file_count}of{total_number}_Lloyd_George_Record"
-        f"_[{patient.full_name}]_[{str(patient.nhs_number)[:-2]}01]_[{patient.date_of_birth}].pdf"
+        f"{file_count}of{total_number}_Lloyd_George_Record_["
+        f"{patient.full_name}]_[{str(patient.nhs_number)[:-2]}01]_[{patient.date_of_birth}].pdf"
     )
 
 
@@ -389,7 +389,12 @@ def upload_lg_files_to_staging():
     files = ["metadata.csv"] + glob("*/*Lloyd_George_Record*.pdf")
     client = boto3.client("s3")
     for file in files:
-        client.upload_file(Filename=file, Bucket=STAGING_BUCKET, Key=file)
+        client.upload_file(
+            Filename=file,
+            Bucket=STAGING_BUCKET,
+            Key=file,
+            ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
+        )
 
         scan_result = "Clean"
         if file.startswith(tuple(NHS_NUMBER_INFECTED)):
@@ -595,8 +600,8 @@ if __name__ == "__main__":
     if (
         args.upload
         or input(
-            "Would you like to upload the test"
-            " files to S3 and add the virus-scan tag? (y/N) "
+            "Would you like to upload the test files to S3 "
+            "and add the virus-scan tag? (y/N) "
         ).lower()
         == "y"
     ):
