@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 
 from boto3.dynamodb.conditions import Attr, ConditionBase
@@ -7,6 +8,7 @@ from models.document_reference import DocumentReference
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import NotDeleted
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.exceptions import (
     DocumentServiceException,
@@ -70,6 +72,20 @@ class DocumentService:
             document = DocumentReference.model_validate(item)
             documents.append(document)
         return documents
+
+    def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
+        documents = self.fetch_documents_from_table(
+            table=os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
+            index_name="OdsCodeIndex",
+            search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+            search_condition=ods_code,
+            query_filter=NotDeleted,
+        )
+        nhs_numbers = list({document.nhs_number for document in documents})
+        logger.info(
+            f"got the following nhs_numbers for ods code {ods_code}:{nhs_numbers}"
+        )
+        return nhs_numbers
 
     def delete_document_references(
         self,

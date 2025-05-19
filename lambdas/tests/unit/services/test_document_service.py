@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from unittest.mock import call
 
@@ -22,6 +23,7 @@ from tests.unit.helpers.data.dynamo.dynamo_responses import (
 from tests.unit.helpers.data.test_documents import (
     create_test_lloyd_george_doc_store_refs,
 )
+from utils.common_query_filters import NotDeleted
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DocumentServiceException
 
@@ -337,3 +339,59 @@ def test_delete_document_object_fails_to_delete_s3_object(mock_service, caplog):
         s3_bucket_name=test_bucket, file_key=test_file_key
     )
     assert expected_err_msg == str(e.value)
+
+
+def test_get_nhs_numbers_based_on_ods_code(mock_service, mocker):
+    ods_code = "Y12345"
+    expected_nhs_number = "9000000009"
+
+    mock_documents = [
+        DocumentReference(
+            id="doc1",
+            nhs_number=expected_nhs_number,
+            content_type="",
+            created="",
+            deleted="",
+            file_location="",
+            file_name="",
+            ttl=True,
+            virus_scanner_result="Clean",
+            current_gp_ods="",
+            uploaded=False,
+            uploading=False,
+            last_updated=1704110400,
+        ),
+        DocumentReference(
+            id="doc1",
+            nhs_number=expected_nhs_number,
+            content_type="",
+            created="",
+            deleted="",
+            file_location="",
+            file_name="",
+            ttl=True,
+            virus_scanner_result="Clean",
+            current_gp_ods="",
+            uploaded=False,
+            uploading=False,
+            last_updated=1704110400,
+        ),
+    ]
+    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = "mock_table"
+    mock_fetch = mocker.patch.object(
+        mock_service,
+        "fetch_documents_from_table",
+        return_value=mock_documents,
+    )
+
+    result = mock_service.get_nhs_numbers_based_on_ods_code(ods_code)
+
+    assert result == [expected_nhs_number]
+
+    mock_fetch.assert_called_once_with(
+        table="mock_table",
+        index_name="OdsCodeIndex",
+        search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+        search_condition=ods_code,
+        query_filter=NotDeleted,
+    )

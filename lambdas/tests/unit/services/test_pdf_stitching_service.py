@@ -6,6 +6,7 @@ from unittest.mock import call
 
 import pytest
 from enums.lambda_error import LambdaError
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
