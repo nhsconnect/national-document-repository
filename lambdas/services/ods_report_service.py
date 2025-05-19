@@ -30,23 +30,19 @@ class OdsReportService:
         self.temp_output_dir = ""
         self.s3_service = None
 
-    def get_nhs_numbers_based_on_ods_code(self, ods_code: str):
-        results = self.query_table_by_index(ods_code)
-        nhs_numbers = {
-            item.get(DocumentReferenceMetadataFields.NHS_NUMBER.value)
-            for item in results
-            if item.get(DocumentReferenceMetadataFields.NHS_NUMBER.value)
-        }
-        return nhs_numbers
-
-    def create_and_save_ods_report_based_on_ods(
+    def get_nhs_numbers_by_ods(
         self,
         ods_code: str,
         is_pre_signed_needed: bool = False,
         is_upload_to_s3_needed: bool = False,
         file_type_output: FileType = FileType.CSV,
     ):
-        nhs_numbers = self.get_nhs_numbers_based_on_ods_code(ods_code)
+        results = self.query_table_by_index(ods_code)
+        nhs_numbers = {
+            item.get(DocumentReferenceMetadataFields.NHS_NUMBER.value)
+            for item in results
+            if item.get(DocumentReferenceMetadataFields.NHS_NUMBER.value)
+        }
         if is_upload_to_s3_needed:
             self.temp_output_dir = tempfile.mkdtemp()
         return self.create_and_save_ods_report(

@@ -48,7 +48,7 @@ def handle_api_gateway_request(event):
 
     service = OdsReportService()
     logger.info(f"Received a request to create a report for ODS code: {ods_code}")
-    pre_signed_url = service.create_and_save_ods_report_based_on_ods(
+    pre_signed_url = service.get_nhs_numbers_by_ods(
         ods_code=ods_code,
         is_pre_signed_needed=True,
         is_upload_to_s3_needed=True,
@@ -69,7 +69,7 @@ def handle_manual_trigger(event):
     service = OdsReportService()
     for ods_code in ods_codes:
         logger.info(f"Starting process for ods code: {ods_code}")
-        service.create_and_save_ods_report_based_on_ods(
+        service.get_nhs_numbers_by_ods(
             ods_code=ods_code, is_upload_to_s3_needed=True, file_type_output=file_type
         )
     return ApiGatewayResponse(
