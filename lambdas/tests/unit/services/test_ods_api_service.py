@@ -173,7 +173,7 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
 
     expected = {
         "name": "",
-        "org_ods_code": "",
+        "org_ods_code": itoc_ods,
         "role_code": "",
         "icb_ods_code": "ITOC",
     }
