@@ -10,8 +10,11 @@ logger = LoggingService(__name__)
 
 
 def extract_nhs_number_from_event(event) -> str:
-    # Reusable method to get nhs number from event.
-    return event["queryStringParameters"]["patientId"]
+    # Reusable method to get nhs number from the event.
+    querystring = event.get("queryStringParameters")
+    if querystring is None:
+        raise KeyError
+    return querystring["patientId"]
 
 
 def validate_patient_id(lambda_func: Callable):
