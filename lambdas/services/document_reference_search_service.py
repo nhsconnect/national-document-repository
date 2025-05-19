@@ -133,7 +133,7 @@ class DocumentReferenceSearchService(DocumentService):
         self,
         document_reference: DocumentReference,
     ) -> dict:
-        document_retrieve_endpoint = os.getenv("DOCUMENT_RETRIEVE_ENDPOINT", "")
+        document_retrieve_endpoint = os.getenv("DOCUMENT_RETRIEVE_ENDPOINT_APIM", "")
         document_details = Attachment(
             title=document_reference.file_name,
             creation=document_reference.created,

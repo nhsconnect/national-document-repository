@@ -16,7 +16,9 @@ from utils.request_context import request_context
 logger = LoggingService(__name__)
 
 
-@ensure_environment_variables(names=["DYNAMODB_TABLE_LIST"])
+@ensure_environment_variables(
+    names=["DYNAMODB_TABLE_LIST", "DOCUMENT_RETRIEVE_ENDPOINT_APIM"]
+)
 @set_request_context_for_logging
 @handle_lambda_exceptions
 @validate_patient_id
