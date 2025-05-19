@@ -166,10 +166,10 @@ class LoginService:
         logger.info(f"Smartcard Role: {smartcard_role}")
 
         if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
-            logger.info("PCSE: smartcard ODS identified")
             if self.has_pcse_org_ods_code(
                 organisation, self.token_handler_ssm_service.get_pcse_ods_code()
             ):
+                logger.info("PCSE: smartcard ODS identified")
                 return RepositoryRole.PCSE
 
         if (
