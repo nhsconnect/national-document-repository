@@ -96,7 +96,7 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [pcse_ods]
+        OdsApiService(), pcse_ods
     )
 
     assert expected == actual
@@ -123,7 +123,7 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [gp_ods]
+        OdsApiService(), gp_ods
     )
 
     assert expected == actual
@@ -146,9 +146,7 @@ def test_fetch_org_with_permitted_role_returns_empty_list_when_not_gp_or_pcse(
     ods = "OD5"
     expected = {}
 
-    actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [ods]
-    )
+    actual = OdsApiService.fetch_organisation_with_permitted_role(OdsApiService(), ods)
 
     assert expected == actual
 
@@ -157,9 +155,7 @@ def test_fetch_org_with_permitted_role_raises_exception_if_more_than_one_org_for
     mock_ods_responses,
 ):
     with pytest.raises(TooManyOrgsException):
-        OdsApiService.fetch_organisation_with_permitted_role(
-            OdsApiService(), ["ods1", "ods2many"]
-        )
+        OdsApiService.fetch_organisation_with_permitted_role(OdsApiService(), "")
 
 
 @pytest.mark.parametrize(
