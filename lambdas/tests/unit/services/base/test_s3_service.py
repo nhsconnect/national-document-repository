@@ -1,5 +1,4 @@
 import datetime
-from io import BytesIO
 
 import pytest
 from botocore.exceptions import ClientError
@@ -401,10 +400,12 @@ def test_file_size_return_int(mock_service, mock_client):
 
 
 def test_save_or_create_file(mock_service, mock_client):
-    body = BytesIO(TEST_FILE_KEY.encode("utf-8"))
+    body = TEST_FILE_KEY.encode("utf-8")
     mock_service.save_or_create_file(MOCK_BUCKET, TEST_FILE_NAME, body)
-    body.seek(0)
 
-    mock_client.put_object.assert_called_with(
-        Bucket=MOCK_BUCKET, Key=TEST_FILE_NAME, Body=body
-    )
+    mock_client.put_object.assert_called()
+    args, kwargs = mock_client.put_object.call_args
+
+    assert kwargs["Bucket"] == MOCK_BUCKET
+    assert kwargs["Key"] == TEST_FILE_NAME
+    assert kwargs["Body"].read() == body
