@@ -331,10 +331,6 @@ class PdfStitchingService:
                 queue_url=queue_url,
                 message_body=pdf_stitching_sqs_message.model_dump_json(),
             )
-            # self.sqs_repository.send_message_to_pdf_stitching_queue(
-            #     queue_url=self.pdf_stitching_queue_url,
-            #     message=pdf_stitching_sqs_message,
-            # )
 
     def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
         documents = self.document_service.fetch_documents_from_table(
