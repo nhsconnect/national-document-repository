@@ -194,6 +194,9 @@ def set_env(monkeypatch):
     monkeypatch.setenv(
         "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME", MOCK_UNSTITCHED_LG_TABLE_NAME
     )
+    monkeypatch.setenv(
+        "DOCUMENT_RETRIEVE_ENDPOINT", "https://api.gov.uk/DocumentReference"
+    )
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(

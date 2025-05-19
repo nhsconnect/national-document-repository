@@ -133,9 +133,11 @@ class DocumentReferenceSearchService(DocumentService):
         self,
         document_reference: DocumentReference,
     ) -> dict:
+        document_retrieve_endpoint = os.getenv("DOCUMENT_RETRIEVE_ENDPOINT", "")
         document_details = Attachment(
             title=document_reference.file_name,
             creation=document_reference.created,
+            url=document_retrieve_endpoint + "/" + document_reference.id,
         )
         fhir_document_reference = (
             DocumentReferenceInfo(

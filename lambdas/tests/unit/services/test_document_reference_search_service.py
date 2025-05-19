@@ -260,6 +260,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_document_reference.nhs_number = "9000000009"
     mock_document_reference.file_name = "test_document.pdf"
     mock_document_reference.created = "2023-05-01T12:00:00Z"
+    mock_document_reference.id = "123"
 
     mock_attachment = mocker.patch(
         "services.document_reference_search_service.Attachment"
@@ -294,6 +295,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
                     "language": "en-GB",
                     "title": "test_document.pdf",
                     "creation": "2023-05-01T12:00:00Z",
+                    "url": "https://api.gov.uk/DocumentReference/123",
                 }
             }
         ],
@@ -307,6 +309,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_attachment.assert_called_once_with(
         title=mock_document_reference.file_name,
         creation=mock_document_reference.created,
+        url=f"https://api.gov.uk/DocumentReference/{mock_document_reference.id}",
     )
 
     mock_doc_ref_info.assert_called_once_with(
@@ -327,6 +330,7 @@ def test_create_document_reference_fhir_response_integration(
     mock_document_reference.nhs_number = "9000000009"
     mock_document_reference.file_name = "test_document.pdf"
     mock_document_reference.created = "2023-05-01T12:00:00Z"
+    mock_document_reference.id = "123"
 
     result = mock_document_service.create_document_reference_fhir_response(
         mock_document_reference
