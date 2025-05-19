@@ -179,7 +179,7 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [itoc_ods]
+        OdsApiService(), itoc_ods
     )
 
     assert expected == actual
