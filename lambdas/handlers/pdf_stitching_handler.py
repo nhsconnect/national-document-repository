@@ -32,7 +32,6 @@ logger = LoggingService(__name__)
     ]
 )
 @override_error_check
-@validate_sqs_event
 def lambda_handler(event, context):
     pdf_stitching_service = PdfStitchingService()
     if any(
@@ -43,6 +42,7 @@ def lambda_handler(event, context):
         return handle_manual_trigger(event, pdf_stitching_service)
 
 
+@validate_sqs_event
 def handle_sqs_request(event, pdf_stitching_service):
     request_context.app_interaction = LoggingAppInteraction.STITCH_RECORD.value
 
