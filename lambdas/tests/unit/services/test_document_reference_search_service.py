@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, call
 import pytest
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_reference_search_service import DocumentReferenceSearchService
@@ -260,7 +261,8 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_document_reference.nhs_number = "9000000009"
     mock_document_reference.file_name = "test_document.pdf"
     mock_document_reference.created = "2023-05-01T12:00:00Z"
-    mock_document_reference.id = "123"
+    mock_document_reference.id = "Y05868-1634567890"
+    mock_document_reference.current_gp_ods = "Y12345"
 
     mock_attachment = mocker.patch(
         "services.document_reference_search_service.Attachment"
@@ -275,13 +277,15 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_doc_ref_info.return_value = mock_doc_ref_info_instance
 
     mock_fhir_doc_ref = mocker.MagicMock()
-    mock_doc_ref_info_instance.create_minimal_fhir_document_reference_object.return_value = (
+    mock_doc_ref_info_instance.create_general_fhir_document_reference_object.return_value = (
         mock_fhir_doc_ref
     )
 
     expected_fhir_response = {
+        "id": "Y05868-1634567890",
         "resourceType": "DocumentReference",
         "status": "current",
+        "docStatus": "final",
         "subject": {
             "identifier": {
                 "system": "https://fhir.nhs.uk/Id/nhs-number",
@@ -299,6 +303,20 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
                 }
             }
         ],
+        "author": [
+            {
+                "identifier": {
+                    "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                    "value": "Y05868",
+                }
+            }
+        ],
+        "custodian": {
+            "identifier": {
+                "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                "value": "Y05868",
+            }
+        },
     }
     mock_fhir_doc_ref.model_dump.return_value = expected_fhir_response
 
@@ -315,40 +333,77 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_doc_ref_info.assert_called_once_with(
         nhsNumber=mock_document_reference.nhs_number,
         attachment=mock_attachment_instance,
+        custodian=mock_document_reference.current_gp_ods,
     )
 
-    mock_doc_ref_info_instance.create_minimal_fhir_document_reference_object.assert_called_once()
+    mock_doc_ref_info_instance.create_general_fhir_document_reference_object.assert_called_once()
     mock_fhir_doc_ref.model_dump.assert_called_once_with(exclude_none=True)
 
     assert result == expected_fhir_response
 
 
+@freeze_time("2023-05-01T12:00:00Z")
 def test_create_document_reference_fhir_response_integration(
     mock_document_service, mocker
 ):
     mock_document_reference = mocker.MagicMock()
     mock_document_reference.nhs_number = "9000000009"
     mock_document_reference.file_name = "test_document.pdf"
-    mock_document_reference.created = "2023-05-01T12:00:00Z"
-    mock_document_reference.id = "123"
+    mock_document_reference.created = "2023-05-01T12:00:00"
+    mock_document_reference.id = "Y05868-1634567890"
+    mock_document_reference.current_gp_ods = "Y12345"
+
+    expected_fhir_response = {
+        "id": "Y05868-1634567890",
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "docStatus": "final",
+        "subject": {
+            "identifier": {
+                "system": "https://fhir.nhs.uk/Id/nhs-number",
+                "value": "9000000009",
+            }
+        },
+        "date": "2023-05-01T12:00:00",
+        "content": [
+            {
+                "attachment": {
+                    "contentType": "application/pdf",
+                    "language": "en-GB",
+                    "title": "test_document.pdf",
+                    "creation": "2023-05-01T12:00:00",
+                    "url": "https://api.gov.uk/DocumentReference/Y05868-1634567890",
+                }
+            }
+        ],
+        "author": [
+            {
+                "identifier": {
+                    "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                    "value": "Y12345",
+                }
+            }
+        ],
+        "custodian": {
+            "identifier": {
+                "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                "value": "Y12345",
+            }
+        },
+        "type": {
+            "coding": [
+                {
+                    "system": "http://snomed.info/sct",
+                    "code": "16521000000101",
+                    "display": "Lloyd George record folder",
+                }
+            ]
+        },
+    }
 
     result = mock_document_service.create_document_reference_fhir_response(
         mock_document_reference
     )
 
     assert isinstance(result, dict)
-    assert result["resourceType"] == "DocumentReference"
-    assert result["status"] == "current"
-    assert (
-        result["subject"]["identifier"]["value"] == mock_document_reference.nhs_number
-    )
-    assert len(result["content"]) == 1
-    assert (
-        result["content"][0]["attachment"]["title"] == mock_document_reference.file_name
-    )
-    assert (
-        result["content"][0]["attachment"]["creation"]
-        == mock_document_reference.created
-    )
-    assert result["content"][0]["attachment"]["contentType"] == "application/pdf"
-    assert result["content"][0]["attachment"]["language"] == "en-GB"
+    assert result == expected_fhir_response

@@ -1,6 +1,5 @@
 import json
 import os
-from datetime import datetime
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
@@ -76,7 +75,6 @@ class DocumentReferenceSearchService(DocumentService):
 
         bundle = Bundle(
             type="searchset",
-            timestamp=datetime.now(),
             total=len(entries),
             entry=entries,
         ).model_dump(exclude_none=True)
@@ -143,8 +141,9 @@ class DocumentReferenceSearchService(DocumentService):
             DocumentReferenceInfo(
                 nhsNumber=document_reference.nhs_number,
                 attachment=document_details,
+                custodian=document_reference.current_gp_ods,
             )
-            .create_minimal_fhir_document_reference_object()
+            .create_general_fhir_document_reference_object(document_reference)
             .model_dump(exclude_none=True)
         )
         return fhir_document_reference

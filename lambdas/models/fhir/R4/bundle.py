@@ -67,7 +67,9 @@ class Bundle(BaseModel):
         "searchset",
         "collection",
     ] = Field(...)
-    timestamp: Optional[datetime] = None
+    timestamp: int = Field(
+        default_factory=lambda: int(datetime.now().timestamp()),
+    )
     total: Optional[int] = None
     link: Optional[List[Link]] = None
     entry: Optional[List[BundleEntry]] = None
