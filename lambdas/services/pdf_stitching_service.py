@@ -16,6 +16,7 @@ from models.fhir.R4.fhir_document_reference import Attachment
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pypdf import PdfReader, PdfWriter
+from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
@@ -319,20 +320,23 @@ class PdfStitchingService:
             logger.error(f"Failed to rollback multipart migration process: {e}")
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
 
-    def process_manual_trigger(self, ods_code: str):
+    def process_manual_trigger(self, ods_code: str, queue_url):
         nhs_numbers = self.get_nhs_numbers_based_on_ods_code(ods_code=ods_code)
 
+        sqs_repository = BulkUploadSqsRepository()
         for nhs_number in nhs_numbers:
             pdf_stitching_sqs_message = PdfStitchingSqsMessage(
                 nhs_number=nhs_number,
                 snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
             )
-            self.process_message(stitching_message=pdf_stitching_sqs_message)
+            sqs_repository.send_message_to_pdf_stitching_queue(
+                queue_url=queue_url,
+                message=pdf_stitching_sqs_message,
+            )
 
     def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
-        # self.table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         documents = self.document_service.fetch_documents_from_table(
-            table=os.environ["UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME"],
+            table=os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
             index_name="OdsCodeIndex",
             search_key="DocumentReferenceMetadataFields.CURRENT_GP_ODS.value",
             search_condition=ods_code,

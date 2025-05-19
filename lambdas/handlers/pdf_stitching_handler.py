@@ -1,4 +1,5 @@
 import json
+import os
 from json import JSONDecodeError
 
 from enums.lambda_error import LambdaError
@@ -80,7 +81,9 @@ def handle_manual_trigger(event, pdf_stitching_service):
     if not ods_code:
         raise OdsErrorException("No ODS code provided")
 
-    pdf_stitching_service.process_manual_trigger(ods_code=ods_code)
+    pdf_stitching_service.process_manual_trigger(
+        ods_code=ods_code, queue_url=os.environ["PDF_STITCHING_SQS_URL"]
+    )
 
     return ApiGatewayResponse(
         200, "Successfully processed PDF stitching for a manual trigger", "GET"
