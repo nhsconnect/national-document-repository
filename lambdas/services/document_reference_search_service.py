@@ -3,6 +3,7 @@ import os
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
+from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from inflection import underscore
@@ -12,7 +13,8 @@ from models.fhir.R4.nrl_fhir_document_reference import Attachment, DocumentRefer
 from pydantic import ValidationError
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import NotDeleted
+from utils.common_query_filters import UploadCompleted
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentRefSearchException
 
@@ -20,18 +22,21 @@ logger = LoggingService(__name__)
 
 
 class DocumentReferenceSearchService(DocumentService):
-    def get_document_references(self, nhs_number: str, return_fhir: bool = False):
+    def get_document_references(
+        self, nhs_number: str, return_fhir: bool = False, additional_filters=None
+    ):
         """
         Fetch document references for a given NHS number.
 
         :param nhs_number: The NHS number to search for.
         :param return_fhir: If True, return FHIR DocumentReference objects.
+        :param additional_filters: Additional filters to apply to the search.
         :return: List of document references or FHIR DocumentReferences.
         """
         try:
             list_of_table_names = self._get_table_names()
             results = self._search_tables_for_documents(
-                nhs_number, list_of_table_names, return_fhir
+                nhs_number, list_of_table_names, return_fhir, additional_filters
             )
             return results
         except (
@@ -54,12 +59,16 @@ class DocumentReferenceSearchService(DocumentService):
             raise
 
     def _search_tables_for_documents(
-        self, nhs_number: str, table_names: list[str], return_fhir: bool
+        self, nhs_number: str, table_names: list[str], return_fhir: bool, filters=None
     ):
         document_resources = []
         for table_name in table_names:
             logger.info(f"Searching for results in {table_name}")
-            documents = self._fetch_documents(nhs_number, table_name, NotDeleted)
+            if filters:
+                filter_expression = self._build_filter_expression(filters)
+            else:
+                filter_expression = UploadCompleted
+            documents = self._fetch_documents(nhs_number, table_name, filter_expression)
             self._validate_upload_status(documents)
             document_resources.extend(
                 self._process_documents(documents, return_fhir=return_fhir)
@@ -126,6 +135,33 @@ class DocumentReferenceSearchService(DocumentService):
             }
         )
         return base_model
+
+    def _build_filter_expression(self, filter_values: dict[str, str]):
+        filter_builder = DynamoQueryFilterBuilder()
+        for filter_key, filter_value in filter_values.items():
+            if filter_key == "custodian":
+                filter_builder.add_condition(
+                    attribute=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+                    attr_operator=AttributeOperator.EQUAL,
+                    filter_value=filter_value,
+                )
+            elif filter_key == "file_type":
+                # placeholder for future filtering
+                pass
+        filter_expression = (
+            filter_builder.add_condition(
+                attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+                attr_operator=AttributeOperator.EQUAL,
+                filter_value="",
+            )
+            .add_condition(
+                attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
+                attr_operator=AttributeOperator.EQUAL,
+                filter_value=False,
+            )
+            .build()
+        )
+        return filter_expression
 
     def create_document_reference_fhir_response(
         self,

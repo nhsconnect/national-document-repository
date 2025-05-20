@@ -10,7 +10,7 @@ from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_reference_search_service import DocumentReferenceSearchService
 from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
-from utils.common_query_filters import NotDeleted
+from utils.common_query_filters import NotDeleted, UploadCompleted
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentRefSearchException
 
@@ -156,7 +156,7 @@ def test_get_document_references_success(mock_document_service, mocker):
     assert result == [{"id": "123"}]
     mock_get_table_names.assert_called_once()
     mock_search_document.assert_called_once_with(
-        "1234567890", ["table1", "table2"], False
+        "1234567890", ["table1", "table2"], False, None
     )
 
 
@@ -194,8 +194,8 @@ def test_search_tables_for_documents_non_fhir(mock_document_service, mocker):
     )
     mock_fetch_document_method.assert_has_calls(
         [
-            call("1234567890", "table1", NotDeleted),
-            call("1234567890", "table2", NotDeleted),
+            call("1234567890", "table1", UploadCompleted),
+            call("1234567890", "table2", UploadCompleted),
         ]
     )
 
@@ -221,8 +221,8 @@ def test_search_tables_for_documents_fhir(mock_document_service, mocker):
 
     mock_fetch_document_method.assert_has_calls(
         [
-            call("1234567890", "table1", NotDeleted),
-            call("1234567890", "table2", NotDeleted),
+            call("1234567890", "table1", UploadCompleted),
+            call("1234567890", "table2", UploadCompleted),
         ]
     )
     mock_process_document_fhir.assert_has_calls(

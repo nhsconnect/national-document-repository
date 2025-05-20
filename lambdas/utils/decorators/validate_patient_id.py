@@ -29,11 +29,11 @@ def validate_patient_id(lambda_func: Callable):
     """
 
     def interceptor(event, context):
+        nhs_number = ""
         try:
             nhs_number = extract_nhs_number_from_event(event)
             validate_nhs_number(nhs_number)
         except InvalidResourceIdException as e:
-            nhs_number = extract_nhs_number_from_event(event)
             logger.error(
                 f"{LambdaError.PatientIdInvalid.to_str()}: {str(e)}",
                 {"Result": f"Invalid patient number {nhs_number}"},
@@ -62,7 +62,7 @@ def validate_patient_id(lambda_func: Callable):
 
 def validate_patient_id_fhir(lambda_func: Callable):
     """A decorator for lambda handler.
-    Verify that the incoming event contains a valid patientId (nhs number).
+    Verify that the incoming event contains a valid subject:identifier (nhs number).
     If not, returns a 400 Bad request response before the actual lambda was triggered in a fhir format.
 
     Usage:
@@ -72,11 +72,15 @@ def validate_patient_id_fhir(lambda_func: Callable):
     """
 
     def interceptor(event, context):
+        nhs_number = ""
         try:
-            nhs_number = extract_nhs_number_from_event(event)
+            querystring = event.get("queryStringParameters")
+            if querystring is None:
+                raise KeyError
+            subject_identifier = querystring["subject:identifier"]
+            nhs_number = subject_identifier.split("|")[-1]
             validate_nhs_number(nhs_number)
         except InvalidResourceIdException as e:
-            nhs_number = extract_nhs_number_from_event(event)
             logger.error(
                 f"{LambdaError.PatientIdInvalid.to_str()}: {str(e)}",
                 {"Result": f"Invalid patient number {nhs_number}"},
@@ -91,7 +95,7 @@ def validate_patient_id_fhir(lambda_func: Callable):
                 methods=event["httpMethod"],
             ).create_api_gateway_response()
 
-        except KeyError as e:
+        except (KeyError, IndexError) as e:
             logger.error(
                 f"{LambdaError.PatientIdNoKey.to_str()}: {str(e)}",
                 {"Result": "An error occurred due to missing key"},
