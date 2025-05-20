@@ -1,11 +1,11 @@
 $govuk-compatibility-govukelements: true;
 @import 'govuk-frontend/dist/govuk/base';
-@import 'govuk-frontend/dist/govuk/core';
-@import 'govuk-frontend/dist/govuk/utilities';
-@import 'govuk-frontend/dist/govuk/components/phase-banner';
-@import 'govuk-frontend/dist/govuk/components/warning-text';
-@import 'govuk-frontend/dist/govuk/components/notification-banner';
-@import 'govuk-frontend/dist/govuk/components/pagination';
+@import 'govuk-frontend/dist/govuk/core/index';
+@import 'govuk-frontend/dist/govuk/utilities/index';
+@import 'govuk-frontend/dist/govuk/components/phase-banner/phase-banner';
+@import 'govuk-frontend/dist/govuk/components/warning-text/warning-text';
+@import 'govuk-frontend/dist/govuk/components/notification-banner/notification-banner';
+@import 'govuk-frontend/dist/govuk/components/pagination/pagination';
 
 @import 'nhsuk-frontend/packages/nhsuk';
 @import 'nhsuk-frontend/packages/core/all';
