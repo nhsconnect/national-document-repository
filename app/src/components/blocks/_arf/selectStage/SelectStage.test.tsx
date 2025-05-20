@@ -10,41 +10,42 @@ import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { useState } from 'react';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
+const mockedUseNavigate = vi.fn();
 
-jest.mock('../../../../helpers/requests/uploadDocuments');
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../../helpers/utils/toFileList');
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('react-router-dom', () => ({
+vi.mock('../../../../helpers/requests/uploadDocuments');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../../../helpers/utils/toFileList');
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
-    useLocation: () => jest.fn(),
+    useLocation: () => vi.fn(),
 }));
-const mockedUsePatient = usePatient as jest.Mock;
+const mockedUsePatient = usePatient as Mock;
 const mockPatient = buildPatientDetails();
 const documentOne = buildTextFile('one', 100);
 const documentTwo = buildTextFile('two', 200);
 const documentThree = buildTextFile('three', 100);
 const arfDocuments = [documentOne, documentTwo, documentThree];
 
-const setDocumentMock = jest.fn();
+const setDocumentMock = vi.fn();
 setDocumentMock.mockImplementation((document) => {
     document.state = documentUploadStates.SELECTED;
     document.id = '1';
 });
 
-const mockStartUpload = jest.fn();
+const mockStartUpload = vi.fn();
 
 const mockPatientDetails: PatientDetails = buildPatientDetails();
 describe('<SelectStage />', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatient);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Rendering', () => {

@@ -5,19 +5,20 @@ import { routeChildren, routes } from '../../../types/generic/routes';
 import RoleGuard from './RoleGuard';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../helpers/hooks/useRole');
-const mockedUseRole = useRole as jest.Mock;
+vi.mock('../../../helpers/hooks/useRole');
+const mockedUseRole = useRole as Mock;
 
 const guardPage = routes.LLOYD_GEORGE;
 const childGuardPage = routeChildren.LLOYD_GEORGE_DOWNLOAD;
 
 describe('RoleGuard', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
     it('navigates user to unauthorised when role is not accepted', async () => {
         const history = createMemoryHistory({

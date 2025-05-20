@@ -10,25 +10,26 @@ import CompleteStage from './CompleteStage';
 import { useNavigate } from 'react-router-dom';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('react-router-dom');
-jest.mock('../../../../helpers/hooks/usePatient');
+vi.mock('react-router-dom');
+vi.mock('../../../../helpers/hooks/usePatient');
 
-const mockedUsePatient = usePatient as jest.Mock;
+const mockedUsePatient = usePatient as Mock;
 const mockPatientDetails = buildPatientDetails();
 
 describe('<CompleteStage />', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Show complete stage', () => {
         it('with successfully uploaded docs', async () => {
-            const navigateMock = jest.fn();
+            const navigateMock = vi.fn();
             const documentOne: UploadDocument = {
                 file: buildTextFile('one', 100),
                 progress: 0,
