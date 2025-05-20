@@ -20,9 +20,6 @@ from ..conftest import (
     TEST_UUID,
 )
 
-# from unittest.mock import call
-
-
 TEST_TIME = "2024-07-02T15:00:00.000000Z"
 TEST_DYNAMO_RESPONSE = {
     "ID": TEST_UUID,
@@ -48,11 +45,8 @@ def mock_service(mocker, set_env, mock_temp_folder):
 
 
 @pytest.fixture
-def mock_s3_service(mock_service, mocker):
-    mock_s3_service = mock_service.s3_service
-    # mocker.patch.object(mock_s3_service, "download_file")
-    # mocker.patch.object(mock_s3_service, "upload_file")
-    yield mock_s3_service
+def mock_s3_service(mock_service):
+    yield mock_service.s3_service
 
 
 @pytest.fixture
@@ -75,48 +69,6 @@ def mock_stream_context_manager():
         return stream_context_manager()
 
     return _stream_context_manager
-
-
-# def test_download_documents_to_be_zipped(mocker, mock_service):
-#     mock_service.download_file_from_s3 = mocker.MagicMock()
-#     mock_service.download_documents_to_be_zipped()
-#
-#     calls = [
-#         call(TEST_FILE_NAME, TEST_DOCUMENT_LOCATION),
-#         call(f"{TEST_FILE_KEY}2", f"{TEST_DOCUMENT_LOCATION}2"),
-#     ]
-#
-#     mock_service.download_file_from_s3.assert_has_calls(calls)
-
-
-# def test_download_file_from_s3(mock_service, mock_s3_service):
-#     mock_service.download_file_from_s3(TEST_FILE_NAME, TEST_DOCUMENT_LOCATION)
-#
-#     mock_s3_service.download_file.assert_called_once_with(
-#         MOCK_BUCKET,
-#         TEST_FILE_KEY,
-#         f"{mock_service.temp_downloads_dir}/{TEST_FILE_NAME}",
-#     )
-#     assert mock_service.zip_trace_object.job_status != TraceStatus.FAILED
-#
-#
-# def test_download_file_from_s3_raises_exception(mock_service, mock_s3_service):
-#     mock_s3_service.download_file.side_effect = ClientError(
-#         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
-#     )
-#
-#     with pytest.raises(GenerateManifestZipException) as e:
-#         mock_service.download_file_from_s3(TEST_FILE_NAME, TEST_DOCUMENT_LOCATION)
-#
-#     mock_s3_service.download_file.assert_called_once_with(
-#         MOCK_BUCKET,
-#         TEST_FILE_KEY,
-#         f"{mock_service.temp_downloads_dir}/{TEST_FILE_NAME}",
-#     )
-#     assert e.value == GenerateManifestZipException(
-#         500, LambdaError.ZipServiceClientError
-#     )
-#     assert mock_service.zip_trace_object.job_status == TraceStatus.FAILED
 
 
 def test_get_file_bucket_and_key_returns_correct_items(mock_service):
