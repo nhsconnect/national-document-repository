@@ -43,8 +43,8 @@ def validate_nhs_number(nhs_number: str) -> bool:
     if calculated_check_digit == 11:
         calculated_check_digit = 0
 
-    # If the remainder is 1, the number is invalid
-    if remainder == 1 or check_digit != calculated_check_digit:
+    # If the check digit does not match calculated check digit, the number is invalid
+    if check_digit != calculated_check_digit:
         raise InvalidResourceIdException("Invalid NHS number")
 
     return True

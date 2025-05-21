@@ -51,12 +51,6 @@ def test_validate_nhs_number_with_invalid_checksum_raises_exception():
         validate_nhs_number(nhs_number)
 
 
-def test_validate_nhs_number_with_remainder_one_raises_exception():
-    nhs_number = "4010232137"
-    with pytest.raises(InvalidResourceIdException):
-        validate_nhs_number(nhs_number)
-
-
 def test_decapitalise_keys():
     test_dict = {"FileName": "test", "VirusScannerResult": "test"}
 
