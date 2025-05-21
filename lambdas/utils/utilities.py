@@ -11,7 +11,7 @@ from services.base.ssm_service import SSMService
 from services.mock_pds_service import MockPdsApiService
 from services.patient_search_service import PatientSearch
 from services.pds_api_service import PdsApiService
-from utils.exceptions import InvalidResourceIdException
+from utils.exceptions import InvalidNhsNumberException
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
@@ -27,7 +27,7 @@ def validate_nhs_number(nhs_number: str) -> bool:
 
     # Ensure the cleaned string is exactly 10 digits
     if not re.fullmatch(r"\d{10}", nhs_number):
-        raise InvalidResourceIdException("Invalid NHS number")
+        raise InvalidNhsNumberException("Invalid NHS number length")
 
     # Extract the main digits and the check digit
     digits = [int(digit) for digit in nhs_number]
@@ -45,7 +45,7 @@ def validate_nhs_number(nhs_number: str) -> bool:
 
     # If the check digit does not match calculated check digit, the number is invalid
     if check_digit != calculated_check_digit:
-        raise InvalidResourceIdException("Invalid NHS number")
+        raise InvalidNhsNumberException("Invalid NHS number format")
 
     return True
 
