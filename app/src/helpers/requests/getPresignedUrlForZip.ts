@@ -64,6 +64,7 @@ const getPresignedUrlForZip = async (args: Args) => {
             await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
         }
         // await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+        firstAttempt = false;
         const pollingResponse = await pollForPresignedUrl({
             baseUrl,
             baseHeaders,
