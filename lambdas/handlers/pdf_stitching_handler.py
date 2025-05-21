@@ -12,7 +12,6 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_sqs_message_event import validate_sqs_event
-from utils.exceptions import OdsErrorException
 from utils.lambda_exceptions import PdfStitchingException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -79,7 +78,9 @@ def handle_manual_trigger(event, pdf_stitching_service):
     logger.info("Received PDF Stitching manual trigger event")
     ods_code = event.get("ods_code")
     if not ods_code:
-        raise OdsErrorException("No ODS code provided")
+        return ApiGatewayResponse(
+            400, "bad request", "GET"
+        ).create_api_gateway_response()
 
     pdf_stitching_service.process_manual_trigger(
         ods_code=ods_code, queue_url=os.environ["PDF_STITCHING_SQS_URL"]
