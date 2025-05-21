@@ -374,10 +374,6 @@ class LambdaError(Enum):
         "err_code": "GMZ_5002",
         "message": "Failed to generate document manifest",
     }
-    ZipCreationError = {
-        "err_code": "GMZ_5003",
-        "message": "Failed to generate zip",
-    }
     """
        Errors for Update Upload State lambda 
     """

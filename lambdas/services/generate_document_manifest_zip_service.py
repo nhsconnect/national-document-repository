@@ -26,7 +26,7 @@ class DocumentManifestZipService:
         self.zip_file_name = f"patient-record-{zip_trace.job_id}.zip"
 
     def handle_zip_request(self):
-        self.update_processing_status()
+        self.update_status(TraceStatus.PROCESSING)
         zip_buffer = self.stream_zip_documents()
         self.upload_zip_file(zip_buffer)
         self.update_dynamo_with_fields({"job_status", "zip_file_location"})
@@ -37,57 +37,41 @@ class DocumentManifestZipService:
 
         zip_buffer = io.BytesIO()
 
-        try:
-            with zipfile.ZipFile(
-                zip_buffer, "w", compression=zipfile.ZIP_DEFLATED
-            ) as zipf:
-                for document_location, document_name in documents.items():
-                    file_bucket, file_key = self.get_file_bucket_and_key(
-                        document_location
+        with zipfile.ZipFile(zip_buffer, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
+            for document_location, document_name in documents.items():
+                file_bucket, file_key = self.get_file_bucket_and_key(document_location)
+                try:
+                    # Stream file from S3
+                    s3_object_stream = self.s3_service.get_object_stream(
+                        file_bucket, file_key
                     )
-                    try:
-                        # Stream file from S3
-                        s3_object_stream = self.s3_service.get_object_stream(
-                            file_bucket, file_key
+                    with zipf.open(document_name, mode="w") as zip_member:
+                        shutil.copyfileobj(
+                            s3_object_stream, zip_member, length=64 * 1024
                         )
-
-                        with s3_object_stream as stream:
-                            with zipf.open(document_name, mode="w") as zip_member:
-                                shutil.copyfileobj(stream, zip_member, length=64 * 1024)
-
-                    except ClientError as e:
-                        self.update_failed_status()
-                        msg = f"Failed to fetch S3 object {file_bucket}/{file_key}: {e}"
-                        logger.error(
-                            f"{LambdaError.ZipServiceClientError.to_str()} {msg}"
-                        )
-                        raise GenerateManifestZipException(
-                            status_code=500, error=LambdaError.ZipServiceClientError
-                        )
-
-            zip_buffer.seek(0)
-            return zip_buffer
-
-        except Exception as e:
-            self.update_failed_status()
-            if isinstance(e, GenerateManifestZipException):
-                raise
-            logger.error(f"ZIP creation failed: {e}", {"Result": "Failure"})
-            raise GenerateManifestZipException(
-                status_code=500, error=LambdaError.ZipCreationError
-            )
+                except ClientError as e:
+                    # self.update_failed_status()
+                    self.update_status(TraceStatus.FAILED)
+                    msg = f"Failed to fetch S3 object {file_bucket}/{file_key}: {e}"
+                    logger.error(f"{LambdaError.ZipServiceClientError.to_str()} {msg}")
+                    raise GenerateManifestZipException(
+                        status_code=500, error=LambdaError.ZipServiceClientError
+                    )
+        zip_buffer.seek(0)
+        return zip_buffer
 
     def get_file_bucket_and_key(self, file_location: str):
         try:
             file_bucket, file_key = file_location.replace("s3://", "").split("/", 1)
             return file_bucket, file_key
         except ValueError:
-            self.update_failed_status()
+            self.update_status(TraceStatus.FAILED)
             raise InvalidDocumentReferenceException(
                 "Failed to parse bucket from file location string"
             )
 
     def upload_zip_file(self, zip_buffer: io.BytesIO):
+        logger.info("Uploading zip file to s3")
         zip_file_key = f"{self.zip_file_name}"
         self.zip_trace_object.zip_file_location = (
             f"s3://{self.zip_output_bucket}/{zip_file_key}"
@@ -101,7 +85,7 @@ class DocumentManifestZipService:
             )
 
         except ClientError as e:
-            self.update_failed_status()
+            self.update_status(TraceStatus.FAILED)
             logger.error(e, {"Result": "Failed to create document manifest"})
             raise GenerateManifestZipException(
                 status_code=500, error=LambdaError.ZipServiceClientError
@@ -119,10 +103,6 @@ class DocumentManifestZipService:
             ),
         )
 
-    def update_processing_status(self):
-        self.zip_trace_object.job_status = TraceStatus.PROCESSING
-        self.update_dynamo_with_fields({"job_status"})
-
-    def update_failed_status(self):
-        self.zip_trace_object.job_status = TraceStatus.FAILED
+    def update_status(self, job_status: TraceStatus):
+        self.zip_trace_object.job_status = job_status
         self.update_dynamo_with_fields({"job_status"})

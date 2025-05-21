@@ -13,6 +13,7 @@ from utils.lambda_exceptions import GenerateManifestZipException
 
 from ..conftest import (
     MOCK_BUCKET,
+    MOCK_CLIENT_ERROR,
     TEST_DOCUMENT_LOCATION,
     TEST_FILE_KEY,
     TEST_FILE_NAME,
@@ -59,14 +60,9 @@ def mock_dynamo_service(mock_service, mocker):
 @pytest.fixture
 def mock_stream_context_manager():
     def _stream_context_manager(file_content: bytes):
-        class stream_context_manager:
-            def __enter__(self):
-                return io.BytesIO(file_content)
-
-            def __exit__(self, exc_type, exc_val, exc_tb):
-                pass
-
-        return stream_context_manager()
+        stream = io.BytesIO(file_content)
+        stream.seek(0)
+        return stream
 
     return _stream_context_manager
 
@@ -149,12 +145,12 @@ def test_update_dynamo(mock_service, mock_dynamo_service):
 
 
 def test_update_processing_status(mock_service):
-    mock_service.update_processing_status()
+    mock_service.update_status(TraceStatus.PROCESSING)
     assert mock_service.zip_trace_object.job_status == TraceStatus.PROCESSING
 
 
 def test_update_failed_status(mock_service):
-    mock_service.update_failed_status()
+    mock_service.update_status(TraceStatus.FAILED)
     assert mock_service.zip_trace_object.job_status == TraceStatus.FAILED
 
 
@@ -163,8 +159,8 @@ def test_stream_zip_documents(
 ):
     file_content = b"Dummy file content"
 
-    mock_s3_service.get_object_stream.return_value = mock_stream_context_manager(
-        file_content
+    mock_s3_service.get_object_stream.side_effect = (
+        lambda *args, **kwargs: mock_stream_context_manager(file_content)
     )
     mock_copyfileobj = mocker.patch("shutil.copyfileobj", wraps=shutil.copyfileobj)
 
@@ -186,11 +182,7 @@ def test_stream_zip_documents(
 def test_stream_zip_documents_raises_client_error(
     mocker, mock_service, mock_s3_service
 ):
-    from botocore.exceptions import ClientError
-
-    mock_s3_service.get_object_stream.side_effect = ClientError(
-        {"Error": {"Code": "500", "Message": "S3 error"}}, "GetObject"
-    )
+    mock_s3_service.get_object_stream.side_effect = MOCK_CLIENT_ERROR
 
     mocker.patch.object(
         mock_service, "get_file_bucket_and_key", return_value=("bucket", "key")
@@ -200,26 +192,5 @@ def test_stream_zip_documents_raises_client_error(
         mock_service.stream_zip_documents()
 
     assert exc_info.value.error == LambdaError.ZipServiceClientError
-    assert exc_info.value.status_code == 500
-    assert mock_service.zip_trace_object.job_status == TraceStatus.FAILED
-
-
-def test_stream_zip_documents_raises_zip_creation_error(
-    mocker, mock_service, mock_s3_service, mock_stream_context_manager
-):
-    file_content = b"Dummy file content"
-
-    mock_s3_service.get_object_stream.return_value = mock_stream_context_manager(
-        file_content
-    )
-    mocker.patch.object(
-        mock_service, "get_file_bucket_and_key", return_value=("bucket", "key")
-    )
-    mocker.patch("zipfile.ZipFile.__enter__", side_effect=OSError("Disk error"))
-
-    with pytest.raises(GenerateManifestZipException) as exc_info:
-        mock_service.stream_zip_documents()
-
-    assert exc_info.value.error == LambdaError.ZipCreationError
     assert exc_info.value.status_code == 500
     assert mock_service.zip_trace_object.job_status == TraceStatus.FAILED
