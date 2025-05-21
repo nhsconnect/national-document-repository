@@ -7,7 +7,7 @@ import waitForSeconds from '../utils/waitForSeconds';
 import { DownloadManifestError } from '../../types/generic/errors';
 import { isRunningInCypress } from '../utils/isLocal';
 
-export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 10;
+export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 5;
 
 type Args = {
     nhsNumber: string;
@@ -33,9 +33,13 @@ const getPresignedUrlForZip = async (args: Args) => {
 
     const jobId = await requestJobId(args);
     let pendingCount = 0;
-
-    while (pendingCount < 3) {
-        await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+    const startTime = Date.now();
+    const maxDuration = 29_900;
+    let firstAttempt = true;
+    while (Date.now() - startTime < maxDuration) {
+        if (!firstAttempt) {
+            await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+        }
         const pollingResponse = await pollForPresignedUrl({
             baseUrl,
             baseHeaders,
@@ -49,12 +53,33 @@ const getPresignedUrlForZip = async (args: Args) => {
             case JOB_STATUS.PROCESSING:
                 continue;
             case JOB_STATUS.PENDING:
-                pendingCount += 1;
+                // pendingCount += 1;
                 continue;
             default:
                 throw new DownloadManifestError(UnexpectedResponseMessage);
         }
     }
+    // while (pendingCount < 3) {
+    //     await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+    //     const pollingResponse = await pollForPresignedUrl({
+    //         baseUrl,
+    //         baseHeaders,
+    //         jobId,
+    //         nhsNumber,
+    //     });
+    //
+    //     switch (pollingResponse?.jobStatus) {
+    //         case JOB_STATUS.COMPLETED:
+    //             return pollingResponse.url;
+    //         case JOB_STATUS.PROCESSING:
+    //             continue;
+    //         case JOB_STATUS.PENDING:
+    //             pendingCount += 1;
+    //             continue;
+    //         default:
+    //             throw new DownloadManifestError(UnexpectedResponseMessage);
+    //     }
+    // }
     throw new DownloadManifestError(ThreePendingErrorMessage);
 };
 
