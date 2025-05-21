@@ -46,7 +46,7 @@ Once everything is up and running you should see a prompt in the CLI that the ap
 
 ### 1. UI Tests
 
-You can run the unit tests for the app [Jest](https://jestjs.io/) by running
+You can run the unit tests for the app [Vitest](https://vitest.dev/) by running
 
 ```bash
 make test-ui

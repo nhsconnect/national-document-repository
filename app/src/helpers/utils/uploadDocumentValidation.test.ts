@@ -23,6 +23,7 @@ import {
 } from '../../types/pages/UploadDocumentsPage/types';
 import { UPLOAD_FILE_ERROR_TYPE } from './fileUploadErrorMessages';
 import { fromOneToN } from './validationHelpers';
+import { describe, expect, it } from 'vitest';
 
 describe('uploadDocumentValidation', () => {
     describe('file validation', () => {

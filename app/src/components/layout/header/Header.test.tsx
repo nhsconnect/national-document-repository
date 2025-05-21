@@ -6,21 +6,23 @@ import SessionProvider, { Session } from '../../../providers/sessionProvider/Ses
 import { routes } from '../../../types/generic/routes';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-jest.mock('../../../helpers/hooks/useRole');
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-const mockedUseRole = useRole as jest.Mock;
+vi.mock('../../../helpers/hooks/useRole');
 
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockedUseRole = useRole as Mock;
+
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
 describe('Header', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Rendering', () => {

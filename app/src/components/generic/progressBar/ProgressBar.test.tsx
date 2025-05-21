@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import ProgressBar from './ProgressBar';
+import { describe, expect, it } from 'vitest';
 
 describe('ProgressBar', () => {
     it('displays status text for the progress bar', () => {

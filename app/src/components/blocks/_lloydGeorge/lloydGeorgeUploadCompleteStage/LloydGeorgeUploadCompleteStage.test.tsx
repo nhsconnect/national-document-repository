@@ -11,24 +11,24 @@ import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../../helpers/hooks/usePatient');
-const mockedUsePatient = usePatient as jest.Mock;
+vi.mock('../../../../helpers/hooks/usePatient');
 const mockPatient = buildPatientDetails();
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
-const mockedUseNavigate = jest.fn();
+const mockedUseNavigate = vi.fn();
 
 describe('LloydGeorgeUploadComplete', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
-        mockedUsePatient.mockReturnValue(mockPatient);
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
+        vi.mocked(usePatient).mockReturnValue(mockPatient);
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders the card component with patient details', () => {

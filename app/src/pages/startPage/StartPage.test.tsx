@@ -1,13 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import StartPage from './StartPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
-jest.mock('react-router-dom');
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('react-router-dom');
 describe('StartPage', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders the page header', () => {
