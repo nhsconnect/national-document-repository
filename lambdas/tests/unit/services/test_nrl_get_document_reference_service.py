@@ -56,6 +56,7 @@ MOCK_USER_INFO = {
 MOCK_FHIR_DOCUMENT = {
     "resourceType": "DocumentReference",
     "status": "current",
+    "docStatus": "final",
     "type": {
         "coding": [
             {
