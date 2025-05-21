@@ -3,21 +3,22 @@ import { routes } from '../../../types/generic/routes';
 import PatientGuard from './PatientGuard';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
-jest.mock('../../../helpers/hooks/usePatient');
-const mockedUsePatient = usePatient as jest.Mock;
+vi.mock('../../../helpers/hooks/usePatient');
+const mockedUsePatient = usePatient as Mock;
 const patientDetails = buildPatientDetails();
 
 describe('AuthGuard', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
     it('navigates user to search patient page when no patient details are stored', async () => {
         mockedUsePatient.mockReturnValue(null);

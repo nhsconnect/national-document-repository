@@ -6,37 +6,30 @@ import userEvent from '@testing-library/user-event';
 import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
 import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
-import { MomentInput } from 'moment';
 
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../../helpers/utils/toFileList', () => ({
+vi.mock('../../../../helpers/utils/toFileList', () => ({
     default: () => [],
 }));
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('react-router-dom', () => ({
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
-jest.mock('moment', () => {
-    return (arg: MomentInput) => {
-        if (!arg) {
-            arg = '2020-01-01T00:00:00.000Z';
-        }
-        return jest.requireActual('moment')(arg);
-    };
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
-window.scrollTo = jest.fn() as jest.Mock;
+window.scrollTo = vi.fn() as Mock;
 
-const submitDocumentsMock = jest.fn();
+const submitDocumentsMock = vi.fn();
 
-const mockedUsePatient = usePatient as jest.Mock;
+const mockedUsePatient = usePatient as Mock;
 const mockPatient = buildPatientDetails();
 
-const mockedUseNavigate = jest.fn();
+const mockedUseNavigate = vi.fn();
 
 const lgDocumentOne = buildLgFile(1, 2, 'John Doe');
 const lgDocumentTwo = buildLgFile(2, 2, 'John Doe');
@@ -65,11 +58,11 @@ const mockPatientNonStandardCharName = buildPatientDetails({
 
 describe('<LloydGeorgeFileInputStage />', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatient);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('upload documents with an NHS number', () => {

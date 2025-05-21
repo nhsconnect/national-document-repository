@@ -1,4 +1,5 @@
 import { getLastURLPath } from './urlManipulations';
+import { describe, expect, it } from 'vitest';
 
 describe('getLastURLPath', () => {
     it('return the last part of a url path', () => {
