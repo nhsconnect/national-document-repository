@@ -148,19 +148,17 @@ class DocumentReferenceSearchService(DocumentService):
             elif filter_key == "file_type":
                 # placeholder for future filtering
                 pass
-        filter_expression = (
-            filter_builder.add_condition(
-                attribute=str(DocumentReferenceMetadataFields.DELETED.value),
-                attr_operator=AttributeOperator.EQUAL,
-                filter_value="",
-            )
-            .add_condition(
-                attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
-                attr_operator=AttributeOperator.EQUAL,
-                filter_value=False,
-            )
-            .build()
+        filter_builder.add_condition(
+            attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+            attr_operator=AttributeOperator.EQUAL,
+            filter_value="",
         )
+        filter_builder.add_condition(
+            attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
+            attr_operator=AttributeOperator.EQUAL,
+            filter_value=False,
+        )
+        filter_expression = filter_builder.build()
         return filter_expression
 
     def create_document_reference_fhir_response(

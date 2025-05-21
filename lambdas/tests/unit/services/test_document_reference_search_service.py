@@ -3,8 +3,11 @@ from json import JSONDecodeError
 from unittest.mock import MagicMock, call
 
 import pytest
+from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
+from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
@@ -38,6 +41,16 @@ def mock_document_service(mocker, set_env):
     mocker.patch.object(service, "fetch_documents_from_table_with_nhs_number")
     mocker.patch.object(service, "is_upload_in_process", return_value=False)
     return service
+
+
+@pytest.fixture
+def mock_filter_builder(mocker):
+    mock_filter = mocker.MagicMock()
+    mocker.patch(
+        "services.document_reference_search_service.DynamoQueryFilterBuilder",
+        return_value=mock_filter,
+    )
+    return mock_filter
 
 
 def test_get_document_references_raise_json_error_when_no_table_list(
@@ -407,3 +420,58 @@ def test_create_document_reference_fhir_response_integration(
 
     assert isinstance(result, dict)
     assert result == expected_fhir_response
+
+
+def test_build_filter_expression_custodian(mock_document_service):
+    filter_values = {"custodian": "12345"}
+    expected_filter = (
+        Attr("CurrentGpOds").eq("12345")
+        & Attr("Deleted").eq("")
+        & Attr("Uploaded").eq(False)
+    )
+
+    actual_filter = mock_document_service._build_filter_expression(filter_values)
+
+    assert expected_filter == actual_filter
+
+
+def test_build_filter_expression_custodian_mocked(
+    mock_document_service, mock_filter_builder
+):
+    filter_values = {"custodian": "12345"}
+
+    mock_document_service._build_filter_expression(filter_values)
+
+    mock_filter_builder.add_condition.assert_any_call(
+        attribute=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+        attr_operator=AttributeOperator.EQUAL,
+        filter_value="12345",
+    )
+
+
+def test_build_filter_expression_defaults(mock_document_service):
+    filter_values = {}
+    expected_filter = Attr("Deleted").eq("") & Attr("Uploaded").eq(False)
+
+    actual_filter = mock_document_service._build_filter_expression(filter_values)
+
+    assert actual_filter == expected_filter
+
+
+def test_build_filter_expression_defaults_mocked(
+    mock_document_service, mock_filter_builder
+):
+    filter_values = {}
+
+    mock_document_service._build_filter_expression(filter_values)
+
+    mock_filter_builder.add_condition.assert_any_call(
+        attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+        attr_operator=AttributeOperator.EQUAL,
+        filter_value="",
+    )
+    mock_filter_builder.add_condition.assert_any_call(
+        attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
+        attr_operator=AttributeOperator.EQUAL,
+        filter_value=False,
+    )
