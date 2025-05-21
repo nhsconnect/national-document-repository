@@ -76,7 +76,7 @@ def handle_sqs_request(event, pdf_stitching_service):
 
 def handle_manual_trigger(event, pdf_stitching_service):
     logger.info("Received PDF Stitching manual trigger event")
-    ods_code = event.get("ods_code")
+    ods_code = event.get("odsCode")
     if not ods_code:
         return ApiGatewayResponse(
             400, "bad request", "GET"
