@@ -16,10 +16,35 @@ from utils.exceptions import InvalidResourceIdException
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
-def validate_nhs_number(patient_id: str) -> bool:
-    pattern = re.compile("^\\d{10}$")
+def validate_nhs_number(nhs_number: str) -> bool:
+    """
+    Validate an NHS number using the Modulus 11 algorithm.
+    The NHS number must be 10 digits, with the last digit being the check digit.
+    Accepts NHS numbers with spaces or dashes.
+    """
+    # Remove any non-digit characters (e.g. spaces, dashes)
+    nhs_number = re.sub(r"\D", "", nhs_number)
 
-    if not bool(pattern.match(patient_id)):
+    # Ensure the cleaned string is exactly 10 digits
+    if not re.fullmatch(r"\d{10}", nhs_number):
+        raise InvalidResourceIdException("Invalid NHS number")
+
+    # Extract the main digits and the check digit
+    digits = [int(digit) for digit in nhs_number]
+    check_digit = digits.pop()
+
+    # Calculate the modulus 11 checksum
+    weights = list(range(10, 1, -1))
+    total = sum(w * d for w, d in zip(weights, digits))
+    remainder = total % 11
+    calculated_check_digit = 11 - remainder
+
+    # Adjust the check digit if necessary
+    if calculated_check_digit == 11:
+        calculated_check_digit = 0
+
+    # If the remainder is 1, the number is invalid
+    if remainder == 1 or check_digit != calculated_check_digit:
         raise InvalidResourceIdException("Invalid NHS number")
 
     return True
