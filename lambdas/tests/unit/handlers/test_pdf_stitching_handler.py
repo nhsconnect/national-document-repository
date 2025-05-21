@@ -37,7 +37,7 @@ def mock_pdf_stitching_service(mocker):
 def test_lambda_handler_routes_to_sqs(
     mocker, context, mock_process_pathways, mock_pdf_stitching_service
 ):
-    mock_process, _ = mock_process_pathways
+    mock_process_message, _ = mock_process_pathways
     event = {
         "ods_code": "Y12345",
         "Records": [{"eventSource": "aws:sqs", "body": "mock body"}],
@@ -54,7 +54,7 @@ def test_lambda_handler_routes_to_sqs(
 def test_lambda_handler_manually_triggers(
     mocker, context, mock_process_pathways, mock_pdf_stitching_service
 ):
-    mock_process, _ = mock_process_pathways
+    mock_process_message, _ = mock_process_pathways
     event = {
         "ods_code": "Y12345",
         "Records": [{"eventSource": "something", "body": "mock body"}],
@@ -100,7 +100,7 @@ def test_handler_processes_valid_stitching_message(
 
 @pytest.mark.parametrize("invalid_event", [{}, {"Records": []}])
 def test_handler_handles_empty_message(context, mock_process_pathways, invalid_event):
-    mock_process, _ = mock_process_pathways
+    mock_process_message, _ = mock_process_pathways
     request_context.request_id = MOCK_INTERACTION_ID
     expected = ApiGatewayResponse(
         status_code=400,
@@ -111,7 +111,7 @@ def test_handler_handles_empty_message(context, mock_process_pathways, invalid_e
     actual = handle_sqs_request(invalid_event, context)
 
     assert actual == expected
-    mock_process.assert_not_called()
+    mock_process_message.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -134,13 +134,13 @@ def test_handler_handles_empty_message(context, mock_process_pathways, invalid_e
 def test_handler_handles_invalid_message_raises_exception(
     context, mock_process_pathways, invalid_event, exception
 ):
-    mock_process, _ = mock_process_pathways
+    mock_process_message, _ = mock_process_pathways
     request_context.request_id = MOCK_INTERACTION_ID
 
     with pytest.raises(exception):
         lambda_handler(invalid_event, context)
 
-    mock_process.assert_not_called()
+    mock_process_message.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -153,18 +153,18 @@ def test_handler_handles_invalid_message_raises_exception(
 def test_handler_handles_service_error_raises_exception(
     context, mock_process_pathways, service_exception
 ):
-    mock_process, _ = mock_process_pathways
+    mock_process_message, _ = mock_process_pathways
     request_context.request_id = MOCK_INTERACTION_ID
-    mock_process.side_effect = service_exception
+    mock_process_message.side_effect = service_exception
 
     with pytest.raises(PdfStitchingException):
         lambda_handler(stitching_queue_message_event, context)
 
 
 def test_handler_handles_rollback_exception(context, mock_process_pathways):
-    mock_process, _ = mock_process_pathways
+    mock_process_message, _ = mock_process_pathways
     request_context.request_id = MOCK_INTERACTION_ID
-    mock_process.side_effect = PdfStitchingException(
+    mock_process_message.side_effect = PdfStitchingException(
         500, LambdaError.StitchRollbackError
     )
 
