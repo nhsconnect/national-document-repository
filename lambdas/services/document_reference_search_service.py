@@ -73,6 +73,9 @@ class DocumentReferenceSearchService(DocumentService):
             document_resources.extend(
                 self._process_documents(documents, return_fhir=return_fhir)
             )
+        if not document_resources:
+            return None
+        logger.info(f"Found {len(document_resources)} document references")
 
         if not return_fhir:
             return document_resources
@@ -141,7 +144,7 @@ class DocumentReferenceSearchService(DocumentService):
         for filter_key, filter_value in filter_values.items():
             if filter_key == "custodian":
                 filter_builder.add_condition(
-                    attribute=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
+                    attribute=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value),
                     attr_operator=AttributeOperator.EQUAL,
                     filter_value=filter_value,
                 )
@@ -156,7 +159,7 @@ class DocumentReferenceSearchService(DocumentService):
         filter_builder.add_condition(
             attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
             attr_operator=AttributeOperator.EQUAL,
-            filter_value=False,
+            filter_value=True,
         )
         filter_expression = filter_builder.build()
         return filter_expression

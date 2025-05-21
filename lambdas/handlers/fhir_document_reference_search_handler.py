@@ -71,7 +71,6 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             "GET",
         ).create_api_gateway_response()
 
-    logger.info(f"Found {len(document_references)} document references")
     return ApiGatewayResponse(
         200, json.dumps(document_references), "GET"
     ).create_api_gateway_response()
