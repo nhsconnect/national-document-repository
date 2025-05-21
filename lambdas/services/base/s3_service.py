@@ -163,7 +163,7 @@ class S3Service:
 
     def get_object_stream(self, bucket: str, key: str):
         response = self.client.get_object(Bucket=bucket, Key=key)
-        return response["Body"]
+        return response.get("Body")
 
     def upload_file_obj(self, file_obj, s3_bucket_name: str, file_key: str):
         try:
@@ -173,4 +173,4 @@ class S3Service:
             logger.error(
                 f"Failed to upload file object to s3://{s3_bucket_name}/{file_key} - {e}"
             )
-            raise
+            raise e
