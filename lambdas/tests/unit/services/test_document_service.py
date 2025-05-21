@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timedelta
 from unittest.mock import call
 
@@ -345,39 +344,8 @@ def test_get_nhs_numbers_based_on_ods_code(mock_service, mocker):
     ods_code = "Y12345"
     expected_nhs_number = "9000000009"
 
-    mock_documents = [
-        DocumentReference(
-            id="doc1",
-            nhs_number=expected_nhs_number,
-            content_type="",
-            created="",
-            deleted="",
-            file_location="",
-            file_name="",
-            ttl=True,
-            virus_scanner_result="Clean",
-            current_gp_ods="",
-            uploaded=False,
-            uploading=False,
-            last_updated=1704110400,
-        ),
-        DocumentReference(
-            id="doc1",
-            nhs_number=expected_nhs_number,
-            content_type="",
-            created="",
-            deleted="",
-            file_location="",
-            file_name="",
-            ttl=True,
-            virus_scanner_result="Clean",
-            current_gp_ods="",
-            uploaded=False,
-            uploading=False,
-            last_updated=1704110400,
-        ),
-    ]
-    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = "mock_table"
+    mock_documents = create_test_lloyd_george_doc_store_refs()
+
     mock_fetch = mocker.patch.object(
         mock_service,
         "fetch_documents_from_table",
@@ -389,7 +357,7 @@ def test_get_nhs_numbers_based_on_ods_code(mock_service, mocker):
     assert result == [expected_nhs_number]
 
     mock_fetch.assert_called_once_with(
-        table="mock_table",
+        table="test_lg_dynamoDB_table",
         index_name="OdsCodeIndex",
         search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
         search_condition=ods_code,
