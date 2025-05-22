@@ -9,7 +9,7 @@ from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.exceptions import OidcApiException
+from utils.exceptions import AuthorisationException, OidcApiException
 from utils.lambda_exceptions import (
     GetFhirDocumentReferenceException,
     SearchPatientException,
@@ -40,6 +40,7 @@ def lambda_handler(event, context):
         bearer_token = event.get("headers", {}).get("Authorization", None)
         selected_role_id = event.get("headers", {}).get("cis2-urid", None)
         if not bearer_token:
+            logger.warning("No bearer token found in request")
             raise GetFhirDocumentReferenceException(
                 401, LambdaError.DocumentReferenceUnauthorised
             )
@@ -58,22 +59,31 @@ def lambda_handler(event, context):
         )
 
         if selected_role_id:
-
+            logger.info(
+                "Detected a cis2 user access request, checking for access permission"
+            )
             configuration_service = DynamicConfigurationService()
             configuration_service.set_auth_ssm_prefix()
-
-            oidc_service = OidcService()
-            oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
-            userinfo = oidc_service.fetch_userinfo(bearer_token)
-            org_ods_code = oidc_service.fetch_user_org_code(userinfo, selected_role_id)
-            smartcard_role_code, _ = oidc_service.fetch_user_role_code(
-                userinfo, selected_role_id, "R"
-            )
-
-            search_patient_service = SearchPatientDetailsService(
-                smartcard_role_code, org_ods_code
-            )
             try:
+                oidc_service = OidcService()
+                oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
+                userinfo = oidc_service.fetch_userinfo(bearer_token)
+                org_ods_code = oidc_service.fetch_user_org_code(
+                    userinfo, selected_role_id
+                )
+                smartcard_role_code, _ = oidc_service.fetch_user_role_code(
+                    userinfo, selected_role_id, "R"
+                )
+            except (OidcApiException, AuthorisationException) as e:
+                logger.error(e)
+                raise GetFhirDocumentReferenceException(
+                    403, LambdaError.DocumentReferenceUnauthorised
+                )
+
+            try:
+                search_patient_service = SearchPatientDetailsService(
+                    smartcard_role_code, org_ods_code
+                )
                 search_patient_service.handle_search_patient_request(
                     document_reference.nhs_number, False
                 )
@@ -90,7 +100,7 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             status_code=200, body=document_reference_response, methods="GET"
         ).create_api_gateway_response()
-    except (GetFhirDocumentReferenceException, OidcApiException) as e:
+    except GetFhirDocumentReferenceException as e:
         return ApiGatewayResponse(
             status_code=e.status_code,
             body=e.error.create_error_response().create_error_fhir_response(

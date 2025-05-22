@@ -177,19 +177,15 @@ def test_get_document_reference_request_no_table_associated_to_snomed_code_throw
 
 
 def test_get_presigned_url(patched_service, mocker):
-    expected_url = "https://d12345.cloudfront.net/path/to/resource"
 
     patched_service.s3_service.create_download_presigned_url.return_value = (
         "https://example.com/path/to/resource"
     )
-    mocker.patch(
-        "services.get_fhir_document_reference_service.format_cloudfront_url"
-    ).return_value = "https://d12345.cloudfront.net/path/to/resource"
 
     result = patched_service.get_presigned_url(
         "test-s3-bucket", "9000000009/test-key-123"
     )
-    assert result == expected_url
+    assert result == "https://example.com/path/to/resource"
 
     patched_service.s3_service.create_download_presigned_url.assert_called_once_with(
         s3_bucket_name="test-s3-bucket",

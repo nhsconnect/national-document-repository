@@ -12,7 +12,6 @@ from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import GetFhirDocumentReferenceException
 from utils.request_context import request_context
-from utils.utilities import format_cloudfront_url
 
 logger = LoggingService(__name__)
 
@@ -34,6 +33,7 @@ class GetFhirDocumentReferenceService:
     def handle_get_document_reference_request(self, snomed_code, document_id):
         table = self.tables.get(snomed_code, None)
         if not table:
+            logger.error("No table found for the given SNOMED code.")
             raise GetFhirDocumentReferenceException(
                 404, LambdaError.DocumentReferenceNotFound
             )
@@ -48,6 +48,9 @@ class GetFhirDocumentReferenceService:
             search_key="ID",
         )
         if len(documents) > 0:
+            logger.warning(
+                "More than one document found for the given ID. Returning the first one."
+            )
             return documents[0]
         else:
             raise GetFhirDocumentReferenceException(
@@ -63,13 +66,13 @@ class GetFhirDocumentReferenceService:
             file_location (str): The key (path) of the file in the S3 bucket.
 
         Returns:
-            str: A formatted CloudFront URL for the presigned S3 download link.
+            str: A URL for the presigned S3 download link.
         """
         presign_url_response = self.s3_service.create_download_presigned_url(
             s3_bucket_name=bucket_name,
             file_key=file_location,
         )
-        return format_cloudfront_url(presign_url_response, self.cloudfront_url)
+        return presign_url_response
 
     def create_document_reference_fhir_response(
         self, document_reference: DocumentReference
@@ -94,6 +97,7 @@ class GetFhirDocumentReferenceService:
             object_key=file_location,
         )
         if file_size < FileSize.MAX_FILE_SIZE:
+            logger.info("File size is smaller than 8MB. Returning binary file.")
             binary_file = self.s3_service.get_binary_file(
                 s3_bucket_name=bucket_name,
                 file_key=file_location,
@@ -106,6 +110,7 @@ class GetFhirDocumentReferenceService:
             )
 
         else:
+            logger.info("File size is larger than 8MB. Generating presigned URL.")
             presign_url = self.get_presigned_url(bucket_name, file_location)
             document_details = Attachment(
                 url=presign_url,
