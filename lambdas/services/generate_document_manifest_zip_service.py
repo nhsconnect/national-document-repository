@@ -1,7 +1,8 @@
-import io
 import os
 import shutil
 import zipfile
+from contextlib import closing
+from io import BytesIO
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -31,26 +32,25 @@ class DocumentManifestZipService:
         self.upload_zip_file(zip_buffer)
         self.update_dynamo_with_fields({"job_status", "zip_file_location"})
 
-    def stream_zip_documents(self) -> io.BytesIO:
+    def stream_zip_documents(self) -> BytesIO:
         logger.info("Streaming and zipping documents in-memory")
         documents = self.zip_trace_object.files_to_download  # Dict[str, str]
 
-        zip_buffer = io.BytesIO()
+        zip_buffer = BytesIO()
 
         with zipfile.ZipFile(zip_buffer, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
             for document_location, document_name in documents.items():
                 file_bucket, file_key = self.get_file_bucket_and_key(document_location)
                 try:
-                    # Stream file from S3
-                    s3_object_stream = self.s3_service.get_object_stream(
-                        file_bucket, file_key
-                    )
-                    with zipf.open(document_name, mode="w") as zip_member:
-                        shutil.copyfileobj(
-                            s3_object_stream, zip_member, length=64 * 1024
-                        )
+                    # Stream file from S3 and close stream at the end
+                    with closing(
+                        self.s3_service.get_object_stream(file_bucket, file_key)
+                    ) as s3_object_stream:
+                        with zipf.open(document_name, mode="w") as zip_member:
+                            shutil.copyfileobj(
+                                s3_object_stream, zip_member, length=64 * 1024
+                            )
                 except ClientError as e:
-                    # self.update_failed_status()
                     self.update_status(TraceStatus.FAILED)
                     msg = f"Failed to fetch S3 object {file_bucket}/{file_key}: {e}"
                     logger.error(f"{LambdaError.ZipServiceClientError.to_str()} {msg}")
@@ -70,7 +70,7 @@ class DocumentManifestZipService:
                 "Failed to parse bucket from file location string"
             )
 
-    def upload_zip_file(self, zip_buffer: io.BytesIO):
+    def upload_zip_file(self, zip_buffer: BytesIO):
         logger.info("Uploading zip file to s3")
         zip_file_key = f"{self.zip_file_name}"
         self.zip_trace_object.zip_file_location = (
