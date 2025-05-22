@@ -1,3 +1,4 @@
+import io
 import os
 from uuid import uuid4
 
@@ -5,6 +6,20 @@ from pypdf import PdfReader, PdfWriter
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
+
+
+def stitch_pdf_into_steam(pdf_paths: list[str]) -> io.BytesIO:
+    output = io.BytesIO()
+    writer = PdfWriter()
+
+    for path in pdf_paths:
+        reader = PdfReader(path)
+        for page in reader.pages:
+            writer.add_page(page)
+
+    writer.write(output)
+    output.seek(0)
+    return output
 
 
 def stitch_pdf(filenames: list[str], temp_folder: str = "/tmp/") -> str:

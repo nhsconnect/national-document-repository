@@ -1,3 +1,4 @@
+import io
 import os
 import shutil
 import tempfile
@@ -12,7 +13,7 @@ from models.stitch_trace import StitchTrace
 from pypdf.errors import PyPdfError
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
-from services.pdf_stitch_service import stitch_pdf
+from services.pdf_stitch_service import stitch_pdf_into_steam
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NoAvailableDocument
 from utils.filename_utils import extract_page_number
@@ -46,14 +47,20 @@ class LloydGeorgeStitchService:
     def stitch_lloyd_george_record(self):
         try:
             all_lg_parts = self.get_documents_for_stitching()
-            stitched_lg_record = stitch_pdf(all_lg_parts, self.temp_folder)
-            filename_for_stitched_file = os.path.basename(stitched_lg_record)
+            # stitched_lg_record = stitch_pdf(all_lg_parts, self.temp_folder)
+            # filename_for_stitched_file = os.path.basename(stitched_lg_record)
+            stitched_lg_stream = stitch_pdf_into_steam(all_lg_parts)
+            filename_for_stitched_file = f"{self.stitch_file_name}.pdf"
 
             self.stitch_trace_object.total_file_size_in_bytes = (
                 self.get_total_file_size_in_bytes(all_lg_parts)
             )
+            # self.upload_stitched_lg_record(
+            #     stitched_lg_record=stitched_lg_record,
+            #     filename_on_bucket=f"combined_files/{filename_for_stitched_file}",
+            # )
             self.upload_stitched_lg_record(
-                stitched_lg_record=stitched_lg_record,
+                stitched_lg_stream=stitched_lg_stream,
                 filename_on_bucket=f"combined_files/{filename_for_stitched_file}",
             )
             logger.audit_splunk_info(
@@ -129,7 +136,7 @@ class LloydGeorgeStitchService:
         return all_lg_parts
 
     def upload_stitched_lg_record(
-        self, stitched_lg_record: str, filename_on_bucket: str
+        self, stitched_lg_stream: io.BytesIO, filename_on_bucket: str
     ):
         try:
             extra_args = {
@@ -137,8 +144,8 @@ class LloydGeorgeStitchService:
                 "ContentDisposition": "inline",
                 "ContentType": "application/pdf",
             }
-            self.s3_service.upload_file_with_extra_args(
-                file_name=stitched_lg_record,
+            self.s3_service.upload_file_obj(
+                file_obj=stitched_lg_stream,
                 s3_bucket_name=self.lloyd_george_bucket_name,
                 file_key=filename_on_bucket,
                 extra_args=extra_args,
@@ -150,6 +157,29 @@ class LloydGeorgeStitchService:
                 {"Result": "Failed to format CloudFront URL due to invalid input."},
             )
             raise LGStitchServiceException(500, LambdaError.StitchCloudFront)
+
+    # def upload_stitched_lg_record(
+    #     self, stitched_lg_record: str, filename_on_bucket: str
+    # ):
+    #     try:
+    #         extra_args = {
+    #             "Tagging": parse.urlencode({self.lifecycle_policy_tag: "true"}),
+    #             "ContentDisposition": "inline",
+    #             "ContentType": "application/pdf",
+    #         }
+    #         self.s3_service.upload_file_with_extra_args(
+    #             file_name=stitched_lg_record,
+    #             s3_bucket_name=self.lloyd_george_bucket_name,
+    #             file_key=filename_on_bucket,
+    #             extra_args=extra_args,
+    #         )
+    #         self.stitch_trace_object.stitched_file_location = filename_on_bucket
+    #     except ValueError as e:
+    #         logger.error(
+    #             f"{LambdaError.StitchCloudFront.to_str()}: {str(e)}",
+    #             {"Result": "Failed to format CloudFront URL due to invalid input."},
+    #         )
+    #         raise LGStitchServiceException(500, LambdaError.StitchCloudFront)
 
     @staticmethod
     def get_most_recent_created_date(documents: list[DocumentReference]) -> str:

@@ -1,3 +1,4 @@
+import io
 from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping
 
@@ -160,3 +161,29 @@ class S3Service:
     def get_file_size(self, s3_bucket_name: str, object_key: str) -> int:
         response = self.client.head_object(Bucket=s3_bucket_name, Key=object_key)
         return response.get("ContentLength", 0)
+
+    def get_object_stream(self, bucket: str, key: str):
+        response = self.client.get_object(Bucket=bucket, Key=key)
+        return response.get("Body")
+
+    def upload_file_obj(
+        self,
+        file_obj: io.BytesIO,
+        s3_bucket_name: str,
+        file_key: str,
+        extra_args: Mapping[str, Any] = None,
+    ):
+        try:
+            # self.client.upload_fileobj(file_obj, s3_bucket_name, file_key)
+            self.client.upload_fileobj(
+                Fileobj=file_obj,
+                Bucket=s3_bucket_name,
+                Key=file_key,
+                ExtraArgs=extra_args or {},
+            )
+            logger.info(f"Uploaded file object to s3://{s3_bucket_name}/{file_key}")
+        except ClientError as e:
+            logger.error(
+                f"Failed to upload file object to s3://{s3_bucket_name}/{file_key} - {e}"
+            )
+            raise e
