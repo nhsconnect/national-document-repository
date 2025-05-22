@@ -1,12 +1,8 @@
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 
+from models.fhir.R4.base_models import Identifier, Link
 from pydantic import BaseModel, Field
-
-
-class Link(BaseModel):
-    relation: str = Field(..., alias="relation")
-    url: str
 
 
 class BundleEntrySearch(BaseModel):
@@ -37,11 +33,6 @@ class BundleEntry(BaseModel):
     search: Optional[BundleEntrySearch] = None
     request: Optional[BundleEntryRequest] = None
     response: Optional[BundleEntryResponse] = None
-
-
-class Identifier(BaseModel):
-    system: Optional[str] = None
-    value: Optional[str] = None
 
 
 class Signature(BaseModel):
