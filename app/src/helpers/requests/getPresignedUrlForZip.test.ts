@@ -95,7 +95,7 @@ describe('getPresignedUrlForZip', () => {
         expect(mockWaitForSeconds).toHaveBeenCalledTimes(0);
     });
 
-    it('wait for 10 secs between every polling', async () => {
+    it('wait between every polling', async () => {
         mockedAxios.post.mockResolvedValueOnce(mockJobIdResponse);
         mockedAxios.get
             .mockResolvedValueOnce(mockPendingResponse)

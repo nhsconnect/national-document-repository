@@ -33,37 +33,11 @@ const getPresignedUrlForZip = async (args: Args) => {
 
     const jobId = await requestJobId(args);
     let pendingCount = 0;
-    const startTime = Date.now();
-    const maxDuration = 29_900;
     let firstAttempt = true;
-    // while (Date.now() - startTime < maxDuration) {
-    //     if (!firstAttempt) {
-    //         await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
-    //     }
-    //     const pollingResponse = await pollForPresignedUrl({
-    //         baseUrl,
-    //         baseHeaders,
-    //         jobId,
-    //         nhsNumber,
-    //     });
-    //
-    //     switch (pollingResponse?.jobStatus) {
-    //         case JOB_STATUS.COMPLETED:
-    //             return pollingResponse.url;
-    //         case JOB_STATUS.PROCESSING:
-    //             continue;
-    //         case JOB_STATUS.PENDING:
-    //             // pendingCount += 1;
-    //             continue;
-    //         default:
-    //             throw new DownloadManifestError(UnexpectedResponseMessage);
-    //     }
-    // }
     while (pendingCount < 10) {
         if (!firstAttempt) {
             await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
         }
-        // await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
         firstAttempt = false;
         const pollingResponse = await pollForPresignedUrl({
             baseUrl,
