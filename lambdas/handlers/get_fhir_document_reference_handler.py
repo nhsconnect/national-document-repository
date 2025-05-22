@@ -49,6 +49,9 @@ def lambda_handler(event, context):
         document_id, snomed_code = get_id_and_snomed_from_path_parameters(path_params)
 
         if not document_id or not snomed_code:
+            logger.error(
+                "Missing document id or snomed code in request path parameters."
+            )
             raise GetFhirDocumentReferenceException(
                 400, LambdaError.DocumentReferenceInvalidRequest
             )

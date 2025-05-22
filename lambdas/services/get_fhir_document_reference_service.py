@@ -48,9 +48,7 @@ class GetFhirDocumentReferenceService:
             search_key="ID",
         )
         if len(documents) > 0:
-            logger.warning(
-                "More than one document found for the given ID. Returning the first one."
-            )
+            logger.info("Document found for given id")
             return documents[0]
         else:
             raise GetFhirDocumentReferenceException(
@@ -90,6 +88,7 @@ class GetFhirDocumentReferenceService:
         Returns:
             str: A JSON string representing the FHIR DocumentReference object.
         """
+        logger.info("Creating FHIR DocumentReference response for document.")
         bucket_name = document_reference.get_file_bucket()
         file_location = document_reference.get_file_key()
         file_size = self.s3_service.get_file_size(
