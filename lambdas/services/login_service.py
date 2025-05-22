@@ -165,32 +165,26 @@ class LoginService:
     def generate_repository_role(self, organisation: dict, smartcard_role: str):
         logger.info(f"Smartcard Role: {smartcard_role}")
 
+        if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
+            if self.has_pcse_org_ods_code(
+                organisation, self.token_handler_ssm_service.get_pcse_ods_code()
+            ):
+                logger.info("PCSE: smartcard ODS identified")
+                return RepositoryRole.PCSE
+
         if (
             smartcard_role
             in self.token_handler_ssm_service.get_smartcard_role_gp_admin()
         ):
             logger.info("GP Admin: smartcard ODS identified")
-            if self.has_role_org_role_code(
-                organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
-            ):
-                return RepositoryRole.GP_ADMIN
+            return RepositoryRole.GP_ADMIN
 
         if (
             smartcard_role
             in self.token_handler_ssm_service.get_smartcard_role_gp_clinical()
         ):
             logger.info("GP Clinical: smartcard ODS identified")
-            if self.has_role_org_role_code(
-                organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
-            ):
-                return RepositoryRole.GP_CLINICAL
-
-        if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
-            logger.info("PCSE: smartcard ODS identified")
-            if self.has_role_org_ods_code(
-                organisation, self.token_handler_ssm_service.get_org_ods_codes()[0]
-            ):
-                return RepositoryRole.PCSE
+            return RepositoryRole.GP_CLINICAL
 
         logger.error(
             f"{LambdaError.LoginNoRole.to_str()}", {"Result": "Unsuccessful login"}
@@ -201,16 +195,8 @@ class LoginService:
         )
 
     @staticmethod
-    def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
-        if organisation["role_code"].upper() == role_code.upper():
-            return True
-        return False
-
-    @staticmethod
-    def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
-        if organisation["org_ods_code"].upper() == ods_code.upper():
-            return True
-        return False
+    def has_pcse_org_ods_code(organisation: dict, ods_code: str) -> bool:
+        return organisation["org_ods_code"].upper() == ods_code.upper()
 
     def issue_auth_token(
         self,

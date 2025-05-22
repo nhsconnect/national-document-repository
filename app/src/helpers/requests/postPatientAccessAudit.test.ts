@@ -2,9 +2,10 @@ import axios, { AxiosError } from 'axios';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { AccessAuditData, AccessAuditType } from '../../types/generic/accessAudit';
 import postPatientAccessAudit from './postPatientAccessAudit';
+import { describe, expect, it, vi, Mocked } from 'vitest';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as Mocked<typeof axios>;
 
 describe('postPatientAccessAudit', () => {
     const accessAuditData = {
@@ -25,7 +26,7 @@ describe('postPatientAccessAudit', () => {
             nhsNumber: '1234567890',
         };
 
-        const getSpy = jest.spyOn(mockedAxios, 'post');
+        const getSpy = vi.spyOn(mockedAxios, 'post');
 
         await postPatientAccessAudit(args);
 
@@ -53,7 +54,7 @@ describe('postPatientAccessAudit', () => {
             nhsNumber: '1234567890',
         };
 
-        const getSpy = jest.spyOn(mockedAxios, 'post');
+        const getSpy = vi.spyOn(mockedAxios, 'post');
         let errorCode;
 
         try {

@@ -9,14 +9,15 @@ import { routes } from '../../types/generic/routes';
 import ConfigProvider, { useConfigContext } from '../../providers/configProvider/ConfigProvider';
 import { endpoints } from '../../types/generic/endpoints';
 import { defaultFeatureFlags } from '../../types/generic/featureFlags';
+import { afterEach, beforeEach, describe, expect, it, vi, Mocked } from 'vitest';
 
-jest.mock('../../helpers/hooks/useConfig');
-const mockedUseNavigate = jest.fn();
-jest.mock('axios');
-jest.mock('react-router-dom', () => ({
+vi.mock('../../helpers/hooks/useConfig');
+const mockedUseNavigate = vi.fn();
+vi.mock('axios');
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAxios = axios as Mocked<typeof axios>;
 const params = {
     code: 'cis2-code',
     state: 'cis2-state',
@@ -30,7 +31,7 @@ const originalWindowLocation = window.location;
 
 describe('AuthCallbackPage', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         sessionStorage.setItem('FeatureFlags', '');
         Object.defineProperty(window, 'location', {
             configurable: true,
@@ -39,7 +40,7 @@ describe('AuthCallbackPage', () => {
         });
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         Object.defineProperty(window, 'location', {
             configurable: true,
             enumerable: true,

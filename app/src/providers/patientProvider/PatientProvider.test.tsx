@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import PatientDetailsProvider, { usePatientDetailsContext } from './PatientProvider';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import type { PatientDetails } from '../../types/generic/patientDetails';
+import { describe, expect, it } from 'vitest';
 
 describe('PatientDetailsProvider', () => {
     it('provides NHS number and family name', () => {

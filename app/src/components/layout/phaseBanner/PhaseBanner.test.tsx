@@ -3,18 +3,19 @@ import PhaseBanner from './PhaseBanner';
 import { routes } from '../../../types/generic/routes';
 import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
 import { LinkProps } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
 }));
 
 describe('PhaseBanner', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         window.sessionStorage.clear();
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
     describe('Rendering', () => {
         it('renders PhaseBanner with content', () => {
