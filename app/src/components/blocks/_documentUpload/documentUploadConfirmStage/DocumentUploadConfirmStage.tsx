@@ -43,9 +43,8 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
             <div style={{ borderBottom: '1px solid black' }}>
                 <h4 style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                     <span>Files to be uploaded</span>
-                    <a
+                    <button
                         className="govuk-link"
-                        href="#"
                         rel="change"
                         onClick={(e) => {
                             e.preventDefault();
@@ -55,7 +54,7 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
                         <strong style={{ textDecoration: 'underline', cursor: 'pointer' }}>
                             Change
                         </strong>
-                    </a>
+                    </button>
                 </h4>
             </div>
 

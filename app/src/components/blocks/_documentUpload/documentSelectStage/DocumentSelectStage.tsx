@@ -9,7 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router';
-import { routeChildren, routes } from '../../../../types/generic/routes';
+import { routeChildren } from '../../../../types/generic/routes';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';

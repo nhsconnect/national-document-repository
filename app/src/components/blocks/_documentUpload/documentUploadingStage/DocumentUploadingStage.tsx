@@ -24,7 +24,7 @@ const DocumentUploadingStage = ({ documents }: Props) => {
         if (documents.length === 0) {
             navigate(routes.DOCUMENT_UPLOAD);
         }
-    }, [navigate]);
+    }, [navigate, documents]);
 
     return (
         <>
