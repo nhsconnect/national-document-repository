@@ -1,7 +1,7 @@
 import pytest
 from services.mock_pds_service import MockPdsApiService
 from services.pds_api_service import PdsApiService
-from utils.exceptions import InvalidResourceIdException
+from utils.exceptions import InvalidNhsNumberException
 from utils.utilities import (
     camelize_dict,
     flatten,
@@ -35,19 +35,19 @@ def test_validate_nhs_number_with_valid_number_with_mixed_formatting_returns_tru
 
 def test_validate_nhs_number_with_too_short_number_raises_exception():
     nhs_number = "123456789"
-    with pytest.raises(InvalidResourceIdException):
+    with pytest.raises(InvalidNhsNumberException):
         validate_nhs_number(nhs_number)
 
 
 def test_validate_nhs_number_with_non_numeric_characters_raises_exception():
     nhs_number = "943A765874"
-    with pytest.raises(InvalidResourceIdException):
+    with pytest.raises(InvalidNhsNumberException):
         validate_nhs_number(nhs_number)
 
 
 def test_validate_nhs_number_with_invalid_checksum_raises_exception():
     nhs_number = "9876543213"
-    with pytest.raises(InvalidResourceIdException):
+    with pytest.raises(InvalidNhsNumberException):
         validate_nhs_number(nhs_number)
 
 
