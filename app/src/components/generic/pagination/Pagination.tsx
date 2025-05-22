@@ -11,7 +11,7 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
         return <></>;
     }
 
-    const updateCurrentPage = (e: MouseEvent<HTMLAnchorElement>, page: number): void => {
+    const updateCurrentPage = (e: MouseEvent<HTMLButtonElement>, page: number): void => {
         e.preventDefault();
         setCurrentPage(page);
     };
@@ -27,14 +27,13 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
                 className={`govuk-pagination__item 
                 ${page === currentPage ? 'govuk-pagination__item--current' : ''}`}
             >
-                <a
+                <button
                     className="govuk-link govuk-pagination__link"
                     onClick={(e) => updateCurrentPage(e, page)}
                     aria-label={`Page ${page + 1}`}
-                    href="#"
                 >
                     {page + 1}
-                </a>
+                </button>
             </li>
         );
     };
@@ -90,10 +89,9 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
         <nav className="govuk-pagination" aria-label="Pagination">
             {currentPage > 0 && (
                 <div className="govuk-pagination__prev">
-                    <a
+                    <button
                         className="govuk-link govuk-pagination__link"
                         rel="prev"
-                        href="#"
                         onClick={(e) => updateCurrentPage(e, currentPage - 1)}
                     >
                         <svg
@@ -110,16 +108,15 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
                         <span className="govuk-pagination__link-title">
                             Previous<span className="govuk-visually-hidden"> page</span>
                         </span>
-                    </a>
+                    </button>
                 </div>
             )}
             <ul className="govuk-pagination__list">{pages.map(pageNumber)}</ul>
             {currentPage < totalPages - 1 && (
                 <div className="govuk-pagination__next">
-                    <a
+                    <button
                         className="govuk-link govuk-pagination__link"
                         rel="next"
-                        href="#"
                         onClick={(e) => updateCurrentPage(e, currentPage + 1)}
                     >
                         <span className="govuk-pagination__link-title">
@@ -136,7 +133,7 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
                         >
                             <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
                         </svg>
-                    </a>
+                    </button>
                 </div>
             )}
         </nav>

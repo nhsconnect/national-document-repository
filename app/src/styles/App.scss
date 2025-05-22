@@ -1234,3 +1234,20 @@ $hunit: '%';
 .remove-all-button {
     padding: 0;
 }
+
+button.govuk-link {
+    color: #005eb8;
+    background: 0;
+    border: 0;
+    font-size: 1.1875rem;
+    font-weight: 700;
+    padding: 0;
+    line-height: 1.3157894737;
+    cursor: pointer;
+}
+
+.govuk-pagination__item--current {
+    button.govuk-link {
+        color: white;
+    }
+}
