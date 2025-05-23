@@ -18,7 +18,7 @@ def mock_service(mocker):
 def test_lambda_handler_success(set_env, context, mock_service):
     event = {
         "httpMethod": "POST",
-        "queryStringParameters": {"patientId": "1234567890", "accessAuditType": "view"},
+        "queryStringParameters": {"patientId": "0123456789", "accessAuditType": "view"},
         "body": json.dumps({"someKey": "someValue"}),
     }
     response = lambda_handler(event, context)
@@ -34,7 +34,7 @@ def test_lambda_handler_missing_parameters(set_env, context, mock_service):
     event = {
         "httpMethod": "POST",
         "queryStringParameters": {
-            "patientId": "1234567890",
+            "patientId": "0123456789",
         },
         "body": json.dumps({"someKey": "someValue"}),
     }

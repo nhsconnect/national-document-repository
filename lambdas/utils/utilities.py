@@ -11,16 +11,34 @@ from services.base.ssm_service import SSMService
 from services.mock_pds_service import MockPdsApiService
 from services.patient_search_service import PatientSearch
 from services.pds_api_service import PdsApiService
-from utils.exceptions import InvalidResourceIdException
+from utils.exceptions import InvalidNhsNumberException
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
-def validate_nhs_number(patient_id: str) -> bool:
-    pattern = re.compile("^\\d{10}$")
+def validate_nhs_number(nhs_number: str) -> bool:
+    """
+    Validate an NHS number using the Modulus 11 algorithm.
+    https://www.datadictionary.nhs.uk/attributes/nhs_number.html
+    """
+    nhs_number = re.sub(r"\D", "", nhs_number)
 
-    if not bool(pattern.match(patient_id)):
-        raise InvalidResourceIdException("Invalid NHS number")
+    if not re.fullmatch(r"\d{10}", nhs_number):
+        raise InvalidNhsNumberException("Invalid NHS number length")
+
+    digits = [int(digit) for digit in nhs_number]
+    check_digit = digits.pop()
+
+    weights = list(range(10, 1, -1))
+    total = sum(w * d for w, d in zip(weights, digits))
+    remainder = total % 11
+    calculated_check_digit = 11 - remainder
+
+    if calculated_check_digit == 11:
+        calculated_check_digit = 0
+
+    if check_digit != calculated_check_digit:
+        raise InvalidNhsNumberException("Invalid NHS number format")
 
     return True
 
