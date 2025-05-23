@@ -129,16 +129,16 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         <>
             <BackButton />
             <h1>{pageTitle()}</h1>
-            <PatientSimpleSummary />
 
             <div>
                 <h2 className="nhsuk-heading-m">Before you upload</h2>
                 <p>
                     You can upload files for patients that do not currently have a Lloyd George
-                    record stored in this service. Make sure that all files uploaded are for this
-                    patient only.
+                    record stored in this service.
                 </p>
-                <p>Files must be uploaded in a PDF format.</p>
+                <p>Make sure that all files uploaded are for this patient only.</p>
+                <PatientSimpleSummary />
+                <p>You can only upload PDF files.</p>
             </div>
             <Fieldset.Legend id="upload-fieldset-legend" size="m">
                 Select files to upload

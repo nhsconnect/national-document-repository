@@ -18,7 +18,7 @@ const DocumentUploadCompleteStage = () => {
                         className="lloydgeorge_upload-complete_card_content_header"
                         headingLevel="h1"
                     >
-                        Upload successful
+                        Upload complete
                     </Card.Heading>
                     <p className="mt-8">
                         You have successfully uploaded a digital Lloyd George record for:
@@ -32,8 +32,8 @@ const DocumentUploadCompleteStage = () => {
 
             <div>
                 <p>
-                    You can view this patient's record within this service by searching using their
-                    NHS number.
+                    You can now view this patient's record within this service by searching using
+                    their NHS number.
                 </p>
             </div>
 

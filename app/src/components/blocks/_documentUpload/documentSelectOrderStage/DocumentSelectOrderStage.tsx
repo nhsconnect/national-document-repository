@@ -166,11 +166,19 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                 />
             )}
 
+            <p>When youy upload your files, they will be combined into a single PDF document.</p>
+
             <p>
-                These files are currently arranged in a default order. Put the files in the order
-                you need them to appear in the final document by changing the position number. The
-                file marked '1' will be at the start of the final PDF document.
+                Your files are not currently in order:
+                <ul>
+                    <li>
+                        put your files in the order you need them to appear in the final document by
+                        changing the position number
+                    </li>
+                    <li>the file marked '1' will be at the start of the final document</li>
+                </ul>
             </p>
+
             <form
                 onSubmit={handleSubmit(submitDocuments, handleErrors)}
                 noValidate
@@ -258,6 +266,10 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                             formState.isValid && (
                                 <>
                                     <h2>Preview this Lloyd George record</h2>
+                                    <p>
+                                        This shows how the final record will look when combined into
+                                        a single document.
+                                    </p>
                                     <DocumentUploadLloydGeorgePreview
                                         documents={documents
                                             .filter(
