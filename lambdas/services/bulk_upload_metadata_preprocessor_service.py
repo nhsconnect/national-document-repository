@@ -79,7 +79,9 @@ class MetadataPreprocessorService:
 
         logger.info(f"Reading {file_key}")
         data = csv.DictReader(response["Body"].read().decode("utf-8-sig").splitlines())
-        metadata_rows = list(data)
+        metadata_rows = [
+            row for row in data if any(field.strip() for field in row.values())
+        ]
         return metadata_rows
 
     def standardize_filenames(
@@ -159,14 +161,14 @@ class MetadataPreprocessorService:
         rejected_reasons = []
 
         for original_row in metadata_rows:
-            if not original_row:
-                continue
-
             renamed_row = original_row.copy()
             renamed_row = self.update_date_in_row(renamed_row)
             original_filename = original_row.get("FILEPATH")
 
             try:
+                if not original_filename:
+                    raise InvalidFileNameException("Filepath is missing")
+
                 validated_filename = self.validate_record_filename(original_filename)
                 stripped_file_path = validated_filename.lstrip("/")
                 renamed_row["FILEPATH"] = (
@@ -188,8 +190,9 @@ class MetadataPreprocessorService:
                 duplicate_counts[validated_filename] += 1
             except InvalidFileNameException as error:
                 rejected_rows.append(original_row)
+                rejected_filepath = original_filename if original_filename else "N/A"
                 rejected_reasons.append(
-                    {"FILEPATH": original_row.get("FILEPATH"), "REASON": str(error)}
+                    {"FILEPATH": rejected_filepath, "REASON": str(error)}
                 )
 
         return renaming_map, rejected_rows, rejected_reasons

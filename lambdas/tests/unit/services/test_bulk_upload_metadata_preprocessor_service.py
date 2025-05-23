@@ -808,15 +808,23 @@ def test_generate_renaming_map_invalid_filename(
     assert rejected_reasons[0]["REASON"], "Bad format"
 
 
-def test_generate_renaming_map_skips_empty_row(test_service):
-    metadata = [{}]  # One empty dict
+def test_generate_renaming_map_handles_empty_filename(
+    test_service, mock_update_date_in_row
+):
+    metadata_rows = [{"FILEPATH": ""}]
+
     renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
-        metadata
+        metadata_rows
     )
 
     assert renaming_map == []
-    assert rejected_rows == []
-    assert rejected_reasons == []
+    assert rejected_rows == [{"FILEPATH": ""}]
+    assert rejected_reasons == [
+        {
+            "FILEPATH": "N/A",
+            "REASON": "Filepath is missing",
+        }
+    ]
 
 
 def test_update_date_in_row(test_service):
