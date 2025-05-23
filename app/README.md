@@ -34,6 +34,12 @@ To run the UI, the team has created a Makefile in the route directory, on your f
 make install
 ```
 
+After modules have installed you need to install pdfjs with the following command
+
+```bash
+make install-pdfjs
+```
+
 Once the packages have been installed, you can then run the app through the following command
 
 ```bash

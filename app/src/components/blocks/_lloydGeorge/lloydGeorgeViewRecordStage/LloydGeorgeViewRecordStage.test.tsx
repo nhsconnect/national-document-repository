@@ -41,6 +41,8 @@ const mockedUseRole = useRole as Mock;
 const mockSetStage = vi.fn();
 const mockUseConfig = useConfig as Mock;
 
+const EMBEDDED_PDF_VIEWER_TITLE = 'Embedded PDF Viewer';
+
 describe('LloydGeorgeViewRecordStage', () => {
     beforeEach(() => {
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
@@ -55,7 +57,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
@@ -79,7 +81,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         async (stage) => {
             renderComponent({
                 downloadStage: stage,
-                cloudFrontUrl: '',
+                pdfObjectUrl: '',
             });
 
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
@@ -107,7 +109,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
 
         act(() => {
@@ -125,7 +127,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     it("returns to previous view when 'Go back' link clicked during full screen", async () => {
         renderComponent();
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
 
         act(() => {
@@ -185,7 +187,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         it('pass accessibility checks when displaying LG record', async () => {
             renderComponent();
 
-            expect(await screen.findByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(await screen.findByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
@@ -262,7 +264,7 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
         downloadStage: DOWNLOAD_STAGE.SUCCEEDED,
         lastUpdated: mockPdf.lastUpdated,
         refreshRecord: vi.fn(),
-        cloudFrontUrl: 'http://test.com',
+        pdfObjectUrl: 'http://test.com',
         showMenu: true,
         resetDocState: vi.fn(),
         ...propsOverride,
