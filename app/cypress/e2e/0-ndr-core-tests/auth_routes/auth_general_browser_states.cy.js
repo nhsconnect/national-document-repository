@@ -79,6 +79,9 @@ describe('Authentication & Authorisation', () => {
 
                 cy.intercept('GET', '/Auth/TokenRequest*', {
                     statusCode: 401,
+                    body: {
+                        roles: ['8008', '8001', '8802'],
+                    },
                 }).as('auth');
                 cy.visit(authCallback);
                 cy.wait('@auth');
