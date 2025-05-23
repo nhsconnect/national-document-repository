@@ -13,11 +13,11 @@ logger = LoggingService(__name__)
     names=[
         "APPCONFIG_APPLICATION",
         "APPCONFIG_CONFIGURATION",
-        "WEBHOOK_URL",
+        "TEAMS_WEBHOOK_URL",
         "CONFLUENCE_BASE_URL",
         "ALARM_HISTORY_DYNAMODB_NAME",
-        "ALERTING_SLACK_CHANNEL_ID",
-        "ALERTING_SLACK_BOT_TOKEN",
+        "SLACK_CHANNEL_ID",
+        "SLACK_BOT_TOKEN",
     ]
 )
 def lambda_handler(event, context):
