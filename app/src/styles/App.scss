@@ -667,6 +667,11 @@ $hunit: '%';
         font-size: 1.2rem !important;
     }
 }
+@media (min-width: 380px) {
+    #available-files-table-title .table-column-header {
+        word-break: keep-all;
+    }
+}
 
 //Feedback
 #feedback-form {
