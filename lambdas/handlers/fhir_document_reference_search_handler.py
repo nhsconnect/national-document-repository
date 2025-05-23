@@ -46,26 +46,17 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     logger.info("Received request to search for document references")
 
-    # Extract request data
-    bearer_token = event.get("headers", {}).get(HEADER_AUTHORIZATION, "")
+    bearer_token = extract_bearer_token(event)
     selected_role_id = event.get("headers", {}).get(HEADER_CIS2_USER_ID, "")
 
-    # Validate authentication
-    if not bearer_token:
-        logger.warning("No bearer token found in request")
-        raise DocumentRefSearchException(401, LambdaError.DocumentReferenceUnauthorised)
-
-    # Parse query parameters
     nhs_number, search_filters = parse_query_parameters(
         event.get("queryStringParameters", {})
     )
     request_context.patient_nhs_no = nhs_number
 
-    # Validate user permissions if role ID is provided
     if selected_role_id:
         validate_user_access(bearer_token, selected_role_id, nhs_number)
 
-    # Fetch document references
     service = DocumentReferenceSearchService()
     document_references = service.get_document_references(
         nhs_number=nhs_number,
@@ -73,11 +64,15 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         additional_filters=search_filters,
     )
 
-    # Return appropriate response
     if not document_references:
         logger.info(f"No document references found for NHS number: {nhs_number}")
-        return create_not_found_response()
-
+        return ApiGatewayResponse(
+            404,
+            LambdaError.DocumentReferenceNotFound.create_error_response().create_error_fhir_response(
+                LambdaError.DocumentReferenceNotFound.value.get("fhir_coding")
+            ),
+            "GET",
+        ).create_api_gateway_response()
     return ApiGatewayResponse(
         200, json.dumps(document_references), "GET"
     ).create_api_gateway_response()
@@ -156,17 +151,10 @@ def validate_user_access(
         raise DocumentRefSearchException(e.status_code, e.error)
 
 
-def create_not_found_response() -> Dict[str, Any]:
-    """
-    Create a standardized 404 Not Found response for document references.
-
-    Returns:
-        API Gateway response with 404 status code
-    """
-    return ApiGatewayResponse(
-        404,
-        LambdaError.DocumentReferenceNotFound.create_error_response().create_error_fhir_response(
-            LambdaError.DocumentReferenceNotFound.value.get("fhir_coding")
-        ),
-        "GET",
-    ).create_api_gateway_response()
+def extract_bearer_token(event):
+    """Extract and validate bearer token from event"""
+    bearer_token = event.get("headers", {}).get("Authorization", None)
+    if not bearer_token or not bearer_token.startswith("Bearer "):
+        logger.warning("No bearer token found in request")
+        raise DocumentRefSearchException(401, LambdaError.DocumentReferenceUnauthorised)
+    return bearer_token
