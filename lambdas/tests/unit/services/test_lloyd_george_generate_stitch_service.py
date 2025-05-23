@@ -312,7 +312,6 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_stitch_pdf(
     with pytest.raises(LGStitchServiceException) as e:
         patched_stitch_service.stitch_lloyd_george_record()
 
-    mock_get_total_file_size_in_bytes.assert_not_called()
     patched_stitch_service.upload_stitched_lg_record.assert_not_called()
 
     assert e.value.status_code == 500
@@ -377,28 +376,31 @@ def test_sort_documents_by_filenames_for_more_than_10_files(stitch_service):
 
 
 def test_download_lloyd_george_files(mock_s3, stitch_service, mock_uuid):
-    expected_file_path_on_s3 = f"{TEST_NHS_NUMBER}/{TEST_UUID}"
-    expected_downloaded_file = f"/tmp/{mock_uuid}"
+    mock_s3.get_object_stream.return_value.read.return_value = (
+        MOCK_STITCHED_STREAM.getvalue()
+    )
 
-    expected = [expected_downloaded_file] * 3
     actual = stitch_service.download_lloyd_george_files(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
 
-    assert actual == expected
+    assert len(actual) == len(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
 
-    assert mock_s3.download_file.call_count == len(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
-    mock_s3.download_file.assert_called_with(
-        MOCK_LG_BUCKET, expected_file_path_on_s3, expected_downloaded_file
-    )
+    for actual_stream in actual:
+        assert isinstance(actual_stream, BytesIO)
+        assert actual_stream.getvalue() == MOCK_STITCHED_STREAM.getvalue()
+
+    assert mock_s3.get_object_stream.call_count == len(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
 
 
 def test_download_lloyd_george_files_raise_error_when_failed_to_download(
     mock_s3, stitch_service
 ):
-    mock_error = ClientError(
-        {"Error": {"Code": "403", "Message": "Forbidden"}},
-        "S3:HeadObject",
-    )
-    mock_s3.download_file.side_effect = mock_error
+    class FailingS3Stream:
+        def read(self):
+            raise ClientError(
+                {"Error": {"Code": "403", "Message": "Forbidden"}}, "S3:GetObject"
+            )
+
+    mock_s3.get_object_stream.return_value = FailingS3Stream()
 
     with pytest.raises(ClientError):
         stitch_service.download_lloyd_george_files(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
@@ -415,12 +417,12 @@ def test_get_most_recent_created_date(stitch_service):
 
 
 def test_get_total_file_size(mocker, stitch_service):
-    mocker.patch("os.path.getsize", side_effect=[19000, 20000, 21000])
+    file1 = BytesIO(b"x" * 19000)
+    file2 = BytesIO(b"x" * 20000)
+    file3 = BytesIO(b"x" * 21000)
 
     expected = 60000
-    actual = stitch_service.get_total_file_size_in_bytes(
-        ["file1.pdf", "file2.pdf", "file3.pdf"]
-    )
+    actual = stitch_service.get_total_file_size_in_bytes([file1, file2, file3])
 
     assert actual == expected
 
