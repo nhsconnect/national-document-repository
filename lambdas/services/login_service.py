@@ -169,6 +169,13 @@ class LoginService:
     ) -> RepositoryRole:
         logger.info(f"Smartcard Role: {smartcard_role}")
 
+        if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
+            if self.has_pcse_org_ods_code(
+                organisation, self.token_handler_ssm_service.get_pcse_ods_code()
+            ):
+                logger.info("PCSE: smartcard ODS identified")
+                return RepositoryRole.PCSE
+
         if (
             smartcard_role
             in self.token_handler_ssm_service.get_smartcard_role_gp_admin()
@@ -182,13 +189,6 @@ class LoginService:
         ):
             logger.info("GP Clinical: smartcard ODS identified")
             return RepositoryRole.GP_CLINICAL
-
-        if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
-            logger.info("PCSE: smartcard ODS identified")
-            if self.has_pcse_org_ods_code(
-                organisation, self.token_handler_ssm_service.get_pcse_ods_code()
-            ):
-                return RepositoryRole.PCSE
 
         logger.error(
             f"{LambdaError.LoginNoRole.to_str()}", {"Result": "Unsuccessful login"}

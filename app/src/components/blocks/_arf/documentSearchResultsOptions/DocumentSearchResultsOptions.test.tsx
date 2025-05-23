@@ -9,29 +9,28 @@ import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 import { DownloadManifestError } from '../../../../types/generic/errors';
+import { afterEach, beforeEach, describe, expect, it, vi, MockedFunction } from 'vitest';
 
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../../helpers/requests/getPresignedUrlForZip');
-jest.mock('react-router-dom', () => ({
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../../../helpers/requests/getPresignedUrlForZip');
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
-jest.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
-const mockedUseNavigate = jest.fn();
-const mockGetPresignedUrlForZip = getPresignedUrlForZip as jest.MockedFunction<
+const mockedUseNavigate = vi.fn();
+const mockGetPresignedUrlForZip = getPresignedUrlForZip as MockedFunction<
     typeof getPresignedUrlForZip
 >;
-const updateDownloadState = jest.fn();
+const updateDownloadState = vi.fn();
 
 describe('DocumentSearchResultsOptions', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Rendering', () => {
@@ -48,7 +47,7 @@ describe('DocumentSearchResultsOptions', () => {
 
         it('calls parent callback function to pass successful state after a successful response from api', async () => {
             // suppress warning msg of <a> element being clicked when downloading zip file
-            window.HTMLAnchorElement.prototype.click = jest.fn();
+            window.HTMLAnchorElement.prototype.click = vi.fn();
 
             mockGetPresignedUrlForZip.mockResolvedValue('test-presigned-url');
 
@@ -67,7 +66,7 @@ describe('DocumentSearchResultsOptions', () => {
         });
 
         it('calls parent callback function to pass pending state when waiting for response from api', async () => {
-            window.HTMLAnchorElement.prototype.click = jest.fn();
+            window.HTMLAnchorElement.prototype.click = vi.fn();
 
             // To delay the mock request, and give a chance for the spinner to appear
             mockGetPresignedUrlForZip.mockImplementation(() =>

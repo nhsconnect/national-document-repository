@@ -6,12 +6,15 @@ import { JOB_STATUS, PollingResponse } from '../../types/generic/downloadManifes
 import waitForSeconds from '../utils/waitForSeconds';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { DownloadManifestError } from '../../types/generic/errors';
+import { describe, expect, it, vi, Mocked, MockedFunction, afterEach } from 'vitest';
 
-jest.mock('axios');
-jest.mock('../utils/waitForSeconds');
+vi.mock('axios');
+vi.mock('../utils/waitForSeconds', () => ({
+    default: vi.fn(),
+}));
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockWaitForSeconds = waitForSeconds as jest.MockedFunction<typeof waitForSeconds>;
+const mockedAxios = axios as Mocked<typeof axios>;
+const mockWaitForSeconds = waitForSeconds as MockedFunction<typeof waitForSeconds>;
 
 const nhsNumber = '9000000009';
 const baseUrl = 'http://localhost/test';
@@ -185,6 +188,10 @@ describe('requestJobId', () => {
             docReferences,
             patientId: nhsNumber,
         });
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
     });
 });
 
