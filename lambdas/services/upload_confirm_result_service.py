@@ -7,7 +7,7 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
-from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.fhir.R4.fhir_document_reference import Attachment
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service

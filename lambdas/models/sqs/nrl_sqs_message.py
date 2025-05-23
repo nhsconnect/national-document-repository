@@ -1,7 +1,7 @@
 from typing import Optional
 
 from enums.snomed_codes import SnomedCode, SnomedCodes
-from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.fhir.R4.fhir_document_reference import Attachment
 from pydantic import AliasGenerator, BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
