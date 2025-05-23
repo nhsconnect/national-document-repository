@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import UploadFailedStage from './uploadFailedStage';
+import { describe, expect, it } from 'vitest';
 
 describe('UploadFailedStage', () => {
     it('renders the page', () => {

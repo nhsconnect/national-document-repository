@@ -7,9 +7,10 @@ import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
 import { isMock } from '../../../../helpers/utils/isLocal';
-import { ReactNode, useRef, useState } from 'react';
+import { ReactNode, useRef } from 'react';
 import NotificationBanner from '../../../layout/notificationBanner/NotificationBanner';
 import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
+import React from 'react';
 
 type Props = {
     report: ReportData;
@@ -19,8 +20,8 @@ const DownloadReportSelectStage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
-    const [downloading, setDownloading] = useState(false);
-    const [downloadError, setDownloadError] = useState<ReactNode>(null);
+    const [downloading, setDownloading] = React.useState(false);
+    const [downloadError, setDownloadError] = React.useState<ReactNode>(null);
     const scrollToRef = useRef<HTMLDivElement>(null);
 
     const handleSuccess = () => {

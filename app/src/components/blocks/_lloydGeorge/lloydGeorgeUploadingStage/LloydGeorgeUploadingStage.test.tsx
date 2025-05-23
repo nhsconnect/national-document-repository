@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -13,23 +13,23 @@ import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import userEvent from '@testing-library/user-event';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('../../../../helpers/requests/uploadDocuments');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('../../../../helpers/requests/uploadDocuments');
 
-const mockUploadAndScan = jest.fn();
-const mockedUsePatient = usePatient as jest.Mock;
+const mockUploadAndScan = vi.fn();
 const mockPatient = buildPatientDetails();
 const nhsNumber = mockPatient.nhsNumber;
 
 describe('<LloydGeorgeUploadingStage />', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
-        mockedUsePatient.mockReturnValue(mockPatient);
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
+        vi.mocked(usePatient).mockReturnValue(mockPatient);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     const getProgressBarValue = (document: UploadDocument) => {
@@ -282,5 +282,9 @@ describe('<LloydGeorgeUploadingStage />', () => {
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
         });
+    });
+
+    afterEach(() => {
+        cleanup();
     });
 });

@@ -15,7 +15,7 @@ ARG CONTAINER_PORT
 ARG CLOUDFRONT_DOMAIN_NAME
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
-COPY --from=builder /app/build .
+COPY --from=builder /app/dist .
 
 WORKDIR /etc/nginx
 COPY --from=builder ./app/docker/nginx.conf ./nginx.conf.template

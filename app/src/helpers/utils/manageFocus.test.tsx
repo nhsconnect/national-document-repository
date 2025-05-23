@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { focusElement, focusLayoutDiv } from './manageFocus';
 import userEvent from '@testing-library/user-event';
+import { describe, expect, it } from 'vitest';
 
 describe('focusElement', () => {
     it('set focus to the given element', () => {

@@ -8,27 +8,28 @@ import { routeChildren, routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { buildConfig } from '../../../../helpers/test/testBuilders';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../../helpers/hooks/useRole');
-jest.mock('../../../../helpers/hooks/useConfig');
-jest.mock('react-router-dom', () => ({
+vi.mock('../../../../helpers/hooks/useRole');
+vi.mock('../../../../helpers/hooks/useConfig');
+vi.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));
 
-const mockUseRole = useRole as jest.Mock;
-const mockUseConfig = useConfig as jest.Mock;
-const mockNavigate = jest.fn();
+const mockUseRole = useRole as Mock;
+const mockUseConfig = useConfig as Mock;
+const mockNavigate = vi.fn();
 
 describe('LloydGeorgeRecordError', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         mockUseConfig.mockReturnValue(buildConfig());
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Rendering', () => {

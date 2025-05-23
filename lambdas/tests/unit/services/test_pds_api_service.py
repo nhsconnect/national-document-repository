@@ -97,6 +97,7 @@ def test_pds_request_valid_token_expired_response(mocker):
     second_response._content = json.dumps(PDS_PATIENT).encode("utf-8")
     nhs_number = "1111111111"
     mock_url_endpoint = "api.test/endpoint/Patient/" + nhs_number
+    time_now = 1600000000
 
     mock_authorization_header = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -107,7 +108,13 @@ def test_pds_request_valid_token_expired_response(mocker):
         "services.pds_api_service.PdsApiService.get_endpoint_for_pds_api_request",
         return_value="api.test/endpoint/",
     )
-    mocker.patch("time.time", side_effect=[1600000000.953031, 1700000000.953031])
+
+    # Logging calls invoke time.time, the first and last in the array are log calls
+    # The second and third are used during invocation of the PDS service.
+    mocker.patch(
+        "time.time",
+        side_effect=[time_now, 1600000000.953031, 1700000000.953031, time_now],
+    )
 
     mocker.patch("uuid.uuid4", return_value="123412342")
 

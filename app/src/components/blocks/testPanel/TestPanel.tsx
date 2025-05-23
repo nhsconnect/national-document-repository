@@ -77,8 +77,8 @@ function TestPanel() {
                 This section should only be displayed on a test/dev environment and should be used
                 for displaying test configurations
             </p>
-            <p> API endpoint: {process.env.REACT_APP_DOC_STORE_API_ENDPOINT}</p>
-            <p> Image Version: {process.env.REACT_APP_IMAGE_VERSION}</p>
+            <p> API endpoint: {import.meta.env.VITE_DOC_STORE_API_ENDPOINT}</p>
+            <p> Image Version: {import.meta.env.VITE_IMAGE_VERSION}</p>
 
             {isLocal && (
                 <div>

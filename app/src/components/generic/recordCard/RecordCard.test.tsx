@@ -8,46 +8,43 @@ import RecordCard, { Props } from './RecordCard';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-import useRole from '../../../helpers/hooks/useRole';
+import { beforeEach, describe, expect, it, vi, Mock, MockedFunction } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../helpers/hooks/usePatient');
-jest.mock('../../../helpers/hooks/useConfig');
-jest.mock('../../../helpers/hooks/useRole');
-jest.mock('../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../helpers/requests/getLloydGeorgeRecord');
-jest.mock('axios');
-jest.mock('react-router', () => ({
+const mockedUseNavigate = vi.fn();
+vi.mock('../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../helpers/hooks/usePatient');
+vi.mock('../../../helpers/hooks/useConfig');
+vi.mock('../../../helpers/hooks/useRole');
+vi.mock('../../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../../helpers/requests/getLloydGeorgeRecord');
+vi.mock('axios');
+vi.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
-const mockGetLloydGeorgeRecord = getLloydGeorgeRecord as jest.MockedFunction<
+const mockGetLloydGeorgeRecord = getLloydGeorgeRecord as MockedFunction<
     typeof getLloydGeorgeRecord
 >;
 
-const mockUsePatient = usePatient as jest.Mock;
-const mockUseConfig = useConfig as jest.Mock;
-const mockUseBaseAPIUrl = useBaseAPIUrl as jest.Mock;
-const mockUseBaseAPIHeaders = useBaseAPIHeaders as jest.Mock;
-const mockUseRole = useRole as jest.Mock;
-it('passes a test', () => {});
+const mockUsePatient = usePatient as Mock;
+const mockUseConfig = useConfig as Mock;
+const mockUseBaseAPIUrl = useBaseAPIUrl as Mock;
+const mockUseBaseAPIHeaders = useBaseAPIHeaders as Mock;
 
 describe('RecordCard Component', () => {
-    const mockFullScreenHandler = jest.fn();
+    const mockFullScreenHandler = vi.fn();
     const props: Props = {
         heading: 'Mock Header Record',
         fullScreenHandler: mockFullScreenHandler,
         detailsElement: <div>Mock Details Element</div>,
         isFullScreen: false,
-        refreshRecord: jest.fn(),
+        refreshRecord: vi.fn(),
         cloudFrontUrl: 'https://test.com',
-        resetDocStage: jest.fn(),
+        resetDocStage: vi.fn(),
     };
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         mockUsePatient.mockReturnValue({ nhsNumber: '1234567890' });
         mockUseConfig.mockReturnValue({
             mockLocal: { recordUploaded: true },
@@ -65,7 +62,7 @@ describe('RecordCard Component', () => {
         });
 
         it('calls refreshRecord on mount', async () => {
-            const mockRefreshRecord = jest.fn();
+            const mockRefreshRecord = vi.fn();
             render(<RecordCard {...props} refreshRecord={mockRefreshRecord} />);
             await waitFor(() => {
                 expect(mockRefreshRecord).toHaveBeenCalledTimes(1);

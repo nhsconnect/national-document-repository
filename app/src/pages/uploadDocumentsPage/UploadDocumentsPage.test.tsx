@@ -1,48 +1,47 @@
 import { act, render, RenderResult, screen, waitFor } from '@testing-library/react';
 import UploadDocumentsPage from './UploadDocumentsPage';
-import {
-    buildConfig,
-    buildDocument,
-    buildTextFile,
-    buildUploadSession,
-} from '../../helpers/test/testBuilders';
+import { buildConfig, buildTextFile, buildUploadSession } from '../../helpers/test/testBuilders';
 import useConfig from '../../helpers/hooks/useConfig';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import {
-    DOCUMENT_TYPE,
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
-import uploadDocuments, {
-    updateDocumentState,
-    uploadConfirmation,
-    uploadDocumentToS3,
-    virusScan,
-} from '../../helpers/requests/uploadDocuments';
+import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-const mockConfigContext = useConfig as jest.Mock;
-const mockedUseNavigate = jest.fn();
-const mockUploadDocuments = uploadDocuments as jest.Mock;
-const mockS3Upload = uploadDocumentToS3 as jest.Mock;
-const mockVirusScan = virusScan as jest.Mock;
-const mockUpdateDocumentState = updateDocumentState as jest.Mock;
-const mockUploadConfirmation = uploadConfirmation as jest.Mock;
+const mockConfigContext = useConfig as Mock;
+const mockedUseNavigate = vi.fn();
+const mockUploadDocuments = vi.fn();
+const mockS3Upload = vi.fn();
+const mockVirusScan = vi.fn();
+const mockUpdateDocumentState = vi.fn();
+const mockUploadConfirmation = vi.fn();
 
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
-    useNavigate: () => mockedUseNavigate,
-}));
-jest.mock('../../helpers/requests/uploadDocuments');
-jest.mock('../../helpers/hooks/usePatient');
-jest.mock('../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../helpers/hooks/useConfig');
-jest.mock('../../helpers/utils/waitForSeconds');
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockedUseNavigate,
+    };
+});
+vi.mock('../../helpers/requests/uploadDocuments', async () => {
+    const actual = await vi.importActual('../../helpers/requests/uploadDocuments');
+    return {
+        ...actual,
+        default: (params: any) => mockUploadDocuments(params),
+        updateDocumentState: (params: any) => mockUpdateDocumentState(params),
+        uploadConfirmation: (params: any) => mockUploadConfirmation(params),
+        uploadDocumentToS3: (params: any) => mockS3Upload(params),
+        virusScan: (params: any) => mockVirusScan(params),
+    };
+});
+vi.mock('../../helpers/hooks/usePatient');
+vi.mock('../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../helpers/hooks/useConfig');
+vi.mock('../../helpers/utils/waitForSeconds');
 
 const documentOne = buildTextFile('one', 100);
 const documentTwo = buildTextFile('two', 200);
@@ -61,13 +60,13 @@ describe('UploadDocumentsPage', () => {
             initialIndex: 0,
         });
 
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockConfigContext.mockReturnValue(
             buildConfig({}, { uploadArfWorkflowEnabled: true, uploadLambdaEnabled: true }),
         );
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     const setFilesAndClickUpload = (filesToUpload: File[] = []) => {
@@ -182,6 +181,7 @@ describe('UploadDocumentsPage', () => {
 
             it('[happy path] navigate to confirmation page if all files are clean', async () => {
                 mockVirusScan.mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+                mockUploadConfirmation.mockResolvedValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
 
                 const { rerender } = renderPage(history);
 
@@ -237,8 +237,8 @@ describe('UploadDocumentsPage', () => {
             });
 
             it('only navigate to confirmation page when every files are scanned', async () => {
-                const waitForSeconds = jest.requireActual(
-                    '../../helpers/utils/waitForSeconds',
+                const waitForSeconds: any = (
+                    await vi.importActual('../../helpers/utils/waitForSeconds')
                 ).default;
 
                 mockVirusScan
@@ -265,15 +265,15 @@ describe('UploadDocumentsPage', () => {
 
             describe('setInterval related logics', () => {
                 beforeAll(() => {
-                    jest.useFakeTimers();
+                    vi.useFakeTimers();
                 });
                 afterAll(() => {
-                    jest.useRealTimers();
+                    vi.useRealTimers();
                 });
 
                 function mockSlowS3Upload(milliseconds: number) {
                     mockS3Upload.mockImplementationOnce(() => {
-                        jest.advanceTimersByTime(milliseconds);
+                        vi.advanceTimersByTime(milliseconds);
                         return Promise.resolve(successResponse);
                     });
                     mockS3Upload.mockResolvedValue(successResponse);

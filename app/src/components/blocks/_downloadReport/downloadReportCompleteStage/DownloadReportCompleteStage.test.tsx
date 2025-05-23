@@ -1,16 +1,17 @@
 import { render, screen } from '@testing-library/react';
-import DownloadReportCompleteStage from "./DownloadReportCompleteStage";
-import { REPORT_TYPE, ReportData } from "../../../../types/generic/reports";
+import DownloadReportCompleteStage from './DownloadReportCompleteStage';
+import { REPORT_TYPE, ReportData } from '../../../../types/generic/reports';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { describe, expect, it } from 'vitest';
 
 describe('DownloadReportCompleteStage', () => {
     it('should render correctly', () => {
         const report = {
             title: 'title',
-            reportType: REPORT_TYPE.ODS_PATIENT_SUMMARY
+            reportType: REPORT_TYPE.ODS_PATIENT_SUMMARY,
         } as ReportData;
 
-        render(<DownloadReportCompleteStage report={report}/>);
+        render(<DownloadReportCompleteStage report={report} />);
 
         const title = screen.getByTestId('report-download-complete-header');
         expect(title).toBeInTheDocument();

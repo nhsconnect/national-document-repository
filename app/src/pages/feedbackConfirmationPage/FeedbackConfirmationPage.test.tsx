@@ -1,13 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import FeedbackConfirmationPage from './FeedbackConfirmationPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('<FeedbackConfirmationPage />', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders the page header and content', () => {

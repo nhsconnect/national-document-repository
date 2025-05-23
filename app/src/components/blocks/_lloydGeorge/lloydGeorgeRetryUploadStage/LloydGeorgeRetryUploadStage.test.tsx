@@ -3,9 +3,10 @@ import LloydGeorgeRetryUploadStage from './LloydGeorgeRetryUploadStage';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { describe, expect, it, vi } from 'vitest';
 
-const mockUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockUseNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockUseNavigate,
 }));
 

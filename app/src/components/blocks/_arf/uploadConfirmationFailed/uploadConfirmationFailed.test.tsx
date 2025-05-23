@@ -1,6 +1,7 @@
 import UploadConfirmationFailed from './uploadConfirmationFailed';
 import { render, screen } from '@testing-library/react';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { describe, expect, it } from 'vitest';
 
 describe('UploadConfirmationFailed', () => {
     it('renders the page', () => {

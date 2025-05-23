@@ -24,7 +24,7 @@ export default defineConfig({
     },
     component: {
         devServer: {
-            framework: 'create-react-app',
+            framework: 'vite',
             bundler: 'webpack',
         },
     },

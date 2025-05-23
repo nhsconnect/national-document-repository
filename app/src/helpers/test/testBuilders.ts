@@ -101,7 +101,7 @@ const buildDocument = (
     return mockDocument;
 };
 
-const buildUploadSession = (documents: Array<UploadDocument>) => {
+const buildUploadSession = (documents: Array<UploadDocument>): UploadSession => {
     return documents.reduce(
         (acc, doc) => ({
             ...acc,

@@ -4,6 +4,7 @@ import { SearchResult } from '../../../../types/generic/searchResult';
 import DocumentSearchResults from './DocumentSearchResults';
 import { render, screen, within } from '@testing-library/react';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { describe, expect, it } from 'vitest';
 
 describe('DocumentSearchResults', () => {
     const mockDetails = buildSearchResult();
