@@ -29,16 +29,17 @@ class IMAlertingService:
             self.alarm_severities["low"]: "large_yellow_circle",
             self.alarm_severities["ok"]: "large_green_circle",
         }
-        self.webhook_url = os.environ["WEBHOOK_URL"]
+        self.webhook_url = os.environ["TEAMS_WEBHOOK_URL"]
         self.confluence_base_url = os.environ["CONFLUENCE_BASE_URL"]
         self.message = message
-        self.slack_bot_token = os.environ["ALERTING_SLACK_BOT_TOKEN"]
+        self.slack_bot_token = os.environ["SLACK_BOT_TOKEN"]
 
     def handle_alarm_alert(self):
 
         alarm_name = self.message["AlarmName"]
         alarm_state = self.message["NewStateValue"]
         alarm_time = self.message["StateChangeTime"]
+        # alarm_arn = self.message["AlarmArn"]
 
         alarm_entries = self.get_alarm_history(alarm_name)
 
@@ -178,32 +179,6 @@ class IMAlertingService:
             else []
         )
 
-    # def update_alarm_state_history(
-    #     self, alarm_entry: AlarmEntry, current_state: str, alarm_name: str
-    # ):
-    #     logger.info(
-    #         f"Updating alarm state history for {alarm_entry.alarm_name}:{alarm_entry.time_created}"
-    #     )
-    #     alarm_entry.last_updated = int(datetime.now().timestamp())
-    #     if current_state == "ALARM":
-    #         for key in self.alarm_severities.keys():
-    #             if alarm_name.endswith(key):
-    #                 alarm_entry.history.append(self.alarm_severities[key])
-    #         alarm_entry.time_to_exist = None
-    #         self.send_teams_alert(alarm_entry)
-    #
-    #
-    #     if current_state == "OK" and self.all_alarm_state_ok(alarm_name):
-    #         sleep(180)
-    #         if self.is_last_updated(alarm_entry):
-    #             alarm_entry.history.append(self.alarm_severities["ok"])
-    #             logger.info(
-    #                 f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
-    #             )
-    #             self.add_ttl_to_alarm_entry(alarm_entry)
-    #             self.send_teams_alert(alarm_entry)
-    #             self.send_slack_response(alarm_entry)
-
     def is_last_updated(self, alarm_entry: AlarmEntry) -> bool:
         response = self.dynamo_service.get_item(
             table_name=self.table_name,
@@ -257,6 +232,13 @@ class IMAlertingService:
         alarm_states = [alarm["StateValue"] for alarm in response["MetricAlarms"]]
 
         return all(state == "OK" for state in alarm_states)
+
+    def get_all_alarm_tags(self):
+        client = boto3.client("cloudwatch")
+        response = client.list_tags_for_resource(ResourceARN=self.message["AlarmArn"])
+
+        if response["Tags"]:
+            return response["Tags"]
 
     def add_ttl_to_alarm_entry(self, alarm_entry: AlarmEntry):
         alarm_entry.time_to_exist = int(
