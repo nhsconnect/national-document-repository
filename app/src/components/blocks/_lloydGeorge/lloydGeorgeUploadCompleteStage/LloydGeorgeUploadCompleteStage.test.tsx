@@ -11,7 +11,7 @@ import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
-import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../../helpers/hooks/usePatient');
 const mockPatient = buildPatientDetails();
