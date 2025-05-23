@@ -56,6 +56,7 @@ MOCK_USER_INFO = {
 MOCK_FHIR_DOCUMENT = {
     "resourceType": "DocumentReference",
     "status": "current",
+    "docStatus": "final",
     "type": {
         "coding": [
             {
@@ -142,11 +143,10 @@ MOCK_FHIR_DOCUMENT = {
 
 @pytest.fixture
 def patched_service(mocker, set_env, context):
-    mocker.patch("services.base.s3_service.IAMService")
+    mocker.patch("services.nrl_get_document_reference_service.S3Service")
 
     service = NRLGetDocumentReferenceService()
     mocker.patch.object(service, "ssm_service")
-    mocker.patch.object(service, "s3_service")
     mocker.patch.object(service, "pds_service")
     mocker.patch.object(service, "document_service")
     yield service
