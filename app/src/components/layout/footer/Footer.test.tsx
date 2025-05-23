@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import Footer from './Footer';
 import { routes } from '../../../types/generic/routes';
+import { describe, expect, it } from 'vitest';
 
 describe('Footer', () => {
     describe('Rendering', () => {

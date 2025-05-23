@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import DocumentsListView from './DocumentsListView';
 import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const mockDocuments = [
     { fileName: 'test1.txt', id: '1', ref: 'testref1' },
@@ -9,11 +10,11 @@ const mockDocuments = [
 
 describe('DocumentsListView', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders "Hide files" on page load', () => {

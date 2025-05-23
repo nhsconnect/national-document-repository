@@ -4,13 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import UnauthorisedLoginPage from './UnauthorisedLoginPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { describe, expect, it, vi } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
     Link: (props: LinkProps) => <a {...props} role="link" />,
 }));
-jest.mock('../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../helpers/hooks/useBaseAPIUrl');
 
 describe('UnauthorisedLoginPage', () => {
     describe('Rendering', () => {

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import ServiceError from './ServiceErrorBox';
+import { describe, expect, it } from 'vitest';
 
 describe('ServiceError', () => {
     it('renders the service error', () => {
