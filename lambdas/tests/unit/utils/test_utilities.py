@@ -13,42 +13,25 @@ from utils.utilities import (
 )
 
 
-def test_validate_nhs_number_with_valid_number_returns_true():
-    nhs_number = "9876543210"
-    assert validate_nhs_number(nhs_number)
+@pytest.mark.parametrize(
+    "valid_nhs_number",
+    ["9876543210", "987 654 3210", "987-654-3210", " 987 - 654 3210 "],
+)
+def test_validate_nhs_number_with_valid_number_returns_true(valid_nhs_number):
+    assert validate_nhs_number(valid_nhs_number)
 
 
-def test_validate_nhs_number_with_valid_number_with_spaces_returns_true():
-    nhs_number = "987 654 3210"
-    assert validate_nhs_number(nhs_number)
-
-
-def test_validate_nhs_number_with_valid_number_with_dashes_returns_true():
-    nhs_number = "987-654-3210"
-    assert validate_nhs_number(nhs_number)
-
-
-def test_validate_nhs_number_with_valid_number_with_mixed_formatting_returns_true():
-    nhs_number = " 987 - 654 3210 "
-    assert validate_nhs_number(nhs_number)
-
-
-def test_validate_nhs_number_with_too_short_number_raises_exception():
-    nhs_number = "123456789"
+@pytest.mark.parametrize(
+    "invalid_nhs_number",
+    [
+        "123456789",
+        "943A765874",
+        "9876543213",
+    ],
+)
+def test_validate_nhs_number_with_invalid_number_raises_exception(invalid_nhs_number):
     with pytest.raises(InvalidNhsNumberException):
-        validate_nhs_number(nhs_number)
-
-
-def test_validate_nhs_number_with_non_numeric_characters_raises_exception():
-    nhs_number = "943A765874"
-    with pytest.raises(InvalidNhsNumberException):
-        validate_nhs_number(nhs_number)
-
-
-def test_validate_nhs_number_with_invalid_checksum_raises_exception():
-    nhs_number = "9876543213"
-    with pytest.raises(InvalidNhsNumberException):
-        validate_nhs_number(nhs_number)
+        validate_nhs_number(invalid_nhs_number)
 
 
 def test_decapitalise_keys():
