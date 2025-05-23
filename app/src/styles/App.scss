@@ -221,7 +221,7 @@ $hunit: '%';
     padding-bottom: 150px;
 
     &__text {
-        @include nhsuk-typography-responsive(19);
+        @include nhsuk-font-size(19);
         padding-bottom: 16px;
         font-weight: 700;
         display: block;
