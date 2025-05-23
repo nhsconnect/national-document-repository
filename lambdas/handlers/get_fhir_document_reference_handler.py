@@ -33,66 +33,19 @@ logger = LoggingService(__name__)
 )
 def lambda_handler(event, context):
     try:
-        if not event:
-            raise GetFhirDocumentReferenceException(
-                400, LambdaError.DocumentReferenceInvalidRequest
-            )
-        bearer_token = event.get("headers", {}).get("Authorization", None)
+        bearer_token = extract_bearer_token(event)
         selected_role_id = event.get("headers", {}).get("cis2-urid", None)
-        if not bearer_token:
-            logger.warning("No bearer token found in request")
-            raise GetFhirDocumentReferenceException(
-                401, LambdaError.DocumentReferenceUnauthorised
-            )
+        document_id, snomed_code = extract_document_parameters(event)
 
-        path_params = event.get("pathParameters", {}).get("id", None)
-        document_id, snomed_code = get_id_and_snomed_from_path_parameters(path_params)
-
-        if not document_id or not snomed_code:
-            logger.error(
-                "Missing document id or snomed code in request path parameters."
-            )
-            raise GetFhirDocumentReferenceException(
-                400, LambdaError.DocumentReferenceInvalidRequest
-            )
         get_document_service = GetFhirDocumentReferenceService()
         document_reference = get_document_service.handle_get_document_reference_request(
-            snomed_code,
-            document_id,
+            snomed_code, document_id
         )
 
         if selected_role_id:
-            logger.info(
-                "Detected a cis2 user access request, checking for access permission"
+            verify_user_authorisation(
+                bearer_token, selected_role_id, document_reference.nhs_number
             )
-            configuration_service = DynamicConfigurationService()
-            configuration_service.set_auth_ssm_prefix()
-            try:
-                oidc_service = OidcService()
-                oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
-                userinfo = oidc_service.fetch_userinfo(bearer_token)
-                org_ods_code = oidc_service.fetch_user_org_code(
-                    userinfo, selected_role_id
-                )
-                smartcard_role_code, _ = oidc_service.fetch_user_role_code(
-                    userinfo, selected_role_id, "R"
-                )
-            except (OidcApiException, AuthorisationException) as e:
-                logger.error(e)
-                raise GetFhirDocumentReferenceException(
-                    403, LambdaError.DocumentReferenceUnauthorised
-                )
-
-            try:
-                search_patient_service = SearchPatientDetailsService(
-                    smartcard_role_code, org_ods_code
-                )
-                search_patient_service.handle_search_patient_request(
-                    document_reference.nhs_number, False
-                )
-
-            except SearchPatientException as e:
-                raise GetFhirDocumentReferenceException(e.status_code, e.error)
 
         document_reference_response = (
             get_document_service.create_document_reference_fhir_response(
@@ -100,22 +53,84 @@ def lambda_handler(event, context):
             )
         )
 
+        logger.info(
+            f"Successfully retrieved document reference for document_id: {document_id}, snomed_code: {snomed_code}"
+        )
+
         return ApiGatewayResponse(
             status_code=200, body=document_reference_response, methods="GET"
         ).create_api_gateway_response()
-    except GetFhirDocumentReferenceException as e:
+
+    except GetFhirDocumentReferenceException as exception:
         return ApiGatewayResponse(
-            status_code=e.status_code,
-            body=e.error.create_error_response().create_error_fhir_response(
-                e.error.value.get("fhir_coding")
+            status_code=exception.status_code,
+            body=exception.error.create_error_response().create_error_fhir_response(
+                exception.error.value.get("fhir_coding")
             ),
             methods="GET",
         ).create_api_gateway_response()
 
 
+def extract_bearer_token(event):
+    """Extract and validate bearer token from event"""
+    bearer_token = event.get("headers", {}).get("Authorization", None)
+    if not bearer_token or not bearer_token.startswith("Bearer "):
+        logger.warning("No bearer token found in request")
+        raise GetFhirDocumentReferenceException(
+            401, LambdaError.DocumentReferenceUnauthorised
+        )
+    return bearer_token
+
+
+def extract_document_parameters(event):
+    """Extract document ID and SNOMED code from path parameters"""
+    path_params = event.get("pathParameters", {}).get("id", None)
+    document_id, snomed_code = get_id_and_snomed_from_path_parameters(path_params)
+
+    if not document_id or not snomed_code:
+        logger.error("Missing document id or snomed code in request path parameters.")
+        raise GetFhirDocumentReferenceException(
+            400, LambdaError.DocumentReferenceInvalidRequest
+        )
+
+    return document_id, snomed_code
+
+
+def verify_user_authorisation(bearer_token, selected_role_id, nhs_number):
+    """Verify user authorisation for accessing patient data"""
+    logger.info("Detected a cis2 user access request, checking for access permission")
+
+    try:
+        configuration_service = DynamicConfigurationService()
+        configuration_service.set_auth_ssm_prefix()
+
+        oidc_service = OidcService()
+        oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
+        userinfo = oidc_service.fetch_userinfo(bearer_token)
+
+        org_ods_code = oidc_service.fetch_user_org_code(userinfo, selected_role_id)
+        smartcard_role_code, _ = oidc_service.fetch_user_role_code(
+            userinfo, selected_role_id, "R"
+        )
+    except (OidcApiException, AuthorisationException) as e:
+        logger.error(f"Authorization error: {str(e)}")
+        raise GetFhirDocumentReferenceException(
+            403, LambdaError.DocumentReferenceUnauthorised
+        )
+
+    try:
+        search_patient_service = SearchPatientDetailsService(
+            smartcard_role_code, org_ods_code
+        )
+        search_patient_service.handle_search_patient_request(nhs_number, False)
+    except SearchPatientException as e:
+        raise GetFhirDocumentReferenceException(e.status_code, e.error)
+
+
 def get_id_and_snomed_from_path_parameters(path_parameters):
-    params = path_parameters.split("~")
-    if len(params) == 2:
-        return params[1], params[0]
-    else:
-        return None, None
+    """Extract document ID and SNOMED code from path parameters"""
+    if path_parameters:
+        params = path_parameters.split("~")
+        if len(params) == 2:
+            return params[1], params[0]
+    return None, None
