@@ -75,7 +75,7 @@ class BulkUploadMetadataService:
 
         patients = {}
         with open(
-            csv_file_path, mode="r", encoding="utf-8", errors="replace"
+            csv_file_path, mode="r", encoding="utf-8-sig", errors="replace"
         ) as csv_file_handler:
             csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
             for row in csv_reader:

@@ -397,3 +397,15 @@ def test_file_size_return_int(mock_service, mock_client):
         Bucket=MOCK_BUCKET,
         Key=TEST_FILE_NAME,
     )
+
+
+def test_save_or_create_file(mock_service, mock_client):
+    body = TEST_FILE_KEY.encode("utf-8")
+    mock_service.save_or_create_file(MOCK_BUCKET, TEST_FILE_NAME, body)
+
+    mock_client.put_object.assert_called()
+    args, kwargs = mock_client.put_object.call_args
+
+    assert kwargs["Bucket"] == MOCK_BUCKET
+    assert kwargs["Key"] == TEST_FILE_NAME
+    assert kwargs["Body"].read() == body
