@@ -8,7 +8,6 @@ import RecordCard, { Props } from './RecordCard';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import useRole from '../../../helpers/hooks/useRole';
 import { beforeEach, describe, expect, it, vi, Mock, MockedFunction } from 'vitest';
 
 const mockedUseNavigate = vi.fn();
@@ -31,8 +30,6 @@ const mockUsePatient = usePatient as Mock;
 const mockUseConfig = useConfig as Mock;
 const mockUseBaseAPIUrl = useBaseAPIUrl as Mock;
 const mockUseBaseAPIHeaders = useBaseAPIHeaders as Mock;
-const mockUseRole = useRole as Mock;
-it('passes a test', () => {});
 
 describe('RecordCard Component', () => {
     const mockFullScreenHandler = vi.fn();
