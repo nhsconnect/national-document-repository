@@ -174,7 +174,6 @@ class S3Service:
         extra_args: Mapping[str, Any] = None,
     ):
         try:
-            # self.client.upload_fileobj(file_obj, s3_bucket_name, file_key)
             self.client.upload_fileobj(
                 Fileobj=file_obj,
                 Bucket=s3_bucket_name,
