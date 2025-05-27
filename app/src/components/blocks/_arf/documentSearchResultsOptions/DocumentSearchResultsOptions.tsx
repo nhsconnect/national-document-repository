@@ -82,7 +82,6 @@ const DocumentSearchResultsOptions = (props: Props) => {
                         Download all documents
                     </Button>
                 )}
-                <span>{linkAttributes.url ? 'Download has started.' : `Preparing download`}</span>
                 <a
                     hidden
                     id="download-link"
