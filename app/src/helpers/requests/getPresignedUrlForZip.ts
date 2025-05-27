@@ -33,12 +33,10 @@ const getPresignedUrlForZip = async (args: Args) => {
 
     const jobId = await requestJobId(args);
     let pendingCount = 0;
-    let firstAttempt = true;
     while (pendingCount < 10) {
-        if (!firstAttempt) {
+        if (pendingCount > 0) {
             await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
         }
-        firstAttempt = false;
         const pollingResponse = await pollForPresignedUrl({
             baseUrl,
             baseHeaders,
