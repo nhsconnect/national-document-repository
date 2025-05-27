@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from enums.snomed_codes import SnomedCodes
 from inflection import underscore
 from models.document_reference import DocumentReference, SearchDocumentReference
 from models.fhir.R4.bundle import Bundle, BundleEntry
@@ -172,7 +173,11 @@ class DocumentReferenceSearchService(DocumentService):
         document_details = Attachment(
             title=document_reference.file_name,
             creation=document_reference.created,
-            url=document_retrieve_endpoint + "/" + document_reference.id,
+            url=document_retrieve_endpoint
+            + "/"
+            + SnomedCodes.LLOYD_GEORGE.value.code
+            + "~"
+            + document_reference.id,
         )
         fhir_document_reference = (
             DocumentReferenceInfo(

@@ -153,7 +153,11 @@ def validate_user_access(
 
 def extract_bearer_token(event):
     """Extract and validate bearer token from event"""
-    bearer_token = event.get("headers", {}).get("Authorization", None)
+    headers = event.get("headers", {})
+    if not headers:
+        logger.warning("No headers found in request")
+        raise DocumentRefSearchException(401, LambdaError.DocumentReferenceUnauthorised)
+    bearer_token = headers.get("Authorization", None)
     if not bearer_token or not bearer_token.startswith("Bearer "):
         logger.warning("No bearer token found in request")
         raise DocumentRefSearchException(401, LambdaError.DocumentReferenceUnauthorised)

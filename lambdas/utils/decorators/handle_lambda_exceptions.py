@@ -83,7 +83,7 @@ def handle_lambda_exceptions_fhir(lambda_func: Callable):
             logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
             return ApiGatewayResponse(
                 status_code=500,
-                body=LambdaError.InternalServerError.create_error_body().create_error_fhir_response(
+                body=LambdaError.InternalServerError.create_error_response().create_error_fhir_response(
                     LambdaError.InternalServerError.value.get("fhir_coding")
                 ),
                 methods=event.get("httpMethod", "GET"),
