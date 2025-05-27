@@ -9,7 +9,7 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from inflection import underscore
 from models.document_reference import DocumentReference, SearchDocumentReference
 from models.fhir.R4.bundle import Bundle, BundleEntry
-from models.fhir.R4.nrl_fhir_document_reference import Attachment, DocumentReferenceInfo
+from models.fhir.R4.fhir_document_reference import Attachment, DocumentReferenceInfo
 from pydantic import ValidationError
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
