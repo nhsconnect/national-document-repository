@@ -36,7 +36,9 @@ class MetadataPreprocessorService:
         )
 
         logger.info("Processing metadata filenames")
-        updated_metadata_rows = self.standardize_filenames(renaming_map)
+        updated_metadata_rows = self.standardize_filenames(
+            renaming_map, rejected_rows, rejected_reasons
+        )
 
         successfully_moved_file = self.move_original_metadata_file(file_key)
         if successfully_moved_file:
@@ -85,7 +87,11 @@ class MetadataPreprocessorService:
         return metadata_rows
 
     def standardize_filenames(
-        self, renaming_map: list[tuple[dict, dict]], max_workers=20
+        self,
+        renaming_map: list[tuple[dict, dict]],
+        rejected_rows: list[dict],
+        rejected_reasons: list[dict],
+        max_workers=20,
     ):
         logger.info("Standardizing filenames")
 
@@ -98,9 +104,13 @@ class MetadataPreprocessorService:
             ]
 
             for future in as_completed(futures):
-                updated_row = future.result()
+                updated_row, rejected_row, rejected_reason = future.result()
                 if updated_row:
                     updated_rows.append(updated_row)
+                if rejected_row:
+                    rejected_rows.append(rejected_row)
+                if rejected_reason:
+                    rejected_reasons.append(rejected_reason)
 
         logger.info("Finished updating and standardizing filenames")
         return updated_rows
@@ -222,19 +232,35 @@ class MetadataPreprocessorService:
             except ClientError as e:
                 error_code = e.response["Error"]["Code"]
                 if error_code == "NoSuchKey":
-                    logger.info(f"File {original_file_key} doesn't exist")
-                    return None
+                    error_message = "File doesn't exist on S3"
+                    logger.info(f"{error_message} for `{original_file_key}`")
+                    rejected_reason = {
+                        "FILEPATH": original_row.get("FILEPATH"),
+                        "REASON": error_message,
+                    }
+                    return None, original_row, rejected_reason
                 else:
-                    logger.error(
-                        f"Failed update filename for `{original_file_key}`: {e}"
-                    )
-                    return None
+                    error_message = "Failed to create updated S3 filepath"
+                    logger.error(f"{error_message} for `{original_file_key}`: {e}")
+                    rejected_reason = {
+                        "FILEPATH": original_row.get("FILEPATH"),
+                        "REASON": error_message,
+                    }
+                    return None, original_row, rejected_reason
+            try:
+                self.s3_service.client.delete_object(
+                    Bucket=self.staging_store_bucket, Key=original_file_key
+                )
+            except ClientError as e:
+                error_message = "Failed to remove old S3 filepath"
+                logger.error(f"error_message for `{original_file_key}`: {e}")
+                rejected_reason = {
+                    "FILEPATH": original_row.get("FILEPATH"),
+                    "REASON": error_message,
+                }
+                return None, original_row, rejected_reason
 
-            self.s3_service.client.delete_object(
-                Bucket=self.staging_store_bucket, Key=original_file_key
-            )
-
-        return updated_row
+        return updated_row, None, None
 
     def move_original_metadata_file(self, file_key: str):
         destination_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/{METADATA_FILENAME}"
