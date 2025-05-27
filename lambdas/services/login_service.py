@@ -11,7 +11,7 @@ from oauthlib.oauth2 import WebApplicationClient
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from services.ods_api_service import OdsApiService
-from services.oidc_service import OidcService
+from services.oidc_service import OidcService, get_selected_roleid
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
@@ -59,16 +59,18 @@ class LoginService:
         try:
             access_token, id_token_claim_set = self.oidc_service.fetch_tokens(auth_code)
 
-            logger.info(
-                "Use the access token to fetch user's organisation and smartcard codes"
-            )
+            logger.info("Fetching user information from OIDC Provider")
+            userinfo = self.oidc_service.fetch_userinfo(access_token)
+            selected_role_id = get_selected_roleid(id_token_claim_set)
+            logger.debug(f"Selected role ID: {selected_role_id}")
 
-            org_ods_codes = self.oidc_service.fetch_user_org_codes(
-                access_token, id_token_claim_set
+            logger.info("Extracting user's organisation and smartcard codes")
+            org_ods_codes = self.oidc_service.fetch_user_org_code(
+                userinfo, selected_role_id
             )
 
             smartcard_role_code, user_id = self.oidc_service.fetch_user_role_code(
-                access_token, id_token_claim_set, "R"
+                userinfo, selected_role_id, "R"
             )
         except OidcApiException as e:
             logger.error(
@@ -162,35 +164,31 @@ class LoginService:
         deletion_key = {"State": state}
         self.db_service.delete_item(table_name=state_table_name, key=deletion_key)
 
-    def generate_repository_role(self, organisation: dict, smartcard_role: str):
+    def generate_repository_role(
+        self, organisation: dict, smartcard_role: str
+    ) -> RepositoryRole:
         logger.info(f"Smartcard Role: {smartcard_role}")
+
+        if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
+            if self.has_pcse_org_ods_code(
+                organisation, self.token_handler_ssm_service.get_pcse_ods_code()
+            ):
+                logger.info("PCSE: smartcard ODS identified")
+                return RepositoryRole.PCSE
 
         if (
             smartcard_role
             in self.token_handler_ssm_service.get_smartcard_role_gp_admin()
         ):
             logger.info("GP Admin: smartcard ODS identified")
-            if self.has_role_org_role_code(
-                organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
-            ):
-                return RepositoryRole.GP_ADMIN
+            return RepositoryRole.GP_ADMIN
 
         if (
             smartcard_role
             in self.token_handler_ssm_service.get_smartcard_role_gp_clinical()
         ):
             logger.info("GP Clinical: smartcard ODS identified")
-            if self.has_role_org_role_code(
-                organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
-            ):
-                return RepositoryRole.GP_CLINICAL
-
-        if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
-            logger.info("PCSE: smartcard ODS identified")
-            if self.has_role_org_ods_code(
-                organisation, self.token_handler_ssm_service.get_org_ods_codes()[0]
-            ):
-                return RepositoryRole.PCSE
+            return RepositoryRole.GP_CLINICAL
 
         logger.error(
             f"{LambdaError.LoginNoRole.to_str()}", {"Result": "Unsuccessful login"}
@@ -201,22 +199,14 @@ class LoginService:
         )
 
     @staticmethod
-    def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
-        if organisation["role_code"].upper() == role_code.upper():
-            return True
-        return False
-
-    @staticmethod
-    def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
-        if organisation["org_ods_code"].upper() == ods_code.upper():
-            return True
-        return False
+    def has_pcse_org_ods_code(organisation: dict, ods_code: str) -> bool:
+        return organisation["org_ods_code"].upper() == ods_code.upper()
 
     def issue_auth_token(
         self,
         session_id: str,
         id_token_claim_set: IdTokenClaimSet,
-        user_org_details: list[dict],
+        user_org_details: dict,
         smart_card_role: str,
         repository_role: RepositoryRole,
         user_id: str,

@@ -3,12 +3,13 @@ import SessionExpiredErrorPage from './SessionExpiredErrorPage';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { endpoints } from '../../types/generic/endpoints';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../helpers/hooks/useBaseAPIUrl');
 
 const originalWindowLocation = window.location;
-const mockLocationReplace = jest.fn();
-const mockUseBaseUrl = useBaseAPIUrl as jest.Mock;
+const mockLocationReplace = vi.fn();
+const mockUseBaseUrl = useBaseAPIUrl as Mock;
 
 describe('SessionExpiredErrorPage', () => {
     afterAll(() => {

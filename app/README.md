@@ -34,6 +34,12 @@ To run the UI, the team has created a Makefile in the route directory, on your f
 make install
 ```
 
+After modules have installed you need to install pdfjs with the following command
+
+```bash
+make install-pdfjs
+```
+
 Once the packages have been installed, you can then run the app through the following command
 
 ```bash
@@ -46,7 +52,7 @@ Once everything is up and running you should see a prompt in the CLI that the ap
 
 ### 1. UI Tests
 
-You can run the unit tests for the app [Jest](https://jestjs.io/) by running
+You can run the unit tests for the app [Vitest](https://vitest.dev/) by running
 
 ```bash
 make test-ui
