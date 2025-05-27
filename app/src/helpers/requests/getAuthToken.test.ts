@@ -2,10 +2,10 @@ import axios, { AxiosError } from 'axios';
 import { buildUserAuth } from '../test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import getAuthToken from './getAuthToken';
+import { describe, expect, test, vi, Mocked } from 'vitest';
 
-// Mock out all top level functions, such as get, put, delete and post:
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as Mocked<typeof axios>;
 
 // ...
 

@@ -19,41 +19,45 @@ import { createMemoryHistory } from 'history';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import * as ReactRouter from 'react-router-dom';
 import SessionProvider from '../../../../providers/sessionProvider/SessionProvider';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
-jest.mock('../../../../helpers/hooks/useRole');
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('../../../../helpers/hooks/useConfig');
-jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/hooks/useRole');
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('../../../../helpers/hooks/useConfig');
+vi.mock('../../../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
+vi.mock('react-router-dom', async () => ({
+    ...(await vi.importActual('react-router-dom')),
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));
 
-const mockedUsePatient = usePatient as jest.Mock;
-const mockNavigate = jest.fn();
-const mockedUseRole = useRole as jest.Mock;
-const mockSetStage = jest.fn();
-const mockUseConfig = useConfig as jest.Mock;
+const mockedUsePatient = usePatient as Mock;
+const mockNavigate = vi.fn();
+const mockedUseRole = useRole as Mock;
+const mockSetStage = vi.fn();
+const mockUseConfig = useConfig as Mock;
+
+const EMBEDDED_PDF_VIEWER_TITLE = 'Embedded PDF Viewer';
 
 describe('LloydGeorgeViewRecordStage', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
         mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders an lg record', async () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
@@ -77,7 +81,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         async (stage) => {
             renderComponent({
                 downloadStage: stage,
-                cloudFrontUrl: '',
+                pdfObjectUrl: '',
             });
 
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
@@ -105,7 +109,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         renderComponent();
 
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
 
         act(() => {
@@ -123,7 +127,7 @@ describe('LloydGeorgeViewRecordStage', () => {
     it("returns to previous view when 'Go back' link clicked during full screen", async () => {
         renderComponent();
         await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(screen.getByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
         });
 
         act(() => {
@@ -183,7 +187,7 @@ describe('LloydGeorgeViewRecordStage', () => {
         it('pass accessibility checks when displaying LG record', async () => {
             renderComponent();
 
-            expect(await screen.findByTitle('Embedded PDF')).toBeInTheDocument();
+            expect(await screen.findByTitle(EMBEDDED_PDF_VIEWER_TITLE)).toBeInTheDocument();
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
@@ -259,10 +263,10 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage' | 'stage'> = {
         downloadStage: DOWNLOAD_STAGE.SUCCEEDED,
         lastUpdated: mockPdf.lastUpdated,
-        refreshRecord: jest.fn(),
-        cloudFrontUrl: 'http://test.com',
+        refreshRecord: vi.fn(),
+        pdfObjectUrl: 'http://test.com',
         showMenu: true,
-        resetDocState: jest.fn(),
+        resetDocState: vi.fn(),
         ...propsOverride,
     };
     render(

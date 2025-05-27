@@ -1,16 +1,17 @@
 import { render, screen } from '@testing-library/react';
 import LgRecordDetails, { Props } from './LloydGeorgeRecordDetails';
 import { buildLgSearchResult } from '../../../../helpers/test/testBuilders';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const mockPdf = buildLgSearchResult();
 
 describe('LloydGeorgeRecordDetails', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Rendering', () => {

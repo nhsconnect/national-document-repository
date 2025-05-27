@@ -7,7 +7,6 @@
     "plugins": ["unused-imports", "cypress", "import"],
     "extends": [
         "react-app",
-        "react-app/jest",
         "plugin:prettier/recommended",
         "plugin:cypress/recommended"
     ],
@@ -26,7 +25,7 @@
             }
         ],
         "@typescript-eslint/no-explicit-any": [
-            "error",
+            "off",
             {
                 "ignoreRestArgs": true
             }
@@ -76,5 +75,16 @@
         "extensions": "off",
         "prettier/prettier": "warn",
         "unused-imports/no-unused-imports": "warn"
-    }
+    },
+    "overrides": [
+        {
+            "files": ["**/*.test.tsx", "**/*.test.ts"],
+            "rules": {
+                "jsx-a11y/anchor-has-content": ["off"],
+                "jsx-a11y/no-redundant-roles": ["off"],
+                "no-throw-literal": ["off"],
+                "max-len": ["off"]
+            }
+        }
+    ]
 }

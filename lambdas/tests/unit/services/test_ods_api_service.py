@@ -111,7 +111,7 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [pcse_ods]
+        OdsApiService(), pcse_ods
     )
 
     assert expected == actual
@@ -144,7 +144,7 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [gp_ods]
+        OdsApiService(), gp_ods
     )
 
     assert expected == actual
@@ -156,7 +156,7 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
     mocker.patch.object(
         OdsApiService,
         "fetch_organisation_data",
-        return_value=[itoc_ods],
+        return_value=itoc_ods,
     )
     mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
     mocker.patch.object(
@@ -173,13 +173,13 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
 
     expected = {
         "name": "",
-        "org_ods_code": "",
+        "org_ods_code": itoc_ods,
         "role_code": "",
         "icb_ods_code": "ITOC",
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [itoc_ods]
+        OdsApiService(), itoc_ods
     )
 
     assert expected == actual
@@ -215,7 +215,7 @@ def test_fetch_org_with_permitted_role_allowed_list(mock_ods_responses, mocker):
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [allowed_ods_code]
+        OdsApiService(), allowed_ods_code
     )
 
     assert expected == actual
@@ -244,9 +244,7 @@ def test_fetch_org_with_permitted_role_returns_empty_list_when_not_a_permitted_r
     ods = "OD5"
     expected = {}
 
-    actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), [ods]
-    )
+    actual = OdsApiService.fetch_organisation_with_permitted_role(OdsApiService(), ods)
 
     assert expected == actual
 
@@ -255,9 +253,7 @@ def test_fetch_org_with_permitted_role_raises_exception_if_more_than_one_org_for
     mock_ods_responses,
 ):
     with pytest.raises(TooManyOrgsException):
-        OdsApiService.fetch_organisation_with_permitted_role(
-            OdsApiService(), ["ods1", "ods2many"]
-        )
+        OdsApiService.fetch_organisation_with_permitted_role(OdsApiService(), "")
 
 
 @pytest.mark.parametrize(
