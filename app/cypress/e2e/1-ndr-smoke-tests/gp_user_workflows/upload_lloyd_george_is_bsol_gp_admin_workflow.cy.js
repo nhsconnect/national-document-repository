@@ -53,7 +53,9 @@ describe('GP Workflow: Upload Lloyd George record', () => {
 
         it(
             '[Smoke] GP ADMIN can upload and then view a Lloyd George record for an active patient with no record',
-            { tags: 'smoke', defaultCommandTimeout: 20000 },
+            //Temporarily disabled until Virus Scanner Reenabled on dev
+            // { tags: 'smoke', defaultCommandTimeout: 20000 },
+            { defaultCommandTimeout: 20000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN_BSOL);
 
