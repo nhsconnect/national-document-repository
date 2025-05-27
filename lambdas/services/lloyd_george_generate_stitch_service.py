@@ -44,15 +44,46 @@ class LloydGeorgeStitchService:
 
     def stitch_lloyd_george_record(self):
         try:
-            all_lg_parts = self.get_documents_for_stitching()
+            documents_for_stitching = self.get_lloyd_george_record_for_patient()
+            if not documents_for_stitching:
+                raise LGStitchServiceException(404, LambdaError.StitchNotFound)
 
-            self.stitch_trace_object.total_file_size_in_bytes = (
-                self.get_total_file_size_in_bytes(all_lg_parts)
-            )
-            # if len(all_lg_parts) == 1:
-            #     with open(all_lg_parts[0], "rb") as single_file:
-            #         single_file_stream = BytesIO(single_file.read())
-            #     stitched_stream = single_file_stream
+            filename_for_stitched_file = f"{self.stitch_file_name}.pdf"
+            destination_key = f"combined_files/{filename_for_stitched_file}"
+
+            if len(documents_for_stitching) == 1:
+                # documents_for_stitching = self.get_lloyd_george_record_for_patient()
+                file_location_on_s3 = documents_for_stitching[0].file_location
+                original_key = get_file_key_from_s3_url(file_location_on_s3)
+                self.s3_service.copy_across_bucket(
+                    source_bucket=self.lloyd_george_bucket_name,
+                    source_file_key=original_key,
+                    dest_bucket=self.lloyd_george_bucket_name,
+                    dest_file_key=destination_key,
+                )
+                self.stitch_trace_object.total_file_size_in_bytes = (
+                    self.s3_service.get_file_size(
+                        self.lloyd_george_bucket_name, original_key
+                    )
+                )
+            else:
+                all_lg_parts = self.get_documents_for_stitching(
+                    documents_for_stitching=documents_for_stitching
+                )
+
+                self.stitch_trace_object.total_file_size_in_bytes = (
+                    self.get_total_file_size_in_bytes(all_lg_parts)
+                )
+                stitched_lg_stream = stitch_pdf_into_steam(all_lg_parts)
+                self.upload_stitched_lg_record(
+                    stitched_lg_stream=stitched_lg_stream,
+                    filename_on_bucket=destination_key,
+                )
+            self.stitch_trace_object.stitched_file_location = destination_key
+            # self.stitch_trace_object.stitched_file_location = filename_on_bucket
+            # with open(all_lg_parts[0], "rb") as single_file:
+            #     single_file_stream = BytesIO(single_file.read())
+            # stitched_stream = single_file_stream
             # else:
             #     stitched_stream = stitch_pdf_into_steam(all_lg_parts)
             #
@@ -66,13 +97,12 @@ class LloydGeorgeStitchService:
             #     {"Result": "Successful viewing LG"},
             # )
 
-            stitched_lg_stream = stitch_pdf_into_steam(all_lg_parts)
-            filename_for_stitched_file = f"{self.stitch_file_name}.pdf"
+            # stitched_lg_stream = stitch_pdf_into_steam(all_lg_parts)
 
-            self.upload_stitched_lg_record(
-                stitched_lg_stream=stitched_lg_stream,
-                filename_on_bucket=f"combined_files/{filename_for_stitched_file}",
-            )
+            # self.upload_stitched_lg_record(
+            #     stitched_lg_stream=stitched_lg_stream,
+            #     filename_on_bucket=f"combined_files/{filename_for_stitched_file}",
+            # )
             logger.audit_splunk_info(
                 "User has viewed Lloyd George records",
                 {"Result": "Successful viewing LG"},
@@ -85,12 +115,10 @@ class LloydGeorgeStitchService:
             )
             raise LGStitchServiceException(500, LambdaError.StitchClient)
 
-    def get_documents_for_stitching(self):
+    def get_documents_for_stitching(
+        self, documents_for_stitching: list[DocumentReference]
+    ):
         try:
-            documents_for_stitching = self.get_lloyd_george_record_for_patient()
-            if not documents_for_stitching:
-                raise LGStitchServiceException(404, LambdaError.StitchNotFound)
-
             self.update_trace_status(TraceStatus.PROCESSING)
             sorted_documents_for_stitching = self.sort_documents_by_filenames(
                 documents_for_stitching
