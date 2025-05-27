@@ -1,6 +1,8 @@
+import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from enums.snomed_codes import SnomedCode, SnomedCodes
+from models.document_reference import DocumentReference as NdrDocumentReference
 from models.fhir.R4.base_models import (
     CodeableConcept,
     Coding,
@@ -24,7 +26,7 @@ CONTENT_STABILITY_URL = (
 
 
 class FormatCode(Coding):
-    """Coding for specifying a document format type."""
+    """Coding for specifying document format type."""
 
     system: Optional[str] = None
     code: Literal["urn:nhs-ic:record-contact", "urn:nhs-ic:unstructured"] = (
@@ -96,7 +98,21 @@ class DocumentReferenceContext(BaseModel):
 class DocumentReference(BaseModel):
     """FHIR DocumentReference resource."""
 
+    id: Optional[str] = None
     resourceType: Literal["DocumentReference"] = "DocumentReference"
+    docStatus: Literal[
+        "registered",
+        "partial",
+        "preliminary",
+        "final",
+        "amended",
+        "corrected",
+        "appended",
+        "cancelled",
+        "entered-in-error",
+        "deprecated",
+        "unknown",
+    ] = "final"
     status: Literal["current"] = "current"
     type: Optional[CodeableConcept] = None
     category: Optional[List[CodeableConcept]] = None
@@ -201,13 +217,29 @@ class DocumentReferenceInfo(BaseModel):
 
         return fhir_document_ref
 
-    def create_minimal_fhir_document_reference_object(self) -> DocumentReference:
-        """Create a minimal FHIR DocumentReference with only required fields.
+    def create_general_fhir_document_reference_object(
+        self, document: NdrDocumentReference
+    ) -> DocumentReference:
+        """Create a FHIR DocumentReference .
 
         Returns:
-            DocumentReference: A minimal FHIR DocumentReference resource
+            DocumentReference: A FHIR DocumentReference resource
         """
+
         return DocumentReference(
+            id=document.id,
+            type=CodeableConcept(
+                coding=self._create_snomed_coding(self.snomed_code_doc_type)
+            ),
             subject=Reference(**self._create_identifier("nhs-number", self.nhs_number)),
             content=[DocumentReferenceContent(attachment=self.attachment)],
+            date=datetime.datetime.now().isoformat(),
+            author=[
+                Reference(
+                    **self._create_identifier("ods-organization-code", self.custodian)
+                )
+            ],
+            custodian=Reference(
+                **self._create_identifier("ods-organization-code", self.custodian)
+            ),
         )
