@@ -1,13 +1,13 @@
 $govuk-compatibility-govukelements: true;
-@import 'node_modules/govuk-frontend/govuk/components/phase-banner/phase-banner';
-@import 'node_modules/govuk-frontend/govuk/components/warning-text/warning-text';
-@import 'node_modules/govuk-frontend/govuk/components/notification-banner/notification-banner';
+@import 'govuk-frontend/govuk/components/phase-banner/phase-banner';
+@import 'govuk-frontend/govuk/components/warning-text/warning-text';
+@import 'govuk-frontend/govuk/components/notification-banner/notification-banner';
 
-@import 'node_modules/nhsuk-frontend/packages/nhsuk';
-@import 'node_modules/nhsuk-frontend/packages/core/all';
-@import 'node_modules/nhsuk-frontend/packages/components/button/button';
-@import 'node_modules/nhsuk-frontend/packages/components/input/input';
-@import 'node_modules/nhsuk-frontend/packages/components/tables/tables';
+@import 'nhsuk-frontend/packages/nhsuk';
+@import 'nhsuk-frontend/packages/core/all';
+@import 'nhsuk-frontend/packages/components/button/button';
+@import 'nhsuk-frontend/packages/components/input/input';
+@import 'nhsuk-frontend/packages/components/tables/tables';
 
 /**
 *   Styleguide:  Blocks, Elements and Modifiers
@@ -722,6 +722,12 @@ $hunit: '%';
     margin-bottom: nhsuk-spacing(3);
 }
 
+.nhsuk-icon__chevron-left {
+    margin: auto;
+    top: 0;
+    bottom: 0;
+}
+
 .nhsuk-header__navigation-list {
     display: grid;
     grid-template-columns: auto auto 1fr;
@@ -827,6 +833,10 @@ $hunit: '%';
 
 // Helper
 
+#pdf-viewer {
+    height: 75vh;
+}
+
 @-moz-document url-prefix() {
     #pdf-viewer {
         margin-top: 6px;
@@ -887,6 +897,8 @@ $hunit: '%';
 }
 
 .lg-input-format-paragraph {
+    word-break: break-word;
+    overflow-wrap: break-word;
     font-weight: 600;
     margin: 20px;
     margin-right: 0px;
@@ -953,6 +965,11 @@ $hunit: '%';
     &.fullscreen {
         max-width: unset;
         padding: 0;
+
+        #pdf-viewer {
+            flex: 1;
+            height: unset;
+        }
 
         @media (max-width: 640px) {
             height: 100vh;
@@ -1191,6 +1208,7 @@ $hunit: '%';
     .button-container {
         display: flex;
         align-items: baseline;
+        font-size: 1rem;
     }
 }
 

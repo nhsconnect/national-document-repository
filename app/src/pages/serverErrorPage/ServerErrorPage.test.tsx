@@ -3,26 +3,25 @@ import ServerErrorPage from './ServerErrorPage';
 import userEvent from '@testing-library/user-event';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-const mockSearchParamsGet = jest.fn();
+const mockedUseNavigate = vi.fn();
+const mockSearchParamsGet = vi.fn();
 
-jest.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     useSearchParams: () => [{ get: mockSearchParamsGet }],
     useNavigate: () => mockedUseNavigate,
-    useLocation: () => jest.fn(),
+    useLocation: () => vi.fn(),
 }));
 
 describe('ServerErrorPage', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Rendering', () => {

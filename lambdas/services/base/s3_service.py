@@ -72,9 +72,18 @@ class S3Service:
                 Params={"Bucket": s3_bucket_name, "Key": file_key},
                 ExpiresIn=self.presigned_url_expiry,
             )
+        return None
 
     def download_file(self, s3_bucket_name: str, file_key: str, download_path: str):
         return self.client.download_file(s3_bucket_name, file_key, download_path)
+
+    def get_binary_file(self, s3_bucket_name: str, file_key: str):
+        response = self.client.get_object(
+            Bucket=s3_bucket_name,
+            Key=file_key,
+        )
+        file = response["Body"].read()
+        return file
 
     def upload_file(self, file_name: str, s3_bucket_name: str, file_key: str):
         return self.client.upload_file(file_name, s3_bucket_name, file_key)
@@ -99,6 +108,7 @@ class S3Service:
             Bucket=dest_bucket,
             Key=dest_file_key,
             CopySource={"Bucket": source_bucket, "Key": source_file_key},
+            StorageClass="INTELLIGENT_TIERING",
         )
 
     def delete_object(self, s3_bucket_name: str, file_key: str):
