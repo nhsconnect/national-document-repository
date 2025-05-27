@@ -12,7 +12,7 @@ from enums.snomed_codes import SnomedCode, SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from inflection import underscore
 from models.document_reference import DocumentReference
-from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.fhir.R4.fhir_document_reference import Attachment
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pypdf import PdfReader, PdfWriter

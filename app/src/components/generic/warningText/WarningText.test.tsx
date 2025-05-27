@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import WarningText from './WarningText';
+import { describe, expect, it } from 'vitest';
 
 describe('Warning text', () => {
     it('displays bold text with a warning icon', () => {

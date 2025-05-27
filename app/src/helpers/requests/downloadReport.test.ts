@@ -2,9 +2,22 @@ import axios, { AxiosError } from 'axios';
 import downloadReport from './downloadReport';
 import { ReportData } from '../../types/generic/reports';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
+import { describe, expect, it, vi, Mocked } from 'vitest';
 
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as Mocked<typeof axios>;
+
+const mockResponse = vi.fn();
+Object.defineProperty(window, 'location', {
+    value: {
+        hash: {
+            endsWith: mockResponse,
+            includes: mockResponse,
+        },
+        assign: mockResponse,
+    },
+    writable: true,
+});
 
 describe('downloadReport', () => {
     const report = {
@@ -25,7 +38,7 @@ describe('downloadReport', () => {
             } as AuthHeaders,
         };
 
-        const getSpy = jest.spyOn(mockedAxios, 'get');
+        const getSpy = vi.spyOn(mockedAxios, 'get');
 
         await downloadReport(args);
 
@@ -37,7 +50,7 @@ describe('downloadReport', () => {
 
     it('should throw an axios error when the request fails', async () => {
         mockedAxios.get.mockImplementation(() => {
-            throw { response: {status: 404 }};
+            throw { response: { status: 404 } };
         });
         const args = {
             report,
@@ -49,7 +62,7 @@ describe('downloadReport', () => {
             } as AuthHeaders,
         };
 
-        const getSpy = jest.spyOn(mockedAxios, 'get');
+        const getSpy = vi.spyOn(mockedAxios, 'get');
         let errorCode;
 
         try {

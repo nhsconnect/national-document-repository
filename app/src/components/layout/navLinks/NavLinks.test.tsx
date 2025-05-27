@@ -4,9 +4,10 @@ import SessionProvider, { Session } from '../../../providers/sessionProvider/Ses
 import { buildUserAuth } from '../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../types/generic/routes';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
+const mockedUseNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
@@ -14,10 +15,10 @@ describe('NavLinks', () => {
     const oldWindowLocation = window.location;
     beforeEach(() => {
         sessionStorage.setItem('UserSession', '');
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         window.location = oldWindowLocation;
     });
 
