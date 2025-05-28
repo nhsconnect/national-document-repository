@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from datetime import datetime, timedelta
 from time import sleep
 
@@ -53,7 +54,9 @@ class IMAlertingService:
 
         if not alarm_entries and alarm_state == "ALARM":
             logger.info(f"No current alarm history for {alarm_name}")
-            self.handle_new_alarm_episode(alarm_name, alarm_time)
+            self.handle_new_alarm_episode(
+                alarm_name=alarm_name, alarm_time=alarm_time, tags=alarm_tags
+            )
 
         else:
             all_alarms_expired = all(
@@ -66,6 +69,7 @@ class IMAlertingService:
                 self.handle_new_alarm_episode(
                     alarm_name=alarm_name,
                     alarm_time=alarm_time,
+                    tags=alarm_tags,
                 )
             else:
                 for alarm_entry in alarm_entries:
@@ -74,6 +78,7 @@ class IMAlertingService:
                             alarm_entry=alarm_entry,
                             alarm_name=alarm_name,
                             alarm_state=alarm_state,
+                            tags=alarm_tags,
                         )
 
     def is_episode_expired(self, alarm_entry: AlarmEntry) -> bool:
@@ -83,7 +88,7 @@ class IMAlertingService:
         else:
             return False
 
-    def handle_new_alarm_episode(self, alarm_name: str, alarm_time: str):
+    def handle_new_alarm_episode(self, alarm_name: str, alarm_time: str, tags: dict):
         logger.info(
             f"Creating new alarm episode {alarm_name}:{self.create_alarm_timestamp(alarm_time)}"
         )
@@ -94,7 +99,7 @@ class IMAlertingService:
             channel_id=os.environ["ALERTING_SLACK_CHANNEL_ID"],
         )
         AlarmEntry.model_validate(new_entry)
-        self.update_alarm_state_history(new_entry, alarm_name)
+        self.update_alarm_state_history(new_entry, tags)
         self.send_teams_alert(new_entry)
         self.send_initial_slack_alert(new_entry)
         self.create_alarm_entry(new_entry)
@@ -103,26 +108,22 @@ class IMAlertingService:
     # means adding in extra update when the slack response comes in so the correct object has the slack thread_ts needed
 
     def handle_current_alarm_episode(
-        self, alarm_entry: AlarmEntry, alarm_state: str, alarm_name: str
+        self, alarm_entry: AlarmEntry, alarm_state: str, tags: dict
     ):
         logger.info(
             f"Updating alarm episode {alarm_entry.alarm_name}:{alarm_entry.time_created}"
         )
         if alarm_state == "ALARM":
-            logger.info(f"Handling Alarm action for {alarm_name}")
+            logger.info(f"Handling Alarm action for {alarm_entry.alarm_name}")
 
-            self.update_alarm_state_history(
-                alarm_name=alarm_name, alarm_entry=alarm_entry
-            )
+            self.update_alarm_state_history(tags=tags, alarm_entry=alarm_entry)
             self.send_teams_alert(alarm_entry)
             self.send_slack_response(alarm_entry)
             self.update_original_slack_message(alarm_entry)
             self.update_alarm_table(alarm_entry)
 
         if alarm_state == "OK":
-            self.handle_ok_action_trigger(
-                alarm_name=alarm_name, alarm_entry=alarm_entry
-            )
+            self.handle_ok_action_trigger(tags=tags, alarm_entry=alarm_entry)
 
     def create_alarm_entry(self, alarm_entry: AlarmEntry):
         new_entry = alarm_entry.model_dump(
@@ -132,10 +133,10 @@ class IMAlertingService:
         logger.info(f"Creating new alarm entry for {alarm_entry.alarm_name}")
         self.dynamo_service.create_item(table_name=self.table_name, item=new_entry)
 
-    def handle_ok_action_trigger(self, alarm_name: str, alarm_entry: AlarmEntry):
-        logger.info(f"Handling OK action trigger for {alarm_name}")
+    def handle_ok_action_trigger(self, tags: dict, alarm_entry: AlarmEntry):
+        logger.info(f"Handling OK action trigger for {alarm_entry.alarm_name}")
 
-        if self.all_alarm_state_ok(alarm_name):
+        if self.all_alarm_state_ok(tags, alarm_entry):
             logger.info("Waiting for other alarms to be triggered before setting TTL.")
             sleep(180)
             if self.is_last_updated(alarm_entry):
@@ -218,17 +219,30 @@ class IMAlertingService:
             updated_fields=fields_to_update,
         )
 
-    def all_alarm_state_ok(self, alarm_name) -> bool:
-        alarm_prefix = alarm_name.rsplit("_", 1)[0]
+    # this needs thinking about, have been using alarm
+    def all_alarm_state_ok(self, alarm_entry: AlarmEntry, tags: dict) -> bool:
 
-        logger.info(f"Checking state for all alarms with prefix: {alarm_prefix}")
-
-        client = boto3.client("cloudwatch")
-        response = client.describe_alarms(
-            AlarmNamePrefix=alarm_prefix,
+        tag_filter = self.build_tag_filter(tags)
+        client = boto3.client("resourcegroupstaggingapi")
+        response = client.get_resources(
+            ResourceTypeFilters=["cloudwatch:alarm"], TagFilters=tag_filter
         )
 
-        alarm_states = [alarm["StateValue"] for alarm in response["MetricAlarms"]]
+        resources = response["ResourceTagMappingList"]
+        arns = []
+        for resource in resources:
+            arns.append(resource["ResourceARN"])
+
+        alarm_names = self.extract_alarm_names_from_arns(arns)
+
+        cloudwatch_client = boto3.client("cloudwatch")
+        cloudwatch_response = cloudwatch_client.describe_alarms(
+            AlarmNames=alarm_names,
+        )
+
+        alarm_states = [
+            alarm["StateValue"] for alarm in cloudwatch_response["MetricAlarms"]
+        ]
 
         return all(state == "OK" for state in alarm_states)
 
@@ -243,6 +257,25 @@ class IMAlertingService:
                 for key, value in tag.items():
                     tags[key] = tag[value]
         return tags
+
+    def build_tag_filter(self, tags: dict) -> list:
+        tag_filter = []
+
+        for key, value in tags.items():
+            if key == "alarm_group" or key == "metric":
+                tag_filter.append({"Key": key, "Value": [value]})
+
+        return tag_filter
+
+    def extract_alarm_names_from_arns(arn_list):
+        alarm_names = []
+        for arn in arn_list:
+            match = re.search(r"alarm:([^:]+)$", arn)
+            if match:
+                alarm_names.append(match.group(1))
+            else:
+                raise ValueError(f"Invalid alarm ARN format: {arn}")
+        return alarm_names
 
     def add_ttl_to_alarm_entry(self, alarm_entry: AlarmEntry):
         alarm_entry.time_to_exist = int(
