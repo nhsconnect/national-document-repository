@@ -185,7 +185,7 @@ class DocumentReferenceSearchService(DocumentService):
                 attachment=document_details,
                 custodian=document_reference.current_gp_ods,
             )
-            .create_general_fhir_document_reference_object(document_reference)
+            .create_fhir_document_reference_object(document_reference)
             .model_dump(exclude_none=True)
         )
         return fhir_document_reference

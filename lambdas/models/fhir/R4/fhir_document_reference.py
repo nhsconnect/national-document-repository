@@ -217,7 +217,7 @@ class DocumentReferenceInfo(BaseModel):
 
         return fhir_document_ref
 
-    def create_general_fhir_document_reference_object(
+    def create_fhir_document_reference_object(
         self, document: NdrDocumentReference
     ) -> DocumentReference:
         """Create a FHIR DocumentReference .

@@ -291,7 +291,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_doc_ref_info.return_value = mock_doc_ref_info_instance
 
     mock_fhir_doc_ref = mocker.MagicMock()
-    mock_doc_ref_info_instance.create_general_fhir_document_reference_object.return_value = (
+    mock_doc_ref_info_instance.create_fhir_document_reference_object.return_value = (
         mock_fhir_doc_ref
     )
 
@@ -350,7 +350,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
         custodian=mock_document_reference.current_gp_ods,
     )
 
-    mock_doc_ref_info_instance.create_general_fhir_document_reference_object.assert_called_once()
+    mock_doc_ref_info_instance.create_fhir_document_reference_object.assert_called_once()
     mock_fhir_doc_ref.model_dump.assert_called_once_with(exclude_none=True)
 
     assert result == expected_fhir_response
