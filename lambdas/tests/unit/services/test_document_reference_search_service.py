@@ -62,14 +62,16 @@ def test_get_document_references_raise_json_error_when_no_table_list(
         mock_document_service._get_table_names()
 
 
-def test_get_document_references_raise_validation_error(
+def test_search_tables_for_documents_raise_validation_error(
     mock_document_service, validation_error
 ):
     mock_document_service.fetch_documents_from_table_with_nhs_number.side_effect = (
         validation_error
     )
     with pytest.raises(ValidationError):
-        mock_document_service._fetch_documents("111111111", "test_table", NotDeleted)
+        mock_document_service._search_tables_for_documents(
+            "1234567890", ["table1", "table2"], return_fhir=True
+        )
 
 
 def test_get_document_references_raise_client_error(mock_document_service):
@@ -85,7 +87,9 @@ def test_get_document_references_raise_client_error(mock_document_service):
         )
     )
     with pytest.raises(ClientError):
-        mock_document_service._fetch_documents("111111111", "test_table", NotDeleted)
+        mock_document_service._search_tables_for_documents(
+            "1234567890", ["table1", "table2"], return_fhir=True
+        )
 
 
 def test_get_document_references_raise_dynamodb_error(mock_document_service):
@@ -93,15 +97,17 @@ def test_get_document_references_raise_dynamodb_error(mock_document_service):
         DynamoServiceException()
     )
     with pytest.raises(DynamoServiceException):
-        mock_document_service._fetch_documents("111111111", "test_table", NotDeleted)
+        mock_document_service._search_tables_for_documents(
+            "1234567890", ["table1", "table2"], return_fhir=True
+        )
 
 
 def test_get_document_references_dynamo_return_empty_response(mock_document_service):
     mock_document_service.fetch_documents_from_table_with_nhs_number.return_value = []
-    expected_results = []
+    expected_results = None
 
-    actual = mock_document_service._fetch_documents(
-        "111111111", "test_table", NotDeleted
+    actual = mock_document_service._search_tables_for_documents(
+        "1234567890", ["table1", "table2"], return_fhir=True
     )
 
     assert actual == expected_results
@@ -116,7 +122,7 @@ def test_get_document_references_dynamo_return_successful_response_single_table(
         MOCK_DOCUMENT_REFERENCE
     )
     expected_results = MOCK_DOCUMENT_REFERENCE
-    actual = mock_document_service._fetch_documents(
+    actual = mock_document_service.fetch_documents_from_table_with_nhs_number(
         "111111111", "test_table", NotDeleted
     )
 
@@ -134,7 +140,9 @@ def test_get_document_references_dynamo_return_successful_response_multiple_tabl
     mock_document_service, mocker
 ):
     mock_fetch_documents = mocker.MagicMock(return_value=MOCK_DOCUMENT_REFERENCE)
-    mock_document_service._fetch_documents = mock_fetch_documents
+    mock_document_service.fetch_documents_from_table_with_nhs_number = (
+        mock_fetch_documents
+    )
     mock_document_service._validate_upload_status = mocker.MagicMock()
     mock_document_service._process_documents = mocker.MagicMock(
         return_value=[EXPECTED_RESPONSE]
@@ -188,7 +196,9 @@ def test_get_document_references_exception(mock_document_service, mocker):
 
 def test_search_tables_for_documents_non_fhir(mock_document_service, mocker):
     mock_fetch_document_method = mocker.MagicMock(return_value=MOCK_DOCUMENT_REFERENCE)
-    mock_document_service._fetch_documents = mock_fetch_document_method
+    mock_document_service.fetch_documents_from_table_with_nhs_number = (
+        mock_fetch_document_method
+    )
 
     mock_document_id = {"id": "123"}
     mock_process_document_non_fhir = mocker.MagicMock(return_value=[mock_document_id])
@@ -206,17 +216,21 @@ def test_search_tables_for_documents_non_fhir(mock_document_service, mocker):
             call(MOCK_DOCUMENT_REFERENCE, return_fhir=False),
         ]
     )
+    assert mock_fetch_document_method.call_count == 2
+
     mock_fetch_document_method.assert_has_calls(
         [
-            call("1234567890", "table1", UploadCompleted),
-            call("1234567890", "table2", UploadCompleted),
+            call("1234567890", "table1", query_filter=UploadCompleted),
+            call("1234567890", "table2", query_filter=UploadCompleted),
         ]
     )
 
 
 def test_search_tables_for_documents_fhir(mock_document_service, mocker):
     mock_fetch_document_method = mocker.MagicMock(return_value=MOCK_DOCUMENT_REFERENCE)
-    mock_document_service._fetch_documents = mock_fetch_document_method
+    mock_document_service.fetch_documents_from_table_with_nhs_number = (
+        mock_fetch_document_method
+    )
 
     mock_fhir_doc = {"resourceType": "DocumentReference", "id": "123"}
     mock_process_document_fhir = mocker.MagicMock(return_value=[mock_fhir_doc])
@@ -235,8 +249,8 @@ def test_search_tables_for_documents_fhir(mock_document_service, mocker):
 
     mock_fetch_document_method.assert_has_calls(
         [
-            call("1234567890", "table1", UploadCompleted),
-            call("1234567890", "table2", UploadCompleted),
+            call("1234567890", "table1", query_filter=UploadCompleted),
+            call("1234567890", "table2", query_filter=UploadCompleted),
         ]
     )
     mock_process_document_fhir.assert_has_calls(

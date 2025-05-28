@@ -69,7 +69,9 @@ class DocumentReferenceSearchService(DocumentService):
                 filter_expression = self._build_filter_expression(filters)
             else:
                 filter_expression = UploadCompleted
-            documents = self._fetch_documents(nhs_number, table_name, filter_expression)
+            documents = self.fetch_documents_from_table_with_nhs_number(
+                nhs_number, table_name, query_filter=filter_expression
+            )
             self._validate_upload_status(documents)
             document_resources.extend(
                 self._process_documents(documents, return_fhir=return_fhir)
@@ -93,11 +95,6 @@ class DocumentReferenceSearchService(DocumentService):
         ).model_dump(exclude_none=True)
 
         return bundle
-
-    def _fetch_documents(self, nhs_number: str, table_name: str, filter_expression):
-        return self.fetch_documents_from_table_with_nhs_number(
-            nhs_number, table_name, query_filter=filter_expression
-        )
 
     def _validate_upload_status(self, documents: list[DocumentReference]):
         if self.is_upload_in_process(documents):
