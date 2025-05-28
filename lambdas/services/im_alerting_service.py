@@ -236,12 +236,13 @@ class IMAlertingService:
         client = boto3.client("cloudwatch")
         response = client.list_tags_for_resource(ResourceARN=self.message["AlarmArn"])
 
+        tags = {}
         if response["Tags"]:
-            tags = {}
+
             for tag in response["Tags"]:
                 for key, value in tag.items():
                     tags[key] = tag[value]
-            return tags
+        return tags
 
     def add_ttl_to_alarm_entry(self, alarm_entry: AlarmEntry):
         alarm_entry.time_to_exist = int(
