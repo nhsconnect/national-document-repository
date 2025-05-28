@@ -58,6 +58,9 @@ class LloydGeorgeStitchService:
                     dest_bucket=self.lloyd_george_bucket_name,
                     dest_file_key=destination_key,
                 )
+                logger.info(
+                    f"Successfully copied file with key{original_key} to  destination {destination_key}"
+                )
                 self.stitch_trace_object.total_file_size_in_bytes = (
                     self.s3_service.get_file_size(
                         self.lloyd_george_bucket_name, original_key
@@ -76,6 +79,7 @@ class LloydGeorgeStitchService:
                     stitched_lg_stream=stitched_lg_stream,
                     filename_on_bucket=destination_key,
                 )
+
             self.stitch_trace_object.stitched_file_location = destination_key
 
             logger.audit_splunk_info(
@@ -163,6 +167,10 @@ class LloydGeorgeStitchService:
                 s3_bucket_name=self.lloyd_george_bucket_name,
                 file_key=filename_on_bucket,
                 extra_args=extra_args,
+            )
+            logger.info(
+                f"Successfully uploaded the stitched file to bucket {self.lloyd_george_bucket_name}"
+                f" with file key {filename_on_bucket}"
             )
             self.stitch_trace_object.stitched_file_location = filename_on_bucket
         except ValueError as e:
