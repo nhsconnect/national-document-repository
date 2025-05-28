@@ -36,23 +36,23 @@ class IMAlertingService:
 
     def handle_alarm_alert(self):
 
-        alarm_name = self.message["AlarmName"]
+        # alarm_name = self.message["AlarmName"] we don't care about the name any more, use the arn to get the tags
         alarm_state = self.message["NewStateValue"]
         alarm_time = self.message["StateChangeTime"]
-        # alarm_arn = self.message["AlarmArn"]
+
+        alarm_tags = self.get_all_alarm_tags()
+        alarm_name = alarm_tags["alarm_group"] + " " + alarm_tags["metric"]
 
         alarm_entries = self.get_alarm_history(alarm_name)
 
         if not alarm_entries and alarm_state == "OK":
             logger.info(
-                f"Alarm {alarm_name} is in OK state and no entries found for {self.format_alarm_name(alarm_name)}"
+                f"Alarm {alarm_name} is in OK state and no entries found for {alarm_name}"
             )
             return
 
         if not alarm_entries and alarm_state == "ALARM":
-            logger.info(
-                f"No current alarm history for {self.format_alarm_name(alarm_name)}"
-            )
+            logger.info(f"No current alarm history for {alarm_name}")
             self.handle_new_alarm_episode(alarm_name, alarm_time)
 
         else:
@@ -61,7 +61,7 @@ class IMAlertingService:
             )
             if all_alarms_expired:
                 logger.info(
-                    f"All alarm entries for {self.format_alarm_name(alarm_name)} have expired, creating a new one"
+                    f"All alarm entries for {alarm_name} have expired, creating a new one"
                 )
                 self.handle_new_alarm_episode(
                     alarm_name=alarm_name,
@@ -85,16 +85,16 @@ class IMAlertingService:
 
     def handle_new_alarm_episode(self, alarm_name: str, alarm_time: str):
         logger.info(
-            f"Creating new alarm episode {self.format_alarm_name(alarm_name)}:{self.create_alarm_timestamp(alarm_time)}"
+            f"Creating new alarm episode {alarm_name}:{self.create_alarm_timestamp(alarm_time)}"
         )
         new_entry = AlarmEntry(
-            alarm_name=self.format_alarm_name(alarm_name),
+            alarm_name=alarm_name,
             time_created=self.create_alarm_timestamp(alarm_time),
             last_updated=self.create_alarm_timestamp(alarm_time),
             channel_id=os.environ["ALERTING_SLACK_CHANNEL_ID"],
         )
         AlarmEntry.model_validate(new_entry)
-        self.handle_alarm_action_trigger(new_entry, alarm_name)
+        self.update_alarm_state_history(new_entry, alarm_name)
         self.send_teams_alert(new_entry)
         self.send_initial_slack_alert(new_entry)
         self.create_alarm_entry(new_entry)
@@ -109,7 +109,9 @@ class IMAlertingService:
             f"Updating alarm episode {alarm_entry.alarm_name}:{alarm_entry.time_created}"
         )
         if alarm_state == "ALARM":
-            self.handle_alarm_action_trigger(
+            logger.info(f"Handling Alarm action for {alarm_name}")
+
+            self.update_alarm_state_history(
                 alarm_name=alarm_name, alarm_entry=alarm_entry
             )
             self.send_teams_alert(alarm_entry)
@@ -152,25 +154,22 @@ class IMAlertingService:
                 logger.info("Alarm entry has been updated since reaching OK state")
                 return
 
-    def handle_alarm_action_trigger(self, alarm_entry: AlarmEntry, alarm_name: str):
-        logger.info(f"Handling Alarm action for {alarm_name}")
+    def update_alarm_state_history(self, alarm_entry: AlarmEntry, tags: dict):
 
         for key in self.alarm_severities.keys():
-            if alarm_name.endswith(key):
+            if tags.get("severity", None) == key:
                 alarm_entry.history.append(self.alarm_severities[key])
         alarm_entry.time_to_exist = None
         alarm_entry.last_updated = int(datetime.now().timestamp())
 
     def get_alarm_history(self, alarm_name: str):
-        logger.info(
-            f"Checking if {self.format_alarm_name(alarm_name)} already exists on alarm table"
-        )
+        logger.info(f"Checking if {alarm_name} already exists on alarm table")
 
         results = self.dynamo_service.query_table_by_index(
             table_name=self.table_name,
             index_name="AlarmNameIndex",
             search_key="AlarmName",
-            search_condition=self.format_alarm_name(alarm_name),
+            search_condition=alarm_name,
         )
 
         return (
@@ -233,12 +232,16 @@ class IMAlertingService:
 
         return all(state == "OK" for state in alarm_states)
 
-    def get_all_alarm_tags(self):
+    def get_all_alarm_tags(self) -> dict:
         client = boto3.client("cloudwatch")
         response = client.list_tags_for_resource(ResourceARN=self.message["AlarmArn"])
 
         if response["Tags"]:
-            return response["Tags"]
+            tags = {}
+            for tag in response["Tags"]:
+                for key, value in tag.items():
+                    tags[key] = tag[value]
+            return tags
 
     def add_ttl_to_alarm_entry(self, alarm_entry: AlarmEntry):
         alarm_entry.time_to_exist = int(
