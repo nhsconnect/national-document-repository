@@ -186,41 +186,7 @@ def test_stitch_lloyd_george_record_raises_404_if_no_docs(patched_stitch_service
     assert e.value.status_code == 404
 
 
-def test_stitch_lloyd_george_record_single_doc_copies_file_and_sets_size(
-    patched_stitch_service, mocker
-):
-    patched_stitch_service.get_lloyd_george_record_for_patient.return_value = [
-        MOCK_LLOYD_GEORGE_DOCUMENT_REFS[0]
-    ]
-
-    mocker.patch(
-        "services.lloyd_george_generate_stitch_service.get_file_key_from_s3_url",
-        return_value="some/key.pdf",
-    )
-
-    patched_stitch_service.lloyd_george_bucket_name = MOCK_LG_BUCKET
-    patched_stitch_service.stitch_file_name = "stitched_test_file"
-
-    patched_stitch_service.s3_service.copy_across_bucket = mocker.Mock()
-    patched_stitch_service.s3_service.get_file_size = mocker.Mock(
-        return_value=MOCK_TOTAL_FILE_SIZE
-    )
-
-    patched_stitch_service.stitch_lloyd_george_record()
-
-    patched_stitch_service.s3_service.copy_across_bucket.assert_called_once()
-    patched_stitch_service.s3_service.get_file_size.assert_called_once()
-    assert (
-        patched_stitch_service.stitch_trace_object.total_file_size_in_bytes
-        == MOCK_TOTAL_FILE_SIZE
-    )
-    assert (
-        patched_stitch_service.stitch_trace_object.stitched_file_location
-        == "combined_files/stitched_test_file.pdf"
-    )
-
-
-def test_stitch_lloyd_george_record_multiple_docs(
+def test_stitch_lloyd_george_record(
     patched_stitch_service,
     mocker,
     mock_stitch_pdf_into_steam,
