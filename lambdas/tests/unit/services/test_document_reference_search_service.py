@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from enums.snomed_codes import SnomedCodes
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
@@ -340,7 +341,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_attachment.assert_called_once_with(
         title=mock_document_reference.file_name,
         creation=mock_document_reference.created,
-        url=f"https://api.gov.uk/DocumentReference/{mock_document_reference.id}",
+        url=f"https://api.gov.uk/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_document_reference.id}",
     )
 
     mock_doc_ref_info.assert_called_once_with(
@@ -385,7 +386,7 @@ def test_create_document_reference_fhir_response_integration(
                     "language": "en-GB",
                     "title": "test_document.pdf",
                     "creation": "2023-05-01T12:00:00",
-                    "url": "https://api.gov.uk/DocumentReference/Y05868-1634567890",
+                    "url": "https://api.gov.uk/DocumentReference/16521000000101~Y05868-1634567890",
                 }
             }
         ],
