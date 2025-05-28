@@ -33,7 +33,10 @@ class IMAlertingService:
         self.webhook_url = os.environ["TEAMS_WEBHOOK_URL"]
         self.confluence_base_url = os.environ["CONFLUENCE_BASE_URL"]
         self.message = message
-        self.slack_bot_token = os.environ["SLACK_BOT_TOKEN"]
+        self.slack_headers = {
+            "Authorization": "Bearer " + os.environ["SLACK_BOT_TOKEN"],
+            "Content-type": "application/json; charset=utf-8",
+        }
 
     def handle_alarm_alert(self):
 
@@ -76,7 +79,6 @@ class IMAlertingService:
                     if not self.is_episode_expired(alarm_entry):
                         self.handle_current_alarm_episode(
                             alarm_entry=alarm_entry,
-                            alarm_name=alarm_name,
                             alarm_state=alarm_state,
                             tags=alarm_tags,
                         )
@@ -136,7 +138,7 @@ class IMAlertingService:
     def handle_ok_action_trigger(self, tags: dict, alarm_entry: AlarmEntry):
         logger.info(f"Handling OK action trigger for {alarm_entry.alarm_name}")
 
-        if self.all_alarm_state_ok(tags, alarm_entry):
+        if self.all_alarm_state_ok(tags):
             logger.info("Waiting for other alarms to be triggered before setting TTL.")
             sleep(180)
             if self.is_last_updated(alarm_entry):
@@ -219,8 +221,7 @@ class IMAlertingService:
             updated_fields=fields_to_update,
         )
 
-    # this needs thinking about, have been using alarm
-    def all_alarm_state_ok(self, alarm_entry: AlarmEntry, tags: dict) -> bool:
+    def all_alarm_state_ok(self, tags: dict) -> bool:
 
         tag_filter = self.build_tag_filter(tags)
         client = boto3.client("resourcegroupstaggingapi")
@@ -267,7 +268,7 @@ class IMAlertingService:
 
         return tag_filter
 
-    def extract_alarm_names_from_arns(arn_list):
+    def extract_alarm_names_from_arns(self, arn_list: list) -> list:
         alarm_names = []
         for arn in arn_list:
             match = re.search(r"alarm:([^:]+)$", arn)
@@ -282,7 +283,7 @@ class IMAlertingService:
             (datetime.now() + timedelta(minutes=5)).timestamp()
         )
 
-    def create_alarm_timestamp(slef, alarm_time: str) -> int:
+    def create_alarm_timestamp(self, alarm_time: str) -> int:
         return int(datetime.fromisoformat(alarm_time).timestamp())
 
     def format_time_string(self, time_stamp: int) -> str:
@@ -372,20 +373,19 @@ class IMAlertingService:
         slack_message["channel"] = alarm_entry.channel_id
         slack_message["blocks"] = self.compose_slack_message(alarm_entry)
 
-        headers = {
-            "Authorization": "Bearer " + self.slack_bot_token,
-            "Content-type": "application/json; charset=utf-8",
-        }
         slack_post_chat_api = "https://slack.com/api/chat.postMessage"
         response = requests.request(
-            "POST", slack_post_chat_api, data=json.dumps(slack_message), headers=headers
+            "POST",
+            slack_post_chat_api,
+            data=json.dumps(slack_message),
+            headers=self.slack_headers,
         )
         logger.info(f"Slack response: {response.text}")
         response_json = json.loads(response.content)
         slack_timestamp = response_json["ts"]
         alarm_entry.slack_timestamp = slack_timestamp
 
-        self.change_reaction(alarm_entry, "add", headers)
+        self.change_reaction(alarm_entry, "add")
 
     def send_slack_response(self, alarm_entry: AlarmEntry):
         logger.info(
@@ -396,18 +396,17 @@ class IMAlertingService:
         slack_message["thread_ts"] = alarm_entry.slack_timestamp
         slack_message["blocks"] = self.compose_slack_message(alarm_entry)
 
-        headers = {
-            "Authorization": "Bearer " + self.slack_bot_token,
-            "Content-type": "application/json; charset=utf-8",
-        }
         slack_post_chat_api = "https://slack.com/api/chat.postMessage"
         requests.request(
-            "POST", slack_post_chat_api, data=json.dumps(slack_message), headers=headers
+            "POST",
+            slack_post_chat_api,
+            data=json.dumps(slack_message),
+            headers=self.slack_headers,
         )
-        self.change_reaction(alarm_entry, "remove", headers)
-        self.change_reaction(alarm_entry, "add", headers)
+        self.change_reaction(alarm_entry, "remove")
+        self.change_reaction(alarm_entry, "add")
 
-    def change_reaction(self, alarm_entry: AlarmEntry, action: str, headers: dict):
+    def change_reaction(self, alarm_entry: AlarmEntry, action: str):
         logger.info(
             f"Changing slack reaction for alarm: {alarm_entry.alarm_name}:{alarm_entry.time_created}"
         )
@@ -423,12 +422,11 @@ class IMAlertingService:
         changeResponse = requests.post(
             "https://slack.com/api/reactions." + action,
             json=change_message,
-            headers=headers,
+            headers=self.slack_headers,
         )
         logger.info(
             action + " " + emoji + " reaction response: " + str(changeResponse.content)
         )
-        # return changeResponse
 
     def update_original_slack_message(self, alarm_entry: AlarmEntry):
         slack_message = {}
