@@ -49,36 +49,35 @@ class LloydGeorgeStitchService:
             filename_for_stitched_file = f"{self.stitch_file_name}.pdf"
             destination_key = f"combined_files/{filename_for_stitched_file}"
 
-            if len(documents_for_stitching) == 1:
-                file_location_on_s3 = documents_for_stitching[0].file_location
-                original_key = get_file_key_from_s3_url(file_location_on_s3)
-                self.s3_service.copy_across_bucket(
-                    source_bucket=self.lloyd_george_bucket_name,
-                    source_file_key=original_key,
-                    dest_bucket=self.lloyd_george_bucket_name,
-                    dest_file_key=destination_key,
-                )
-                logger.info(
-                    f"Successfully copied file with key{original_key} to  destination {destination_key}"
-                )
-                self.stitch_trace_object.total_file_size_in_bytes = (
-                    self.s3_service.get_file_size(
-                        self.lloyd_george_bucket_name, original_key
-                    )
-                )
-            else:
-                all_lg_parts = self.get_documents_for_stitching(
-                    documents_for_stitching=documents_for_stitching
-                )
-
-                self.stitch_trace_object.total_file_size_in_bytes = (
-                    self.get_total_file_size_in_bytes(all_lg_parts)
-                )
-                stitched_lg_stream = stitch_pdf_into_steam(all_lg_parts)
-                self.upload_stitched_lg_record(
-                    stitched_lg_stream=stitched_lg_stream,
-                    filename_on_bucket=destination_key,
-                )
+            # if len(documents_for_stitching) == 1:
+            #     file_location_on_s3 = documents_for_stitching[0].file_location
+            #     original_key = get_file_key_from_s3_url(file_location_on_s3)
+            #     self.s3_service.copy_across_bucket(
+            #         source_bucket=self.lloyd_george_bucket_name,
+            #         source_file_key=original_key,
+            #         dest_bucket=self.lloyd_george_bucket_name,
+            #         dest_file_key=destination_key,
+            #     )
+            #     logger.info(
+            #         f"Successfully copied file with key{original_key} to  destination {destination_key}"
+            #     )
+            #     self.stitch_trace_object.total_file_size_in_bytes = (
+            #         self.s3_service.get_file_size(
+            #             self.lloyd_george_bucket_name, original_key
+            #         )
+            #     )
+            # else:
+            all_lg_parts = self.get_documents_for_stitching(
+                documents_for_stitching=documents_for_stitching
+            )
+            self.stitch_trace_object.total_file_size_in_bytes = (
+                self.get_total_file_size_in_bytes(all_lg_parts)
+            )
+            stitched_lg_stream = stitch_pdf_into_steam(all_lg_parts)
+            self.upload_stitched_lg_record(
+                stitched_lg_stream=stitched_lg_stream,
+                filename_on_bucket=destination_key,
+            )
 
             self.stitch_trace_object.stitched_file_location = destination_key
 
