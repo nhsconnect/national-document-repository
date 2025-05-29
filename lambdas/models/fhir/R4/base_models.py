@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Coding(BaseModel):
@@ -37,3 +37,8 @@ class Reference(BaseModel):
     type: Optional[str] = None
     identifier: Optional[Identifier] = None
     display: Optional[str] = None
+
+
+class Link(BaseModel):
+    relation: str = Field(..., alias="relation")
+    url: str
