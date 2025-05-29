@@ -16,8 +16,8 @@ logger = LoggingService(__name__)
         "TEAMS_WEBHOOK_URL",
         "CONFLUENCE_BASE_URL",
         "ALARM_HISTORY_DYNAMODB_NAME",
-        "SLACK_CHANNEL_ID",
-        "SLACK_BOT_TOKEN",
+        "SLACK_ALERTING_CHANNEL_ID",
+        "SLACK_ALERTING_BOT_TOKEN",
     ]
 )
 def lambda_handler(event, context):
