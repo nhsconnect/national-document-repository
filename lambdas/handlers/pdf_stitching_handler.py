@@ -79,7 +79,7 @@ def handle_manual_trigger(event, pdf_stitching_service):
     ods_code = event.get("odsCode")
     if not ods_code:
         return ApiGatewayResponse(
-            400, "bad request", "GET"
+            400, "No ODS code", "GET"
         ).create_api_gateway_response()
 
     pdf_stitching_service.process_manual_trigger(

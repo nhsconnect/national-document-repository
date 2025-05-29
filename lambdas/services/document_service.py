@@ -82,9 +82,6 @@ class DocumentService:
             query_filter=NotDeleted,
         )
         nhs_numbers = list({document.nhs_number for document in documents})
-        logger.info(
-            f"got the following nhs_numbers for ods code {ods_code}:{nhs_numbers}"
-        )
         return nhs_numbers
 
     def delete_document_references(

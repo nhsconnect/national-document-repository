@@ -322,6 +322,11 @@ class PdfStitchingService:
             ods_code=ods_code
         )
 
+        if not nhs_numbers:
+            logger.info(f"No NHS numbers found under ODS code: {ods_code}")
+            return
+        logger.info(f"{len(nhs_numbers)} found under ODS code: {ods_code}")
+
         sqs_service = SQSService()
         for nhs_number in nhs_numbers:
             pdf_stitching_sqs_message = PdfStitchingSqsMessage(
