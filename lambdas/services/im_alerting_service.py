@@ -95,7 +95,7 @@ class IMAlertingService:
             f"Creating new alarm episode {alarm_name}:{self.create_alarm_timestamp(alarm_time)}"
         )
         new_entry = AlarmEntry(
-            alarm_name=alarm_name,
+            alarm_name_metric=alarm_name,
             time_created=self.create_alarm_timestamp(alarm_time),
             last_updated=self.create_alarm_timestamp(alarm_time),
             channel_id=os.environ["SLACK_ALERTING_CHANNEL_ID"],
@@ -116,7 +116,7 @@ class IMAlertingService:
             f"Updating alarm episode {alarm_entry.alarm_name}:{alarm_entry.time_created}"
         )
         if alarm_state == "ALARM":
-            logger.info(f"Handling Alarm action for {alarm_entry.alarm_name}")
+            logger.info(f"Handling Alarm action for {alarm_entry.alarm_name_metric}")
 
             self.update_alarm_state_history(tags=tags, alarm_entry=alarm_entry)
             self.send_teams_alert(alarm_entry)
@@ -132,18 +132,18 @@ class IMAlertingService:
             by_alias=True,
             exclude_none=True,
         )
-        logger.info(f"Creating new alarm entry for {alarm_entry.alarm_name}")
+        logger.info(f"Creating new alarm entry for {alarm_entry.alarm_name_metric}")
         self.dynamo_service.create_item(table_name=self.table_name, item=new_entry)
 
     def handle_ok_action_trigger(self, tags: dict, alarm_entry: AlarmEntry):
-        logger.info(f"Handling OK action trigger for {alarm_entry.alarm_name}")
+        logger.info(f"Handling OK action trigger for {alarm_entry.alarm_name_metric}")
 
         if self.all_alarm_state_ok(tags):
             logger.info("Waiting for other alarms to be triggered before setting TTL.")
             sleep(180)
             if self.is_last_updated(alarm_entry):
                 logger.info(
-                    f"All alarms for {alarm_entry.alarm_name} are in OK state, adding TTL."
+                    f"All alarms for {alarm_entry.alarm_name_metric} are in OK state, adding TTL."
                 )
                 alarm_entry.history.append(self.alarm_severities["ok"])
                 alarm_entry.last_updated = int(datetime.now().timestamp())
@@ -185,7 +185,7 @@ class IMAlertingService:
         response = self.dynamo_service.get_item(
             table_name=self.table_name,
             key={
-                AlarmHistoryFields.ALARMNAME: alarm_entry.alarm_name,
+                AlarmHistoryFields.ALARMNAMEMETRIC: alarm_entry.alarm_name_metric,
                 AlarmHistoryFields.TIMECREATED: alarm_entry.time_created,
             },
         )
@@ -193,18 +193,18 @@ class IMAlertingService:
 
         if alarm_entry.last_updated >= entry_to_compare.last_updated:
             logger.info(
-                f"No other alarm has been triggered since {alarm_entry.alarm_name}:{alarm_entry.time_created} was last updated"
+                f"No other alarm triggered since {alarm_entry.alarm_name_metric}:{alarm_entry.time_created} last updated"
             )
             return True
         else:
             logger.info(
-                f"Another alarm for {alarm_entry.alarm_name}:{alarm_entry.time_created} has been triggered since last updated"
+                f"Another alarm for {alarm_entry.alarm_name_metric}:{alarm_entry.time_created} triggered since last updated"
             )
             return False
 
     def update_alarm_table(self, alarm_entry: AlarmEntry) -> str:
 
-        logger.info(f"Updating alarm table entry for: {alarm_entry.alarm_name}")
+        logger.info(f"Updating alarm table entry for: {alarm_entry.alarm_name_metric}")
 
         fields_to_update = {
             AlarmHistoryFields.HISTORY: alarm_entry.history,
@@ -215,7 +215,7 @@ class IMAlertingService:
         self.dynamo_service.update_item(
             table_name=self.table_name,
             key_pair={
-                AlarmHistoryFields.ALARMNAME: alarm_entry.alarm_name,
+                AlarmHistoryFields.ALARMNAMEMETRIC: alarm_entry.alarm_name_metric,
                 AlarmHistoryFields.TIMECREATED: alarm_entry.time_created,
             },
             updated_fields=fields_to_update,
@@ -312,7 +312,7 @@ class IMAlertingService:
         return f"{base_url}{search_query}{url_extension}"
 
     def send_teams_alert(self, alarm_entry: AlarmEntry):
-        logger.info(f"Sending teams alert for: {alarm_entry.alarm_name}")
+        logger.info(f"Sending teams alert for: {alarm_entry.alarm_name_metric}")
 
         payload = json.dumps(
             {
@@ -330,12 +330,12 @@ class IMAlertingService:
                                     "type": "TextBlock",
                                     "size": "Medium",
                                     "weight": "Bolder",
-                                    "text": f"{alarm_entry.alarm_name} Alert: {alarm_entry.history[-1]}",
+                                    "text": f"{alarm_entry.alarm_name_metric} Alert: {alarm_entry.history[-1]}",
                                     "wrap": True,
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "text": f"Entry: {alarm_entry.alarm_name}:{alarm_entry.time_created}",
+                                    "text": f"Entry: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}",
                                 },
                                 {
                                     "type": "TextBlock",
@@ -354,7 +354,8 @@ class IMAlertingService:
                                     "type": "Action.OpenUrl",
                                     "title": "Find out what to do",
                                     "url": self.create_action_url(
-                                        self.confluence_base_url, alarm_entry.alarm_name
+                                        self.confluence_base_url,
+                                        alarm_entry.alarm_name_metric,
                                     ),
                                 },
                             ],
@@ -370,7 +371,7 @@ class IMAlertingService:
 
     def send_initial_slack_alert(self, alarm_entry: AlarmEntry):
         logger.info(
-            f"Sending initial slack alert for: {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+            f"Sending initial slack alert for: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
         )
         slack_message = {}
         slack_message["channel"] = alarm_entry.channel_id
@@ -392,7 +393,7 @@ class IMAlertingService:
 
     def send_slack_response(self, alarm_entry: AlarmEntry):
         logger.info(
-            f"Sending slack thread response for: {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+            f"Sending slack thread response for: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
         )
         slack_message = {}
         slack_message["channel"] = alarm_entry.channel_id
@@ -411,7 +412,7 @@ class IMAlertingService:
 
     def change_reaction(self, alarm_entry: AlarmEntry, action: str):
         logger.info(
-            f"Changing slack reaction for alarm: {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+            f"Changing slack reaction for alarm: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
         )
         change_message = {}
         emoji = (
@@ -456,7 +457,7 @@ class IMAlertingService:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"{alarm_entry.alarm_name} Alert: {alarm_entry.history[-1]}",
+                    "text": f"{alarm_entry.alarm_name_metric} Alert: {alarm_entry.history[-1]}",
                 },
             },
             {

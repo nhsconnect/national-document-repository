@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class AlarmHistoryFields(StrEnum):
-    ALARMNAME = "AlarmName"
+    ALARMNAMEMETRIC = "AlarmNameMetric"
     TIMECREATED = "TimeCreated"
     LASTUPDATED = "LastUpdated"
     CHANNELID = "ChannelId"
