@@ -34,7 +34,7 @@ class IMAlertingService:
         self.confluence_base_url = os.environ["CONFLUENCE_BASE_URL"]
         self.message = message
         self.slack_headers = {
-            "Authorization": "Bearer " + os.environ["SLACK_BOT_TOKEN"],
+            "Authorization": "Bearer " + os.environ["SLACK_ALERTING_BOT_TOKEN"],
             "Content-type": "application/json; charset=utf-8",
         }
 
@@ -98,7 +98,7 @@ class IMAlertingService:
             alarm_name=alarm_name,
             time_created=self.create_alarm_timestamp(alarm_time),
             last_updated=self.create_alarm_timestamp(alarm_time),
-            channel_id=os.environ["ALERTING_SLACK_CHANNEL_ID"],
+            channel_id=os.environ["SLACK_ALERTING_CHANNEL_ID"],
         )
         AlarmEntry.model_validate(new_entry)
         self.update_alarm_state_history(new_entry, tags)
