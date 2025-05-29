@@ -36,7 +36,13 @@ const DocumentUploadLloydGeorgePreview = ({ documents }: Props) => {
         });
     }, [documents, setMergedPdfUrl]);
 
-    return <>{documents && mergedPdfUrl && <PdfViewer fileUrl={mergedPdfUrl} />}</>;
+    return (
+        <>
+            {documents && mergedPdfUrl && (
+                <PdfViewer customClasses={['upload-preview']} fileUrl={mergedPdfUrl} />
+            )}
+        </>
+    );
 };
 
 export default DocumentUploadLloydGeorgePreview;

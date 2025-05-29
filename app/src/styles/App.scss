@@ -837,6 +837,10 @@ $hunit: '%';
 
 #pdf-viewer {
     height: 75vh;
+
+    &.upload-preview {
+        height: 90vh;
+    }
 }
 
 @-moz-document url-prefix() {
