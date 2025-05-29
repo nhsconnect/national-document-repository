@@ -1,6 +1,6 @@
 type Props = {
     fileUrl: string;
-    customClasses: string[];
+    customClasses?: string[];
 };
 
 const PdfViewer = ({ fileUrl }: Props) => {
