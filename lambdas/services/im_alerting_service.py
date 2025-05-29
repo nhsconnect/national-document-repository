@@ -45,7 +45,7 @@ class IMAlertingService:
         alarm_time = self.message["StateChangeTime"]
 
         alarm_tags = self.get_all_alarm_tags()
-        alarm_name = alarm_tags["alarm_group"] + " " + alarm_tags["metric"]
+        alarm_name = alarm_tags["alarm_group"] + " " + alarm_tags["alarm_metric"]
 
         alarm_entries = self.get_alarm_history(alarm_name)
 
@@ -170,8 +170,8 @@ class IMAlertingService:
 
         results = self.dynamo_service.query_table_by_index(
             table_name=self.table_name,
-            index_name="AlarmNameIndex",
-            search_key="AlarmName",
+            index_name="AlarmNameMetricIndex",
+            search_key="AlarmNameMetric",
             search_condition=alarm_name,
         )
 
@@ -254,11 +254,11 @@ class IMAlertingService:
         response = client.list_tags_for_resource(ResourceARN=self.message["AlarmArn"])
 
         tags = {}
+
         if response["Tags"]:
 
             for tag in response["Tags"]:
-                for key, value in tag.items():
-                    tags[key] = tag[value]
+                tags[tag["Key"]] = tag["Value"]
         return tags
 
     def build_tag_filter(self, tags: dict) -> list:
@@ -266,7 +266,7 @@ class IMAlertingService:
         tag_filter = []
 
         for key, value in tags.items():
-            if key == "alarm_group" or key == "metric":
+            if key == "alarm_group" or key == "alarm_metric":
                 tag_filter.append({"Key": key, "Value": [value]})
 
         return tag_filter
