@@ -193,10 +193,7 @@ class LoginService:
         logger.error(
             f"{LambdaError.LoginNoRole.to_str()}", {"Result": "Unsuccessful login"}
         )
-        raise LoginException(
-            401,
-            LambdaError.LoginNoRole,
-        )
+        raise LoginException(401, LambdaError.LoginNoRole)
 
     @staticmethod
     def has_pcse_org_ods_code(organisation: dict, ods_code: str) -> bool:
