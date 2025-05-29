@@ -225,6 +225,7 @@ class IMAlertingService:
 
         tag_filter = self.build_tag_filter(tags)
         client = boto3.client("resourcegroupstaggingapi")
+        logger.info(f"Getting resources with tags: {tag_filter}")
         response = client.get_resources(
             ResourceTypeFilters=["cloudwatch:alarm"], TagFilters=tag_filter
         )
@@ -248,6 +249,7 @@ class IMAlertingService:
         return all(state == "OK" for state in alarm_states)
 
     def get_all_alarm_tags(self) -> dict:
+        logger.info(f"Getting all alarm tags for {self.message['AlarmArn']}")
         client = boto3.client("cloudwatch")
         response = client.list_tags_for_resource(ResourceARN=self.message["AlarmArn"])
 
@@ -260,6 +262,7 @@ class IMAlertingService:
         return tags
 
     def build_tag_filter(self, tags: dict) -> list:
+        logger.info("Building tag filter")
         tag_filter = []
 
         for key, value in tags.items():
