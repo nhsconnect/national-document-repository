@@ -113,7 +113,7 @@ class IMAlertingService:
         self, alarm_entry: AlarmEntry, alarm_state: str, tags: dict
     ):
         logger.info(
-            f"Updating alarm episode {alarm_entry.alarm_name}:{alarm_entry.time_created}"
+            f"Updating alarm episode {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
         )
         if alarm_state == "ALARM":
             logger.info(f"Handling Alarm action for {alarm_entry.alarm_name_metric}")
@@ -481,7 +481,7 @@ class IMAlertingService:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*What to do:*\n <{self.create_action_url(self.confluence_base_url, alarm_entry.alarm_name)}>",
+                    "text": f"*Info:*\n <{self.create_action_url(self.confluence_base_url, alarm_entry.alarm_name_metric)}>",
                 },
             },
             # {
