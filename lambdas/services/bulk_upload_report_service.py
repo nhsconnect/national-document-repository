@@ -307,7 +307,7 @@ class BulkUploadReportService:
     def write_summary_data_to_csv(
         file_name: str,
         total_ingested: int,
-        total_successful: int,
+        total_successful: str,
         total_registered_elsewhere: int,
         total_suspended: int,
         total_deceased: int = None,
