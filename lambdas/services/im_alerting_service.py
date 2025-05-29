@@ -267,7 +267,7 @@ class IMAlertingService:
 
         for key, value in tags.items():
             if key == "alarm_group" or key == "alarm_metric":
-                tag_filter.append({"Key": key, "Value": [value]})
+                tag_filter.append({"Key": key, "Values": [value]})
 
         return tag_filter
 
