@@ -166,7 +166,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                 />
             )}
 
-            <p>When youy upload your files, they will be combined into a single PDF document.</p>
+            <p>When you upload your files, they will be combined into a single PDF document.</p>
 
             <p>
                 Your files are not currently in order:
