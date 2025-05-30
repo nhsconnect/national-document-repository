@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
 import { Button, ChevronLeftIcon } from 'nhsuk-react-components';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
@@ -72,6 +72,19 @@ function LloydGeorgeViewRecordStage({
     const pageHeader = 'Available records';
     useTitle({ pageTitle: pageHeader });
 
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        const onPageLoad = async () => {
+            resetDocState();
+            refreshRecord();
+        };
+        if (!mounted.current) {
+            onPageLoad();
+            mounted.current = true;
+        }
+    }, [refreshRecord, resetDocState]);
+
     const menuClass = showMenu ? '--menu' : '--upload';
 
     return (
@@ -142,9 +155,7 @@ function LloydGeorgeViewRecordStage({
                                 fullScreenHandler={setFullScreen}
                                 detailsElement={<RecordDetails {...recordDetailsProps} />}
                                 isFullScreen={session.isFullscreen!}
-                                refreshRecord={refreshRecord}
                                 pdfObjectUrl={pdfObjectUrl}
-                                resetDocStage={resetDocState}
                                 recordLinks={recordLinksToShow}
                                 setStage={setStage}
                                 showMenu={showMenu}
@@ -157,9 +168,7 @@ function LloydGeorgeViewRecordStage({
                         fullScreenHandler={setFullScreen}
                         detailsElement={<RecordDetails {...recordDetailsProps} />}
                         isFullScreen={session.isFullscreen!}
-                        refreshRecord={refreshRecord}
                         pdfObjectUrl={pdfObjectUrl}
-                        resetDocStage={resetDocState}
                     />
                 )}
             </div>
