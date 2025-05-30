@@ -87,7 +87,7 @@ class BulkUploadReportService:
         self.write_summary_data_to_csv(
             file_name=file_name,
             total_ingested=ods_report.get_total_ingested_count(),
-            total_successful=ods_report.get_total_successful_count(),
+            total_successful=ods_report.get_total_successful_percentage(),
             total_registered_elsewhere=ods_report.get_total_registered_elsewhere_count(),
             total_suspended=ods_report.get_total_suspended_count(),
             total_deceased=ods_report.get_total_deceased_count(),
@@ -115,7 +115,7 @@ class BulkUploadReportService:
         self.write_summary_data_to_csv(
             file_name=file_name,
             total_ingested=summary_report.get_total_ingested_count(),
-            total_successful=summary_report.get_total_successful_count(),
+            total_successful=summary_report.get_total_successful_percentage(),
             total_registered_elsewhere=summary_report.get_total_registered_elsewhere_count(),
             total_suspended=summary_report.get_total_suspended_count(),
             total_deceased=summary_report.get_total_deceased_count(),
@@ -307,7 +307,7 @@ class BulkUploadReportService:
     def write_summary_data_to_csv(
         file_name: str,
         total_ingested: int,
-        total_successful: int,
+        total_successful: str,
         total_registered_elsewhere: int,
         total_suspended: int,
         total_deceased: int = None,
