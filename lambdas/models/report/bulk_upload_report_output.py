@@ -27,17 +27,12 @@ class ReportBase:
         return []
 
     def get_total_successful_percentage(self) -> str:
-        successful_percentage = (
-            f"{(len(self.total_successful) / len(self.total_ingested)) * 100:.2f}".rstrip(
-                "0"
-            ).rstrip(
-                "."
-            )
-            + "%"
-            if len(self.total_ingested) > 0
-            else "0%"
-        )
-        return successful_percentage
+        if self.total_ingested:
+            success_rate = (len(self.total_successful) / len(self.total_ingested)) * 100
+            successful_percentage = f"{success_rate:.2f}".rstrip("0").rstrip(".")
+        else:
+            successful_percentage = "0"
+        return f"{successful_percentage}%"
 
     def get_total_registered_elsewhere_count(self) -> int:
         return len(self.total_registered_elsewhere)
