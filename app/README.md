@@ -14,7 +14,7 @@ The National Document Repository user interface (UI) has been developed with Rea
 
 ### Requirements
 
--   Node: Version 24.1.0
+-   Node: Version 24.x
 -   NPM: this should come installed with Node but if not version 11.4.1 or greater is recommended.
 -   Browser: Of your choice, although Chrome has better development tools.
 
