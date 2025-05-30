@@ -155,7 +155,7 @@ function LloydGeorgeViewRecordStage({
                                 fullScreenHandler={setFullScreen}
                                 detailsElement={<RecordDetails {...recordDetailsProps} />}
                                 isFullScreen={session.isFullscreen!}
-                                pdfObjectUrl={pdfObjectUrl}
+                                pdfObjectUrl={hasRecordInStorage ? pdfObjectUrl : ''}
                                 recordLinks={recordLinksToShow}
                                 setStage={setStage}
                                 showMenu={showMenu}
@@ -168,7 +168,7 @@ function LloydGeorgeViewRecordStage({
                         fullScreenHandler={setFullScreen}
                         detailsElement={<RecordDetails {...recordDetailsProps} />}
                         isFullScreen={session.isFullscreen!}
-                        pdfObjectUrl={pdfObjectUrl}
+                        pdfObjectUrl={hasRecordInStorage ? pdfObjectUrl : ''}
                     />
                 )}
             </div>
