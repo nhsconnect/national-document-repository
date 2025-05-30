@@ -27,6 +27,7 @@ import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/Feedback
 import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
 import NonAuthGuard from './guards/notAuthGuard/NonAuthGuard';
 import PatientAccessAuditPage from '../pages/patientAccessAuditPage/PatientAccessAuditPage';
+import CookiePolicyPage from '../pages/cookiePolicyPage/CookiePolicyPage';
 
 const {
     START,
@@ -56,6 +57,8 @@ const {
     REPORT_DOWNLOAD_WILDCARD,
     PATIENT_ACCESS_AUDIT,
     PATIENT_ACCESS_AUDIT_WILDCARD,
+    COOKIES_POLICY,
+    COOKIES_POLICY_WILDCARD,
 } = routes;
 
 type Routes = {
@@ -154,6 +157,10 @@ export const childRoutes = [
     {
         route: routeChildren.PATIENT_ACCESS_AUDIT_DECEASED,
         parent: PATIENT_ACCESS_AUDIT,
+    },
+    {
+        route: routeChildren.COOKIES_POLICY_UPDATED,
+        parent: COOKIES_POLICY,
     },
 ];
 
@@ -284,6 +291,14 @@ export const routeMap: Routes = {
     [PATIENT_ACCESS_AUDIT_WILDCARD]: {
         page: <PatientAccessAuditPage />,
         type: ROUTE_TYPE.PATIENT,
+    },
+    [COOKIES_POLICY]: {
+        page: <CookiePolicyPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
+    [COOKIES_POLICY_WILDCARD]: {
+        page: <CookiePolicyPage />,
+        type: ROUTE_TYPE.PUBLIC,
     },
 };
 

@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect, useRef } from 'react';
+import React, { MouseEvent, useEffect, useLayoutEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import Header from './header/Header';
 import PhaseBanner from './phaseBanner/PhaseBanner';
@@ -7,6 +7,7 @@ import { SkipLink } from 'nhsuk-react-components';
 import { useLocation } from 'react-router-dom';
 import { focusElement } from '../../helpers/utils/manageFocus';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
+import { startAnalytics } from '../../run-analytics';
 
 type Props = {
     children: ReactNode;
@@ -26,6 +27,12 @@ function Layout({ children }: Props) {
 
         layoutRef?.current?.focus();
     }, [location]);
+
+    useLayoutEffect(() => {
+        if (window && window.NHSCookieConsent.getStatistics()) {
+            startAnalytics();
+        }
+    });
 
     const focusMainContent = (e: MouseEvent<HTMLAnchorElement>) => {
         /**
