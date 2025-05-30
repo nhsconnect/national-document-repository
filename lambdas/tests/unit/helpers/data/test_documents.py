@@ -2,7 +2,6 @@ from typing import Dict, List, Optional
 
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
-from models.nhs_document_reference import NHSDocumentReference
 from tests.unit.conftest import (
     MOCK_ARF_BUCKET,
     MOCK_LG_BUCKET,
@@ -49,11 +48,17 @@ def create_test_lloyd_george_doc_store_refs(
     )
 
     refs[0].file_name = filename_1
+    refs[0].s3_file_key = f"{TEST_NHS_NUMBER}/test-key-1"
     refs[0].file_location = f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/test-key-1"
+    refs[0].s3_bucket_name = MOCK_LG_BUCKET
     refs[1].file_name = filename_2
+    refs[1].s3_file_key = f"{TEST_NHS_NUMBER}/test-key-2"
     refs[1].file_location = f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/test-key-2"
+    refs[1].s3_bucket_name = MOCK_LG_BUCKET
     refs[2].file_name = filename_3
+    refs[2].s3_file_key = f"{TEST_NHS_NUMBER}/test-key-3"
     refs[2].file_location = f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/test-key-3"
+    refs[2].s3_bucket_name = MOCK_LG_BUCKET
 
     if override:
         refs = [doc_ref.model_copy(update=override) for doc_ref in refs]
@@ -78,7 +83,7 @@ def create_test_arf_doc_store_refs(
 
 def create_test_doc_refs(
     override: Optional[Dict] = None, file_names: Optional[List[str]] = None
-) -> List[NHSDocumentReference]:
+) -> List[DocumentReference]:
     if not file_names:
         file_names = [
             f"{i}of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf"
@@ -90,7 +95,7 @@ def create_test_doc_refs(
         "nhs_number": TEST_NHS_NUMBER,
         "s3_bucket_name": MOCK_LG_STAGING_STORE_BUCKET_ENV_NAME,
         "sub_folder": "upload",
-        "reference_id": TEST_UUID,
+        "id": TEST_UUID,
         "content_type": "application/pdf",
         "doc_type": SupportedDocumentTypes.LG.value,
         "uploading": True,
@@ -98,8 +103,7 @@ def create_test_doc_refs(
     }
 
     list_of_doc_ref = [
-        NHSDocumentReference(file_name=file_name, **arguments)
-        for file_name in file_names
+        DocumentReference(file_name=file_name, **arguments) for file_name in file_names
     ]
 
     return list_of_doc_ref
@@ -109,4 +113,7 @@ def create_test_doc_refs_as_dict(
     override: Optional[Dict] = None, file_names: Optional[List[str]] = None
 ) -> List[Dict]:
     test_doc_refs = create_test_doc_refs(override, file_names)
-    return [doc_ref.to_dict() for doc_ref in test_doc_refs]
+    return [
+        doc_ref.model_dump(by_alias=True, exclude_none=True)
+        for doc_ref in test_doc_refs
+    ]

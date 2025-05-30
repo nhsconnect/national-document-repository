@@ -330,7 +330,7 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
     mock_ods_validation,
 ):
     mock_validate_files.return_value = None
-
+    repo_under_test.s3_repository.lg_bucket_name = MOCK_LG_BUCKET
     set_up_mocks_for_non_ascii_files(repo_under_test, mocker, patient_name_on_s3)
     test_staging_metadata = build_test_staging_metadata_from_patient_name(
         patient_name_in_metadata_file
@@ -681,6 +681,8 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     mock_pds_validation_strict,
     mock_ods_validation,
 ):
+    repo_under_test.s3_repository.lg_bucket_name = MOCK_LG_BUCKET
+
     TEST_STAGING_METADATA.retries = 0
     mock_rollback_transaction_s3 = mocker.patch.object(
         repo_under_test.s3_repository, "rollback_transaction"

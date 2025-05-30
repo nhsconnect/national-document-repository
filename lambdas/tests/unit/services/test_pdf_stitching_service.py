@@ -170,9 +170,7 @@ def test_process_message(
     test_message_body = json.loads(stitching_queue_message_event["Records"][0]["body"])
     test_message = PdfStitchingSqsMessage.model_validate(test_message_body)
     test_stream = BytesIO()
-    test_sorted_keys = [
-        reference.get_file_key() for reference in TEST_DOCUMENT_REFERENCES
-    ]
+    test_sorted_keys = [reference.s3_file_key for reference in TEST_DOCUMENT_REFERENCES]
 
     mock_sort_multipart_object_keys.return_value = test_sorted_keys
     mock_process_stitching.return_value = test_stream

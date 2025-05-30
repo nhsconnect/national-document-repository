@@ -69,8 +69,8 @@ class DocumentReferenceSearchService(DocumentService):
                     document_model.update(
                         {
                             "file_size": self.s3_service.get_file_size(
-                                s3_bucket_name=document.get_file_bucket(),
-                                object_key=document.get_file_key(),
+                                s3_bucket_name=document.s3_bucket_name,
+                                object_key=document.s3_file_key,
                             )
                         }
                     )

@@ -2,7 +2,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from freezegun import freeze_time
-from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
+from models.document_reference import DocumentReference, UploadRequestDocument
 from services.create_document_reference_service import CreateDocumentReferenceService
 from services.document_service import DocumentService
 from tests.unit.helpers.data.create_document_reference import (
@@ -37,11 +37,12 @@ NA_STRING = "Not Test Important"
 @pytest.fixture
 def mock_create_doc_ref_service(mocker, set_env):
     mocker.patch("services.base.s3_service.IAMService")
+    mocker.patch("services.create_document_reference_service.S3Service")
+    mocker.patch("services.create_document_reference_service.DocumentService")
+    mocker.patch("services.create_document_reference_service.DynamoDBService")
+    mocker.patch("services.create_document_reference_service.DocumentDeletionService")
 
     create_doc_ref_service = CreateDocumentReferenceService()
-    mocker.patch.object(create_doc_ref_service, "s3_service")
-    mocker.patch.object(create_doc_ref_service, "dynamo_service")
-    mocker.patch.object(create_doc_ref_service, "document_service")
     yield create_doc_ref_service
 
 
@@ -147,10 +148,10 @@ def test_create_document_reference_request_with_arf_list_happy_path(
         file,
     ) in enumerate(ARF_FILE_LIST):
         document_references.append(
-            NHSDocumentReference(
+            DocumentReference(
                 nhs_number=TEST_NHS_NUMBER,
                 s3_bucket_name=NA_STRING,
-                reference_id=NA_STRING,
+                id=NA_STRING,
                 content_type=NA_STRING,
                 file_name=file["fileName"],
                 doc_type=SupportedDocumentTypes.ARF,
@@ -201,10 +202,10 @@ def test_create_document_reference_request_with_lg_list_happy_path(
         file,
     ) in enumerate(LG_FILE_LIST):
         document_references.append(
-            NHSDocumentReference(
+            DocumentReference(
                 nhs_number=TEST_NHS_NUMBER,
                 s3_bucket_name=NA_STRING,
-                reference_id=NA_STRING,
+                id=NA_STRING,
                 content_type=NA_STRING,
                 file_name=file["fileName"],
                 doc_type=SupportedDocumentTypes.LG,
@@ -311,10 +312,10 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
         file,
     ) in enumerate(LG_FILE_LIST):
         document_references.append(
-            NHSDocumentReference(
+            DocumentReference(
                 nhs_number=TEST_NHS_NUMBER,
                 s3_bucket_name=NA_STRING,
-                reference_id=NA_STRING,
+                id=NA_STRING,
                 content_type=NA_STRING,
                 file_name=file["fileName"],
                 doc_type=SupportedDocumentTypes.LG,
@@ -553,10 +554,10 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
     )
     mocked_doc = mocker.MagicMock()
     nhs_doc_class = mocker.patch(
-        "services.create_document_reference_service.NHSDocumentReference",
+        "services.create_document_reference_service.DocumentReference",
         return_value=mocked_doc,
     )
-    nhs_doc_class.to_dict.return_value = {}
+    nhs_doc_class.model_dump.return_value = {}
 
     actual_document_reference = mock_create_doc_ref_service.prepare_doc_object(
         nhs_number, current_gp_ods, validated_document
@@ -568,7 +569,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
         current_gp_ods=current_gp_ods,
         s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
         sub_folder=mock_create_doc_ref_service.upload_sub_folder,
-        reference_id=reference_id,
+        id=reference_id,
         content_type="text/plain",
         file_name="test1.txt",
         doc_type=SupportedDocumentTypes.ARF.value,
@@ -588,10 +589,9 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
     )
     mocked_doc = mocker.MagicMock()
     nhs_doc_class = mocker.patch(
-        "services.create_document_reference_service.NHSDocumentReference",
+        "services.create_document_reference_service.DocumentReference",
         return_value=mocked_doc,
     )
-    nhs_doc_class.to_dict.return_value = {}
 
     actual_document_reference = mock_create_doc_ref_service.prepare_doc_object(
         nhs_number, current_gp_ods, validated_document
@@ -603,7 +603,7 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
         current_gp_ods=current_gp_ods,
         s3_bucket_name=mock_create_doc_ref_service.staging_bucket_name,
         sub_folder=mock_create_doc_ref_service.upload_sub_folder,
-        reference_id=reference_id,
+        id=reference_id,
         content_type="application/pdf",
         file_name="1of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
         doc_type=SupportedDocumentTypes.LG.value,
@@ -743,7 +743,7 @@ def test_remove_records_of_failed_upload(mock_create_doc_ref_service, mocker):
         table_name=MOCK_LG_TABLE_NAME,
         failed_upload_records=mock_doc_refs_of_failed_upload,
     )
-    file_keys = [record.get_file_key() for record in mock_doc_refs_of_failed_upload]
+    file_keys = [record.s3_file_key for record in mock_doc_refs_of_failed_upload]
 
     mock_create_doc_ref_service.s3_service.delete_object.assert_has_calls(
         [mocker.call(MOCK_LG_BUCKET, file_key) for file_key in file_keys],
