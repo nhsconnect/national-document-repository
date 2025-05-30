@@ -438,17 +438,12 @@ class IMAlertingService:
         slack_message["ts"] = alarm_entry.slack_timestamp
         slack_message["blocks"] = self.compose_slack_message(alarm_entry)
 
-        headers = {
-            "Authorization": "Bearer " + self.slack_bot_token,
-            "Content-type": "application/json; charset=utf-8",
-        }
-
         slack_update_chat_api = "https://slack.com/api/chat.update"
         requests.request(
             "POST",
             slack_update_chat_api,
             data=json.dumps(slack_message),
-            headers=headers,
+            headers=self.slack_headers,
         )
 
     def compose_slack_message(self, alarm_entry: AlarmEntry):
