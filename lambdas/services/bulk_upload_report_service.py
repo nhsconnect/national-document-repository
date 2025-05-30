@@ -385,7 +385,11 @@ class BulkUploadReportService:
 
     def get_times_for_scan(self) -> tuple[datetime, datetime]:
         current_time = datetime.datetime.now()
-        end_timestamp = current_time
+        end_report_time = datetime.time(7, 00, 00, 0)
+        today_date = datetime.datetime.today()
+        end_timestamp = datetime.datetime.combine(today_date, end_report_time)
+        if current_time < end_timestamp:
+            end_timestamp -= datetime.timedelta(days=1)
         start_timestamp = end_timestamp - datetime.timedelta(days=1)
 
         self.generated_on = start_timestamp.strftime("%Y%m%d")

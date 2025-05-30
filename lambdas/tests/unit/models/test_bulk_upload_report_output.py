@@ -254,7 +254,7 @@ def test_ods_report_populate_report_returns_correct_statistics():
         MOCK_REPORT_ITEMS_UPLOADER_1,
     )
 
-    assert actual.get_total_successful_count() == 5
+    assert actual.get_total_successful_count() == "62.5%"
     assert actual.get_total_deceased_count() == 1
     assert actual.get_total_suspended_count() == 1
     assert actual.get_total_restricted_count() == 1
@@ -268,7 +268,7 @@ def test_ods_report_populate_report_empty_list_returns_correct_statistics():
         [],
     )
 
-    assert actual.get_total_successful_count() == 0
+    assert actual.get_total_successful_count() == "0%"
     assert actual.get_total_deceased_count() == 0
     assert actual.get_total_suspended_count() == 0
     assert actual.get_total_restricted_count() == 0

@@ -34,6 +34,8 @@ class ReportBase:
                 "."
             )
             + "%"
+            if len(self.total_ingested) > 0
+            else "0%"
         )
         return successful_percentage
 
