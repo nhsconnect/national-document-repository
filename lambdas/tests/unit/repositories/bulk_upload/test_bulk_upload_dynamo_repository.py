@@ -26,7 +26,8 @@ def test_create_record_in_dynamodb_table(set_env, repo_under_test):
     assert TEST_DOCUMENT_REFERENCE in repo_under_test.dynamo_records_in_transaction
 
     repo_under_test.dynamo_repository.create_item.assert_called_with(
-        table_name=MOCK_LG_TABLE_NAME, item=TEST_DOCUMENT_REFERENCE.to_dict()
+        table_name=MOCK_LG_TABLE_NAME,
+        item=TEST_DOCUMENT_REFERENCE.model_dump(by_alias=True, exclude_none=True),
     )
 
 

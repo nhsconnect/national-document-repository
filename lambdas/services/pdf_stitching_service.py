@@ -154,7 +154,7 @@ class PdfStitchingService:
             self.s3_service.client.upload_fileobj(
                 Fileobj=stitching_data_stream,
                 Bucket=self.target_bucket,
-                Key=self.stitched_reference.get_file_key(),
+                Key=self.stitched_reference.s3_file_key,
             )
         except ClientError as e:
             logger.error(f"Failed to upload stitched file to S3: {e}")
@@ -241,7 +241,7 @@ class PdfStitchingService:
             raise PdfStitchingException(400, LambdaError.MultipartError)
 
         file_keys = [
-            document_reference.get_file_key()
+            document_reference.s3_file_key
             for document_reference in self.multipart_references
         ]
 
@@ -272,7 +272,7 @@ class PdfStitchingService:
                 )
                 self.s3_service.delete_object(
                     s3_bucket_name=self.target_bucket,
-                    file_key=self.stitched_reference.get_file_key(),
+                    file_key=self.stitched_reference.s3_file_key,
                 )
                 logger.info("Successfully reverted stitched object and reference")
         except Exception as e:

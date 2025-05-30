@@ -8,7 +8,7 @@ from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
-from models.nhs_document_reference import NHSDocumentReference
+from models.document_reference import DocumentReference
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
@@ -369,12 +369,12 @@ class BulkUploadService:
 
     def convert_to_document_reference(
         self, file_metadata: MetadataFile, nhs_number: str, current_gp_ods: str
-    ) -> NHSDocumentReference:
+    ) -> DocumentReference:
         s3_bucket_name = self.s3_repository.lg_bucket_name
         file_name = os.path.basename(file_metadata.file_path)
 
-        document_reference = NHSDocumentReference(
-            reference_id=str(uuid.uuid4()),
+        document_reference = DocumentReference(
+            id=str(uuid.uuid4()),
             nhs_number=nhs_number,
             file_name=file_name,
             s3_bucket_name=s3_bucket_name,

@@ -3,8 +3,7 @@ import os
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
-from models.document_reference import DocumentReference
-from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
+from models.document_reference import DocumentReference, UploadRequestDocument
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
@@ -48,9 +47,9 @@ class CreateDocumentReferenceService:
     def create_document_reference_request(
         self, nhs_number: str, documents_list: list[dict]
     ):
-        arf_documents: list[NHSDocumentReference] = []
+        arf_documents: list[DocumentReference] = []
         arf_documents_dict_format: list = []
-        lg_documents: list[NHSDocumentReference] = []
+        lg_documents: list[DocumentReference] = []
         lg_documents_dict_format: list = []
         url_responses = {}
 
@@ -79,10 +78,18 @@ class CreateDocumentReferenceService:
                 match document_reference.doc_type:
                     case SupportedDocumentTypes.ARF.value:
                         arf_documents.append(document_reference)
-                        arf_documents_dict_format.append(document_reference.to_dict())
+                        arf_documents_dict_format.append(
+                            document_reference.model_dump(
+                                by_alias=True, exclude_none=True
+                            )
+                        )
                     case SupportedDocumentTypes.LG.value:
                         lg_documents.append(document_reference)
-                        lg_documents_dict_format.append(document_reference.to_dict())
+                        lg_documents_dict_format.append(
+                            document_reference.model_dump(
+                                by_alias=True, exclude_none=True
+                            )
+                        )
                     case _:
                         logger.error(
                             f"{LambdaError.CreateDocInvalidType.to_str()}",
@@ -156,7 +163,7 @@ class CreateDocumentReferenceService:
 
     def prepare_doc_object(
         self, nhs_number: str, current_gp_ods: str, validated_doc: UploadRequestDocument
-    ) -> NHSDocumentReference:
+    ) -> DocumentReference:
 
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
@@ -177,15 +184,15 @@ class CreateDocumentReferenceService:
         validated_doc: UploadRequestDocument,
         s3_bucket_name: str,
         sub_folder="",
-    ) -> NHSDocumentReference:
+    ) -> DocumentReference:
         s3_object_key = create_reference_id()
 
-        document_reference = NHSDocumentReference(
+        document_reference = DocumentReference(
+            id=s3_object_key,
             nhs_number=nhs_number,
             current_gp_ods=current_gp_ods,
             s3_bucket_name=s3_bucket_name,
             sub_folder=sub_folder,
-            reference_id=s3_object_key,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
             doc_type=validated_doc.docType,
@@ -193,7 +200,7 @@ class CreateDocumentReferenceService:
         )
         return document_reference
 
-    def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
+    def prepare_pre_signed_url(self, document_reference: DocumentReference):
         try:
             s3_response = self.s3_service.create_upload_presigned_url(
                 document_reference.s3_bucket_name, document_reference.s3_file_key
@@ -281,8 +288,8 @@ class CreateDocumentReferenceService:
 
         logger.info("Deleting files from s3...")
         for record in failed_upload_records:
-            s3_bucket_name = record.get_file_bucket()
-            file_key = record.get_file_key()
+            s3_bucket_name = record.s3_bucket_name
+            file_key = record.s3_file_key
             self.s3_service.delete_object(s3_bucket_name, file_key)
 
         logger.info("Deleting dynamodb record...")

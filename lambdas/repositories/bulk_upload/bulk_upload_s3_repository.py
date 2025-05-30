@@ -2,7 +2,7 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
-from models.nhs_document_reference import NHSDocumentReference
+from models.document_reference import DocumentReference
 from models.staging_metadata import StagingMetadata
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -21,9 +21,9 @@ class BulkUploadS3Repository:
     def __init__(self):
         self.s3_repository = S3Service()
         self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
-        self.lg_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
+        self.lg_bucket_name: str = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
 
-        self.dynamo_records_in_transaction: list[NHSDocumentReference] = []
+        self.dynamo_records_in_transaction: list[DocumentReference] = []
         self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
 
