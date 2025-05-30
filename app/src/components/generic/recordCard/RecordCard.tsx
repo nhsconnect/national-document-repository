@@ -1,5 +1,5 @@
 import { Card } from 'nhsuk-react-components';
-import { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from 'react';
+import { Dispatch, ReactNode, SetStateAction } from 'react';
 import PdfViewer from '../pdfViewer/PdfViewer';
 import { LGRecordActionLink } from '../../../types/blocks/lloydGeorgeActions';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
@@ -10,9 +10,7 @@ export type Props = {
     fullScreenHandler: (clicked: true) => void;
     detailsElement: ReactNode;
     isFullScreen: boolean;
-    refreshRecord: () => void;
     pdfObjectUrl: string;
-    resetDocStage: () => void;
     recordLinks?: Array<LGRecordActionLink>;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     showMenu?: boolean;
@@ -24,25 +22,10 @@ function RecordCard({
     detailsElement,
     isFullScreen,
     pdfObjectUrl,
-    refreshRecord,
-    resetDocStage,
     recordLinks = [],
     setStage = () => {},
     showMenu = false,
 }: Props) {
-    const mounted = useRef(false);
-
-    useEffect(() => {
-        const onPageLoad = async () => {
-            resetDocStage();
-            await refreshRecord();
-        };
-        if (!mounted.current) {
-            onPageLoad();
-            mounted.current = true;
-        }
-    }, [refreshRecord, resetDocStage]);
-
     const Record = () => {
         return pdfObjectUrl ? <PdfViewer fileUrl={pdfObjectUrl} /> : null;
     };
@@ -75,7 +58,6 @@ function RecordCard({
                                 data-testid="full-screen-btn"
                                 onClick={() => {
                                     fullScreenHandler(true);
-                                    resetDocStage();
                                 }}
                             >
                                 View in full screen
