@@ -44,16 +44,13 @@ class OdsApiService:
             )
             raise OdsErrorException("Failed to fetch organisation data from ODS")
 
-    def fetch_organisation_with_permitted_role(self, ods_code_list: list[str]) -> Dict:
-        logger.info(f"ODS code list for smartcard login: {ods_code_list}")
+    def fetch_organisation_with_permitted_role(self, ods_code: str) -> Dict:
 
-        logger.info(f"length: {len(ods_code_list)} ")
-        if len(ods_code_list) != 1:
+        if not ods_code:
             raise TooManyOrgsException(
                 "No single organisation found for identified ods codes"
             )
 
-        ods_code = ods_code_list[0]
         logger.info(f"ods_code selected: {ods_code}")
 
         itoc_ods_codes = token_handler_ssm_service.get_itoc_ods_codes()

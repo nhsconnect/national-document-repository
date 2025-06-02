@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from enums.nrl_sqs_upload import NrlActionTypes
-from models.fhir.R4.nrl_fhir_document_reference import DocumentReferenceInfo
+from models.fhir.R4.fhir_document_reference import DocumentReferenceInfo
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService
@@ -49,7 +49,7 @@ def lambda_handler(event, context):
                     document = DocumentReferenceInfo(
                         **nrl_verified_message,
                         custodian=nrl_api_service.end_user_ods_code,
-                    ).create_fhir_document_reference_object()
+                    ).create_nrl_fhir_document_reference_object()
                     logger.info(
                         f"Trying to create pointer request: Body: {document.model_dump_json(exclude_none=True)}, "
                         f"RequestURL: {nrl_api_service.endpoint}, "

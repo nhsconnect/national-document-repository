@@ -18,7 +18,7 @@ import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import PatientAccessAuditProvider from '../../../../providers/patientAccessAuditProvider/PatientAccessAuditProvider';
 import ConfigProvider from '../../../../providers/configProvider/ConfigProvider';
 import PatientDetailsProvider from '../../../../providers/patientProvider/PatientProvider';
-import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+import { beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
 const mockedUseNavigate = vi.fn();
 vi.mock('react-router-dom', async () => ({
