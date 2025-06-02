@@ -86,6 +86,14 @@ const DocumentSearchResultsOptions = (props: Props) => {
 
     return (
         <>
+            <div
+                id="download-status"
+                aria-live="assertive"
+                role="status"
+                className="nhsuk-u-visually-hidden"
+            >
+                {statusMessage}
+            </div>
             <div className="search-result-spinner-div">
                 {props.downloadState === SUBMISSION_STATE.PENDING ? (
                     <SpinnerButton
@@ -114,14 +122,6 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 >
                     Remove all documents
                 </Button>
-            </div>
-            <div
-                id="download-status"
-                aria-live="assertive"
-                role="status"
-                className="nhsuk-u-visually-hidden"
-            >
-                {statusMessage}
             </div>
             {props.downloadState === SUBMISSION_STATE.SUCCEEDED && (
                 <p>
