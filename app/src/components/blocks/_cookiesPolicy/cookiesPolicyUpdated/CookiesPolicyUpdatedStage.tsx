@@ -1,11 +1,7 @@
-import { Button, ButtonLink } from 'nhsuk-react-components';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
 
 const CookiesPolicyUpdatedStage = () => {
-    const navigate = useNavigate();
-
     const pageTitle = 'Your cookie settings have been saved';
     useTitle({ pageTitle });
 
