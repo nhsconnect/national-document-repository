@@ -98,7 +98,12 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 >
                     Remove all documents
                 </Button>
-                <div id="download-status" aria-live="polite" role="status">
+                <div
+                    id="download-status"
+                    aria-live="polite"
+                    role="status"
+                    className="nhsuk-u-visually-hidden"
+                >
                     {props.downloadState === SUBMISSION_STATE.PENDING && 'Download in progress.'}
                     {props.downloadState === SUBMISSION_STATE.SUCCEEDED && 'Download complete.'}
                     {props.downloadState === SUBMISSION_STATE.FAILED && 'Download failed.'}
