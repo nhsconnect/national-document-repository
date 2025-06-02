@@ -101,7 +101,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 </Button>
             </div>
             {props.downloadState === SUBMISSION_STATE.SUCCEEDED && (
-                <p>
+                <p aria-live="assertive">
                     <strong>All documents have been successfully downloaded.</strong>
                 </p>
             )}
