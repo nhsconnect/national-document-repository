@@ -10,7 +10,7 @@ import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import RemoveRecordStage from '../../components/blocks/_delete/removeRecordStage/RemoveRecordStage';
 import LloydGeorgeSelectDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeSelectDownloadStage/LloydGeorgeSelectDownloadStage';
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ErrorResponse } from '../../types/generic/errorResponse';
 import { isMock } from '../../helpers/utils/isLocal';
 import useConfig from '../../helpers/hooks/useConfig';
@@ -33,7 +33,7 @@ function LloydGeorgeRecordPage() {
     const baseHeaders = useBaseAPIHeaders();
     const [numberOfFiles, setNumberOfFiles] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
-    const [cloudFrontUrl, setCloudFrontUrl] = useState('');
+    const [pdfObjectUrl, setPdfObjectUrl] = useState('');
     const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
 
     const showMenu = role === REPOSITORY_ROLE.GP_ADMIN && hasRecordInStorage;
@@ -41,16 +41,25 @@ function LloydGeorgeRecordPage() {
     const resetDocState = () => {
         setNumberOfFiles(0);
         setLastUpdated('');
-        setCloudFrontUrl('');
         setDownloadStage(DOWNLOAD_STAGE.INITIAL);
+    };
+
+    const getPdfObjectUrl = async (cloudFrontUrl: string) => {
+        const { data } = await axios.get(cloudFrontUrl, {
+            responseType: 'blob',
+        });
+
+        const objectUrl = URL.createObjectURL(data);
+
+        setPdfObjectUrl(objectUrl);
+        setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
     };
 
     const refreshRecord = async () => {
         const onSuccess = (filesCount: number, updatedDate: string, presignedUrl: string) => {
             setNumberOfFiles(filesCount);
             setLastUpdated(getFormattedDatetime(new Date(updatedDate)));
-            setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-            setCloudFrontUrl(presignedUrl);
+            getPdfObjectUrl(presignedUrl);
         };
 
         const onError = (e: AxiosError) => {
@@ -109,7 +118,7 @@ function LloydGeorgeRecordPage() {
                             stage={stage}
                             lastUpdated={lastUpdated}
                             refreshRecord={refreshRecord}
-                            cloudFrontUrl={cloudFrontUrl}
+                            pdfObjectUrl={pdfObjectUrl}
                             showMenu={showMenu}
                             resetDocState={resetDocState}
                         />

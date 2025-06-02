@@ -221,7 +221,7 @@ $hunit: '%';
     padding-bottom: 150px;
 
     &__text {
-        @include nhsuk-typography-responsive(19);
+        @include nhsuk-font-size(19);
         padding-bottom: 16px;
         font-weight: 700;
         display: block;
@@ -833,6 +833,10 @@ $hunit: '%';
 
 // Helper
 
+#pdf-viewer {
+    height: 75vh;
+}
+
 @-moz-document url-prefix() {
     #pdf-viewer {
         margin-top: 6px;
@@ -961,6 +965,11 @@ $hunit: '%';
     &.fullscreen {
         max-width: unset;
         padding: 0;
+
+        #pdf-viewer {
+            flex: 1;
+            height: unset;
+        }
 
         @media (max-width: 640px) {
             height: 100vh;

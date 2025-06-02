@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import pytest
 from handlers.search_patient_details_handler import lambda_handler
+from models.pds_models import PatientDetails
 from utils.lambda_exceptions import SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -46,21 +47,40 @@ def test_lambda_handler_valid_id_returns_200(
     mocker,
     mocked_context,
 ):
-    patient_details = """{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",
-        "postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,
-        "restricted":false,"generalPracticeOds":"Y12345","active":true}"""
-
-    mocker.patch(
-        "handlers.search_patient_details_handler.SearchPatientDetailsService.handle_search_patient_request",
-        return_value=patient_details,
+    patient_details_object = PatientDetails(
+        givenName=["Jane"],
+        familyName="Smith",
+        birthDate="2010-10-22",
+        postalCode="LS1 6AE",
+        nhsNumber="9000000009",
+        superseded=False,
+        restricted=False,
+        generalPracticeOds="Y12345",
+        active=True,
+        deceased=False,
+        deathNotificationStatus=None,
     )
+    patient_details = patient_details_object.model_dump_json(
+        by_alias=True,
+        exclude={
+            "death_notification_status",
+            "general_practice_ods",
+        },
+    )
+    mocked_service = mocker.MagicMock()
+    mocker.patch(
+        "handlers.search_patient_details_handler.SearchPatientDetailsService",
+        return_value=mocked_service,
+    )
+
+    mocked_service.handle_search_patient_request.return_value = patient_details_object
     expected = ApiGatewayResponse(
         200, patient_details, "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event_with_auth_header, context)
 
-    assert expected == actual
+    assert actual == expected
 
 
 def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context):

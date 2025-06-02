@@ -4,7 +4,6 @@ import { render, screen } from '@testing-library/react';
 import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
 import LgDownloadComplete from './LloydGeorgeDownloadComplete';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
-import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -12,7 +11,6 @@ vi.mock('../../../../helpers/hooks/usePatient');
 const mockedUseNavigate = vi.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as Mock;
-const mockSetDownloadStage = vi.fn();
 
 const numberOfFiles = 7;
 const selectedDocuments = ['test-id-1', 'test-id-2'];

@@ -41,6 +41,19 @@ def lambda_handler(event, context):
     search_service = SearchPatientDetailsService(
         user_role=user_role, user_ods_code=user_ods_code
     )
-    response = search_service.handle_search_patient_request(nhs_number)
 
-    return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
+    # Get patient details from service
+    patient_details = search_service.handle_search_patient_request(
+        nhs_number,
+    )
+    formatted_response = patient_details.model_dump_json(
+        by_alias=True,
+        exclude={
+            "death_notification_status",
+            "general_practice_ods",
+        },
+    )
+
+    return ApiGatewayResponse(
+        200, formatted_response, "GET"
+    ).create_api_gateway_response()

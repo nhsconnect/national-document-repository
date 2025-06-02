@@ -1,5 +1,6 @@
 # Build the App
 FROM node:18-alpine as builder
+RUN apk add unzip wget
 WORKDIR /app
 
 COPY package.json ./
@@ -7,6 +8,10 @@ COPY package-lock.json ./
 COPY ./ ./
 
 RUN npm install --legacy-peer-deps
+RUN mkdir -p ./public/pdfjs
+RUN wget https://github.com/mozilla/pdf.js/releases/download/v4.10.38/pdfjs-4.10.38-dist.zip -O ./public/pdfjs/pdfjs.zip
+RUN unzip -o -d ./public/pdfjs ./public/pdfjs/pdfjs.zip
+RUN rm ./public/pdfjs/pdfjs.zip
 RUN npm run build
 
 # Host the App

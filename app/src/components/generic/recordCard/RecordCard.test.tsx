@@ -8,7 +8,6 @@ import RecordCard, { Props } from './RecordCard';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import useRole from '../../../helpers/hooks/useRole';
 import { beforeEach, describe, expect, it, vi, Mock, MockedFunction } from 'vitest';
 
 const mockedUseNavigate = vi.fn();
@@ -31,8 +30,6 @@ const mockUsePatient = usePatient as Mock;
 const mockUseConfig = useConfig as Mock;
 const mockUseBaseAPIUrl = useBaseAPIUrl as Mock;
 const mockUseBaseAPIHeaders = useBaseAPIHeaders as Mock;
-const mockUseRole = useRole as Mock;
-it('passes a test', () => {});
 
 describe('RecordCard Component', () => {
     const mockFullScreenHandler = vi.fn();
@@ -42,7 +39,7 @@ describe('RecordCard Component', () => {
         detailsElement: <div>Mock Details Element</div>,
         isFullScreen: false,
         refreshRecord: vi.fn(),
-        cloudFrontUrl: 'https://test.com',
+        pdfObjectUrl: 'https://test.com',
         resetDocStage: vi.fn(),
     };
 
@@ -108,13 +105,8 @@ describe('RecordCard Component', () => {
             });
         });
 
-        it('shows find in pdf text when file url exists', async () => {
-            render(<RecordCard {...props} />);
-            expect(screen.getByTestId('find-in-pdf-text')).toBeInTheDocument();
-        });
-
-        it('renders nothing while no cloudFrontUrl', async () => {
-            render(<RecordCard {...props} cloudFrontUrl="" />);
+        it('renders nothing while no pdfObjectUrl', async () => {
+            render(<RecordCard {...props} pdfObjectUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
         });
 
@@ -138,11 +130,10 @@ describe('RecordCard Component', () => {
             });
         });
 
-        it('does not render PdfViewer or full-screen button when cloudFrontUrl is empty', async () => {
-            render(<RecordCard {...props} cloudFrontUrl="" />);
+        it('does not render PdfViewer or full-screen button when pdfObjectUrl is empty', async () => {
+            render(<RecordCard {...props} pdfObjectUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
             expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
-            expect(screen.queryByTestId('find-in-pdf-text')).not.toBeInTheDocument();
         });
 
         it('does not render the pdf details view when full-screen view is click', async () => {
@@ -156,7 +147,7 @@ describe('RecordCard Component', () => {
         });
 
         it('does not render the "View in full screen" button or pdf view when recordUrl is not set', () => {
-            render(<RecordCard {...props} cloudFrontUrl="" />);
+            render(<RecordCard {...props} pdfObjectUrl="" />);
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
             expect(screen.queryByTestId('full-screen-btn')).not.toBeInTheDocument();
         });

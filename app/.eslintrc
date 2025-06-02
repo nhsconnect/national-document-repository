@@ -75,5 +75,16 @@
         "extensions": "off",
         "prettier/prettier": "warn",
         "unused-imports/no-unused-imports": "warn"
-    }
+    },
+    "overrides": [
+        {
+            "files": ["**/*.test.tsx", "**/*.test.ts"],
+            "rules": {
+                "jsx-a11y/anchor-has-content": ["off"],
+                "jsx-a11y/no-redundant-roles": ["off"],
+                "no-throw-literal": ["off"],
+                "max-len": ["off"]
+            }
+        }
+    ]
 }
