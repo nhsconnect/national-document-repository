@@ -76,6 +76,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                         id="download-spinner"
                         status="Downloading documents"
                         disabled={true}
+                        aria-live="assertive"
                     />
                 ) : (
                     <Button type="button" id="download-documents" onClick={downloadAll}>
