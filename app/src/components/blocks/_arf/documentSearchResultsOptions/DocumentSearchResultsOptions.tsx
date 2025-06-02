@@ -114,12 +114,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 >
                     Remove all documents
                 </Button>
-                <div
-                    id="download-status"
-                    aria-live="polite"
-                    role="status"
-                    className="nhsuk-u-visually-hidden"
-                >
+                <div id="download-status" aria-live="polite" role="status">
                     {statusMessage}
                 </div>
             </div>
