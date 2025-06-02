@@ -6,9 +6,8 @@ from botocore.exceptions import ClientError
 from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from models.document_reference import DocumentReference, change_alias_generator
+from models.document_reference import DocumentReference
 from pydantic import ValidationError
-from pydantic.alias_generators import to_camel
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
@@ -33,9 +32,6 @@ class DocumentReferenceSearchService(DocumentService):
 
             for table_name in list_of_table_names:
                 logger.info(f"Searching for results in {table_name}")
-                change_alias_generator(
-                    model=DocumentReference, alias_generator=to_camel
-                )
                 documents: list[DocumentReference] = (
                     self.fetch_documents_from_table_with_nhs_number(
                         nhs_number,
@@ -52,11 +48,7 @@ class DocumentReferenceSearchService(DocumentService):
                         423, LambdaError.UploadInProgressError
                     )
                 for document in documents:
-                    document_formatted = document.model_dump(
-                        by_alias=True,
-                        include={"id", "file_name", "created", "virus_scanner_result"},
-                    )
-                    document_formatted["id"] = document_formatted.pop("ID")
+                    document_formatted = document.model_dump_search_results()
                     document_formatted.update(
                         {
                             "fileSize": self.s3_service.get_file_size(

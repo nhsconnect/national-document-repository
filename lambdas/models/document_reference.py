@@ -1,11 +1,11 @@
 import pathlib
 from datetime import datetime, timezone
-from typing import Callable, Optional
+from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic.alias_generators import to_pascal
+from pydantic.alias_generators import to_camel, to_pascal
 
 # Constants
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -40,7 +40,6 @@ class DocumentReference(BaseModel):
         validate_by_name=True,
         alias_generator=to_pascal,
         use_enum_values=True,
-        populate_by_name=True,
     )
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
     content_type: str = Field(default=DEFAULT_CONTENT_TYPE)
@@ -65,6 +64,16 @@ class DocumentReference(BaseModel):
     sub_folder: str = Field(default=None, exclude=True)
     doc_type: str = Field(default=None, exclude=True)
     file_location: str = ""
+
+    def model_dump_search_results(self):
+        self.Config.alias_generator = to_camel
+        search_result = self.model_dump(
+            by_alias=True,
+            include={"id", "file_name", "created", "virus_scanner_result"},
+        )
+        search_result["id"] = search_result.pop("ID")
+
+        return search_result
 
     @model_validator(mode="before")
     @classmethod
@@ -137,10 +146,3 @@ class DocumentReference(BaseModel):
 
     def set_uploaded_to_true(self):
         self.uploaded = True
-
-
-def change_alias_generator(model: BaseModel, alias_generator: Callable) -> BaseModel:
-    """Change alias generator of a model"""
-    model.model_config.update(ConfigDict(alias_generator=alias_generator))
-    model.model_rebuild(force=True)
-    return model
