@@ -45,6 +45,76 @@ def test_report_base_get_total_successful_nhs_numbers_returns_empty():
     assert expected == actual
 
 
+def test_report_base_get_total_successful_percentage_returns_correct_percentage_to_two_decimal_places():
+    base = ReportBase(generated_at=get_timestamp())
+    base.total_ingested = {
+        "9000000000",
+        "9000000001",
+        "9000000002",
+        "9000000003",
+        "9000000004",
+        "9000000005",
+        "9000000006",
+        "9000000007",
+        "9000000008",
+        "9000000009",
+        "90000000010",
+    }
+    base.total_successful = {
+        ("9000000000", "2012-01-13"),
+        ("9000000003", "2012-01-13"),
+        ("9000000001", "2012-01-13"),
+        ("9000000002", "2012-01-13"),
+    }
+
+    expected = "36.36%"
+    actual = base.get_total_successful_percentage()
+    assert actual == expected
+
+
+def test_report_base_get_total_successful_percentage_returns_correct_whole_percentage():
+    base = ReportBase(generated_at=get_timestamp())
+    base.total_ingested = {
+        "9000000000",
+        "9000000001",
+        "9000000002",
+        "9000000003",
+        "9000000004",
+        "9000000005",
+        "9000000006",
+        "9000000007",
+        "9000000008",
+        "9000000009",
+    }
+    base.total_successful = {
+        ("9000000000", "2012-01-13"),
+    }
+
+    expected = "10%"
+    actual = base.get_total_successful_percentage()
+    assert actual == expected
+
+
+def test_report_base_get_total_successful_percentage_given_empty_input_returns_correctly():
+    base = ReportBase(generated_at=get_timestamp())
+    base.total_ingested = {}
+    base.total_successful = {}
+
+    expected = "0%"
+    actual = base.get_total_successful_percentage()
+    assert actual == expected
+
+
+def test_report_base_total_successful_percentage_returns_correct_single_percentage():
+    base = ReportBase(generated_at=get_timestamp())
+    base.total_ingested = {f"{9000000000 + i}" for i in range(100)}
+    print(len(base.total_ingested))
+    base.total_successful = {("9000000000", "2012-01-13")}
+    expected = "1%"
+    actual = base.get_total_successful_percentage()
+    assert actual == expected
+
+
 def test_report_base_get_sorted_sorts_successfully():
     to_sort = {
         ("9000000000", "2012-01-13"),
