@@ -1,4 +1,5 @@
 import datetime
+from io import BytesIO
 
 import pytest
 from botocore.exceptions import ClientError
@@ -418,3 +419,35 @@ def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
 
     with pytest.raises(ClientError):
         mock_service.get_binary_file("test-bucket", "nonexistent-key")
+
+
+def test_upload_file_obj_success(mock_service, mock_client):
+    file_obj = BytesIO(b"sample file content")
+    extra_args = {"ContentType": "application/pdf"}
+
+    mock_service.upload_file_obj(file_obj, MOCK_BUCKET, TEST_FILE_KEY, extra_args)
+
+    mock_client.upload_fileobj.assert_called_once_with(
+        Fileobj=file_obj,
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_KEY,
+        ExtraArgs=extra_args,
+    )
+
+
+def test_upload_file_obj_raises_client_error(mock_service, mock_client):
+    file_obj = BytesIO(b"sample file content")
+
+    mock_client.upload_fileobj.side_effect = ClientError(
+        {"Error": {"Code": "403", "Message": "Forbidden"}}, "UploadFileObj"
+    )
+
+    with pytest.raises(ClientError):
+        mock_service.upload_file_obj(file_obj, MOCK_BUCKET, TEST_FILE_KEY)
+
+    mock_client.upload_fileobj.assert_called_once_with(
+        Fileobj=file_obj,
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_KEY,
+        ExtraArgs={},
+    )

@@ -94,8 +94,11 @@ class PdfStitchingService:
             stitching_data_stream = self.process_stitching(
                 s3_object_keys=sorted_multipart_keys
             )
-
-            self.upload_stitched_file(stitching_data_stream=stitching_data_stream)
+            self.s3_service.upload_file_obj(
+                file_obj=stitching_data_stream,
+                s3_bucket_name=self.target_bucket,
+                file_key=self.stitched_reference.get_file_key(),
+            )
             self.migrate_multipart_references()
             self.write_stitching_reference()
             self.publish_nrl_message(
@@ -148,17 +151,6 @@ class PdfStitchingService:
         stitching_data_stream.seek(0)
 
         return stitching_data_stream
-
-    def upload_stitched_file(self, stitching_data_stream: BytesIO):
-        try:
-            self.s3_service.client.upload_fileobj(
-                Fileobj=stitching_data_stream,
-                Bucket=self.target_bucket,
-                Key=self.stitched_reference.get_file_key(),
-            )
-        except ClientError as e:
-            logger.error(f"Failed to upload stitched file to S3: {e}")
-            raise PdfStitchingException(400, LambdaError.StitchError)
 
     def migrate_multipart_references(self):
         logger.info("Migrating multipart references")

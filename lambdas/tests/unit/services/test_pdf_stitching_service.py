@@ -6,7 +6,6 @@ from unittest.mock import call
 
 import pytest
 from enums.lambda_error import LambdaError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
@@ -29,7 +28,6 @@ from tests.unit.helpers.data.test_documents import (
     create_singular_test_lloyd_george_doc_store_ref,
     create_test_lloyd_george_doc_store_refs,
 )
-from utils.common_query_filters import NotDeleted
 from utils.lambda_exceptions import PdfStitchingException
 
 from lambdas.services.pdf_stitching_service import PdfStitchingService
@@ -66,8 +64,8 @@ def mock_process_stitching(mocker, mock_service):
 
 
 @pytest.fixture
-def mock_upload_stitched_file(mocker, mock_service):
-    return mocker.patch.object(mock_service, "upload_stitched_file")
+def mock_upload_file_obj(mocker, mock_service):
+    return mocker.patch.object(mock_service.s3_service, "upload_file_obj")
 
 
 @pytest.fixture
@@ -162,7 +160,7 @@ def test_process_message(
     mock_create_stitched_reference,
     mock_sort_multipart_object_keys,
     mock_process_stitching,
-    mock_upload_stitched_file,
+    mock_upload_file_obj,
     mock_migrate_multipart_references,
     mock_write_stitching_reference,
     mock_publish_nrl_message,
@@ -179,6 +177,11 @@ def test_process_message(
 
     mock_retrieve_multipart_references.return_value = TEST_DOCUMENT_REFERENCES
 
+    def set_stitched_reference(document_reference):
+        mock_service.stitched_reference = document_reference
+
+    mock_create_stitched_reference.side_effect = set_stitched_reference
+
     mock_service.process_message(test_message)
 
     mock_create_stitched_reference.assert_called_once_with(
@@ -186,7 +189,11 @@ def test_process_message(
     )
     mock_sort_multipart_object_keys.assert_called_once_with()
     mock_process_stitching.assert_called_once_with(s3_object_keys=test_sorted_keys)
-    mock_upload_stitched_file.assert_called_once_with(stitching_data_stream=test_stream)
+    mock_upload_file_obj.assert_called_once_with(
+        file_obj=test_stream,
+        s3_bucket_name=mock_service.target_bucket,
+        file_key=mock_service.stitched_reference.get_file_key(),
+    )
     mock_migrate_multipart_references.assert_called_once_with()
     mock_write_stitching_reference.assert_called_once()
     mock_publish_nrl_message.assert_called_once()
@@ -198,7 +205,7 @@ def test_process_message_handles_singular_or_none_references(
     mock_create_stitched_reference,
     mock_sort_multipart_object_keys,
     mock_process_stitching,
-    mock_upload_stitched_file,
+    mock_upload_file_obj,
     mock_migrate_multipart_references,
     mock_write_stitching_reference,
     mock_publish_nrl_message,
@@ -213,7 +220,7 @@ def test_process_message_handles_singular_or_none_references(
     mock_create_stitched_reference.assert_not_called()
     mock_sort_multipart_object_keys.assert_not_called()
     mock_process_stitching.assert_not_called()
-    mock_upload_stitched_file.assert_not_called()
+    mock_upload_file_obj.assert_not_called()
     mock_migrate_multipart_references.assert_not_called()
     mock_write_stitching_reference.assert_not_called()
     mock_publish_nrl_message.assert_not_called()
@@ -291,35 +298,6 @@ def test_process_stitching(mock_service, mock_download_fileobj):
     actual_stream = mock_service.process_stitching(list(s3_object_data.keys()))
 
     assert actual_stream.read() == expected_stream.read()
-
-
-def test_upload_stitched_file(mock_service):
-    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
-    test_stream = BytesIO()
-
-    mock_service.upload_stitched_file(test_stream)
-
-    mock_service.s3_service.client.upload_fileobj.assert_called_with(
-        Fileobj=test_stream,
-        Bucket=MOCK_LG_BUCKET,
-        Key=f"{TEST_NHS_NUMBER}/test-key-123",
-    )
-
-
-def test_upload_stitched_file_handles_client_error(mock_service, caplog):
-    mock_service.stitched_reference = TEST_1_OF_1_DOCUMENT_REFERENCE
-    mock_service.s3_service.client.upload_fileobj.side_effect = MOCK_CLIENT_ERROR
-    expected_err_msg = (
-        "Failed to upload stitched file to S3: "
-        "An error occurred (500) when calling the TEST operation: Test error message"
-    )
-
-    with pytest.raises(PdfStitchingException) as e:
-        mock_service.upload_stitched_file(BytesIO())
-
-    assert caplog.records[-1].msg == expected_err_msg
-    assert caplog.records[-1].levelname == "ERROR"
-    assert e.value.error is LambdaError.StitchError
 
 
 def test_migrate_multipart_references(mock_service):
