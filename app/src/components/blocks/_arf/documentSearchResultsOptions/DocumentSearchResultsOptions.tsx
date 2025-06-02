@@ -115,7 +115,12 @@ const DocumentSearchResultsOptions = (props: Props) => {
                     Remove all documents
                 </Button>
             </div>
-            <div id="download-status" aria-live="assertive" role="status">
+            <div
+                id="download-status"
+                aria-live="assertive"
+                role="status"
+                className="nhsuk-u-visually-hidden"
+            >
                 {statusMessage}
             </div>
             {props.downloadState === SUBMISSION_STATE.SUCCEEDED && (
