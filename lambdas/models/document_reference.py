@@ -65,15 +65,12 @@ class DocumentReference(BaseModel):
     doc_type: str = Field(default=None, exclude=True)
     file_location: str = ""
 
-    def model_dump_search_results(self):
-        self.Config.alias_generator = to_camel
-        search_result = self.model_dump(
-            by_alias=True,
-            include={"id", "file_name", "created", "virus_scanner_result"},
-        )
-        search_result["id"] = search_result.pop("ID")
-
-        return search_result
+    def model_dump_camel_case(self, *args, **kwargs):
+        model_dump_results = self.model_dump(*args, **kwargs)
+        camel_case_model_dump_results = {}
+        for key in model_dump_results:
+            camel_case_model_dump_results[to_camel(key)] = model_dump_results[key]
+        return camel_case_model_dump_results
 
     @model_validator(mode="before")
     @classmethod

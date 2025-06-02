@@ -48,7 +48,9 @@ class DocumentReferenceSearchService(DocumentService):
                         423, LambdaError.UploadInProgressError
                     )
                 for document in documents:
-                    document_formatted = document.model_dump_search_results()
+                    document_formatted = document.model_dump_camel_case(
+                        include={"id", "file_name", "created", "virus_scanner_result"},
+                    )
                     document_formatted.update(
                         {
                             "fileSize": self.s3_service.get_file_size(
