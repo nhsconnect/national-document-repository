@@ -1,13 +1,18 @@
 import pathlib
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Callable, Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic.alias_generators import to_camel, to_pascal
+from pydantic.alias_generators import to_pascal
 
+# Constants
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+DEFAULT_CONTENT_TYPE = "application/pdf"
+DEFAULT_VIRUS_SCAN_RESULT = "Not Scanned"
+S3_PREFIX = "s3://"
+THREE_MINUTES_IN_SECONDS = 60 * 3
 
 
 class UploadRequestDocument(BaseModel):
@@ -29,18 +34,6 @@ class UploadDocumentReferences(BaseModel):
     files: list[UploadDocumentReference] = Field(...)
 
 
-class SearchDocumentReference(BaseModel):
-    model_config = ConfigDict(
-        alias_generator=to_camel,
-        populate_by_name=True,
-    )
-    id: str
-    created: str
-    file_name: str
-    virus_scanner_result: str
-    file_size: int
-
-
 class DocumentReference(BaseModel):
     model_config = ConfigDict(
         validate_by_alias=True,
@@ -49,9 +42,8 @@ class DocumentReference(BaseModel):
         use_enum_values=True,
         populate_by_name=True,
     )
-
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
-    content_type: str = Field(default="application/pdf")
+    content_type: str = Field(default=DEFAULT_CONTENT_TYPE)
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(DATE_FORMAT)
     )
@@ -62,7 +54,7 @@ class DocumentReference(BaseModel):
     ttl: Optional[int] = Field(
         alias=str(DocumentReferenceMetadataFields.TTL.value), default=None
     )
-    virus_scanner_result: str = Field(default="Not Scanned")
+    virus_scanner_result: str = Field(default=DEFAULT_VIRUS_SCAN_RESULT)
     uploaded: bool = Field(default=False)
     uploading: bool = Field(default=False)
     last_updated: int = Field(
@@ -77,26 +69,47 @@ class DocumentReference(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def set_location_properties(cls, data, *args, **kwargs):
+        """Set S3 location properties based on available data."""
         if "file_location" in data or "FileLocation" in data:
             file_location = data.get("file_location") or data.get("FileLocation")
-            data["s3_bucket_name"], data["s3_file_key"] = file_location.replace(
-                "s3://", ""
-            ).split("/", 1)
+            bucket, key = cls._parse_s3_location(file_location)
+            data["s3_bucket_name"] = bucket
+            data["s3_file_key"] = key
         elif "s3_bucket_name" in data:
-            data["file_location"] = f"s3://{data['s3_bucket_name']}"
-            s3_file_key = ""
-            if "sub_folder" in data:
-                s3_file_key += f"/{data['sub_folder']}"
-                if "doc_type" in data:
-                    s3_file_key += f"/{data['sub_folder']}"
-            s3_file_key += f"/{data['nhs_number']}/{data['id']}"
-            data["file_location"] += s3_file_key
-            data["s3_file_key"] = (
-                s3_file_key[1:] if s3_file_key.startswith("/") else s3_file_key
+            data["s3_file_key"] = cls._build_s3_key(data)
+            data["file_location"] = cls._build_s3_location(
+                data["s3_bucket_name"], data["s3_file_key"]
             )
-
         return data
 
+    @staticmethod
+    def _parse_s3_location(file_location: str) -> list[str]:
+        """Parse S3 location into bucket and key components."""
+        location_without_prefix = file_location.replace(S3_PREFIX, "")
+        return location_without_prefix.split("/", 1)
+
+    @staticmethod
+    def _build_s3_key(data: dict) -> str:
+        """Build the S3 key from document data."""
+        key_parts = []
+
+        if "sub_folder" in data:
+            key_parts.append(data["sub_folder"])
+            if "doc_type" in data:
+                key_parts.append(data["sub_folder"])
+
+        key_parts.extend([data["nhs_number"], data["id"]])
+        s3_key = "/".join(key_parts)
+
+        return s3_key
+
+    @staticmethod
+    def _build_s3_location(bucket: str, key: str) -> str:
+        """Build a complete S3 location from bucket and key."""
+        normalized_key = key[1:] if key.startswith("/") else key
+        return f"{S3_PREFIX}{bucket}/{normalized_key}"
+
+    # File path handling methods
     def get_file_name_path(self):
         return pathlib.Path(self.file_name)
 
@@ -109,8 +122,11 @@ class DocumentReference(BaseModel):
     def create_unique_filename(self, duplicates: int):
         return f"{self.get_base_name()}({duplicates}){self.get_file_extension()}"
 
+    # Status methods
     def last_updated_within_three_minutes(self) -> bool:
-        three_minutes_ago = datetime.now(timezone.utc).timestamp() - 60 * 3
+        three_minutes_ago = (
+            datetime.now(timezone.utc).timestamp() - THREE_MINUTES_IN_SECONDS
+        )
         return self.last_updated >= three_minutes_ago
 
     def set_deleted(self) -> None:
@@ -121,3 +137,10 @@ class DocumentReference(BaseModel):
 
     def set_uploaded_to_true(self):
         self.uploaded = True
+
+
+def change_alias_generator(model: BaseModel, alias_generator: Callable) -> BaseModel:
+    """Change alias generator of a model"""
+    model.model_config.update(ConfigDict(alias_generator=alias_generator))
+    model.model_rebuild(force=True)
+    return model

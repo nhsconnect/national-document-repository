@@ -6,9 +6,9 @@ from botocore.exceptions import ClientError
 from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from inflection import underscore
-from models.document_reference import DocumentReference, SearchDocumentReference
+from models.document_reference import DocumentReference, change_alias_generator
 from pydantic import ValidationError
+from pydantic.alias_generators import to_camel
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
@@ -33,7 +33,9 @@ class DocumentReferenceSearchService(DocumentService):
 
             for table_name in list_of_table_names:
                 logger.info(f"Searching for results in {table_name}")
-
+                change_alias_generator(
+                    model=DocumentReference, alias_generator=to_camel
+                )
                 documents: list[DocumentReference] = (
                     self.fetch_documents_from_table_with_nhs_number(
                         nhs_number,
@@ -50,33 +52,20 @@ class DocumentReferenceSearchService(DocumentService):
                         423, LambdaError.UploadInProgressError
                     )
                 for document in documents:
-                    document_model = {
-                        **document.model_dump(
-                            include={
-                                underscore(DocumentReferenceMetadataFields.ID.value),
-                                underscore(
-                                    DocumentReferenceMetadataFields.FILE_NAME.value
-                                ),
-                                underscore(
-                                    DocumentReferenceMetadataFields.CREATED.value
-                                ),
-                                underscore(
-                                    DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value
-                                ),
-                            }
-                        )
-                    }
-                    document_model.update(
+                    document_formatted = document.model_dump(
+                        by_alias=True,
+                        include={"id", "file_name", "created", "virus_scanner_result"},
+                    )
+                    document_formatted["id"] = document_formatted.pop("ID")
+                    document_formatted.update(
                         {
-                            "file_size": self.s3_service.get_file_size(
+                            "fileSize": self.s3_service.get_file_size(
                                 s3_bucket_name=document.s3_bucket_name,
                                 object_key=document.s3_file_key,
-                            )
+                            ),
                         }
                     )
-
-                    search_result = SearchDocumentReference(**document_model)
-                    results.append(search_result.model_dump(by_alias=True))
+                    results.append(document_formatted)
             return results
         except (
             JSONDecodeError,
