@@ -76,7 +76,6 @@ const DocumentSearchResultsOptions = (props: Props) => {
                         id="download-spinner"
                         status="Downloading documents"
                         disabled={true}
-                        aria-live="assertive"
                     />
                 ) : (
                     <Button type="button" id="download-documents" onClick={downloadAll}>
@@ -99,9 +98,20 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 >
                     Remove all documents
                 </Button>
+                <div
+                    hidden
+                    id="download-status"
+                    aria-live="polite"
+                    role="status"
+                    className="nhsuk-u-visually-hidden"
+                >
+                    {props.downloadState === SUBMISSION_STATE.PENDING && 'Download in progress.'}
+                    {props.downloadState === SUBMISSION_STATE.SUCCEEDED && 'Download complete.'}
+                    {props.downloadState === SUBMISSION_STATE.FAILED && 'Download failed.'}
+                </div>
             </div>
             {props.downloadState === SUBMISSION_STATE.SUCCEEDED && (
-                <p aria-live="assertive">
+                <p>
                     <strong>All documents have been successfully downloaded.</strong>
                 </p>
             )}
