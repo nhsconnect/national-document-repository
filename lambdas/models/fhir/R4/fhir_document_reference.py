@@ -97,7 +97,7 @@ class DocumentReference(BaseModel):
     """FHIR DocumentReference resource."""
 
     resourceType: Literal["DocumentReference"] = "DocumentReference"
-    status: Literal["current"] = "current"
+    status: Literal["current", "superseded"] = "current"
     type: Optional[CodeableConcept] = None
     category: Optional[List[CodeableConcept]] = None
     subject: Optional[Reference] = None

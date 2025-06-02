@@ -38,6 +38,7 @@ TEST_DOCUMENT_REFERENCES = create_test_lloyd_george_doc_store_refs()
 TEST_1_OF_1_DOCUMENT_REFERENCE = create_singular_test_lloyd_george_doc_store_ref()
 
 
+@freeze_time("2025-01-01 12:00:00")
 @pytest.fixture
 def mock_service(set_env, mocker):
     service = PdfStitchingService()
@@ -330,12 +331,17 @@ def test_migrate_multipart_references(mock_service):
             item={
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
+                "Creation": "2024-01-01",
+                "Custodian": "",
                 "Deleted": "",
+                "DocStatus": "final",
+                "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[0].file_location}",
                 "FileName": f"{TEST_DOCUMENT_REFERENCES[0].file_name}",
                 "ID": f"{TEST_DOCUMENT_REFERENCES[0].id}",
                 "LastUpdated": 1704110400,
                 "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[0].nhs_number}",
+                "Status": "current",
                 "Uploaded": True,
                 "Uploading": False,
                 "VirusScannerResult": "Clean",
@@ -346,12 +352,17 @@ def test_migrate_multipart_references(mock_service):
             item={
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
+                "Creation": "2024-01-01",
+                "Custodian": "",
                 "Deleted": "",
+                "DocStatus": "final",
+                "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[1].file_location}",
                 "FileName": f"{TEST_DOCUMENT_REFERENCES[1].file_name}",
                 "ID": f"{TEST_DOCUMENT_REFERENCES[1].id}",
                 "LastUpdated": 1704110400,
                 "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[1].nhs_number}",
+                "Status": "current",
                 "Uploaded": True,
                 "Uploading": False,
                 "VirusScannerResult": "Clean",
@@ -362,12 +373,17 @@ def test_migrate_multipart_references(mock_service):
             item={
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
+                "Creation": "2024-01-01",
+                "Custodian": "",
                 "Deleted": "",
+                "DocStatus": "final",
+                "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[2].file_location}",
                 "FileName": f"{TEST_DOCUMENT_REFERENCES[2].file_name}",
                 "ID": f"{TEST_DOCUMENT_REFERENCES[2].id}",
                 "LastUpdated": 1704110400,
                 "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[2].nhs_number}",
+                "Status": "current",
                 "Uploaded": True,
                 "Uploading": False,
                 "VirusScannerResult": "Clean",

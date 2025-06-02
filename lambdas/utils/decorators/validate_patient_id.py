@@ -10,14 +10,14 @@ logger = LoggingService(__name__)
 
 
 def extract_nhs_number_from_event(event) -> str:
-    # Reusable method to get nhs number from event.
+    # Reusable method to get nhs number from an event.
     return event["queryStringParameters"]["patientId"]
 
 
 def validate_patient_id(lambda_func: Callable):
     """A decorator for lambda handler.
     Verify that the incoming event contains a valid patientId (nhs number).
-    If not, returns a 400 Bad request response before actual lambda was triggered.
+    If not, returns a 400 Bad request response before the actual lambda was triggered.
 
     Usage:
     @validate_patient_id
@@ -51,7 +51,7 @@ def validate_patient_id(lambda_func: Callable):
                 event["httpMethod"],
             ).create_api_gateway_response()
 
-        # Validation done. Return control flow to original lambda handler
+        # Validation done. Return control flow to the original lambda handler
         return lambda_func(event, context)
 
     return interceptor

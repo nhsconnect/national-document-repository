@@ -1,8 +1,9 @@
 import pathlib
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Literal, Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from enums.snomed_codes import SnomedCode, SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.alias_generators import to_camel, to_pascal
@@ -41,29 +42,55 @@ class DocumentReference(BaseModel):
         alias_generator=to_pascal,
         use_enum_values=True,
     )
+
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
+    author: str = Field(default="", exclude=True)
     content_type: str = Field(default=DEFAULT_CONTENT_TYPE)
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(DATE_FORMAT)
     )
-    current_gp_ods: str = Field(default="")
-    deleted: str = Field(default="")
-    file_name: str
-    nhs_number: str
-    ttl: Optional[int] = Field(
-        alias=str(DocumentReferenceMetadataFields.TTL.value), default=None
+    creation: str = Field(
+        default_factory=lambda: datetime.date(datetime.now()).isoformat(),
     )
-    virus_scanner_result: str = Field(default=DEFAULT_VIRUS_SCAN_RESULT)
-    uploaded: bool = Field(default=False)
-    uploading: bool = Field(default=False)
+    current_gp_ods: str = Field(default="")
+    custodian: str = Field(default="")
+    deleted: str = Field(default="")
+    doc_status: Literal[
+        "registered",
+        "partial",
+        "preliminary",
+        "final",
+        "amended",
+        "corrected",
+        "appended",
+        "cancelled",
+        "entered-in-error",
+        "deprecated",
+        "unknown",
+    ] = Field(default="final")
+    doc_type: str = Field(default=None)
+    document_snomed_code_type: SnomedCode = Field(
+        default=SnomedCodes.LLOYD_GEORGE.value.code
+    )
+    file_location: str = ""
+    file_name: str
     last_updated: int = Field(
         default_factory=lambda: int(datetime.now(timezone.utc).timestamp()),
     )
+    nhs_number: str
     s3_bucket_name: str = Field(exclude=True, default=None)
     s3_file_key: str = Field(exclude=True, default=None)
+    status: Literal["current", "superseded", "entered-in-error"] = Field(
+        default="current"
+    )
     sub_folder: str = Field(default=None, exclude=True)
-    doc_type: str = Field(default=None, exclude=True)
-    file_location: str = ""
+    ttl: Optional[int] = Field(
+        alias=str(DocumentReferenceMetadataFields.TTL.value), default=None
+    )
+    uploaded: bool = Field(default=False)
+    uploading: bool = Field(default=False)
+    version: str = Field(default="1", exclude=True)
+    virus_scanner_result: str = Field(default=DEFAULT_VIRUS_SCAN_RESULT)
 
     def model_dump_camel_case(self, *args, **kwargs):
         model_dump_results = self.model_dump(*args, **kwargs)

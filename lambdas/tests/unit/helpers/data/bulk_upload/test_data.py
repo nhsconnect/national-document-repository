@@ -177,6 +177,9 @@ def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"
         id=TEST_UUID,
         s3_bucket_name=MOCK_LG_BUCKET,
         current_gp_ods=TEST_CURRENT_GP_ODS,
+        author=TEST_CURRENT_GP_ODS,
+        doc_status="preliminary",
+        creation="03/09/2022",
     )
     doc_ref.virus_scanner_result = VirusScanResult.CLEAN
     return doc_ref

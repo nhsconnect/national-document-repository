@@ -189,14 +189,17 @@ class CreateDocumentReferenceService:
 
         document_reference = DocumentReference(
             id=s3_object_key,
+            author=current_gp_ods,
             nhs_number=nhs_number,
             current_gp_ods=current_gp_ods,
+            custodian=current_gp_ods,
             s3_bucket_name=s3_bucket_name,
             sub_folder=sub_folder,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
             doc_type=validated_doc.docType,
             uploading=True,
+            doc_status="preliminary",
         )
         return document_reference
 

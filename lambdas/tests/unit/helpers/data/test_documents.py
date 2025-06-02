@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
 from enums.supported_document_types import SupportedDocumentTypes
+from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from tests.unit.conftest import (
     MOCK_ARF_BUCKET,
@@ -19,6 +20,7 @@ def create_test_doc_store_refs():
     ]
 
 
+@freeze_time("2024-01-01 12:00:00")
 def create_singular_test_lloyd_george_doc_store_ref(
     override: Optional[Dict] = None,
 ) -> DocumentReference:
@@ -32,6 +34,7 @@ def create_singular_test_lloyd_george_doc_store_ref(
     return ref
 
 
+@freeze_time("2024-01-01 12:00:00")
 def create_test_lloyd_george_doc_store_refs(
     override: Optional[Dict] = None,
 ) -> List[DocumentReference]:

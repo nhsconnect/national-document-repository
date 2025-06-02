@@ -574,6 +574,9 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
         file_name="test1.txt",
         doc_type=SupportedDocumentTypes.ARF.value,
         uploading=True,
+        author=current_gp_ods,
+        custodian=current_gp_ods,
+        doc_status="preliminary",
     )
 
 
@@ -608,6 +611,9 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
         file_name="1of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
         doc_type=SupportedDocumentTypes.LG.value,
         uploading=True,
+        author=TEST_CURRENT_GP_ODS,
+        custodian=TEST_CURRENT_GP_ODS,
+        doc_status="preliminary",
     )
 
 
