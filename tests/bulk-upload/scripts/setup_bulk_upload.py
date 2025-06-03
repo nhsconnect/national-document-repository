@@ -2,9 +2,10 @@ import argparse
 import csv
 import os
 import shutil
-from datetime import date
+from datetime import date, datetime
 from enum import StrEnum
 from glob import glob
+from io import BytesIO
 from typing import Any, Dict, List, NamedTuple
 
 import boto3
@@ -406,6 +407,66 @@ def upload_lg_files_to_staging():
                 "TagSet": [
                     {"Key": "scan-result", "Value": scan_result},
                     {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+                ]
+            },
+        )
+
+
+def prepare_and_upload_test_files(
+    file_tuples: list[tuple[str, str]],  # (s3_key, nhs_number)
+    metadata_file_content: str,
+    fake_pdf_content: bytes = b"%PDF-1.4\n%Fake PDF content",
+    scan_date: str = None,
+):
+    """
+    Generates fake files and uploads them to S3 without writing anything locally.
+
+    Args:
+        file_tuples: List of (s3_key, nhs_number).
+        metadata_file_content: Content to upload as metadata.csv.
+        fake_pdf_content: Binary content of a fake PDF.
+        scan_date: ISO 8601 scan timestamp.
+    """
+    if scan_date is None:
+        scan_date = datetime.utcnow().isoformat()
+
+    s3 = boto3.client("s3")
+
+    # Upload metadata file
+    s3.put_object(
+        Bucket=STAGING_BUCKET,
+        Key="metadata.csv",
+        Body=metadata_file_content,
+        ContentType="text/csv",
+        StorageClass="INTELLIGENT_TIERING",
+    )
+
+    # Upload each test file and tag it
+    for s3_key, nhs_number in file_tuples:
+        # Upload fake PDF
+        s3.upload_fileobj(
+            Fileobj=BytesIO(fake_pdf_content),
+            Bucket=STAGING_BUCKET,
+            Key=s3_key,
+            ExtraArgs={
+                "ContentType": "application/pdf",
+                "StorageClass": "INTELLIGENT_TIERING",
+            },
+        )
+
+        # Determine scan result based on NHS number
+        scan_result = (
+            "Infected" if nhs_number.startswith(tuple(NHS_NUMBER_INFECTED)) else "Clean"
+        )
+
+        # Add scan-result tags
+        s3.put_object_tagging(
+            Bucket=STAGING_BUCKET,
+            Key=s3_key,
+            Tagging={
+                "TagSet": [
+                    {"Key": "scan-result", "Value": scan_result},
+                    {"Key": "date-scanned", "Value": scan_date},
                 ]
             },
         )

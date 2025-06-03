@@ -5,7 +5,6 @@ from enum import StrEnum
 from typing import NamedTuple
 
 import boto3
-from utils.audit_logging_setup import LoggingService
 
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
 
@@ -21,8 +20,6 @@ NHS_NUMBER_WITH_DIFFERENT_UPLOADER = []
 NHS_NUMBER_ALREADY_UPLOADED = []
 NHS_NUMBER_WRONG_DOB = []
 NHS_NUMBER = 0000000000
-
-logger = LoggingService(__name__)
 
 
 class Patient(NamedTuple):
@@ -86,7 +83,6 @@ def generate_nhs_number(nhs_number: int):
 
     while True:
         if nine_digit_nhs_number > 999999999:
-            logger.info("reached maximum nhs number")
             return nhs_number
         nine_digit_nhs_number = nine_digit_nhs_number + 1
         check_digit = pairing_nhs_number_digit(nine_digit_nhs_number)
