@@ -61,11 +61,16 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
         const key = documentPositionKey(documentId);
 
         const { ref: dropdownInputRef, ...dropdownProps } = register(key, {
-            required: 'Please select a position for every document',
             validate: () => {
                 const fieldValues = getValues();
 
-                const values = Object.values(fieldValues);
+                const values = Object.values(fieldValues).map((v) => +v!);
+
+                if (values.some((v) => v === 0)) {
+                    setError('Please select a position for every document');
+                    scrollToRef.current?.scrollIntoView();
+                    return false;
+                }
 
                 if (new Set(values).size !== values.length) {
                     setError('Please ensure all documents have a unique position selected');
@@ -168,16 +173,14 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
 
             <p>When you upload your files, they will be combined into a single PDF document.</p>
 
-            <p>
-                Your files are not currently in order:
-                <ul>
-                    <li>
-                        put your files in the order you need them to appear in the final document by
-                        changing the position number
-                    </li>
-                    <li>the file marked '1' will be at the start of the final document</li>
-                </ul>
-            </p>
+            <p>Your files are not currently in order:</p>
+            <ul>
+                <li>
+                    put your files in the order you need them to appear in the final document by
+                    changing the position number
+                </li>
+                <li>the file marked '1' will be at the start of the final document</li>
+            </ul>
 
             <form
                 onSubmit={handleSubmit(submitDocuments, handleErrors)}
