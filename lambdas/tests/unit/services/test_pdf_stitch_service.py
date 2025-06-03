@@ -8,7 +8,7 @@ from pypdf.errors import PyPdfError
 from services.pdf_stitch_service import (
     count_page_number,
     stitch_pdf,
-    stitch_pdf_into_steam,
+    stitch_pdf_into_stream,
 )
 
 
@@ -79,7 +79,7 @@ def test_stitch_pdf_into_stream_returns_combined_pdf():
         create_in_memory_pdf(3),
     ]
 
-    result_stream = stitch_pdf_into_steam(pdf_streams)
+    result_stream = stitch_pdf_into_stream(pdf_streams)
 
     result_reader = PdfReader(result_stream)
     assert len(result_reader.pages) == 6

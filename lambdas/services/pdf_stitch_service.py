@@ -8,7 +8,7 @@ from utils.audit_logging_setup import LoggingService
 logger = LoggingService(__name__)
 
 
-def stitch_pdf_into_steam(pdf_streams: list[BytesIO]) -> BytesIO:
+def stitch_pdf_into_stream(pdf_streams: list[BytesIO]) -> BytesIO:
     writer = PdfWriter()
 
     for stream in pdf_streams:

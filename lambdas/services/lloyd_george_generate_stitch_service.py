@@ -11,7 +11,7 @@ from models.stitch_trace import StitchTrace
 from pypdf.errors import PyPdfError
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
-from services.pdf_stitch_service import stitch_pdf_into_steam
+from services.pdf_stitch_service import stitch_pdf_into_stream
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NoAvailableDocument
 from utils.filename_utils import extract_page_number
@@ -56,7 +56,7 @@ class LloydGeorgeStitchService:
             self.stitch_trace_object.total_file_size_in_bytes = (
                 self.get_total_file_size_in_bytes(all_lg_parts)
             )
-            stitched_lg_stream = stitch_pdf_into_steam(all_lg_parts)
+            stitched_lg_stream = stitch_pdf_into_stream(all_lg_parts)
             self.upload_stitched_lg_record(
                 stitched_lg_stream=stitched_lg_stream,
                 filename_on_bucket=destination_key,
