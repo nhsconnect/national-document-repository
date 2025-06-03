@@ -52,7 +52,7 @@ const CookiePolicy = () => {
                 Cookies are files saved on your phone, tablet or computer when you visit a website.
             </p>
             <p>
-                They store information about how youy use the website, such as the pages you visit.
+                They store information about how you use the website, such as the pages you visit.
             </p>
             <p>
                 Cookies are not viruses or computer programs. They are very small so do not take up
