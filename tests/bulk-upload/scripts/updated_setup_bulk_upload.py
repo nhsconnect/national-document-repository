@@ -1,7 +1,10 @@
+import argparse
+import os
 import random
 from enum import StrEnum
 from typing import NamedTuple
 
+import boto3
 from utils.audit_logging_setup import LoggingService
 
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
@@ -132,24 +135,151 @@ def create_test_file_names_and_keys(
     return result
 
 
-# [(filename, filekey),(filename,filekey)]
-# def prepare_test_directory(file_path_list: List[str], metadata_file_content: str):
-#     output_folder = "../output"
-#     source_pdf_file = "../source_to_copy_from.pdf"
-#
-#     if os.path.exists(output_folder):
-#         shutil.rmtree(output_folder)
-#
-#     os.mkdir(output_folder)
-#     output_folder_path = os.path.abspath(os.path.join(os.getcwd(), output_folder))
-#
-#     metadata_file_path = os.path.join(output_folder_path, "metadata.csv")
-#     with open(metadata_file_path, "w") as f:
-#         f.write(metadata_file_content)
-#
-#     for file_path in file_path_list:
-#         if file_path.startswith(tuple(NHS_NUMBER_NO_FILES)):
-#             continue
-#         output_path = os.path.join(output_folder_path, file_path.lstrip("/"))
-#         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-#         shutil.copyfile(source_pdf_file, output_path)
+def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str):
+    # Copy
+
+    client = boto3.client("s3")
+    for file_name, file_key in file_names_and_keys:
+        client.copy_object(
+            Bucket=STAGING_BUCKET,
+            Key=file_key,
+            CopySource={"Bucket": STAGING_BUCKET, "Key": source_file_key},
+            StorageClass="INTELLIGENT_TIERING",
+        )
+
+    # Rename subsequent patient records
+
+
+def upload_lg_files_to_staging(file_key):
+    # this one is a bit flaky
+    os.chdir("../output")
+
+    client = boto3.client("s3")
+    client.upload_file(
+        Filename=file_key,
+        Bucket=STAGING_BUCKET,
+        Key=file_key,
+        ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
+    )
+
+    scan_result = "Clean"
+    client.put_object_tagging(
+        Bucket=STAGING_BUCKET,
+        Key=file_key,
+        Tagging={
+            "TagSet": [
+                {"Key": "scan-result", "Value": scan_result},
+                {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+            ]
+        },
+    )
+
+
+def check_confirmation(confirmation: str):
+    if confirmation in ["Y", "y", "Yes", "YES"]:
+        return True
+    return False
+
+
+def get_user_input():
+    parser = argparse.ArgumentParser(description="Test setup script arguments.")
+    parser.add_argument(
+        "--environment",
+        type=str,
+        help="The environment to run the script on.",
+    )
+    parser.add_argument(
+        "--delete-table",
+        action="store_true",
+        help="Remove all existing data from the dynamo tables.",
+    )
+    parser.add_argument(
+        "--download-data",
+        action="store_true",
+        help="Download the Test Data Files from S3",
+    )
+    parser.add_argument(
+        "--build-files", action="store_true", help="Build the test files."
+    )
+    parser.add_argument(
+        "--num-patients",
+        help="Amount of patients to create",
+    )
+    parser.add_argument(
+        "--num-files", type=int, default=1, help="Number of files per patient to build."
+    )
+    parser.add_argument(
+        "--empty-lloydgeorge-store",
+        action="store_true",
+        help="Remove all files from the LloydGeorge Record Buckets",
+    )
+    parser.add_argument(
+        "--upload",
+        action="store_true",
+        help="Upload the test files to S3 and add the virus-scan tag.",
+    )
+
+    args = parser.parse_args()
+
+    return args
+
+
+if __name__ == "__main__":
+    args = get_user_input()
+    print("Welcome to test set up script")
+    ENVIRONMENT = args.environment or input(
+        "Please enter the environment you want to use:"
+    )
+    STAGING_BUCKET = f"{ENVIRONMENT}-staging-bulk-store"
+    LLOYD_GEORGE_BUCKET = f"{ENVIRONMENT}-lloyd-george-store"
+    BULK_UPLOAD_TABLE_NAME = f"{ENVIRONMENT}_BulkUploadReport"
+    LG_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeReferenceMetadata"
+
+    if not args.environment:
+        env_confirmation = input(
+            f"Please confirm you want to use {ENVIRONMENT} (y/N): "
+        )
+        if not check_confirmation(env_confirmation):
+            print("Exiting Script")
+            exit(0)
+
+    # if (
+    #         args.delete_table
+    #         or input(
+    #     "Would you like to remove all existing data from the dynamo tables? (y/N) "
+    # ).lower()
+    #         == "y"
+    # ):
+    #     removing_previous_uploads()
+
+    number_of_patients = args.num_patients or int(
+        input("How many patients do you wish to generate")
+    )
+
+    file_number = args.num_files or int(
+        input("How many files per patient do you wish to generate: ")
+    )
+    file_names_and_keys = create_test_file_names_and_keys(
+        number_of_patients, file_number
+    )
+
+    if (
+        args.upload
+        or input(
+            "Would you like to upload the test files to S3 "
+            "and add the virus-scan tag? (y/N) "
+        ).lower()
+        == "y"
+    ):
+        upload_lg_files_to_staging(SOURCE_PDF_FILE)
+    if (
+        args.empty_lloydgeorge_store
+        or input(
+            "Would you like to remove all records "
+            "from the LloydGeorgeRecord Bucket (y/N) "
+        ).lower()
+        == "y"
+    ):
+        copy_to_s3(file_names_and_keys, SOURCE_PDF_FILE)
+
+    exit(0)
