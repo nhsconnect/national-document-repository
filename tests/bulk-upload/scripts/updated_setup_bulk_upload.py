@@ -5,7 +5,7 @@ from typing import NamedTuple
 
 import boto3
 
-SOURCE_PDF_FILE = "bulk-upload/source_to_copy_from.pdf"
+SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
 
 NHS_NUMBER_INVALID_FILE_NAME = []
 NHS_NUMBER_INVALID_FILES_NUMBER = []
@@ -268,6 +268,6 @@ if __name__ == "__main__":
         ).lower()
         == "y"
     ):
-        copy_to_s3(file_names_and_keys, SOURCE_PDF_FILE)
+        copy_to_s3(file_names_and_keys, "source_to_copy_from.pdf")
 
     exit(0)
