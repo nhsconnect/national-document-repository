@@ -197,12 +197,8 @@ def get_user_input():
     parser.add_argument(
         "--build-files", action="store_true", help="Build the test files."
     )
-    parser.add_argument(
-        "--num-patients", type=int, default=1, help="Amount of patients to create"
-    )
-    parser.add_argument(
-        "--num-files", type=int, default=1, help="Number of files per patient to build."
-    )
+    parser.add_argument("--num-patients", help="Amount of patients to create")
+    parser.add_argument("--num-files", help="Number of files per patient to build.")
     parser.add_argument(
         "--empty-lloydgeorge-store",
         action="store_true",
@@ -255,7 +251,7 @@ if __name__ == "__main__":
         input("How many files per patient do you wish to generate: ")
     )
     file_names_and_keys = create_test_file_names_and_keys(
-        number_of_patients, file_number
+        int(number_of_patients), int(file_number)
     )
 
     if (

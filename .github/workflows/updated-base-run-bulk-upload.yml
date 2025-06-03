@@ -26,13 +26,13 @@ on:
       combi_settings:
         description: "How many patients to create (default = 1)"
         required: false
-        type: "number"
-        default: 1
+        type: "string"
+        default: "2"
       file_count:
         description: "How many files per patient to generate."
         required: false
-        type: "number"
-        default: 1
+        type: "string"
+        default: "2"
     secrets:
       AWS_ASSUME_ROLE:
         required: true
