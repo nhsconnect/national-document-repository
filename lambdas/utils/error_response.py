@@ -5,19 +5,24 @@ from models.fhir.R4.operation_outcome import OperationOutcome
 
 
 class ErrorResponse:
-    def __init__(self, err_code: str, message: str, interaction_id: str) -> None:
+    def __init__(
+        self, err_code: str, message: str, interaction_id: str, roles: list = None
+    ) -> None:
         self.err_code = err_code
         self.message = message
         self.interaction_id = interaction_id
+        if roles:
+            self.roles = roles
 
     def create(self) -> str:
-        return json.dumps(
-            {
-                "message": self.message,
-                "err_code": self.err_code,
-                "interaction_id": self.interaction_id,
-            }
-        )
+        response = {
+            "message": self.message,
+            "err_code": self.err_code,
+            "interaction_id": self.interaction_id,
+        }
+        if hasattr(self, "roles"):
+            response["roles"] = self.roles
+        return json.dumps(response)
 
     def create_error_fhir_response(self, coding: FhirIssueCoding) -> str:
         operation_outcome = OperationOutcome(

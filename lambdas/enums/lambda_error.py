@@ -2,27 +2,41 @@ from enum import Enum
 from typing import Optional
 
 from enums.fhir.fhir_issue_type import FhirIssueCoding
+from utils.audit_logging_setup import LoggingService
 from utils.error_response import ErrorResponse
 from utils.request_context import request_context
 
+logger = LoggingService(__name__)
+
 
 class LambdaError(Enum):
-    def create_error_response(self, params: Optional[dict] = None) -> ErrorResponse:
+    def create_error_response(
+        self, params: Optional[dict] = None, roles: list = None
+    ) -> ErrorResponse:
         err_code = self.value["err_code"]
         message = self.value["message"]
         if "%" in message and params:
             message = message % params
         interaction_id = getattr(request_context, "request_id", None)
+        logger.info("Checking Roles")
+        if roles:
+            roles = roles
         error_response = ErrorResponse(
-            err_code=err_code, message=message, interaction_id=interaction_id
+            err_code=err_code,
+            message=message,
+            interaction_id=interaction_id,
+            roles=roles,
         )
+        logger.info(error_response)
         return error_response
 
     def to_str(self) -> str:
         return f"[{self.value['err_code']}] {self.value['message']}"
 
-    def create_error_body(self, params: Optional[dict] = None) -> str:
-        return self.create_error_response(params).create()
+    def create_error_body(
+        self, params: Optional[dict] = None, roles: list = None
+    ) -> str:
+        return self.create_error_response(params, roles).create()
 
     """
     Errors for SearchPatientException

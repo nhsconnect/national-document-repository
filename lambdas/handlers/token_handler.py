@@ -58,14 +58,10 @@ def lambda_handler(event, context):
             allowed_roles = (
                 login_service.token_handler_ssm_service.get_smartcard_role_codes()
             )
-            body = {
-                **json.loads(LambdaError.LoginNoRole.create_error_body()),
-                **{"roles": allowed_roles},
-            }
-            json_body = json.dumps(body)
+            body = LambdaError.LoginNoRole.create_error_body(roles=allowed_roles)
             return ApiGatewayResponse(
                 401,
-                json_body,
+                body,
                 "GET",
             ).create_api_gateway_response()
         else:
