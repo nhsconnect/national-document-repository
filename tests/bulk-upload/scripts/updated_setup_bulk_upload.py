@@ -17,7 +17,7 @@ NHS_NUMBER_DUPLICATE_IN_METADATA = []
 NHS_NUMBER_WITH_DIFFERENT_UPLOADER = []
 NHS_NUMBER_ALREADY_UPLOADED = []
 NHS_NUMBER_WRONG_DOB = []
-NHS_NUMBER = 000000000
+NHS_NUMBER = 0000000000
 
 logger = LoggingService(__name__)
 
@@ -132,6 +132,7 @@ def create_test_file_names_and_keys(
     return result
 
 
+# [(filename, filekey),(filename,filekey)]
 # def prepare_test_directory(file_path_list: List[str], metadata_file_content: str):
 #     output_folder = "../output"
 #     source_pdf_file = "../source_to_copy_from.pdf"
