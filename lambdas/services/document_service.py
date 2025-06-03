@@ -5,6 +5,7 @@ from boto3.dynamodb.conditions import Attr, ConditionBase
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
+from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -64,13 +65,17 @@ class DocumentService:
             index_name=index_name,
             search_key=search_key,
             search_condition=search_condition,
-            requested_fields=DocumentReferenceMetadataFields.list(),
             query_filter=query_filter,
         )
 
         for item in response["Items"]:
-            document = DocumentReference.model_validate(item)
-            documents.append(document)
+            try:
+                document = DocumentReference.model_validate(item)
+                documents.append(document)
+            except ValidationError as e:
+                logger.error(f"Validation error on document: {item}")
+                logger.error(f"{e}")
+                continue
         return documents
 
     def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
@@ -95,16 +100,19 @@ class DocumentService:
         ttl_seconds = document_ttl_days * 24 * 60 * 60
         document_reference_ttl = int(deletion_date.timestamp() + ttl_seconds)
 
-        update_fields = {
-            DocumentReferenceMetadataFields.DELETED.value: deletion_date.strftime(
-                "%Y-%m-%dT%H:%M:%S.%fZ"
-            ),
-            DocumentReferenceMetadataFields.TTL.value: document_reference_ttl,
-        }
-
         logger.info(f"Deleting items in table: {table_name}")
 
         for reference in document_references:
+            reference.doc_status = "deprecated"
+            reference.deleted = deletion_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            reference.ttl = document_reference_ttl
+            reference.status = "superseded"
+
+            update_fields = reference.model_dump(
+                by_alias=True,
+                exclude_none=True,
+                include={"doc_status", "deleted", "ttl", "status"},
+            )
             self.dynamo_service.update_item(
                 table_name=table_name,
                 key_pair={DocumentReferenceMetadataFields.ID.value: reference.id},
@@ -160,6 +168,7 @@ class DocumentService:
             not record.uploaded
             and record.uploading
             and record.last_updated_within_three_minutes()
+            and record.doc_status != "final"
             for record in records
         )
 

@@ -49,16 +49,24 @@ class DocumentReferenceSearchService(DocumentService):
                     )
                 for document in documents:
                     document_formatted = document.model_dump_camel_case(
-                        include={"id", "file_name", "created", "virus_scanner_result"},
+                        exclude_none=True,
+                        include={
+                            "id",
+                            "file_name",
+                            "created",
+                            "virus_scanner_result",
+                            "size",
+                        },
                     )
-                    document_formatted.update(
-                        {
-                            "fileSize": self.s3_service.get_file_size(
-                                s3_bucket_name=document.s3_bucket_name,
-                                object_key=document.s3_file_key,
-                            ),
-                        }
-                    )
+                    if not document.size:
+                        document_formatted.update(
+                            {
+                                "fileSize": self.s3_service.get_file_size(
+                                    s3_bucket_name=document.s3_bucket_name,
+                                    object_key=document.s3_file_key,
+                                ),
+                            }
+                        )
                     results.append(document_formatted)
             return results
         except (

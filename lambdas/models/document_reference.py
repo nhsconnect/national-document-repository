@@ -54,7 +54,7 @@ class DocumentReference(BaseModel):
     )
     current_gp_ods: str = Field(default="")
     custodian: str = Field(default="")
-    deleted: str = Field(default="")
+    deleted: str = Field(default=None)
     doc_status: Literal[
         "registered",
         "partial",
@@ -67,7 +67,7 @@ class DocumentReference(BaseModel):
         "entered-in-error",
         "deprecated",
         "unknown",
-    ] = Field(default="final")
+    ] = Field(default="preliminary")
     doc_type: str = Field(default=None)
     document_snomed_code_type: SnomedCode = Field(
         default=SnomedCodes.LLOYD_GEORGE.value.code
@@ -80,6 +80,7 @@ class DocumentReference(BaseModel):
     nhs_number: str
     s3_bucket_name: str = Field(exclude=True, default=None)
     s3_file_key: str = Field(exclude=True, default=None)
+    size: str = Field(default=None)
     status: Literal["current", "superseded", "entered-in-error"] = Field(
         default="current"
     )

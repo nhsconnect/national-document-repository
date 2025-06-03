@@ -297,7 +297,8 @@ def test_delete_file_from_staging_bucket(patched_service):
 
 def test_update_dynamo_table(patched_service):
     file_location = f"s3://{MOCK_ARF_BUCKET}/{TEST_NHS_NUMBER}/{TEST_FILE_KEY}"
-
+    file_size = 3000
+    patched_service.s3_service.get_file_size.return_value = file_size
     patched_service.update_dynamo_table(
         MOCK_ARF_TABLE_NAME, TEST_FILE_KEY, MOCK_ARF_BUCKET
     )
@@ -309,6 +310,8 @@ def test_update_dynamo_table(patched_service):
             "Uploaded": True,
             "Uploading": False,
             "FileLocation": file_location,
+            "DocStatus": "final",
+            "Size": str(file_size),
         },
     )
 

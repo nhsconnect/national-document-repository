@@ -50,7 +50,7 @@ class BulkUploadService:
     def __init__(self, strict_mode):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
-        self.s3_repository = BulkUploadS3Repository()
+        self.bulk_upload_s3_repository = BulkUploadS3Repository()
         self.strict_mode = strict_mode
         self.pdf_content_type = "application/pdf"
         self.unhandled_messages = []
@@ -192,7 +192,7 @@ class BulkUploadService:
 
         try:
             self.resolve_source_file_path(staging_metadata)
-            self.s3_repository.check_virus_result(
+            self.bulk_upload_s3_repository.check_virus_result(
                 staging_metadata, self.file_path_cache
             )
         except VirusScanNoResultException as e:
@@ -241,7 +241,7 @@ class BulkUploadService:
 
         logger.info("Virus result validation complete. Initialising transaction")
 
-        self.s3_repository.init_transaction()
+        self.bulk_upload_s3_repository.init_transaction()
         self.dynamo_repository.init_transaction()
 
         logger.info(
@@ -273,7 +273,7 @@ class BulkUploadService:
         logger.info(
             "File transfer complete. Removing uploaded files from staging bucket"
         )
-        self.s3_repository.remove_ingested_file_from_source_bucket()
+        self.bulk_upload_s3_repository.remove_ingested_file_from_source_bucket()
 
         logger.info(
             f"Completed file ingestion for patient {staging_metadata.nhs_number}",
@@ -322,9 +322,11 @@ class BulkUploadService:
             file_path_in_nfc_form = convert_to_nfc_form(file_path_without_leading_slash)
             file_path_in_nfd_form = convert_to_nfd_form(file_path_without_leading_slash)
 
-            if self.s3_repository.file_exists_on_staging_bucket(file_path_in_nfc_form):
+            if self.bulk_upload_s3_repository.file_exists_on_staging_bucket(
+                file_path_in_nfc_form
+            ):
                 resolved_file_paths[file_path_in_metadata] = file_path_in_nfc_form
-            elif self.s3_repository.file_exists_on_staging_bucket(
+            elif self.bulk_upload_s3_repository.file_exists_on_staging_bucket(
                 file_path_in_nfd_form
             ):
                 resolved_file_paths[file_path_in_metadata] = file_path_in_nfd_form
@@ -351,15 +353,23 @@ class BulkUploadService:
             source_file_key = self.file_path_cache[file_metadata.file_path]
             dest_file_key = document_reference.s3_file_key
 
-            self.s3_repository.copy_to_lg_bucket(
+            self.bulk_upload_s3_repository.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
+            s3_bucket_name = self.bulk_upload_s3_repository.lg_bucket_name
+
+            document_reference.size = (
+                self.bulk_upload_s3_repository.s3_repository.get_file_size(
+                    s3_bucket_name=s3_bucket_name, object_key=dest_file_key
+                )
+            )
             document_reference.set_uploaded_to_true()
+            document_reference.doc_status = "final"
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
 
     def rollback_transaction(self):
         try:
-            self.s3_repository.rollback_transaction()
+            self.bulk_upload_s3_repository.rollback_transaction()
             self.dynamo_repository.rollback_transaction()
             logger.info("Rolled back an incomplete transaction")
         except ClientError as e:
@@ -370,7 +380,7 @@ class BulkUploadService:
     def convert_to_document_reference(
         self, file_metadata: MetadataFile, nhs_number: str, current_gp_ods: str
     ) -> DocumentReference:
-        s3_bucket_name = self.s3_repository.lg_bucket_name
+        s3_bucket_name = self.bulk_upload_s3_repository.lg_bucket_name
         file_name = os.path.basename(file_metadata.file_path)
 
         document_reference = DocumentReference(

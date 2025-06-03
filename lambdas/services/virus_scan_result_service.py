@@ -143,11 +143,14 @@ class VirusScanService:
     def update_dynamo_table(self, file_ref: str, scan_result: VirusScanResult):
         table_name, key = self.get_dynamo_info(file_ref)
         logger.info("Updating dynamo db table")
+        updated_fields: dict[str] = {"VirusScannerResult": scan_result}
+        if scan_result == VirusScanResult.INFECTED:
+            updated_fields["DocStatus"] = "failed"
 
         self.dynamo_service.update_item(
             table_name=table_name,
             key_pair={"ID": key},
-            updated_fields={"VirusScannerResult": scan_result},
+            updated_fields=updated_fields,
         )
 
     def get_dynamo_info(self, file_ref: str):
