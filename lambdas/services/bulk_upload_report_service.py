@@ -324,7 +324,7 @@ class BulkUploadReportService:
             writer.writerow(["Total", "Total Ingested", total_ingested])
             writer.writerow(["Total", "Total Successful", total_successful])
             writer.writerow(
-                ["Total", "Total Successful Percentage", total_successful_percentage]
+                ["Total", "Successful Percentage", total_successful_percentage]
             )
             writer.writerow(
                 [
