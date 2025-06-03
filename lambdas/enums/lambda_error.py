@@ -2,11 +2,8 @@ from enum import Enum
 from typing import Optional
 
 from enums.fhir.fhir_issue_type import FhirIssueCoding
-from utils.audit_logging_setup import LoggingService
 from utils.error_response import ErrorResponse
 from utils.request_context import request_context
-
-logger = LoggingService(__name__)
 
 
 class LambdaError(Enum):
@@ -18,7 +15,6 @@ class LambdaError(Enum):
         if "%" in message and params:
             message = message % params
         interaction_id = getattr(request_context, "request_id", None)
-        logger.info("Checking Roles")
         if roles:
             roles = roles
         error_response = ErrorResponse(
@@ -27,7 +23,6 @@ class LambdaError(Enum):
             interaction_id=interaction_id,
             roles=roles,
         )
-        logger.info(error_response)
         return error_response
 
     def to_str(self) -> str:
