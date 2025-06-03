@@ -168,9 +168,8 @@ class IMAlertingService:
     def get_alarm_history(self, alarm_name: str):
         logger.info(f"Checking if {alarm_name} already exists on alarm table")
 
-        results = self.dynamo_service.query_table_by_index(
+        results = self.dynamo_service.query_all_fields(
             table_name=self.table_name,
-            index_name="AlarmNameMetricIndex",
             search_key="AlarmNameMetric",
             search_condition=alarm_name,
         )
