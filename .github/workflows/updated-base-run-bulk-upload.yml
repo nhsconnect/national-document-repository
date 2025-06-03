@@ -1,4 +1,4 @@
-name: "Base Bulk Upload - Execute a Bulk Upload"
+name: "Updated Base Bulk Upload - Execute a Bulk Upload"
 
 permissions:
   pull-requests: write
