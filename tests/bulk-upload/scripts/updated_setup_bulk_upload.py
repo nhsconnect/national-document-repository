@@ -198,8 +198,7 @@ def get_user_input():
         "--build-files", action="store_true", help="Build the test files."
     )
     parser.add_argument(
-        "--num-patients",
-        help="Amount of patients to create",
+        "--num-patients", type=int, default=1, help="Amount of patients to create"
     )
     parser.add_argument(
         "--num-files", type=int, default=1, help="Number of files per patient to build."
