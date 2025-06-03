@@ -26,6 +26,9 @@ class ReportBase:
             return [patient[0] for patient in self.total_successful]
         return []
 
+    def get_total_successful(self) -> int:
+        return len(self.total_successful)
+
     def get_total_successful_percentage(self) -> str:
         successful_percentage = "0"
         if self.total_ingested:
