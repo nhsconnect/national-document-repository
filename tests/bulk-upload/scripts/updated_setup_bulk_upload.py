@@ -265,8 +265,8 @@ def prepare_test_directory(file_path_list):
     #     f.write(metadata_file_content)
 
     for file_path in file_path_list:
-        if file_path.startswith(tuple(NHS_NUMBER_NO_FILES)):
-            continue
+        # if file_path.startswith(tuple(NHS_NUMBER_NO_FILES)):
+        #     continue
         output_path = os.path.join(output_folder_path, file_path.lstrip("/"))
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         shutil.copyfile(source_pdf_file, output_path)
@@ -386,16 +386,17 @@ if __name__ == "__main__":
         # source_pdf_path = os.path.abspath(os.path.join(os.getcwd(), SOURCE_PDF_FILE))
         # path = os.path.join(source_pdf_path, SOURCE_PDF_FILE_Name.lstrip("/"))
         default_element = [
-            "/123/test_file.pdf",
+            "/9449303304/test_file.pdf",
         ]
-        # prepare_test_directory(default_element)
-        # upload_lg_files_to_staging()
-        file_info_list = create_test_file_names_and_keys()
-        file_keys = [file_key for _, file_key in file_info_list]
+        prepare_test_directory(default_element)
+        upload_lg_files_to_staging()
+        # file_info_list = create_test_file_names_and_keys()
+        # file_keys = [file_key for _, file_key in file_info_list]
+        #
+        # prepare_and_upload_to_staging_copy_strategy(
+        #     file_path_list=file_keys, source_pdf_file=SOURCE_PDF_FILE
+        # )
 
-        prepare_and_upload_to_staging_copy_strategy(
-            file_path_list=file_keys, source_pdf_file=SOURCE_PDF_FILE
-        )
     # if (
     #     args.empty_lloydgeorge_store
     #     or input(
