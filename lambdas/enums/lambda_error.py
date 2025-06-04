@@ -242,7 +242,7 @@ class LambdaError(Enum):
     DocRefClient = {
         "err_code": "DRS_5001",
         "message": "An error occurred when searching for available documents",
-        "fhir_coding": FhirIssueCoding.NOT_FOUND,
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
 
     """
