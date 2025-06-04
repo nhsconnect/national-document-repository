@@ -358,7 +358,7 @@ class BulkUploadService:
             )
             s3_bucket_name = self.bulk_upload_s3_repository.lg_bucket_name
 
-            document_reference.size = (
+            document_reference.file_size = (
                 self.bulk_upload_s3_repository.s3_repository.get_file_size(
                     s3_bucket_name=s3_bucket_name, object_key=dest_file_key
                 )

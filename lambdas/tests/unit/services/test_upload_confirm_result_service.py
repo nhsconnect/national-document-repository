@@ -311,7 +311,7 @@ def test_update_dynamo_table(patched_service):
             "Uploading": False,
             "FileLocation": file_location,
             "DocStatus": "final",
-            "Size": file_size,
+            "FileSize": file_size,
         },
     )
 

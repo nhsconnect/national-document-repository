@@ -72,13 +72,13 @@ class DocumentReference(BaseModel):
     document_snomed_code_type: str = Field(default=SnomedCodes.LLOYD_GEORGE.value.code)
     file_location: str = ""
     file_name: str
+    file_size: int = Field(default=None)
     last_updated: int = Field(
         default_factory=lambda: int(datetime.now(timezone.utc).timestamp()),
     )
     nhs_number: str
     s3_bucket_name: str = Field(exclude=True, default=None)
     s3_file_key: str = Field(exclude=True, default=None)
-    size: int = Field(default=None)
     status: Literal["current", "superseded", "entered-in-error"] = Field(
         default="current"
     )

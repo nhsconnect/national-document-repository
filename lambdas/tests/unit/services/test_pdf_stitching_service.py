@@ -250,7 +250,7 @@ def test_create_stitched_reference(mock_service, mock_uuid, document_reference):
     assert actual.uploaded is True
     assert actual.uploading is False
     assert actual.last_updated == 1735732800
-    assert actual.size == str(file_size)
+    assert actual.file_size == str(file_size)
 
 
 def test_process_stitching(mock_service, mock_download_fileobj):
@@ -459,7 +459,7 @@ def test_write_stitching_reference(mock_service, mock_uuid):
             "ID": f"{TEST_UUID}",
             "LastUpdated": TEST_1_OF_1_DOCUMENT_REFERENCE.last_updated,
             "NhsNumber": f"{TEST_1_OF_1_DOCUMENT_REFERENCE.nhs_number}",
-            "Size": "8000",
+            "FileSize": "8000",
             "Status": "current",
             "Uploaded": True,
             "Uploading": False,

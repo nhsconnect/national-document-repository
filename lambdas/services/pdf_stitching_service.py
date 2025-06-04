@@ -118,7 +118,7 @@ class PdfStitchingService:
                 "created": date_now.strftime(DATE_FORMAT),
                 "file_location": f"s3://{self.target_bucket}/{document_reference.nhs_number}/{reference_id}",
                 "file_name": f"1of1_{stripped_filename}",
-                "size": stitch_file_size,
+                "file_size": stitch_file_size,
                 "last_updated": date_now.timestamp(),
             },
             deep=True,

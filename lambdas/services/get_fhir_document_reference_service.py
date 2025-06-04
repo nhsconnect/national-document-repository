@@ -91,7 +91,7 @@ class GetFhirDocumentReferenceService:
         logger.info("Creating FHIR DocumentReference response for document.")
         bucket_name = document_reference.s3_bucket_name
         file_location = document_reference.s3_file_key
-        file_size = document_reference.size or self.s3_service.get_file_size(
+        file_size = document_reference.file_size or self.s3_service.get_file_size(
             s3_bucket_name=bucket_name,
             object_key=file_location,
         )

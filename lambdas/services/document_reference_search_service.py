@@ -46,10 +46,10 @@ class DocumentReferenceSearchService(DocumentService):
                             "file_name",
                             "created",
                             "virus_scanner_result",
-                            "size",
+                            "file_size",
                         },
                     )
-                    if not document.size:
+                    if not document.file_size:
                         document_formatted.update(
                             {
                                 "fileSize": self.s3_service.get_file_size(
