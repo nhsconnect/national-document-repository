@@ -24,7 +24,7 @@ jobs:
     uses: ./.github/workflows/updated-base-run-bulk-upload.yml
     with:
       environment: test
-      sandbox: "ndrc"
+      sandbox: "ndrd"
       combi_settings: "${{ inputs.combi_settings }}"
       file_count: "${{ inputs.file_count }}"
     secrets:
