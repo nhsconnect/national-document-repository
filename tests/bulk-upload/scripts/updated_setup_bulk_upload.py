@@ -152,7 +152,7 @@ def upload_lg_files_to_staging(file_key):
     client.upload_file(
         Filename=SOURCE_PDF_FILE,
         Bucket=STAGING_BUCKET,
-        Key="",
+        Key=SOURCE_PDF_FILE_NAME,
         ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
     )
 
