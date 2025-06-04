@@ -43,11 +43,11 @@ class PdsApiService(PatientSearch):
 
             url_endpoint = endpoint + "Patient/" + nhs_number
 
-            pds_log_correlation = logger.info_with_correlation("PDS Call Initiated", "NDR-TR1")
+            logger.info("PDS Call Initiated", { "Event": "NDR-TR1" })
             pds_response = self.session.get(
                 url=url_endpoint, headers=authorization_header
             )
-            logger.info_in_correlation("PDS Call Completed", pds_log_correlation)
+            logger.info("PDS Call Completed", { "Event": "NDR-TR1" })
 
             if pds_response.status_code == 401 and retry_on_expired:
                 return self.pds_request(nhs_number, retry_on_expired=False)
