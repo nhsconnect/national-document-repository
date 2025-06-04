@@ -385,7 +385,7 @@ def prepare_test_directory(file_path_list: List[str], metadata_file_content: str
 
 def upload_lg_files_to_staging():
     # this one is a bit flaky
-    os.chdir("../output")
+    os.chdir("../")
 
     files = ["metadata.csv"] + glob("*/*Lloyd_George_Record*.pdf")
     client = boto3.client("s3")
