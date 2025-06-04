@@ -150,7 +150,7 @@ def upload_lg_files_to_staging(file_key):
     # this one is a bit flaky
     client = boto3.client("s3")
     client.upload_file(
-        Filename=SOURCE_PDF_FILE_NAME,
+        Filename=SOURCE_PDF_FILE,
         Bucket=STAGING_BUCKET,
         Key="/",
         ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
