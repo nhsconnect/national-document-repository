@@ -389,6 +389,7 @@ class BulkUploadService:
             file_name=file_name,
             s3_bucket_name=s3_bucket_name,
             current_gp_ods=current_gp_ods,
+            custodian=current_gp_ods,
             author=file_metadata.gp_practice_code,
             creation=file_metadata.scan_date,
             doc_status="preliminary",

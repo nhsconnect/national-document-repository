@@ -44,7 +44,7 @@ class DocumentReference(BaseModel):
     )
 
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
-    author: str = Field(default="", exclude=True)
+    author: str = Field(default=None, exclude=True)
     content_type: str = Field(default=DEFAULT_CONTENT_TYPE)
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(DATE_FORMAT)
@@ -52,8 +52,8 @@ class DocumentReference(BaseModel):
     creation: str = Field(
         default_factory=lambda: datetime.date(datetime.now()).isoformat(),
     )
-    current_gp_ods: str = Field(default="")
-    custodian: str = Field(default="")
+    current_gp_ods: str = Field(default=None)
+    custodian: str = Field(default=None)
     deleted: str = Field(default=None)
     doc_status: Literal[
         "registered",

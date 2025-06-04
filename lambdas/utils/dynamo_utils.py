@@ -120,6 +120,8 @@ def filter_uploaded_docs_and_recently_uploading_docs():
 
     filter_builder.add_condition("Deleted", AttributeOperator.EQUAL, "")
     delete_filter_expression = filter_builder.build()
+    filter_builder.add_condition("Deleted", AttributeOperator.NOT_EXISTS)
+    delete_does_not_exist_filter_expression = filter_builder.build()
 
     filter_builder.add_condition("Uploaded", AttributeOperator.EQUAL, True)
     uploaded_filter_expression = filter_builder.build()
@@ -129,7 +131,7 @@ def filter_uploaded_docs_and_recently_uploading_docs():
     ).add_condition("LastUpdated", AttributeOperator.GREATER_OR_EQUAL, time_limit)
     uploading_filter_expression = filter_builder.build()
 
-    return delete_filter_expression & (
+    return (delete_filter_expression | delete_does_not_exist_filter_expression) & (
         uploaded_filter_expression | uploading_filter_expression
     )
 

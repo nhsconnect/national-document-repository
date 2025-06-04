@@ -7,7 +7,6 @@ from unittest.mock import call
 
 import pytest
 from enums.lambda_error import LambdaError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.nrl_sqs_upload import NrlActionTypes
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
@@ -30,7 +29,6 @@ from tests.unit.helpers.data.test_documents import (
     create_singular_test_lloyd_george_doc_store_ref,
     create_test_lloyd_george_doc_store_refs,
 )
-from utils.common_query_filters import NotDeleted
 from utils.lambda_exceptions import PdfStitchingException
 
 from lambdas.services.pdf_stitching_service import PdfStitchingService

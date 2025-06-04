@@ -9,7 +9,7 @@ class DynamoQueryFilterBuilder:
         self.conditions_operator: ConditionOperator = ConditionOperator.AND
 
     def add_condition(
-        self, attribute: str, attr_operator: AttributeOperator, filter_value
+        self, attribute: str, attr_operator: AttributeOperator, filter_value=None
     ):
         """
         Args:
@@ -36,7 +36,10 @@ class DynamoQueryFilterBuilder:
         """
 
         try:
-            condition = getattr(Attr(attribute), attr_operator.value)(filter_value)
+            if filter_value:
+                condition = getattr(Attr(attribute), attr_operator.value)(filter_value)
+            else:
+                condition = getattr(Attr(attribute), attr_operator.value)()
         except AttributeError:
             raise DynamoServiceException(
                 f"Unsupported attribute filter operator: {attr_operator}"
