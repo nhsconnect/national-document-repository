@@ -151,10 +151,12 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
 
 
 def upload_lg_files_to_staging():
-    os.chdir("../output")
+    os.chdir("../outputs2")
     files = glob("*/*Lloyd_George_Record*.pdf")
     client = boto3.client("s3")
+    print(f"files: {files}")
     for file in files:
+        print(f"file =: {file}")
         client.upload_file(
             Filename=file,
             Bucket=STAGING_BUCKET,
@@ -251,7 +253,7 @@ def get_user_input():
 
 
 def prepare_test_directory(file_path_list):
-    output_folder = "../output"
+    output_folder = "../outputs2"
     source_pdf_file = "../source_to_copy_from.pdf"
 
     if os.path.exists(output_folder):
@@ -389,7 +391,9 @@ if __name__ == "__main__":
             "/9449303304/test_file.pdf",
         ]
         prepare_test_directory(default_element)
+        print("uploading now")
         upload_lg_files_to_staging()
+        print("finished")
         # file_info_list = create_test_file_names_and_keys()
         # file_keys = [file_key for _, file_key in file_info_list]
         #
