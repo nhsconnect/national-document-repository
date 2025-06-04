@@ -146,3 +146,11 @@ class StatisticDataNotFoundException(Exception):
 
 class PdsResponseValidationException(Exception):
     pass
+
+
+class InvalidFileNameException(Exception):
+    pass
+
+
+class MetadataPreprocessingException(Exception):
+    pass
