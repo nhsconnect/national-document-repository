@@ -3,6 +3,7 @@ import os
 import random
 import shutil
 from enum import StrEnum
+from glob import glob
 from typing import NamedTuple
 
 import boto3
@@ -148,26 +149,31 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
     # Rename subsequent patient records
 
 
-def upload_lg_files_to_staging(path: str):
+def upload_lg_files_to_staging():
+    os.chdir("../output")
+    files = glob("*/*Lloyd_George_Record*.pdf")
     client = boto3.client("s3")
-    client.upload_file(
-        Filename=SOURCE_PDF_FILE_Name,
-        Bucket=STAGING_BUCKET,
-        Key=path,
-        ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
-    )
+    for file in files:
+        client.upload_file(
+            Filename=file,
+            Bucket=STAGING_BUCKET,
+            Key=file,
+            ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
+        )
 
-    scan_result = "Clean"
-    client.put_object_tagging(
-        Bucket=STAGING_BUCKET,
-        Key=path,
-        Tagging={
-            "TagSet": [
-                {"Key": "scan-result", "Value": scan_result},
-                {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
-            ]
-        },
-    )
+        scan_result = "Clean"
+        if file.startswith(tuple(NHS_NUMBER_INFECTED)):
+            scan_result = "Infected"
+        client.put_object_tagging(
+            Bucket=STAGING_BUCKET,
+            Key=file,
+            Tagging={
+                "TagSet": [
+                    {"Key": "scan-result", "Value": scan_result},
+                    {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+                ]
+            },
+        )
 
 
 def check_confirmation(confirmation: str):
@@ -243,6 +249,28 @@ def get_user_input():
 #     scan_and_remove_items(bulk_table)
 
 
+def prepare_test_directory(file_path_list):
+    output_folder = "../output"
+    source_pdf_file = "../source_to_copy_from.pdf"
+
+    if os.path.exists(output_folder):
+        shutil.rmtree(output_folder)
+
+    os.mkdir(output_folder)
+    output_folder_path = os.path.abspath(os.path.join(os.getcwd(), output_folder))
+
+    # metadata_file_path = os.path.join(output_folder_path, "metadata.csv")
+    # with open(metadata_file_path, "w") as f:
+    #     f.write(metadata_file_content)
+
+    for file_path in file_path_list:
+        if file_path.startswith(tuple(NHS_NUMBER_NO_FILES)):
+            continue
+        output_path = os.path.join(output_folder_path, file_path.lstrip("/"))
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        shutil.copyfile(source_pdf_file, output_path)
+
+
 if __name__ == "__main__":
     args = get_user_input()
     print("Welcome to test set up script")
@@ -292,9 +320,13 @@ if __name__ == "__main__":
         == "y"
     ):
         # create_test_file_names_and_keys()
-        source_pdf_path = os.path.abspath(os.path.join(os.getcwd(), SOURCE_PDF_FILE))
-        path = os.path.join(source_pdf_path, SOURCE_PDF_FILE_Name.lstrip("/"))
-        upload_lg_files_to_staging(path)
+        # source_pdf_path = os.path.abspath(os.path.join(os.getcwd(), SOURCE_PDF_FILE))
+        # path = os.path.join(source_pdf_path, SOURCE_PDF_FILE_Name.lstrip("/"))
+        default_element = [
+            "/123/test_file.pdf",
+        ]
+        prepare_test_directory(default_element)
+        upload_lg_files_to_staging()
     # if (
     #     args.empty_lloydgeorge_store
     #     or input(
@@ -306,21 +338,3 @@ if __name__ == "__main__":
     #     copy_to_s3(file_names_and_keys, "source_to_copy_from.pdf")
 
     exit(0)
-
-
-def prepare_test_directory(file_path_list: list[str]):
-    output_folder = "../output"
-    source_pdf_file = "../source_to_copy_from.pdf"
-
-    if os.path.exists(output_folder):
-        shutil.rmtree(output_folder)
-
-    os.mkdir(output_folder)
-    output_folder_path = os.path.abspath(os.path.join(os.getcwd(), output_folder))
-
-    for file_path in file_path_list:
-        if file_path.startswith(tuple(NHS_NUMBER_NO_FILES)):
-            continue
-        output_path = os.path.join(output_folder_path, file_path.lstrip("/"))
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        shutil.copyfile(source_pdf_file, output_path)
