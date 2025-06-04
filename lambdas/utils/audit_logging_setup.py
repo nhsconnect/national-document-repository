@@ -1,5 +1,4 @@
 import logging
-import uuid
 
 from services.sensitive_audit_service import SensitiveAuditService
 from utils.logging_formatter import LoggingFormatter
@@ -38,21 +37,21 @@ class LoggingService:
         self.logger.error(message, extra={"custom_args": custom_args}, *args, **kwargs)
 
     def warning(self, message, custom_args: dict = None, *args, **kwargs):
-        self.logger.warning(message, extra={"custom_args": custom_args}, *args, **kwargs)
+        self.logger.warning(
+            message, extra={"custom_args": custom_args}, *args, **kwargs
+        )
 
     def debug(self, message, custom_args: dict = None, *args, **kwargs):
         self.logger.debug(message, extra={"custom_args": custom_args}, *args, **kwargs)
 
-    def exception(self, message, custom_args: dict = None, *args, exc_info=True, **kwargs):
-        self.logger.exception(message, exc_info, extra={"custom_args": custom_args}, *args, **kwargs)
+    def exception(
+        self, message, custom_args: dict = None, *args, exc_info=True, **kwargs
+    ):
+        self.logger.exception(
+            message, exc_info, extra={"custom_args": custom_args}, *args, **kwargs
+        )
 
     def critical(self, message, custom_args: dict = None, *args, **kwargs):
-        self.logger.critical(message, extra={"custom_args": custom_args}, *args, **kwargs)
-
-    def info_with_correlation(self, message, tracking_id, custom_args: dict = None, *args, **kwargs):
-        correlation = f"{tracking_id}-{uuid.uuid4()}"
-        self.logger.info(f"[{correlation}] - {message}", extra={"custom_args": custom_args}, *args, **kwargs)
-        return correlation
-
-    def info_in_correlation(self, message, correlation, custom_args: dict = None, *args, **kwargs):
-        self.logger.info(f"[{correlation}] - {message}", extra={"custom_args": custom_args}, *args, **kwargs)
+        self.logger.critical(
+            message, extra={"custom_args": custom_args}, *args, **kwargs
+        )
