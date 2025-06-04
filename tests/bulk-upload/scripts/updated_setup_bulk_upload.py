@@ -2,6 +2,7 @@ import argparse
 import os
 import random
 import shutil
+from datetime import datetime
 from enum import StrEnum
 from glob import glob
 from typing import NamedTuple
@@ -271,6 +272,68 @@ def prepare_test_directory(file_path_list):
         shutil.copyfile(source_pdf_file, output_path)
 
 
+def prepare_and_upload_to_staging_copy_strategy(
+    file_path_list: list[str],
+    # metadata_file_content: str,
+    source_pdf_file: str,
+    scan_date: str = None,
+):
+    if scan_date is None:
+        scan_date = datetime.utcnow().isoformat()
+    s3 = boto3.client("s3")
+
+    # Upload the source PDF once (to the first valid key)
+    valid_file_paths = file_path_list
+    primary_key = valid_file_paths[0].lstrip("/")
+    with open(source_pdf_file, "rb") as f:
+        s3.upload_fileobj(
+            Fileobj=f,
+            Bucket=STAGING_BUCKET,
+            Key=primary_key,
+            ExtraArgs={
+                "ContentType": "application/pdf",
+                "StorageClass": "INTELLIGENT_TIERING",
+            },
+        )
+    # Apply scan tags to primary file
+    nhs_prefix = primary_key.split("/")[0]
+    scan_result = "Infected" if nhs_prefix in NHS_NUMBER_INFECTED else "Clean"
+    s3.put_object_tagging(
+        Bucket=STAGING_BUCKET,
+        Key=primary_key,
+        Tagging={
+            "TagSet": [
+                {"Key": "scan-result", "Value": scan_result},
+                {"Key": "date-scanned", "Value": scan_date},
+            ]
+        },
+    )
+    # Copy the file to all other destinations
+    for file_path in valid_file_paths[1:]:
+        target_key = file_path.lstrip("/")
+        nhs_prefix = file_path.split("/")[0]
+        scan_result = "Infected" if nhs_prefix in NHS_NUMBER_INFECTED else "Clean"
+
+        s3.copy_object(
+            Bucket=STAGING_BUCKET,
+            CopySource={"Bucket": STAGING_BUCKET, "Key": primary_key},
+            Key=target_key,
+            StorageClass="INTELLIGENT_TIERING",
+            ContentType="application/pdf",
+        )
+
+        s3.put_object_tagging(
+            Bucket=STAGING_BUCKET,
+            Key=target_key,
+            Tagging={
+                "TagSet": [
+                    {"Key": "scan-result", "Value": scan_result},
+                    {"Key": "date-scanned", "Value": scan_date},
+                ]
+            },
+        )
+
+
 if __name__ == "__main__":
     args = get_user_input()
     print("Welcome to test set up script")
@@ -325,8 +388,14 @@ if __name__ == "__main__":
         default_element = [
             "/123/test_file.pdf",
         ]
-        prepare_test_directory(default_element)
-        upload_lg_files_to_staging()
+        # prepare_test_directory(default_element)
+        # upload_lg_files_to_staging()
+        file_info_list = create_test_file_names_and_keys()
+        file_keys = [file_key for _, file_key in file_info_list]
+
+        prepare_and_upload_to_staging_copy_strategy(
+            file_path_list=file_keys, source_pdf_file=SOURCE_PDF_FILE
+        )
     # if (
     #     args.empty_lloydgeorge_store
     #     or input(
