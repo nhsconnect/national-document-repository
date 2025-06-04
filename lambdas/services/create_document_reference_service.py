@@ -11,7 +11,7 @@ from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadIncomplete
-from utils.exceptions import InvalidResourceIdException, PdsTooManyRequestsException
+from utils.exceptions import InvalidNhsNumberException, PdsTooManyRequestsException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import (
     LGInvalidFilesException,
@@ -123,7 +123,7 @@ class CreateDocumentReferenceService:
             return url_responses
 
         except (
-            InvalidResourceIdException,
+            InvalidNhsNumberException,
             LGInvalidFilesException,
             PdsTooManyRequestsException,
         ) as e:
