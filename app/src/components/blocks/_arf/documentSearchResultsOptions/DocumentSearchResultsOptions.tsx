@@ -88,7 +88,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
         <>
             <div
                 id="download-status"
-                aria-live="assertive"
+                aria-live="polite"
                 role="status"
                 className="nhsuk-u-visually-hidden"
             >
