@@ -152,7 +152,7 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
 
 def upload_lg_files_to_staging():
     os.chdir("../outputs2")
-    files = glob("*/*Lloyd_George_Record*.pdf")
+    files = glob("*/**.pdf")
     client = boto3.client("s3")
     print(f"files: {files}")
     for file in files:
