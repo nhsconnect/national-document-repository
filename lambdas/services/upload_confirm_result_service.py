@@ -144,7 +144,7 @@ class UploadConfirmResultService:
                 "Uploading": False,
                 "FileLocation": file_location,
                 "DocStatus": "final",
-                "Size": str(file_size),
+                "Size": file_size,
             },
         )
 

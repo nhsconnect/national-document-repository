@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Literal, Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from enums.snomed_codes import SnomedCode, SnomedCodes
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.alias_generators import to_camel, to_pascal
@@ -69,9 +69,7 @@ class DocumentReference(BaseModel):
         "unknown",
     ] = Field(default="preliminary")
     doc_type: str = Field(default=None)
-    document_snomed_code_type: SnomedCode = Field(
-        default=SnomedCodes.LLOYD_GEORGE.value.code
-    )
+    document_snomed_code_type: str = Field(default=SnomedCodes.LLOYD_GEORGE.value.code)
     file_location: str = ""
     file_name: str
     last_updated: int = Field(
@@ -80,7 +78,7 @@ class DocumentReference(BaseModel):
     nhs_number: str
     s3_bucket_name: str = Field(exclude=True, default=None)
     s3_file_key: str = Field(exclude=True, default=None)
-    size: str = Field(default=None)
+    size: int = Field(default=None)
     status: Literal["current", "superseded", "entered-in-error"] = Field(
         default="current"
     )

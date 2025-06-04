@@ -36,7 +36,7 @@ class DynamoQueryFilterBuilder:
         """
 
         try:
-            if filter_value:
+            if filter_value is not None:
                 condition = getattr(Attr(attribute), attr_operator.value)(filter_value)
             else:
                 condition = getattr(Attr(attribute), attr_operator.value)()
