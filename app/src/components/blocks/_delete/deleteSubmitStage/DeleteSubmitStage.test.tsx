@@ -4,7 +4,7 @@ import DeleteSubmitStage, { Props } from './DeleteSubmitStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import userEvent from '@testing-library/user-event';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
-import axios from 'axios/index';
+import axios from 'axios';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../../../types/generic/authRole';
 import { routes, routeChildren } from '../../../../types/generic/routes';
@@ -13,37 +13,38 @@ import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router-dom';
 import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock, Mocked } from 'vitest';
 
-jest.mock('../../../../helpers/hooks/useConfig');
-jest.mock('../deleteResultStage/DeleteResultStage', () => () => <div>Deletion complete</div>);
-jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../../helpers/hooks/useRole');
-jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('axios');
+vi.mock('../../../../helpers/hooks/useConfig');
+vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+vi.mock('../../../../helpers/hooks/useRole');
+vi.mock('../../../../helpers/hooks/usePatient');
+vi.mock('axios');
 
-const mockedUseNavigate = jest.fn();
+const mockedUseNavigate = vi.fn();
 
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
-    useNavigate: () => mockedUseNavigate,
-}));
-jest.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockedUseNavigate,
+    };
 });
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 let history: MemoryHistory = createMemoryHistory({
     initialEntries: ['/'],
     initialIndex: 0,
 });
 
-const mockedUseRole = useRole as jest.Mock;
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockedUsePatient = usePatient as jest.Mock;
-const mockResetDocState = jest.fn();
+const mockedUseRole = useRole as Mock;
+const mockedAxios = axios as Mocked<typeof axios>;
+const mockedUsePatient = usePatient as Mock;
+const mockResetDocState = vi.fn();
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 
-const mockSetStage = jest.fn();
+const mockSetStage = vi.fn();
 
 describe('DeleteSubmitStage', () => {
     beforeEach(() => {
@@ -52,12 +53,12 @@ describe('DeleteSubmitStage', () => {
             initialIndex: 0,
         });
 
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     describe('Render', () => {

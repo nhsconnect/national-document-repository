@@ -53,13 +53,13 @@ def mock_oidc_service(mocker, mock_userinfo):
         ),
     ]
     mock_service.fetch_tokens.return_value = mocked_tokens
-    mock_service.fetch_user_org_codes.return_value = ["mock_ods_code1"]
+    mock_service.fetch_user_org_code.return_value = ["mock_ods_code1"]
     mock_service.fetch_user_info.return_value = mock_userinfo
     mock_service.fetch_user_role_code.return_value = ("R8008", "500000000000")
 
     yield {
         "fetch_token": mock_service.fetch_tokens,
-        "fetch_user_org_codes": mock_service.fetch_user_org_codes,
+        "fetch_user_org_codes": mock_service.fetch_user_org_code,
         "fetch_user_role_code": mock_service.fetch_user_info,
         "fetch_user_info": mock_service.fetch_user_role_code,
     }
@@ -244,11 +244,13 @@ def test_generate_repository_role_gp_admin(set_env, mocker):
 
     mocker.patch.object(
         TokenHandlerSSMService,
-        "get_smartcard_role_gp_admin",
-        return_value=[user_role_code],
+        "get_smartcard_role_pcse",
+        return_value=["wrong_role_code"],
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value=org_role_code
+        TokenHandlerSSMService,
+        "get_smartcard_role_gp_admin",
+        return_value=[user_role_code],
     )
 
     login_service = LoginService()
@@ -264,7 +266,11 @@ def test_generate_repository_role_gp_clinical(set_env, mocker):
     user_role_code = "role_code"
     org = {"org_ods_code": ods_code, "role_code": org_role_code}
     mocker.patch("services.login_service.OidcService")
-
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_pcse",
+        return_value=["wrong_role_code"],
+    )
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_admin",
@@ -274,9 +280,6 @@ def test_generate_repository_role_gp_clinical(set_env, mocker):
         TokenHandlerSSMService,
         "get_smartcard_role_gp_clinical",
         return_value=[user_role_code],
-    )
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_gp_org_role_code", return_value=org_role_code
     )
 
     login_service = LoginService()
@@ -304,7 +307,7 @@ def test_generate_repository_role_pcse(set_env, mocker):
         return_value=["wrong_role_code"],
     )
     mocker.patch.object(
-        TokenHandlerSSMService, "get_smartcard_role_pcse", return_value=user_role_code
+        TokenHandlerSSMService, "get_smartcard_role_pcse", return_value=[user_role_code]
     )
     mocker.patch.object(
         TokenHandlerSSMService, "get_pcse_ods_code", return_value=ods_code

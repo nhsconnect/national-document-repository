@@ -3,13 +3,14 @@ import PatientDetailsProvider from '../../providers/patientProvider/PatientProvi
 import { PatientDetails } from '../../types/generic/patientDetails';
 import usePatient from './usePatient';
 import { buildPatientDetails } from '../test/testBuilders';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('usePatient', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('returns patient details when there is a patient in context', () => {

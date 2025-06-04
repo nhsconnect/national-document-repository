@@ -12,7 +12,7 @@ from enums.snomed_codes import SnomedCode, SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from inflection import underscore
 from models.document_reference import DocumentReference
-from models.fhir.R4.nrl_fhir_document_reference import Attachment
+from models.fhir.R4.fhir_document_reference import Attachment
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from pypdf import PdfReader, PdfWriter
@@ -316,3 +316,25 @@ class PdfStitchingService:
         except Exception as e:
             logger.error(f"Failed to rollback multipart migration process: {e}")
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
+
+    def process_manual_trigger(self, ods_code: str, queue_url):
+        nhs_numbers = self.document_service.get_nhs_numbers_based_on_ods_code(
+            ods_code=ods_code
+        )
+
+        if not nhs_numbers:
+            logger.info(f"No NHS numbers found under ODS code: {ods_code}")
+            return
+        logger.info(f"{len(nhs_numbers)} found under ODS code: {ods_code}")
+
+        sqs_service = SQSService()
+        for nhs_number in nhs_numbers:
+            pdf_stitching_sqs_message = PdfStitchingSqsMessage(
+                nhs_number=nhs_number,
+                snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+            )
+            logger.info(f"Processing manual trigger for nhs number {nhs_number}")
+            sqs_service.send_message_standard(
+                queue_url=queue_url,
+                message_body=pdf_stitching_sqs_message.model_dump_json(),
+            )

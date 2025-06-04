@@ -2,12 +2,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import BackButton from './BackButton';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
-jest.mock('../../../helpers/hooks/useBaseAPIUrl');
-const mockUseBaseAPIUrl = useBaseAPIUrl as jest.Mock;
-const mockUseNavigate = jest.fn();
+vi.mock('../../../helpers/hooks/useBaseAPIUrl');
+const mockUseBaseAPIUrl = useBaseAPIUrl as Mock;
+const mockUseNavigate = vi.fn();
 let mockPathname = { pathname: '' };
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockUseNavigate,
     useLocation: () => mockPathname,
 }));
@@ -15,11 +16,11 @@ const testUrl = '/test';
 
 describe('BackButton', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockUseBaseAPIUrl.mockReturnValue(testUrl);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('navigates to previous page when clicking the back button and not on the search pages', async () => {
@@ -33,29 +34,22 @@ describe('BackButton', () => {
         });
     });
 
-    it('navigates to specified location when the "toLocation" property is defined' , async () => {
-
+    it('navigates to specified location when the "toLocation" property is defined', async () => {
         render(<BackButton toLocation="/specified-location" />);
-        userEvent.click( screen.getByText('Go back'));
+        userEvent.click(screen.getByText('Go back'));
 
         await waitFor(() => {
             expect(mockUseNavigate).toHaveBeenCalledWith('/specified-location');
         });
-
     });
 
     it('displays default back link text when "backLinkText" is not provided', async () => {
-
         render(<BackButton toLocation="/specified-location" />);
-        expect(screen.getByText('Go back')).toBeInTheDocument(); 
-
+        expect(screen.getByText('Go back')).toBeInTheDocument();
     });
 
     it('displays custom back link text when "backLinkText" is defined', async () => {
-
         render(<BackButton backLinkText="navigate to ..." />);
         expect(screen.getByText('navigate to ...')).toBeInTheDocument();
-
     });
-
 });

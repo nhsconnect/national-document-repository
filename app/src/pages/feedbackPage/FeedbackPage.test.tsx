@@ -7,19 +7,18 @@ import FeedbackPage from './FeedbackPage';
 import { fillInForm } from '../../helpers/test/formUtils';
 import { routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { afterEach, beforeEach, describe, expect, it, vi, Mock, Mocked } from 'vitest';
 
-jest.mock('axios');
-jest.mock('../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../helpers/hooks/useBaseAPIHeaders');
-const mockedUseNavigate = jest.fn();
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockedBaseURL = useBaseAPIUrl as jest.Mock;
+vi.mock('axios');
+vi.mock('../../helpers/hooks/useBaseAPIUrl');
+vi.mock('../../helpers/hooks/useBaseAPIHeaders');
+const mockedUseNavigate = vi.fn();
+const mockedAxios = axios as Mocked<typeof axios>;
+const mockedBaseURL = useBaseAPIUrl as Mock;
 const baseURL = 'http://test';
-jest.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
+Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
@@ -33,11 +32,11 @@ const renderComponent = () => {
 
 describe('<FeedbackPage />', () => {
     beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedBaseURL.mockReturnValue(baseURL);
     });
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('renders page content', () => {

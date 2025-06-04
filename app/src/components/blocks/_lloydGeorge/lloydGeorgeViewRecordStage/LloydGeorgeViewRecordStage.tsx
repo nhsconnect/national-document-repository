@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
 import { Button, ChevronLeftIcon } from 'nhsuk-react-components';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
@@ -23,7 +23,7 @@ export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     stage: LG_RECORD_STAGE;
     refreshRecord: () => void;
-    cloudFrontUrl: string;
+    pdfObjectUrl: string;
     showMenu: boolean;
     resetDocState: () => void;
 };
@@ -33,7 +33,7 @@ function LloydGeorgeViewRecordStage({
     lastUpdated,
     setStage,
     refreshRecord,
-    cloudFrontUrl,
+    pdfObjectUrl,
     showMenu,
     resetDocState,
 }: Props) {
@@ -71,6 +71,19 @@ function LloydGeorgeViewRecordStage({
 
     const pageHeader = 'Available records';
     useTitle({ pageTitle: pageHeader });
+
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        const onPageLoad = async () => {
+            resetDocState();
+            refreshRecord();
+        };
+        if (!mounted.current) {
+            onPageLoad();
+            mounted.current = true;
+        }
+    }, [refreshRecord, resetDocState]);
 
     const menuClass = showMenu ? '--menu' : '--upload';
 
@@ -142,9 +155,7 @@ function LloydGeorgeViewRecordStage({
                                 fullScreenHandler={setFullScreen}
                                 detailsElement={<RecordDetails {...recordDetailsProps} />}
                                 isFullScreen={session.isFullscreen!}
-                                refreshRecord={refreshRecord}
-                                cloudFrontUrl={cloudFrontUrl}
-                                resetDocStage={resetDocState}
+                                pdfObjectUrl={hasRecordInStorage ? pdfObjectUrl : ''}
                                 recordLinks={recordLinksToShow}
                                 setStage={setStage}
                                 showMenu={showMenu}
@@ -157,9 +168,7 @@ function LloydGeorgeViewRecordStage({
                         fullScreenHandler={setFullScreen}
                         detailsElement={<RecordDetails {...recordDetailsProps} />}
                         isFullScreen={session.isFullscreen!}
-                        refreshRecord={refreshRecord}
-                        cloudFrontUrl={cloudFrontUrl}
-                        resetDocStage={resetDocState}
+                        pdfObjectUrl={hasRecordInStorage ? pdfObjectUrl : ''}
                     />
                 )}
             </div>

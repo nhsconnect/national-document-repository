@@ -6,6 +6,10 @@ class InvalidResourceIdException(Exception):
     pass
 
 
+class InvalidNhsNumberException(Exception):
+    pass
+
+
 class OAuthErrorException(Exception):
     pass
 

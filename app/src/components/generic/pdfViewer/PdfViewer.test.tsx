@@ -1,12 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import PdfViewer from './PdfViewer';
+import { describe, expect, it } from 'vitest';
 
 describe('PdfViewer', () => {
-    it('renders an embed element', () => {
-        render(<PdfViewer fileUrl="https://test" />);
+    it('renders an iframe element', () => {
+        const fileUrl = 'https://test';
 
-        const embedElement = screen.getByTitle('Embedded PDF') as HTMLEmbedElement;
-        expect(embedElement).toBeInTheDocument();
-        expect(embedElement.src).toMatch(/#toolbar$/);
+        render(<PdfViewer fileUrl={fileUrl} />);
+
+        const pdfjsViewer = screen.getByTestId('pdf-viewer');
+
+        expect(pdfjsViewer).toBeInTheDocument();
     });
 });

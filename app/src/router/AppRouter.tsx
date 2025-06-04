@@ -161,7 +161,7 @@ export const routeMap: Routes = {
     // Public routes
     [START]: {
         page:
-            process.env.REACT_APP_ENVIRONMENT === 'development' ? (
+            import.meta.env.VITE_ENVIRONMENT === 'development' ? (
                 <NonAuthGuard redirectRoute={routes.HOME}>
                     <StartPage />
                 </NonAuthGuard>

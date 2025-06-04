@@ -28,22 +28,30 @@ class LambdaError(Enum):
     Errors for SearchPatientException
     """
 
-    SearchPatientMissing = {"err_code": "SP_4001", "message": "Missing user details"}
+    SearchPatientMissing = {
+        "err_code": "SP_4001",
+        "message": "Missing user details",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
+    }
     SearchPatientNoPDS = {
         "err_code": "SP_4002",
         "message": "Patient does not exist for given NHS number",
+        "fhir_coding": FhirIssueCoding.NOT_FOUND,
     }
     SearchPatientNoAuth = {
         "err_code": "SP_4003",
         "message": "You do not have access to this patient's record",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
     SearchPatientNoId = {
         "err_code": "SP_4004",
         "message": "An error occurred while searching for patient",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
     SearchPatientNoParse = {
         "err_code": "SP_4005",
         "message": "Failed to parse PDS data",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
 
     """
@@ -234,6 +242,7 @@ class LambdaError(Enum):
     DocRefClient = {
         "err_code": "DRS_5001",
         "message": "An error occurred when searching for available documents",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
 
     """
@@ -529,10 +538,12 @@ class LambdaError(Enum):
     PatientIdInvalid = {
         "err_code": "PN_4001",
         "message": "Invalid patient number %(number)s",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     PatientIdNoKey = {
         "err_code": "PN_4002",
         "message": "An error occurred due to missing key",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     PatientIdMismatch = {
         "err_code": "PN_4003",
@@ -546,6 +557,7 @@ class LambdaError(Enum):
     UploadInProgressError = {
         "err_code": "LGL_423",
         "message": "Records are in the process of being uploaded",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
     IncompleteRecordError = {
         "err_code": "LGL_400",
@@ -573,4 +585,5 @@ class LambdaError(Enum):
     InternalServerError = {
         "err_code": "UE_500",
         "message": "An internal server error occurred",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }

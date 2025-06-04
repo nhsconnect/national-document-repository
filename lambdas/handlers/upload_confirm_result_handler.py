@@ -12,7 +12,7 @@ from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import validate_patient_id
-from utils.exceptions import InvalidResourceIdException
+from utils.exceptions import InvalidNhsNumberException
 from utils.lambda_exceptions import FeatureFlagsException, UploadConfirmResultException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -106,7 +106,7 @@ def processing_event_details(event):
         )
         raise UploadConfirmResultException(400, LambdaError.UploadConfirmResultPayload)
 
-    except InvalidResourceIdException as e:
+    except InvalidNhsNumberException as e:
         logger.error(
             f"{LambdaError.PatientIdInvalid.to_str()}: {str(e)}",
             {"Result": failed_message},

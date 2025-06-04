@@ -1,5 +1,5 @@
 import { Card } from 'nhsuk-react-components';
-import { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from 'react';
+import { Dispatch, ReactNode, SetStateAction } from 'react';
 import PdfViewer from '../pdfViewer/PdfViewer';
 import { LGRecordActionLink } from '../../../types/blocks/lloydGeorgeActions';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
@@ -10,9 +10,7 @@ export type Props = {
     fullScreenHandler: (clicked: true) => void;
     detailsElement: ReactNode;
     isFullScreen: boolean;
-    refreshRecord: () => void;
-    cloudFrontUrl: string;
-    resetDocStage: () => void;
+    pdfObjectUrl: string;
     recordLinks?: Array<LGRecordActionLink>;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     showMenu?: boolean;
@@ -23,28 +21,13 @@ function RecordCard({
     fullScreenHandler,
     detailsElement,
     isFullScreen,
-    cloudFrontUrl,
-    refreshRecord,
-    resetDocStage,
+    pdfObjectUrl,
     recordLinks = [],
     setStage = () => {},
     showMenu = false,
 }: Props) {
-    const mounted = useRef(false);
-
-    useEffect(() => {
-        const onPageLoad = async () => {
-            resetDocStage();
-            await refreshRecord();
-        };
-        if (!mounted.current) {
-            onPageLoad();
-            mounted.current = true;
-        }
-    }, [refreshRecord, resetDocStage]);
-
     const Record = () => {
-        return cloudFrontUrl ? <PdfViewer fileUrl={cloudFrontUrl} /> : null;
+        return pdfObjectUrl ? <PdfViewer fileUrl={pdfObjectUrl} /> : null;
     };
 
     const RecordLayout = ({ children }: { children: ReactNode }) => {
@@ -69,13 +52,12 @@ function RecordCard({
                         >
                             {heading}
                         </Card.Heading>
-                        {cloudFrontUrl && (
+                        {pdfObjectUrl && (
                             <button
                                 className="lloydgeorge_record-stage_pdf-content-button link-button clickable full-screen"
                                 data-testid="full-screen-btn"
                                 onClick={() => {
                                     fullScreenHandler(true);
-                                    resetDocStage();
                                 }}
                             >
                                 View in full screen
@@ -89,12 +71,6 @@ function RecordCard({
                             setStage={setStage}
                             showMenu={showMenu}
                         />
-                        {cloudFrontUrl && (
-                            <p data-testid="find-in-pdf-text">
-                                To search within this record use <strong>Control</strong> and{' '}
-                                <strong>F</strong>
-                            </p>
-                        )}
                     </Card.Content>
                     <div>{children}</div>
                 </Card>
