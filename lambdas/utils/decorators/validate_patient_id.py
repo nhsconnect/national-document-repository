@@ -2,7 +2,7 @@ from typing import Callable
 
 from enums.lambda_error import LambdaError
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import InvalidResourceIdException
+from utils.exceptions import InvalidNhsNumberException
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import validate_nhs_number
 
@@ -29,7 +29,7 @@ def validate_patient_id(lambda_func: Callable):
         try:
             nhs_number = extract_nhs_number_from_event(event)
             validate_nhs_number(nhs_number)
-        except InvalidResourceIdException as e:
+        except InvalidNhsNumberException as e:
             nhs_number = extract_nhs_number_from_event(event)
             logger.error(
                 f"{LambdaError.PatientIdInvalid.to_str()}: {str(e)}",
