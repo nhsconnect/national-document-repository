@@ -5,6 +5,7 @@ from typing import NamedTuple
 
 import boto3
 
+SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
 
 NHS_NUMBER_INVALID_FILE_NAME = []
@@ -149,9 +150,9 @@ def upload_lg_files_to_staging(file_key):
     # this one is a bit flaky
     client = boto3.client("s3")
     client.upload_file(
-        Filename=file_key,
+        Filename=SOURCE_PDF_FILE_NAME,
         Bucket=STAGING_BUCKET,
-        Key=file_key,
+        Key="/",
         ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
     )
 
@@ -260,14 +261,14 @@ if __name__ == "__main__":
         == "y"
     ):
         upload_lg_files_to_staging(SOURCE_PDF_FILE)
-    if (
-        args.empty_lloydgeorge_store
-        or input(
-            "Would you like to remove all records "
-            "from the LloydGeorgeRecord Bucket (y/N) "
-        ).lower()
-        == "y"
-    ):
-        copy_to_s3(file_names_and_keys, "source_to_copy_from.pdf")
+    # if (
+    #     args.empty_lloydgeorge_store
+    #     or input(
+    #         "Would you like to remove all records "
+    #         "from the LloydGeorgeRecord Bucket (y/N) "
+    #     ).lower()
+    #     == "y"
+    # ):
+    #     copy_to_s3(file_names_and_keys, "source_to_copy_from.pdf")
 
     exit(0)
