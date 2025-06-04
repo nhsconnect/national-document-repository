@@ -401,24 +401,11 @@ def test_file_size_return_int(mock_service, mock_client):
     )
 
 
-def test_returns_binary_file_content_when_file_exists(
-    mock_service, mock_client, mocker
-):
-    mock_client.get_object.return_value = {
-        "Body": mocker.Mock(read=lambda: b"file-content")
-    }
-
-    result = mock_service.get_binary_file("test-bucket", "test-key")
-
-    assert result == b"file-content"
-    mock_client.get_object.assert_called_once_with(Bucket="test-bucket", Key="test-key")
-
-
 def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
     mock_client.get_object.side_effect = MOCK_CLIENT_ERROR
 
     with pytest.raises(ClientError):
-        mock_service.get_binary_file("test-bucket", "nonexistent-key")
+        mock_service.get_object_stream("test-bucket", "nonexistent-key")
 
 
 def test_upload_file_obj_success(mock_service, mock_client):

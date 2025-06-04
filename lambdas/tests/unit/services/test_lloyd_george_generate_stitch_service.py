@@ -160,7 +160,7 @@ def mock_get_total_file_size_in_bytes(mocker):
 @pytest.fixture
 def mock_stitch_pdf_into_steam(mocker):
     yield mocker.patch(
-        "services.lloyd_george_generate_stitch_service.stitch_pdf_into_steam",
+        "services.lloyd_george_generate_stitch_service.stitch_pdf_into_stream",
         return_value=MOCK_STITCHED_STREAM,
     )
 
