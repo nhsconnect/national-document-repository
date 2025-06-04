@@ -3,14 +3,12 @@ import os
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
-from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
+from utils.common_query_filters import NotDeleted
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentRefSearchException
 
@@ -23,20 +21,13 @@ class DocumentReferenceSearchService(DocumentService):
             list_of_table_names = json.loads(os.environ["DYNAMODB_TABLE_LIST"])
             results: list[dict] = []
 
-            filter_builder = DynamoQueryFilterBuilder()
-            delete_filter_expression = filter_builder.add_condition(
-                attribute=str(DocumentReferenceMetadataFields.DELETED.value),
-                attr_operator=AttributeOperator.EQUAL,
-                filter_value="",
-            ).build()
-
             for table_name in list_of_table_names:
                 logger.info(f"Searching for results in {table_name}")
                 documents: list[DocumentReference] = (
                     self.fetch_documents_from_table_with_nhs_number(
                         nhs_number,
                         table_name,
-                        query_filter=delete_filter_expression,
+                        query_filter=NotDeleted,
                     )
                 )
                 if self.is_upload_in_process(documents):

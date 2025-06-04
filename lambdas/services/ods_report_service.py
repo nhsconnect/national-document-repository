@@ -14,7 +14,7 @@ from reportlab.pdfgen import canvas
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import NotDeleted
+from utils.common_query_filters import NotDeleted, get_not_deleted_filter
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import OdsReportException
 from utils.request_context import request_context
@@ -83,19 +83,10 @@ class OdsReportService:
     @staticmethod
     def build_filter_expression(ods_codes: list[str]):
         filter_builder = DynamoQueryFilterBuilder()
-        return (
-            filter_builder.add_condition(
-                attribute=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,
-                attr_operator=AttributeOperator.IN,
-                filter_value=ods_codes,
-            )
-            .add_condition(
-                attribute=str(DocumentReferenceMetadataFields.DELETED.value),
-                attr_operator=AttributeOperator.EQUAL,
-                filter_value="",
-            )
-            .build()
-        )
+        delete_filter_expression = get_not_deleted_filter(filter_builder)
+        filter_builder.add_condition("CurrentGpOds", AttributeOperator.IN, ods_codes)
+        ods_code_filter_expression = filter_builder.build()
+        return delete_filter_expression & ods_code_filter_expression
 
     def query_table_by_index(self, ods_code: str):
         ods_codes = [ods_code]
