@@ -17,7 +17,7 @@ Our React User Interface readme can be found [here](app/README.md)
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [Awsume](https://formulae.brew.sh/formula/awsume)
 - [ruff](https://formulae.brew.sh/formula/ruff)
-- [Node@18](https://formulae.brew.sh/formula/node@18)
+- [Node@24](https://formulae.brew.sh/formula/node@24)
 - [Python@3.11](https://formulae.brew.sh/formula/python@3.11)
 
 _Note: It is recommended to use [Homebrew](https://brew.sh/) to install most of these._
