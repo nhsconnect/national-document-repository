@@ -166,7 +166,7 @@ def test_lambda_handler_responds_with_400_when_nhs_number_does_not_match_in_docu
     no_doc_type_event = {
         "httpMethod": "POST",
         "body": json.dumps(VALID_DOCUMENT_REFERENCE),
-        "queryStringParameters": {"patientId": "1234567890"},
+        "queryStringParameters": {"patientId": "0123456789"},
     }
     expected_body = json.dumps(
         {

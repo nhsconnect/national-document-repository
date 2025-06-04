@@ -649,3 +649,24 @@ def test_rollback_reference_migration_handles_exception(mock_service):
 
     with pytest.raises(PdfStitchingException):
         mock_service.rollback_reference_migration()
+
+
+def test_process_manual_trigger_calls_process_message_for_each_nhs_number(
+    mocker, mock_service
+):
+    test_ods_code = "A12345"
+    test_nhs_numbers = ["1234567890", "9876543210"]
+
+    mock_get_nhs_numbers = mocker.patch.object(
+        mock_service.document_service,
+        "get_nhs_numbers_based_on_ods_code",
+        return_value=test_nhs_numbers,
+    )
+    mock_send_message = mocker.patch(
+        "lambdas.services.pdf_stitching_service.SQSService.send_message_standard"
+    )
+
+    mock_service.process_manual_trigger(ods_code=test_ods_code, queue_url="url")
+
+    mock_get_nhs_numbers.assert_called_once_with(ods_code=test_ods_code)
+    assert mock_send_message.call_count == len(test_nhs_numbers)

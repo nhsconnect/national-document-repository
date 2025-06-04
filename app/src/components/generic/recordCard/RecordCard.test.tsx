@@ -38,9 +38,7 @@ describe('RecordCard Component', () => {
         fullScreenHandler: mockFullScreenHandler,
         detailsElement: <div>Mock Details Element</div>,
         isFullScreen: false,
-        refreshRecord: vi.fn(),
         pdfObjectUrl: 'https://test.com',
-        resetDocStage: vi.fn(),
     };
 
     beforeEach(() => {
@@ -59,14 +57,6 @@ describe('RecordCard Component', () => {
 
             expect(screen.getByText('Mock Header Record')).toBeInTheDocument();
             expect(screen.getByText('Mock Details Element')).toBeInTheDocument();
-        });
-
-        it('calls refreshRecord on mount', async () => {
-            const mockRefreshRecord = vi.fn();
-            render(<RecordCard {...props} refreshRecord={mockRefreshRecord} />);
-            await waitFor(() => {
-                expect(mockRefreshRecord).toHaveBeenCalledTimes(1);
-            });
         });
 
         it('renders the "View in full screen" button when recordUrl is set', async () => {

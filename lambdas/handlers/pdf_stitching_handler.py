@@ -1,4 +1,5 @@
 import json
+import os
 from json import JSONDecodeError
 
 from enums.lambda_error import LambdaError
@@ -30,13 +31,22 @@ logger = LoggingService(__name__)
     ]
 )
 @override_error_check
-@validate_sqs_event
 def lambda_handler(event, context):
+    pdf_stitching_service = PdfStitchingService()
+    if any(
+        record.get("eventSource") == "aws:sqs" for record in event.get("Records", [])
+    ):
+        return handle_sqs_request(event, pdf_stitching_service)
+    else:
+        return handle_manual_trigger(event, pdf_stitching_service)
+
+
+@validate_sqs_event
+def handle_sqs_request(event, pdf_stitching_service):
     request_context.app_interaction = LoggingAppInteraction.STITCH_RECORD.value
 
     logger.info("Received PDF Stitching SQS message event")
     event_message_records = event.get("Records")
-    pdf_stitching_service = PdfStitchingService()
 
     for message in event_message_records:
         try:
@@ -61,4 +71,21 @@ def lambda_handler(event, context):
 
     return ApiGatewayResponse(
         200, "Successfully processed PDF stitching SQS message", "GET"
+    ).create_api_gateway_response()
+
+
+def handle_manual_trigger(event, pdf_stitching_service):
+    logger.info("Received PDF Stitching manual trigger event")
+    ods_code = event.get("odsCode")
+    if not ods_code:
+        return ApiGatewayResponse(
+            400, "No ODS code", "GET"
+        ).create_api_gateway_response()
+
+    pdf_stitching_service.process_manual_trigger(
+        ods_code=ods_code, queue_url=os.environ["PDF_STITCHING_SQS_URL"]
+    )
+
+    return ApiGatewayResponse(
+        200, "Successfully processed PDF stitching for a manual trigger", "GET"
     ).create_api_gateway_response()
