@@ -1,12 +1,13 @@
 import argparse
+import os
 import random
 from enum import StrEnum
 from typing import NamedTuple
 
 import boto3
 
-SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
-SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
+SOURCE_PDF_FILE_NAME = "default/source_to_copy_from.pdf"
+SOURCE_PDF_FILE = "source_to_copy_from.pdf"
 
 NHS_NUMBER_INVALID_FILE_NAME = []
 NHS_NUMBER_INVALID_FILES_NUMBER = []
@@ -148,6 +149,8 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
 
 def upload_lg_files_to_staging(file_key):
     # this one is a bit flaky
+    os.chdir("../output")
+
     client = boto3.client("s3")
     client.upload_file(
         Filename=SOURCE_PDF_FILE,
