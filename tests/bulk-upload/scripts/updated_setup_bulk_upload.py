@@ -1,13 +1,14 @@
 import argparse
 import os
 import random
+import shutil
 from enum import StrEnum
 from typing import NamedTuple
 
 import boto3
 
-SOURCE_PDF_FILE_NAME = "default/source_to_copy_from.pdf"
-SOURCE_PDF_FILE = "source_to_copy_from.pdf"
+SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
+SOURCE_PDF_FILE_Name = "source_to_copy_from.pdf"
 
 NHS_NUMBER_INVALID_FILE_NAME = []
 NHS_NUMBER_INVALID_FILES_NUMBER = []
@@ -147,22 +148,19 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
     # Rename subsequent patient records
 
 
-def upload_lg_files_to_staging(file_key):
-    # this one is a bit flaky
-    os.chdir("../")
-
+def upload_lg_files_to_staging(path: str):
     client = boto3.client("s3")
     client.upload_file(
-        Filename=SOURCE_PDF_FILE,
+        Filename=SOURCE_PDF_FILE_Name,
         Bucket=STAGING_BUCKET,
-        Key=SOURCE_PDF_FILE_NAME,
+        Key=path,
         ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
     )
 
     scan_result = "Clean"
     client.put_object_tagging(
         Bucket=STAGING_BUCKET,
-        Key=file_key,
+        Key=path,
         Tagging={
             "TagSet": [
                 {"Key": "scan-result", "Value": scan_result},
@@ -216,6 +214,35 @@ def get_user_input():
     return args
 
 
+def scan_and_remove_items(table):
+    # Scan the table to get all items
+    response = table.scan()
+    items = response["Items"]
+
+    with table.batch_writer() as batch:
+        # Loop through the items and delete each one
+        for item in items:
+            batch.delete_item(Key={"ID": item["ID"]})
+
+        # Handle pagination if there are more items
+        while "LastEvaluatedKey" in response:
+            response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+            items = response["Items"]
+            for item in items:
+                batch.delete_item(Key={"ID": item["ID"]})
+    print("All items deleted.")
+
+
+def removing_previous_uploads():
+    dynamodb = boto3.resource("dynamodb")
+
+    bulk_table = dynamodb.Table(BULK_UPLOAD_TABLE_NAME)
+    scan_and_remove_items(bulk_table)
+
+    bulk_table = dynamodb.Table(LG_TABLE_NAME)
+    scan_and_remove_items(bulk_table)
+
+
 if __name__ == "__main__":
     args = get_user_input()
     print("Welcome to test set up script")
@@ -235,14 +262,14 @@ if __name__ == "__main__":
             print("Exiting Script")
             exit(0)
 
-    # if (
-    #         args.delete_table
-    #         or input(
-    #     "Would you like to remove all existing data from the dynamo tables? (y/N) "
-    # ).lower()
-    #         == "y"
-    # ):
-    #     removing_previous_uploads()
+    if (
+        args.delete_table
+        or input(
+            "Would you like to remove all existing data from the dynamo tables? (y/N) "
+        ).lower()
+        == "y"
+    ):
+        removing_previous_uploads()
 
     number_of_patients = args.num_patients or int(
         input("How many patients do you wish to generate")
@@ -263,7 +290,10 @@ if __name__ == "__main__":
         ).lower()
         == "y"
     ):
-        upload_lg_files_to_staging(SOURCE_PDF_FILE)
+        # create_test_file_names_and_keys()
+        source_pdf_path = os.path.abspath(os.path.join(os.getcwd(), SOURCE_PDF_FILE))
+        path = os.path.join(source_pdf_path, SOURCE_PDF_FILE_Name.lstrip("/"))
+        upload_lg_files_to_staging(path)
     # if (
     #     args.empty_lloydgeorge_store
     #     or input(
@@ -275,3 +305,21 @@ if __name__ == "__main__":
     #     copy_to_s3(file_names_and_keys, "source_to_copy_from.pdf")
 
     exit(0)
+
+
+def prepare_test_directory(file_path_list: list[str]):
+    output_folder = "../output"
+    source_pdf_file = "../source_to_copy_from.pdf"
+
+    if os.path.exists(output_folder):
+        shutil.rmtree(output_folder)
+
+    os.mkdir(output_folder)
+    output_folder_path = os.path.abspath(os.path.join(os.getcwd(), output_folder))
+
+    for file_path in file_path_list:
+        if file_path.startswith(tuple(NHS_NUMBER_NO_FILES)):
+            continue
+        output_path = os.path.join(output_folder_path, file_path.lstrip("/"))
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        shutil.copyfile(source_pdf_file, output_path)
