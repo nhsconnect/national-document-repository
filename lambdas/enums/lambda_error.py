@@ -242,6 +242,7 @@ class LambdaError(Enum):
     DocRefClient = {
         "err_code": "DRS_5001",
         "message": "An error occurred when searching for available documents",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
 
     """
@@ -537,10 +538,12 @@ class LambdaError(Enum):
     PatientIdInvalid = {
         "err_code": "PN_4001",
         "message": "Invalid patient number %(number)s",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     PatientIdNoKey = {
         "err_code": "PN_4002",
         "message": "An error occurred due to missing key",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     PatientIdMismatch = {
         "err_code": "PN_4003",
@@ -554,6 +557,7 @@ class LambdaError(Enum):
     UploadInProgressError = {
         "err_code": "LGL_423",
         "message": "Records are in the process of being uploaded",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
     IncompleteRecordError = {
         "err_code": "LGL_400",
@@ -581,4 +585,5 @@ class LambdaError(Enum):
     InternalServerError = {
         "err_code": "UE_500",
         "message": "An internal server error occurred",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
