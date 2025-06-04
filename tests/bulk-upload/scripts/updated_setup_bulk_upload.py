@@ -214,33 +214,33 @@ def get_user_input():
     return args
 
 
-def scan_and_remove_items(table):
-    # Scan the table to get all items
-    response = table.scan()
-    items = response["Items"]
+# def scan_and_remove_items(table):
+#     # Scan the table to get all items
+#     response = table.scan()
+#     items = response["Items"]
+#
+#     with table.batch_writer() as batch:
+#         # Loop through the items and delete each one
+#         for item in items:
+#             batch.delete_item(Key={"ID": item["ID"]})
+#
+#         # Handle pagination if there are more items
+#         while "LastEvaluatedKey" in response:
+#             response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+#             items = response["Items"]
+#             for item in items:
+#                 batch.delete_item(Key={"ID": item["ID"]})
+#     print("All items deleted.")
 
-    with table.batch_writer() as batch:
-        # Loop through the items and delete each one
-        for item in items:
-            batch.delete_item(Key={"ID": item["ID"]})
 
-        # Handle pagination if there are more items
-        while "LastEvaluatedKey" in response:
-            response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
-            items = response["Items"]
-            for item in items:
-                batch.delete_item(Key={"ID": item["ID"]})
-    print("All items deleted.")
-
-
-def removing_previous_uploads():
-    dynamodb = boto3.resource("dynamodb")
-
-    bulk_table = dynamodb.Table(BULK_UPLOAD_TABLE_NAME)
-    scan_and_remove_items(bulk_table)
-
-    bulk_table = dynamodb.Table(LG_TABLE_NAME)
-    scan_and_remove_items(bulk_table)
+# def removing_previous_uploads():
+#     dynamodb = boto3.resource("dynamodb")
+#
+#     bulk_table = dynamodb.Table(BULK_UPLOAD_TABLE_NAME)
+#     scan_and_remove_items(bulk_table)
+#
+#     bulk_table = dynamodb.Table(LG_TABLE_NAME)
+#     scan_and_remove_items(bulk_table)
 
 
 if __name__ == "__main__":
@@ -262,14 +262,15 @@ if __name__ == "__main__":
             print("Exiting Script")
             exit(0)
 
-    if (
-        args.delete_table
-        or input(
-            "Would you like to remove all existing data from the dynamo tables? (y/N) "
-        ).lower()
-        == "y"
-    ):
-        removing_previous_uploads()
+    # if (
+    #     args.delete_table
+    #     or input(
+    #         "Would you like to remove all
+    #         existing data from the dynamo tables? (y/N) "
+    #     ).lower()
+    #     == "y"
+    # ):
+    # removing_previous_uploads()
 
     number_of_patients = args.num_patients or int(
         input("How many patients do you wish to generate")
