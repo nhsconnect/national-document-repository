@@ -149,7 +149,7 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
 
 def upload_lg_files_to_staging(file_key):
     # this one is a bit flaky
-    os.chdir("../output")
+    os.chdir("../")
 
     client = boto3.client("s3")
     client.upload_file(
