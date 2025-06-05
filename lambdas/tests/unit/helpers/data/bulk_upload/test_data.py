@@ -178,6 +178,7 @@ def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"
         s3_bucket_name=MOCK_LG_BUCKET,
         current_gp_ods=TEST_CURRENT_GP_ODS,
         author=TEST_CURRENT_GP_ODS,
+        custodian=TEST_CURRENT_GP_ODS,
         doc_status="preliminary",
         creation="03/09/2022",
     )

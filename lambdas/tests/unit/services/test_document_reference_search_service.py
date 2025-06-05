@@ -441,8 +441,8 @@ def test_build_filter_expression_custodian(mock_document_service):
     filter_values = {"custodian": "12345"}
     expected_filter = (
         Attr("CurrentGpOds").eq("12345")
-        & Attr("Deleted").eq("")
         & Attr("Uploaded").eq(True)
+        & (Attr("Deleted").eq("") | Attr("Deleted").not_exists())
     )
 
     actual_filter = mock_document_service._build_filter_expression(filter_values)
@@ -466,7 +466,9 @@ def test_build_filter_expression_custodian_mocked(
 
 def test_build_filter_expression_defaults(mock_document_service):
     filter_values = {}
-    expected_filter = Attr("Deleted").eq("") & Attr("Uploaded").eq(True)
+    expected_filter = Attr("Uploaded").eq(True) & (
+        Attr("Deleted").eq("") | Attr("Deleted").not_exists()
+    )
 
     actual_filter = mock_document_service._build_filter_expression(filter_values)
 
@@ -480,11 +482,6 @@ def test_build_filter_expression_defaults_mocked(
 
     mock_document_service._build_filter_expression(filter_values)
 
-    mock_filter_builder.add_condition.assert_any_call(
-        attribute=str(DocumentReferenceMetadataFields.DELETED.value),
-        attr_operator=AttributeOperator.EQUAL,
-        filter_value="",
-    )
     mock_filter_builder.add_condition.assert_any_call(
         attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
         attr_operator=AttributeOperator.EQUAL,
