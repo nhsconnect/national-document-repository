@@ -2,7 +2,9 @@ import argparse
 import os
 import random
 from enum import StrEnum
-from glob import glob
+
+# from ftplib import print_line
+# from glob import glob
 from typing import NamedTuple
 
 import boto3
@@ -268,12 +270,12 @@ if __name__ == "__main__":
             os.path.join(os.getcwd(), SOURCE_PDF_FILE)
         ).lstrip("/")
         print(f"source_file_name = {source_file_name}")
-        source_file_name = glob("*/*source_to_copy_from*.pdf")[0]
+        # source_file_name = glob("*/*source_to_copy_from.pdf")[0]
         print(f"source_file_name after blob = {source_file_name}")
         # f"/{patient.nhs_number}/{file_name}"
         fileKeys = [
-            (source_file_name, SOURCE_PDF_FILE_NAME),
-            (source_file_name, SOURCE_PDF_FILE_NAME),
+            (SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME),
+            # (source_file_name, SOURCE_PDF_FILE_NAME),
         ]
         upload_lg_files_to_staging(fileKeys)
     # if (
