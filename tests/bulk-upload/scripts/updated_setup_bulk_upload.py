@@ -134,7 +134,6 @@ def create_test_file_keys(
 
 def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str):
     # Copy
-
     client = boto3.client("s3")
     for file_name, file_key in file_names_and_keys:
         client.copy_object(
@@ -147,37 +146,33 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
     # Rename subsequent patient records
 
 
-def upload_source_file_to_staging(file_keys: list[tuple[str, str]]):
+def upload_source_file_to_staging(file_name: str, file_key: str):
     # this one is a bit flaky
     client = boto3.client("s3")
-    for file_name, file_key in file_keys:
-        print(f"file_name {file_name}, file_key {file_key} ")
-        client.upload_file(
-            Filename=file_name,
-            Bucket=STAGING_BUCKET,
-            Key=file_key,
-            ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
-        )
+    client.upload_file(
+        Filename=file_name,
+        Bucket=STAGING_BUCKET,
+        Key=file_key,
+        ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
+    )
 
-        scan_result = "Clean"
-        client.put_object_tagging(
-            Bucket=STAGING_BUCKET,
-            Key=file_key,
-            Tagging={
-                "TagSet": [
-                    {"Key": "scan-result", "Value": scan_result},
-                    {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
-                ]
-            },
-        )
+    scan_result = "Clean"
+    client.put_object_tagging(
+        Bucket=STAGING_BUCKET,
+        Key=file_key,
+        Tagging={
+            "TagSet": [
+                {"Key": "scan-result", "Value": scan_result},
+                {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+            ]
+        },
+    )
 
 
 def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
     # this one is a bit flaky
     client = boto3.client("s3")
     for target_file_key in lg_file_keys:
-        print(f"Copying from {source_pdf_file_key} to {target_file_key}")
-
         client.copy_object(
             CopySource={"Bucket": STAGING_BUCKET, "Key": source_pdf_file_key},
             Bucket=STAGING_BUCKET,
@@ -288,11 +283,11 @@ if __name__ == "__main__":
         ).lower()
         == "y"
     ):
-        fileKeys = [
-            (SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME),
-            # (source_file_name, SOURCE_PDF_FILE_NAME),
-        ]
-        upload_source_file_to_staging(fileKeys)
+        # fileKeys = [
+        #     (SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME),
+        #     # (source_file_name, SOURCE_PDF_FILE_NAME),
+        # ]
+        upload_source_file_to_staging(SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME)
 
         upload_lg_files_to_staging(file_keys, SOURCE_PDF_FILE_NAME)
     # if (
