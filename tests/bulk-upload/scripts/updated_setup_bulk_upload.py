@@ -82,15 +82,13 @@ def pairing_nhs_number_digit(nhs_base: int) -> int:
 
 def generate_nhs_number(nhs_number: str):
     nine_digit_nhs_number = int(nhs_number[:-1].zfill(9))
-    # nine_digit_nhs_number = nhs_number
-    while True:
-        if nine_digit_nhs_number > 999999999:
-            return nhs_number
-        # nine_digit_nhs_number = str(int(nine_digit_nhs_number) + 1).zfill(9)
-        nine_digit_nhs_number = nine_digit_nhs_number + 1
+
+    while nine_digit_nhs_number <= 999999999:
+        nine_digit_nhs_number += 1
         check_digit = pairing_nhs_number_digit(nine_digit_nhs_number)
         if check_digit >= 0:
-            return str(nine_digit_nhs_number * 10 + check_digit).zfill(10)
+            return f"{nine_digit_nhs_number}{check_digit}".zfill(10)
+    return nhs_number
 
 
 # 9of20_Lloyd_George_Record_[Brad Edmond Avery]_[9730787212]_[13-09-2006]
