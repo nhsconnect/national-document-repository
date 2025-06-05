@@ -19,7 +19,7 @@ NHS_NUMBER_DUPLICATE_IN_METADATA = []
 NHS_NUMBER_WITH_DIFFERENT_UPLOADER = []
 NHS_NUMBER_ALREADY_UPLOADED = []
 NHS_NUMBER_WRONG_DOB = []
-NHS_NUMBER = 0000000000
+NHS_NUMBER = "0000000000"
 
 
 class Patient(NamedTuple):
@@ -67,9 +67,10 @@ def generate_random_name():
     return f"{first} {last}"
 
 
-def pairing_nhs_number_digit(nhs_base: int) -> int:
-    nhs_str = str(nhs_base).zfill(9)
-    total = sum(int(digit) * weight for digit, weight in zip(nhs_str, range(10, 1, -1)))
+def pairing_nhs_number_digit(nhs_base: str) -> int:
+    total = sum(
+        int(digit) * weight for digit, weight in zip(nhs_base, range(10, 1, -1))
+    )
     remainder = total % 11
     check_digit = 11 - remainder
 
@@ -78,16 +79,16 @@ def pairing_nhs_number_digit(nhs_base: int) -> int:
     return check_digit
 
 
-def generate_nhs_number(nhs_number: int):
-    nine_digit_nhs_number = str(nhs_number)[:-1].zfill(10)
+def generate_nhs_number(nhs_number: str):
+    nine_digit_nhs_number = nhs_number[:-1].zfill(9)
     print(f"nine_digit_nhs_number = {nine_digit_nhs_number}")
     while True:
-        if nine_digit_nhs_number > 999999999:
+        if int(nine_digit_nhs_number) > 999999999:
             return nhs_number
-        nine_digit_nhs_number = nine_digit_nhs_number + 1
+        nine_digit_nhs_number = str(int(nine_digit_nhs_number) + 1).zfill(9)
         check_digit = pairing_nhs_number_digit(nine_digit_nhs_number)
         if check_digit >= 0:
-            return nhs_number * 10 + check_digit
+            return nine_digit_nhs_number + str(check_digit)
 
 
 # 9of20_Lloyd_George_Record_[Brad Edmond Avery]_[9730787212]_[13-09-2006]
