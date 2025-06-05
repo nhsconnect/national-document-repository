@@ -127,7 +127,7 @@ class DocumentReference(BaseModel):
         if "sub_folder" in data:
             key_parts.append(data["sub_folder"])
             if "doc_type" in data:
-                key_parts.append(data["sub_folder"])
+                key_parts.append(data["doc_type"])
 
         key_parts.extend([data["nhs_number"], data["id"]])
         s3_key = "/".join(key_parts)
