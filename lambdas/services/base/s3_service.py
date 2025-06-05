@@ -1,5 +1,6 @@
 import io
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from typing import Any, Mapping
 
 import boto3
@@ -27,6 +28,7 @@ class S3Service:
                 retries={"max_attempts": 3, "mode": "standard"},
                 s3={"addressing_style": "virtual"},
                 signature_version="s3v4",
+                max_pool_connections=20,
             )
             self.presigned_url_expiry = 1800
             self.client = boto3.client("s3", config=self.config)
@@ -144,12 +146,12 @@ class S3Service:
             return False
         except ClientError as e:
             error_message = str(e)
-            logger.error(str(e), {"Result": "Failed to check if file exists on s3"})
             if (
                 "An error occurred (403)" in error_message
                 or "An error occurred (404)" in error_message
             ):
                 return False
+            logger.error(str(e), {"Result": "Failed to check if file exists on s3"})
             raise e
 
     def list_all_objects(self, bucket_name: str) -> list[dict]:
@@ -187,3 +189,8 @@ class S3Service:
                 f"Failed to upload file object to s3://{s3_bucket_name}/{file_key} - {e}"
             )
             raise e
+
+    def save_or_create_file(self, source_bucket: str, file_key: str, body: bytes):
+        return self.client.put_object(
+            Bucket=source_bucket, Key=file_key, Body=BytesIO(body)
+        )

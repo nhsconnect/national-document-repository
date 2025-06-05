@@ -401,6 +401,31 @@ def test_file_size_return_int(mock_service, mock_client):
     )
 
 
+def test_save_or_create_file(mock_service, mock_client):
+    body = TEST_FILE_KEY.encode("utf-8")
+    mock_service.save_or_create_file(MOCK_BUCKET, TEST_FILE_NAME, body)
+
+    mock_client.put_object.assert_called()
+    args, kwargs = mock_client.put_object.call_args
+
+    assert kwargs["Bucket"] == MOCK_BUCKET
+    assert kwargs["Key"] == TEST_FILE_NAME
+    assert kwargs["Body"].read() == body
+
+
+def test_returns_binary_file_content_when_file_exists(
+    mock_service, mock_client, mocker
+):
+    mock_client.get_object.return_value = {
+        "Body": mocker.Mock(read=lambda: b"file-content")
+    }
+
+    result = mock_service.get_binary_file("test-bucket", "test-key")
+
+    assert result == b"file-content"
+    mock_client.get_object.assert_called_once_with(Bucket="test-bucket", Key="test-key")
+
+
 def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
     mock_client.get_object.side_effect = MOCK_CLIENT_ERROR
 

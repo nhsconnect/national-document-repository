@@ -125,7 +125,7 @@ class GetFhirDocumentReferenceService:
                 custodian=document_reference.current_gp_ods,
                 attachment=document_details,
             )
-            .create_minimal_fhir_document_reference_object()
+            .create_fhir_document_reference_object(document_reference)
             .model_dump_json(exclude_none=True)
         )
         return fhir_document_reference
