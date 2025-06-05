@@ -43,7 +43,6 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             200, json.dumps(response), "GET"
         ).create_api_gateway_response()
-
     except (KeyError, TypeError) as e:
         logger.error(
             f"{ LambdaError.LoginNoAuth.to_str()}: {str(e)}",
@@ -54,3 +53,20 @@ def lambda_handler(event, context):
             LambdaError.LoginNoAuth.create_error_body(),
             "GET",
         ).create_api_gateway_response()
+    except LoginException as e:
+        if e.error == LambdaError.LoginNoRole:
+            allowed_roles = (
+                login_service.token_handler_ssm_service.get_smartcard_role_codes()
+            )
+            body = LambdaError.LoginNoRole.create_error_body(roles=allowed_roles)
+            return ApiGatewayResponse(
+                401,
+                body,
+                "GET",
+            ).create_api_gateway_response()
+        else:
+            return ApiGatewayResponse(
+                e.status_code,
+                e.error.create_error_body(),
+                "GET",
+            ).create_api_gateway_response()
