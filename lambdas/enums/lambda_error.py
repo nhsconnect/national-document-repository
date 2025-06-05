@@ -7,22 +7,28 @@ from utils.request_context import request_context
 
 
 class LambdaError(Enum):
-    def create_error_response(self, params: Optional[dict] = None) -> ErrorResponse:
+    def create_error_response(
+        self, params: Optional[dict] = None, **kwargs) -> ErrorResponse:
         err_code = self.value["err_code"]
         message = self.value["message"]
         if "%" in message and params:
             message = message % params
         interaction_id = getattr(request_context, "request_id", None)
         error_response = ErrorResponse(
-            err_code=err_code, message=message, interaction_id=interaction_id
+            err_code=err_code,
+            message=message,
+            interaction_id=interaction_id,
+            **kwargs
         )
         return error_response
 
     def to_str(self) -> str:
         return f"[{self.value['err_code']}] {self.value['message']}"
 
-    def create_error_body(self, params: Optional[dict] = None) -> str:
-        return self.create_error_response(params).create()
+    def create_error_body(
+        self, params: Optional[dict] = None, **kwargs
+    ) -> str:
+        return self.create_error_response(params, **kwargs).create()
 
     """
     Errors for SearchPatientException
@@ -242,6 +248,7 @@ class LambdaError(Enum):
     DocRefClient = {
         "err_code": "DRS_5001",
         "message": "An error occurred when searching for available documents",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
 
     """
@@ -537,10 +544,12 @@ class LambdaError(Enum):
     PatientIdInvalid = {
         "err_code": "PN_4001",
         "message": "Invalid patient number %(number)s",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     PatientIdNoKey = {
         "err_code": "PN_4002",
         "message": "An error occurred due to missing key",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     PatientIdMismatch = {
         "err_code": "PN_4003",
@@ -554,6 +563,7 @@ class LambdaError(Enum):
     UploadInProgressError = {
         "err_code": "LGL_423",
         "message": "Records are in the process of being uploaded",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
     }
     IncompleteRecordError = {
         "err_code": "LGL_400",
@@ -581,4 +591,5 @@ class LambdaError(Enum):
     InternalServerError = {
         "err_code": "UE_500",
         "message": "An internal server error occurred",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
