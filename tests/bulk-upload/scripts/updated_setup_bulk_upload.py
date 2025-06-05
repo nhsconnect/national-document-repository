@@ -1,10 +1,6 @@
 import argparse
-import os
 import random
 from enum import StrEnum
-
-# from ftplib import print_line
-# from glob import glob
 from typing import NamedTuple
 
 import boto3
@@ -109,7 +105,7 @@ def build_file_path(nhs_number: int, file_name: str) -> str:
     return f"/{nhs_number}/{file_name}"
 
 
-def create_test_file_names_and_keys(
+def create_test_file_keys(
     requested_patients_number: int = 2, number_of_files_for_each_patient: int = 3
 ):
     # Run this test will generate a random test folder at output
@@ -128,8 +124,8 @@ def create_test_file_names_and_keys(
                 person_name=current_patient_name,
                 nhs_number=nhs_number,
             )
-            file_key = build_file_path(nhs_number, current_patient_name)
-            result.append((file_name, file_key))
+            file_key = build_file_path(nhs_number, file_name)
+            result.append(file_key)
             current_patient_file += 1
         current_patient += 1
     return result
@@ -150,7 +146,7 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
     # Rename subsequent patient records
 
 
-def upload_lg_files_to_staging(file_keys: list[tuple[str, str]]):
+def upload_source_file_to_staging(file_keys: list[tuple[str, str]]):
     # this one is a bit flaky
     client = boto3.client("s3")
     for file_name, file_key in file_keys:
@@ -166,6 +162,33 @@ def upload_lg_files_to_staging(file_keys: list[tuple[str, str]]):
         client.put_object_tagging(
             Bucket=STAGING_BUCKET,
             Key=file_key,
+            Tagging={
+                "TagSet": [
+                    {"Key": "scan-result", "Value": scan_result},
+                    {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+                ]
+            },
+        )
+
+
+def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
+    # this one is a bit flaky
+    client = boto3.client("s3")
+    for target_file_key in lg_file_keys:
+        print(f"Copying from {source_pdf_file_key} to {target_file_key}")
+
+        client.copy_object(
+            CopySource={"Bucket": STAGING_BUCKET, "Key": source_pdf_file_key},
+            Bucket=STAGING_BUCKET,
+            Key=target_file_key,
+            StorageClass="INTELLIGENT_TIERING",
+            MetadataDirective="COPY",
+        )
+
+        scan_result = "Clean"
+        client.put_object_tagging(
+            Bucket=STAGING_BUCKET,
+            Key=target_file_key,
             Tagging={
                 "TagSet": [
                     {"Key": "scan-result", "Value": scan_result},
@@ -254,9 +277,7 @@ if __name__ == "__main__":
     file_number = args.num_files or int(
         input("How many files per patient do you wish to generate: ")
     )
-    file_names_and_keys = create_test_file_names_and_keys(
-        int(number_of_patients), int(file_number)
-    )
+    file_keys = create_test_file_keys(int(number_of_patients), int(file_number))
 
     if (
         args.upload
@@ -266,18 +287,13 @@ if __name__ == "__main__":
         ).lower()
         == "y"
     ):
-        source_file_name = os.path.abspath(
-            os.path.join(os.getcwd(), SOURCE_PDF_FILE)
-        ).lstrip("/")
-        print(f"source_file_name = {source_file_name}")
-        # source_file_name = glob("*/*source_to_copy_from.pdf")[0]
-        print(f"source_file_name after blob = {source_file_name}")
-        # f"/{patient.nhs_number}/{file_name}"
         fileKeys = [
             (SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME),
             # (source_file_name, SOURCE_PDF_FILE_NAME),
         ]
-        upload_lg_files_to_staging(fileKeys)
+        upload_source_file_to_staging(fileKeys)
+
+        upload_lg_files_to_staging(file_keys, SOURCE_PDF_FILE_NAME)
     # if (
     #     args.empty_lloydgeorge_store
     #     or input(
