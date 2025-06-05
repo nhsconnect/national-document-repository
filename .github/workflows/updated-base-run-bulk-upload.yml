@@ -71,7 +71,7 @@ jobs:
             --delete-table \
             --download-data \
             --build-files \
-            --num-patients "${{ inputs.combi_settings }}" \
+            --data-file "${{ inputs.combi_settings }}" \
             --upload \
             --num-files "${{ inputs.file_count }}" \
             --empty-lloydgeorge-store
