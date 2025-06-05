@@ -8,6 +8,11 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
       combi_settings:
         description: "How many patients to create (default = 1)"
         required: true
@@ -25,8 +30,8 @@ jobs:
   bulk_upload:
     uses: ./.github/workflows/updated-base-run-bulk-upload.yml
     with:
-      environment: test
-      sandbox: "ndr-test"
+      environment: development
+      sandbox: "${{ inputs.sandbox }}"
       combi_settings: "${{ inputs.combi_settings }}"
       file_count: "${{ inputs.file_count }}"
     secrets:
