@@ -2,6 +2,7 @@ import argparse
 import os
 import random
 from enum import StrEnum
+from glob import glob
 from typing import NamedTuple
 
 import boto3
@@ -266,6 +267,9 @@ if __name__ == "__main__":
         source_file_name = os.path.abspath(
             os.path.join(os.getcwd(), SOURCE_PDF_FILE)
         ).lstrip("/")
+        print(f"source_file_name = {source_file_name}")
+        source_file_name = glob("*/*source_to_copy_from*.pdf")[0]
+        print(f"source_file_name after blob = {source_file_name}")
         # f"/{patient.nhs_number}/{file_name}"
         fileKeys = [
             (source_file_name, SOURCE_PDF_FILE_NAME),
