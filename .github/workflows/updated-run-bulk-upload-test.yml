@@ -11,8 +11,10 @@ on:
       combi_settings:
         description: "How many patients to create (default = 1)"
         required: true
-        type: "string"
-        default: "1"
+        type: choice
+        options:
+          - "combi300"
+          - "combi8000"
       file_count:
         description: "How many files per patient"
         required: true
@@ -24,7 +26,7 @@ jobs:
     uses: ./.github/workflows/updated-base-run-bulk-upload.yml
     with:
       environment: test
-      sandbox: "ndrd"
+      sandbox: "ndr-test"
       combi_settings: "${{ inputs.combi_settings }}"
       file_count: "${{ inputs.file_count }}"
     secrets:
