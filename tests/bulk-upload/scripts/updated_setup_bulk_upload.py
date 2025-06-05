@@ -109,26 +109,22 @@ def build_file_path(nhs_number: str, file_name: str) -> str:
 def create_test_file_keys(
     requested_patients_number: int = 2, number_of_files_for_each_patient: int = 3
 ):
-    # Run this test will generate a random test folder at output
     result = []
-
-    current_patient = 1
     nhs_number = NHS_NUMBER
-    while current_patient <= requested_patients_number:
-        current_patient_file = 1
-        current_patient_name = generate_random_name()
+
+    for _ in range(requested_patients_number):
+        patient_name = generate_random_name()
         nhs_number = generate_nhs_number(nhs_number)
-        while current_patient_file <= number_of_files_for_each_patient:
+
+        for file_num in range(1, number_of_files_for_each_patient + 1):
             file_name = generate_file_name(
-                current_file_number=current_patient_file,
+                current_file_number=file_num,
                 number_of_files=number_of_files_for_each_patient,
-                person_name=current_patient_name,
+                person_name=patient_name,
                 nhs_number=nhs_number,
             )
             file_key = build_file_path(nhs_number, file_name)
             result.append(file_key)
-            current_patient_file += 1
-        current_patient += 1
     return result
 
 
