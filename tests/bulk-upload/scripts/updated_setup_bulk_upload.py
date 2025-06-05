@@ -80,7 +80,7 @@ def pairing_nhs_number_digit(nhs_base: int) -> int:
     return check_digit
 
 
-def generate_nhs_number(nhs_number: int):
+def generate_nhs_number(nhs_number: str):
     nine_digit_nhs_number = int(nhs_number[:-1].zfill(9))
     # nine_digit_nhs_number = nhs_number
     while True:
