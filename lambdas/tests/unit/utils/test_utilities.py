@@ -1,7 +1,7 @@
 import pytest
 from services.mock_pds_service import MockPdsApiService
 from services.pds_api_service import PdsApiService
-from utils.exceptions import InvalidResourceIdException
+from utils.exceptions import InvalidNhsNumberException
 from utils.utilities import (
     camelize_dict,
     flatten,
@@ -13,19 +13,25 @@ from utils.utilities import (
 )
 
 
-def test_validate_nhs_number_with_valid_id_returns_true():
-    nhs_number = "0000000000"
+@pytest.mark.parametrize(
+    "valid_nhs_number",
+    ["9876543210", "987 654 3210", "987-654-3210", " 987 - 654 3210 "],
+)
+def test_validate_nhs_number_with_valid_number_returns_true(valid_nhs_number):
+    assert validate_nhs_number(valid_nhs_number)
 
-    result = validate_nhs_number(nhs_number)
 
-    assert result
-
-
-def test_validate_nhs_number_with_valid_id_raises_InvalidResourceIdException():
-    nhs_number = "000000000"
-
-    with pytest.raises(InvalidResourceIdException):
-        validate_nhs_number(nhs_number)
+@pytest.mark.parametrize(
+    "invalid_nhs_number",
+    [
+        "123456789",
+        "943A765874",
+        "9876543213",
+    ],
+)
+def test_validate_nhs_number_with_invalid_number_raises_exception(invalid_nhs_number):
+    with pytest.raises(InvalidNhsNumberException):
+        validate_nhs_number(invalid_nhs_number)
 
 
 def test_decapitalise_keys():
