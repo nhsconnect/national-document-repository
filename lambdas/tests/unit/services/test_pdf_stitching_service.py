@@ -250,7 +250,7 @@ def test_create_stitched_reference(mock_service, mock_uuid, document_reference):
     assert actual.uploaded is True
     assert actual.uploading is False
     assert actual.last_updated == 1735732800
-    assert actual.file_size == str(file_size)
+    assert actual.file_size == file_size
 
 
 def test_process_stitching(mock_service, mock_download_fileobj):
@@ -333,7 +333,6 @@ def test_migrate_multipart_references(mock_service):
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
                 "Creation": "2024-01-01",
-                "Custodian": "",
                 "DocStatus": "final",
                 "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[0].file_location}",
@@ -353,7 +352,6 @@ def test_migrate_multipart_references(mock_service):
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
                 "Creation": "2024-01-01",
-                "Custodian": "",
                 "DocStatus": "final",
                 "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[1].file_location}",
@@ -373,7 +371,6 @@ def test_migrate_multipart_references(mock_service):
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
                 "Creation": "2024-01-01",
-                "Custodian": "",
                 "DocStatus": "final",
                 "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[2].file_location}",
@@ -450,7 +447,6 @@ def test_write_stitching_reference(mock_service, mock_uuid):
             "ContentType": "application/pdf",
             "Created": "2024-01-01T12:00:00.000000Z",
             "Creation": "2024-01-01",
-            "Custodian": "",
             "DocStatus": "final",
             "DocumentSnomedCodeType": "16521000000101",
             "CurrentGpOds": "Y12345",
@@ -459,7 +455,7 @@ def test_write_stitching_reference(mock_service, mock_uuid):
             "ID": f"{TEST_UUID}",
             "LastUpdated": TEST_1_OF_1_DOCUMENT_REFERENCE.last_updated,
             "NhsNumber": f"{TEST_1_OF_1_DOCUMENT_REFERENCE.nhs_number}",
-            "FileSize": "8000",
+            "FileSize": 8000,
             "Status": "current",
             "Uploaded": True,
             "Uploading": False,
@@ -598,7 +594,6 @@ def test_rollback_reference_migration(mock_service):
                     "Created": TEST_DOCUMENT_REFERENCES[0].created,
                     "CurrentGpOds": TEST_DOCUMENT_REFERENCES[0].current_gp_ods,
                     "Creation": "2024-01-01",
-                    "Custodian": "",
                     "DocStatus": "final",
                     "DocumentSnomedCodeType": "16521000000101",
                     "FileLocation": f"{TEST_DOCUMENT_REFERENCES[0].file_location}",
@@ -619,7 +614,6 @@ def test_rollback_reference_migration(mock_service):
                     "Created": TEST_DOCUMENT_REFERENCES[1].created,
                     "CurrentGpOds": TEST_DOCUMENT_REFERENCES[1].current_gp_ods,
                     "Creation": "2024-01-01",
-                    "Custodian": "",
                     "DocStatus": "final",
                     "DocumentSnomedCodeType": "16521000000101",
                     "FileLocation": f"{TEST_DOCUMENT_REFERENCES[1].file_location}",
@@ -640,7 +634,6 @@ def test_rollback_reference_migration(mock_service):
                     "Created": TEST_DOCUMENT_REFERENCES[2].created,
                     "CurrentGpOds": TEST_DOCUMENT_REFERENCES[2].current_gp_ods,
                     "Creation": "2024-01-01",
-                    "Custodian": "",
                     "DocStatus": "final",
                     "DocumentSnomedCodeType": "16521000000101",
                     "FileLocation": f"{TEST_DOCUMENT_REFERENCES[2].file_location}",
