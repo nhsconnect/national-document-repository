@@ -79,8 +79,8 @@ def pairing_nhs_number_digit(nhs_base: int) -> int:
 
 
 def generate_nhs_number(nhs_number: int):
-    nine_digit_nhs_number = nhs_number // 10
-
+    nine_digit_nhs_number = str(nhs_number)[:-1].zfill(10)
+    print(f"nine_digit_nhs_number = {nine_digit_nhs_number}")
     while True:
         if nine_digit_nhs_number > 999999999:
             return nhs_number
@@ -102,7 +102,7 @@ def generate_file_name(
 
 
 def build_file_path(nhs_number: int, file_name: str) -> str:
-    return f"/{nhs_number}/{file_name}"
+    return f"{nhs_number}/{file_name}"
 
 
 def create_test_file_keys(
@@ -116,8 +116,8 @@ def create_test_file_keys(
     while current_patient <= requested_patients_number:
         current_patient_file = 1
         current_patient_name = generate_random_name()
+        nhs_number = generate_nhs_number(nhs_number)
         while current_patient_file <= number_of_files_for_each_patient:
-            nhs_number = generate_nhs_number(nhs_number)
             file_name = generate_file_name(
                 current_file_number=current_patient_file,
                 number_of_files=number_of_files_for_each_patient,
