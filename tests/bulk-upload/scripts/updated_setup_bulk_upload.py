@@ -151,6 +151,7 @@ def upload_lg_files_to_staging(file_keys: list[tuple[str, str]]):
     # this one is a bit flaky
     client = boto3.client("s3")
     for file_name, file_key in file_keys:
+        print(f"file_name {file_name}, file_key {file_key} ")
         client.upload_file(
             Filename=file_name,
             Bucket=STAGING_BUCKET,
@@ -267,6 +268,7 @@ if __name__ == "__main__":
         ).lstrip("/")
         # f"/{patient.nhs_number}/{file_name}"
         fileKeys = [
+            (source_file_name, SOURCE_PDF_FILE_NAME),
             (source_file_name, SOURCE_PDF_FILE_NAME),
         ]
         upload_lg_files_to_staging(fileKeys)
