@@ -113,7 +113,7 @@ class DocumentReference(BaseModel):
         "deprecated",
         "unknown",
     ] = "final"
-    status: Literal["current"] = "current"
+    status: Literal["current", "superseded"] = "current"
     type: Optional[CodeableConcept] = None
     category: Optional[List[CodeableConcept]] = None
     subject: Optional[Reference] = None

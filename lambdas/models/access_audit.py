@@ -16,7 +16,7 @@ from pydantic.alias_generators import to_pascal
 
 
 class AccessAuditReason(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_pascal)
+    model_config = ConfigDict(validate_by_name=True, alias_generator=to_pascal)
     nhs_number: str = Field(exclude=True)
     request_type: AccessAuditRequestType = Field(exclude=True)
     user_session_id: str

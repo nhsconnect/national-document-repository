@@ -145,19 +145,20 @@ def patched_service(mocker, set_env, context):
 
 
 def test_get_document_reference_service(patched_service):
-    (patched_service.document_service.fetch_documents_from_table.return_value) = (
-        create_test_doc_store_refs()
-    )
+    documents = create_test_doc_store_refs()
+    patched_service.document_service.fetch_documents_from_table.return_value = documents
 
     actual = patched_service.get_document_references(
         "3d8683b9-1665-40d2-8499-6e8302d507ff", MOCK_LG_TABLE_NAME
     )
-    assert actual == create_test_doc_store_refs()[0]
+    assert actual == documents[0]
 
 
 def test_handle_get_document_reference_request(patched_service, mocker, set_env):
-    expected = create_test_doc_store_refs()[0]
-    mock_document_ref = create_test_doc_store_refs()[0]
+    documents = create_test_doc_store_refs()
+
+    expected = documents[0]
+    mock_document_ref = documents[0]
     mocker.patch.object(
         patched_service, "get_document_references", return_value=mock_document_ref
     )
