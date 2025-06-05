@@ -29,7 +29,7 @@ const AuthCallbackPage = (props: Props) => {
                 isLoggedIn: false,
             });
             if (error.response?.status === 401) {
-                navigate(routes.UNAUTHORISED_LOGIN);
+                navigate(routes.UNAUTHORISED_LOGIN, { state: { errorData: error.response?.data } });
             } else {
                 navigate(routes.AUTH_ERROR);
             }
