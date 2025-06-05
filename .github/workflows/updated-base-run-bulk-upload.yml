@@ -27,7 +27,7 @@ on:
         description: "How many patients to create (default = 1)"
         required: false
         type: "string"
-        default: "combi300"
+        default: "1"
       file_count:
         description: "How many files per patient to generate."
         required: false
@@ -77,10 +77,10 @@ jobs:
             --empty-lloydgeorge-store
         working-directory: ./tests/bulk-upload/scripts
 
-      - name: Run Bulk Upload
-        run: |
-          python run_bulk_upload.py \
-            --environment "${{ inputs.sandbox }}" \
-            --disable-pds-stub \
-            --start-bulk-upload
-        working-directory: ./tests/bulk-upload/scripts
+#      - name: Run Bulk Upload
+#        run: |
+#          python run_bulk_upload.py \
+#            --environment "${{ inputs.sandbox }}" \
+#            --disable-pds-stub \
+#            --start-bulk-upload
+#        working-directory: ./tests/bulk-upload/scripts
