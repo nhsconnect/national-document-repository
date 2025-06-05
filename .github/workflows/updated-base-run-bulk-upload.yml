@@ -23,7 +23,7 @@ on:
         required: true
         type: "string"
         default: "development"
-      combi_settings:
+      num-patients:
         description: "How many patients to create (default = 1)"
         required: false
         type: "string"
@@ -71,7 +71,7 @@ jobs:
             --delete-table \
             --download-data \
             --build-files \
-            --num-patients "${{ inputs.combi_settings }}" \
+            --num-patients "${{ inputs.num-patients }}" \
             --upload \
             --num-files "${{ inputs.file_count }}" \
             --empty-lloydgeorge-store

@@ -13,7 +13,7 @@ on:
         required: true
         type: "string"
         default: "ndr"
-      combi_settings:
+      num-patients:
         description: "How many patients to create (default = 1)"
         required: true
         type: "string"
@@ -30,7 +30,7 @@ jobs:
     with:
       environment: development
       sandbox: "${{ inputs.sandbox }}"
-      combi_settings: "${{ inputs.combi_settings }}"
+      num-patients: "${{ inputs.num-patients }}"
       file_count: "${{ inputs.file_count }}"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
