@@ -1219,3 +1219,30 @@ $hunit: '%';
         margin-bottom: 0;
     }
 }
+
+//TODO: remove when https://github.com/nhsuk/nhsuk-frontend/issues/1357 is fixed and we have updated nhsuk-frontend
+.nhsuk-button {
+    box-shadow: 0 4px 0 #00401e;
+    border-radius: 4px;
+
+    &::after {
+        box-shadow: unset !important;
+    }
+
+    &:focus:not(:active) {
+        box-shadow: 0 4px 0 #212b32;
+
+        &:hover {
+            box-shadow: 0 4px 0 #212b32;
+        }
+    }
+
+    &--secondary {
+        box-shadow: 0 4px 0 #005eb8;
+
+        &:active {
+            box-shadow: none;
+        }
+    }
+}
+//TODO: remove when https://github.com/nhsuk/nhsuk-frontend/issues/1357 is fixed and we have updated nhsuk-frontend
