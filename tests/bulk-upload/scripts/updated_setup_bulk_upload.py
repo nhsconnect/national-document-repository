@@ -1,4 +1,5 @@
 import argparse
+import os
 import random
 from enum import StrEnum
 from typing import NamedTuple
@@ -146,27 +147,28 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
     # Rename subsequent patient records
 
 
-def upload_lg_files_to_staging(file_key):
+def upload_lg_files_to_staging(file_keys: list[tuple[str, str]]):
     # this one is a bit flaky
     client = boto3.client("s3")
-    client.upload_file(
-        Filename=SOURCE_PDF_FILE,
-        Bucket=STAGING_BUCKET,
-        Key=SOURCE_PDF_FILE_NAME,
-        ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
-    )
+    for file_name, file_key in file_keys:
+        client.upload_file(
+            Filename=file_name,
+            Bucket=STAGING_BUCKET,
+            Key=file_key,
+            ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
+        )
 
-    scan_result = "Clean"
-    client.put_object_tagging(
-        Bucket=STAGING_BUCKET,
-        Key=file_key,
-        Tagging={
-            "TagSet": [
-                {"Key": "scan-result", "Value": scan_result},
-                {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
-            ]
-        },
-    )
+        scan_result = "Clean"
+        client.put_object_tagging(
+            Bucket=STAGING_BUCKET,
+            Key=file_key,
+            Tagging={
+                "TagSet": [
+                    {"Key": "scan-result", "Value": scan_result},
+                    {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+                ]
+            },
+        )
 
 
 def check_confirmation(confirmation: str):
@@ -260,7 +262,14 @@ if __name__ == "__main__":
         ).lower()
         == "y"
     ):
-        upload_lg_files_to_staging(SOURCE_PDF_FILE)
+        source_file_name = os.path.abspath(
+            os.path.join(os.getcwd(), SOURCE_PDF_FILE)
+        ).lstrip("/")
+        # f"/{patient.nhs_number}/{file_name}"
+        fileKeys = [
+            (source_file_name, SOURCE_PDF_FILE_NAME),
+        ]
+        upload_lg_files_to_staging(fileKeys)
     # if (
     #     args.empty_lloydgeorge_store
     #     or input(
