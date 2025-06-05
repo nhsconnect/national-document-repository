@@ -1,5 +1,6 @@
 import argparse
 import random
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from enum import StrEnum
 from typing import NamedTuple
 
@@ -139,8 +140,6 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
             StorageClass="INTELLIGENT_TIERING",
         )
 
-    # Rename subsequent patient records
-
 
 def upload_source_file_to_staging(file_name: str, file_key: str):
     # this one is a bit flaky
@@ -166,9 +165,9 @@ def upload_source_file_to_staging(file_name: str, file_key: str):
 
 
 def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
-    # this one is a bit flaky
     client = boto3.client("s3")
-    for target_file_key in lg_file_keys:
+
+    def copy_and_tag(target_file_key):
         client.copy_object(
             CopySource={"Bucket": STAGING_BUCKET, "Key": source_pdf_file_key},
             Bucket=STAGING_BUCKET,
@@ -176,7 +175,6 @@ def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
             StorageClass="INTELLIGENT_TIERING",
             MetadataDirective="COPY",
         )
-
         scan_result = "Clean"
         client.put_object_tagging(
             Bucket=STAGING_BUCKET,
@@ -188,6 +186,38 @@ def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
                 ]
             },
         )
+        return target_file_key
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(copy_and_tag, key) for key in lg_file_keys]
+        for future in as_completed(futures):
+            try:
+                key = future.result()
+                print(f"Finished processing {key}")
+            except Exception as e:
+                print(f"Failed processing {key}: {e}")
+
+
+# for target_file_key in lg_file_keys:
+#         client.copy_object(
+#             CopySource={"Bucket": STAGING_BUCKET, "Key": source_pdf_file_key},
+#             Bucket=STAGING_BUCKET,
+#             Key=target_file_key,
+#             StorageClass="INTELLIGENT_TIERING",
+#             MetadataDirective="COPY",
+#         )
+#
+#         scan_result = "Clean"
+#         client.put_object_tagging(
+#             Bucket=STAGING_BUCKET,
+#             Key=target_file_key,
+#             Tagging={
+#                 "TagSet": [
+#                     {"Key": "scan-result", "Value": scan_result},
+#                     {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+#                 ]
+#             },
+#         )
 
 
 def check_confirmation(confirmation: str):
