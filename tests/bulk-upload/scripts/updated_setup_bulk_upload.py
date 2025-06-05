@@ -19,7 +19,7 @@ NHS_NUMBER_DUPLICATE_IN_METADATA = []
 NHS_NUMBER_WITH_DIFFERENT_UPLOADER = []
 NHS_NUMBER_ALREADY_UPLOADED = []
 NHS_NUMBER_WRONG_DOB = []
-NHS_NUMBER = 000000000
+NHS_NUMBER = "0000000000"
 
 
 class Patient(NamedTuple):
@@ -81,8 +81,8 @@ def pairing_nhs_number_digit(nhs_base: int) -> int:
 
 
 def generate_nhs_number(nhs_number: int):
-    # nine_digit_nhs_number = nhs_number[:-1].zfill(9)
-    nine_digit_nhs_number = nhs_number
+    nine_digit_nhs_number = int(nhs_number[:-1].zfill(9))
+    # nine_digit_nhs_number = nhs_number
     while True:
         if nine_digit_nhs_number > 999999999:
             return nhs_number
@@ -90,7 +90,7 @@ def generate_nhs_number(nhs_number: int):
         nine_digit_nhs_number = nine_digit_nhs_number + 1
         check_digit = pairing_nhs_number_digit(nine_digit_nhs_number)
         if check_digit >= 0:
-            return nine_digit_nhs_number * 10 + check_digit
+            return (nine_digit_nhs_number * 10 + check_digit).zfill(10)
 
 
 # 9of20_Lloyd_George_Record_[Brad Edmond Avery]_[9730787212]_[13-09-2006]
