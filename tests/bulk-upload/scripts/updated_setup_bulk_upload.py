@@ -93,7 +93,7 @@ def generate_nhs_number(nhs_number: str):
 
 # 9of20_Lloyd_George_Record_[Brad Edmond Avery]_[9730787212]_[13-09-2006]
 def generate_file_name(
-    current_file_number: int, number_of_files: int, person_name: str, nhs_number: int
+    current_file_number: int, number_of_files: int, person_name: str, nhs_number: str
 ) -> str:
     return (
         f"{current_file_number}of{number_of_files}"
@@ -102,7 +102,7 @@ def generate_file_name(
     )
 
 
-def build_file_path(nhs_number: int, file_name: str) -> str:
+def build_file_path(nhs_number: str, file_name: str) -> str:
     return f"{nhs_number}/{file_name}"
 
 
