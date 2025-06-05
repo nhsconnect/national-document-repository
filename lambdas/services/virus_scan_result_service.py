@@ -145,7 +145,7 @@ class VirusScanService:
         logger.info("Updating dynamo db table")
         updated_fields: dict[str] = {"VirusScannerResult": scan_result}
         if scan_result == VirusScanResult.INFECTED:
-            updated_fields["DocStatus"] = "failed"
+            updated_fields["DocStatus"] = "cancelled"
 
         self.dynamo_service.update_item(
             table_name=table_name,

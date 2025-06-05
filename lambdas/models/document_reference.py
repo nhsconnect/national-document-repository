@@ -11,7 +11,6 @@ from pydantic.alias_generators import to_camel, to_pascal
 # Constants
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 DEFAULT_CONTENT_TYPE = "application/pdf"
-DEFAULT_VIRUS_SCAN_RESULT = "Not Scanned"
 S3_PREFIX = "s3://"
 THREE_MINUTES_IN_SECONDS = 60 * 3
 
@@ -89,7 +88,7 @@ class DocumentReference(BaseModel):
     uploaded: bool = Field(default=False)
     uploading: bool = Field(default=False)
     version: str = Field(default="1", exclude=True)
-    virus_scanner_result: str = Field(default=DEFAULT_VIRUS_SCAN_RESULT)
+    virus_scanner_result: str = Field(default=None)
 
     def model_dump_camel_case(self, *args, **kwargs):
         model_dump_results = self.model_dump(*args, **kwargs)

@@ -108,6 +108,12 @@ class DocumentReferenceSearchService(DocumentService):
     ) -> list[dict]:
         results = []
         for document in documents:
+            if not document.file_size:
+                document.file_size = self.s3_service.get_file_size(
+                    s3_bucket_name=document.s3_bucket_name,
+                    object_key=document.s3_file_key,
+                )
+
             if return_fhir:
                 fhir_response = self.create_document_reference_fhir_response(document)
                 results.append(fhir_response)
@@ -127,15 +133,6 @@ class DocumentReferenceSearchService(DocumentService):
                 "file_size",
             },
         )
-        if not document.file_size:
-            document_formatted.update(
-                {
-                    "fileSize": self.s3_service.get_file_size(
-                        s3_bucket_name=document.s3_bucket_name,
-                        object_key=document.s3_file_key,
-                    ),
-                }
-            )
         return document_formatted
 
     def _build_filter_expression(self, filter_values: dict[str, str]):
