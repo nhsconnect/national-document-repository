@@ -82,7 +82,7 @@ describe('getPresignedUrlForZip', () => {
         );
     });
 
-    it('wait for 10 secs before the 1st polling', async () => {
+    it('does not wait before the 1st polling', async () => {
         mockedAxios.post.mockResolvedValueOnce(mockJobIdResponse);
         mockedAxios.get.mockResolvedValueOnce(mockCompletedResponse);
 
@@ -92,11 +92,10 @@ describe('getPresignedUrlForZip', () => {
             baseUrl,
         });
 
-        expect(mockWaitForSeconds).toHaveBeenCalledTimes(1);
-        expect(mockWaitForSeconds).toHaveBeenCalledWith(0);
+        expect(mockWaitForSeconds).toHaveBeenCalledTimes(0);
     });
 
-    it('wait for 10 secs between every polling', async () => {
+    it('wait between every polling', async () => {
         mockedAxios.post.mockResolvedValueOnce(mockJobIdResponse);
         mockedAxios.get
             .mockResolvedValueOnce(mockPendingResponse)
@@ -110,13 +109,20 @@ describe('getPresignedUrlForZip', () => {
             baseUrl,
         });
 
-        expect(mockWaitForSeconds).toHaveBeenCalledTimes(4);
+        expect(mockWaitForSeconds).toHaveBeenCalledTimes(3);
         expect(mockWaitForSeconds).toHaveBeenCalledWith(0);
     });
 
-    it('throw an error if got pending status for 3 times', async () => {
+    it('throw an error if got pending status for 10 times', async () => {
         mockedAxios.post.mockResolvedValueOnce(mockJobIdResponse);
         mockedAxios.get
+            .mockResolvedValueOnce(mockPendingResponse)
+            .mockResolvedValueOnce(mockPendingResponse)
+            .mockResolvedValueOnce(mockPendingResponse)
+            .mockResolvedValueOnce(mockPendingResponse)
+            .mockResolvedValueOnce(mockPendingResponse)
+            .mockResolvedValueOnce(mockPendingResponse)
+            .mockResolvedValueOnce(mockPendingResponse)
             .mockResolvedValueOnce(mockPendingResponse)
             .mockResolvedValueOnce(mockPendingResponse)
             .mockResolvedValueOnce(mockPendingResponse);
