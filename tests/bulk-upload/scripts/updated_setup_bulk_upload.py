@@ -364,16 +364,15 @@ if __name__ == "__main__":
     # ):
     #     removing_previous_uploads()
 
-    if not args.num_patients:
-        raise ValueError("Missing required argument: --num-patients")
-    if not args.num_files:
-        raise ValueError("Missing required argument: --num-files")
-    if not args.file_size:
-        raise ValueError("Missing required argument: --file-size")
-
-    number_of_patients = int(args.num_patients)
-    file_number = int(args.num_files)
-    file_size = int(args.file_size)
+    number_of_patients = args.num_patients or int(
+        input("How many patients do you wish to generate")
+    )
+    file_number = args.num_files or int(
+        input("How many files per patient do you wish to generate: ")
+    )
+    file_size = args.file_size or int(
+        input("What is the file size in MB you wish to generate: ")
+    )
     file_keys, metadata_content = create_test_file_keys_and_metadata_rows(
         int(number_of_patients), int(file_number)
     )
