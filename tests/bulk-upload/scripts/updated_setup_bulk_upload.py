@@ -2,14 +2,25 @@ import argparse
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
-from enum import StrEnum
-from typing import NamedTuple
 
 import boto3
 
 SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
 UPDATED_SOURCE_PDF_FILE = "../updated_source_to_copy_from.pdf"
+NHS_NUMBER = "0000000000"
+
+CSV_HEADER_ROW = (
+    "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,"
+    "SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD"
+)
+S3_STORAGE_CLASS = "INTELLIGENT_TIERING"
+
+S3_SCAN_TAGS = [
+    {"Key": "scan-result", "Value": "Clean"},
+    {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+]
+client = boto3.client("s3")
 
 NHS_NUMBER_INVALID_FILE_NAME = []
 NHS_NUMBER_INVALID_FILES_NUMBER = []
@@ -22,22 +33,22 @@ NHS_NUMBER_DUPLICATE_IN_METADATA = []
 NHS_NUMBER_WITH_DIFFERENT_UPLOADER = []
 NHS_NUMBER_ALREADY_UPLOADED = []
 NHS_NUMBER_WRONG_DOB = []
-NHS_NUMBER = "0000000000"
 
 
-class Patient(NamedTuple):
-    full_name: str
-    date_of_birth: str
-    nhs_number: str
-    ods_code: str
+#
+# class Patient(NamedTuple):
+#     full_name: str
+#     date_of_birth: str
+#     nhs_number: str
+#     ods_code: str
 
 
-class PatientsDataFile(StrEnum):
-    JigginsLane = "ODS_Code_M85143.csv"
-    NoOds = "NoODS_ExpiredODS.csv"
-    H81109 = "ODS_Code_H81109.csv"
-    GPWithAccentCharPatients = "ODS_Code_H85686.csv"
-    MockPDS = "ODS_MockPDS.csv"
+# class PatientsDataFile(StrEnum):
+#     JigginsLane = "ODS_Code_M85143.csv"
+#     NoOds = "NoODS_ExpiredODS.csv"
+#     H81109 = "ODS_Code_H81109.csv"
+#     GPWithAccentCharPatients = "ODS_Code_H85686.csv"
+#     MockPDS = "ODS_MockPDS.csv"
 
 
 def generate_random_name():
@@ -114,10 +125,7 @@ def create_test_file_keys_and_metadata_rows(
     result = []
     nhs_number = NHS_NUMBER
     metadata_rows = []
-    header_row = (
-        "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,"
-        "SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD"
-    )
+
     for _ in range(requested_patients_number):
         patient_name = generate_random_name()
         nhs_number = generate_nhs_number(nhs_number)
@@ -137,19 +145,17 @@ def create_test_file_keys_and_metadata_rows(
                 )
             )
             result.append(file_key)
-    metadata_content = "\n".join([header_row, *metadata_rows])
+    metadata_content = "\n".join([CSV_HEADER_ROW, *metadata_rows])
     return result, metadata_content
 
 
 def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str):
-    # Copy
-    client = boto3.client("s3")
     for file_name, file_key in file_names_and_keys:
         client.copy_object(
             Bucket=STAGING_BUCKET,
             Key=file_key,
             CopySource={"Bucket": STAGING_BUCKET, "Key": source_file_key},
-            StorageClass="INTELLIGENT_TIERING",
+            StorageClass=S3_STORAGE_CLASS,
         )
 
 
@@ -172,35 +178,27 @@ def inflate_pdf_file(source_pdf_path: str, target_pdf_path: str, target_size_mb:
 
 def upload_source_file_to_staging(source_pdf_path: str, file_key: str):
     with open(source_pdf_path, "rb") as buffer:
-        client = boto3.client("s3")
         client.put_object(
             Bucket=STAGING_BUCKET,
             Key=file_key,
             Body=buffer,
-            StorageClass="INTELLIGENT_TIERING",
+            StorageClass=S3_STORAGE_CLASS,
         )
 
         client.put_object_tagging(
             Bucket=STAGING_BUCKET,
             Key=file_key,
-            Tagging={
-                "TagSet": [
-                    {"Key": "scan-result", "Value": "Clean"},
-                    {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
-                ]
-            },
+            Tagging={"TagSet": S3_SCAN_TAGS},
         )
 
 
 def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
-    client = boto3.client("s3")
-
     def copy_and_tag(target_file_key):
         client.copy_object(
             CopySource={"Bucket": STAGING_BUCKET, "Key": source_pdf_file_key},
             Bucket=STAGING_BUCKET,
             Key=target_file_key,
-            StorageClass="INTELLIGENT_TIERING",
+            StorageClass=S3_STORAGE_CLASS,
             MetadataDirective="COPY",
         )
         scan_result = "Clean"
@@ -302,13 +300,12 @@ def build_metadata_csv_row(file_key: str, file_count: int, nhs_number: str) -> s
 
 
 def upload_metadata_to_s3(body: str):
-    client = boto3.client("s3")
     client.put_object(
         Bucket=STAGING_BUCKET,
         Key="metadata.csv",
         Body=body,
         ContentType="text/csv",
-        StorageClass="INTELLIGENT_TIERING",
+        StorageClass=S3_STORAGE_CLASS,
     )
 
 
