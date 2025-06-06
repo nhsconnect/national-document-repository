@@ -35,7 +35,7 @@ class LloydGeorgeStitchService:
         self.stitch_trace_object = stitch_trace
         self.stitch_trace_table = os.environ.get("STITCH_METADATA_DYNAMODB_NAME")
         self.stitch_file_name = f"patient-record-{str(uuid.uuid4())}"
-        self.combined_file_name = "combined_files"
+        self.combined_file_folder = "combined_files"
 
     def handle_stitch_request(self):
         self.stitch_lloyd_george_record()
@@ -48,7 +48,9 @@ class LloydGeorgeStitchService:
                 raise LGStitchServiceException(404, LambdaError.StitchNotFound)
 
             filename_for_stitched_file = f"{self.stitch_file_name}.pdf"
-            destination_key = f"{self.combined_file_name}/{filename_for_stitched_file}"
+            destination_key = (
+                f"{self.combined_file_folder}/{filename_for_stitched_file}"
+            )
 
             all_lg_parts = self.get_documents_for_stitching(
                 documents_for_stitching=documents_for_stitching
