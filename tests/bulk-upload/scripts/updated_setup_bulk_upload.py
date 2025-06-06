@@ -447,11 +447,11 @@ if __name__ == "__main__":
         inflate_pdf_file(SOURCE_PDF_FILE, UPDATED_SOURCE_PDF_FILE, target_size_mb=1)
         upload_source_file_to_staging(UPDATED_SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME)
 
-        upload_source_file_to_staging(
-            source_pdf_path=SOURCE_PDF_FILE,
-            file_key=SOURCE_PDF_FILE_NAME,
-            target_size_mb=file_size,
-        )
+        # upload_source_file_to_staging(
+        #     source_pdf_path=SOURCE_PDF_FILE,
+        #     file_key=SOURCE_PDF_FILE_NAME,
+        #     target_size_mb=file_size,
+        # )
 
         upload_lg_files_to_staging(file_keys, SOURCE_PDF_FILE_NAME)
     # if (
