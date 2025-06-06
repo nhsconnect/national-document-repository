@@ -109,7 +109,9 @@ describe('AuthCallbackPage', () => {
             expect(screen.getByText('Signing in...')).toBeInTheDocument();
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UNAUTHORISED_LOGIN);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UNAUTHORISED_LOGIN, {
+                    state: { errorData: undefined },
+                });
             });
         });
     });
