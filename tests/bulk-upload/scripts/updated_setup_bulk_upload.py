@@ -7,7 +7,7 @@ from io import BytesIO
 from typing import NamedTuple
 
 import boto3
-from pypdf import PdfReader, PdfWriter
+from pypdf import PdfWriter
 
 SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
@@ -158,19 +158,30 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
 def upload_source_file_to_staging(
     source_pdf_path: str, file_key: str, target_size_mb: int = 1
 ):
-    reader = PdfReader(source_pdf_path)
+    # reader = PdfReader(source_pdf_path)
     writer = PdfWriter()
     buffer = BytesIO()
     size_mb = 0
 
+    # adding blank page
     while size_mb < target_size_mb:
-        for page in reader.pages:
-            writer.add_page(page)
+        writer.add_blank_page(width=595, height=842)
 
         buffer.seek(0)
         buffer.truncate(0)
+
         writer.write(buffer)
         size_mb = buffer.tell() / (1024 * 1024)
+
+    # adding valid page
+    # while size_mb < target_size_mb:
+    #     for page in reader.pages:
+    #         writer.add_page(page)
+    #
+    #     buffer.seek(0)
+    #     buffer.truncate(0)
+    #     writer.write(buffer)
+    #     size_mb = buffer.tell() / (1024 * 1024)
 
     buffer.seek(0)
     client = boto3.client("s3")
