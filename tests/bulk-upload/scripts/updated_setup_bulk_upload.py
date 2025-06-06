@@ -3,9 +3,11 @@ import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from enum import StrEnum
+from io import BytesIO
 from typing import NamedTuple
 
 import boto3
+from pypdf import PdfReader, PdfWriter
 
 SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
@@ -153,14 +155,30 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
         )
 
 
-def upload_source_file_to_staging(file_name: str, file_key: str):
-    # this one is a bit flaky
+def upload_source_file_to_staging(
+    source_pdf_path: str, file_key: str, target_size_mb: int = 1
+):
+    reader = PdfReader(source_pdf_path)
+    writer = PdfWriter()
+    buffer = BytesIO()
+    size_mb = 0
+
+    while size_mb < target_size_mb:
+        for page in reader.pages:
+            writer.add_page(page)
+
+        buffer.seek(0)
+        buffer.truncate(0)
+        writer.write(buffer)
+        size_mb = buffer.tell() / (1024 * 1024)
+
+    buffer.seek(0)
     client = boto3.client("s3")
-    client.upload_file(
-        Filename=file_name,
+    client.put_object(
         Bucket=STAGING_BUCKET,
         Key=file_key,
-        ExtraArgs={"StorageClass": "INTELLIGENT_TIERING"},
+        Body=buffer,
+        StorageClass="INTELLIGENT_TIERING",
     )
 
     scan_result = "Clean"
@@ -348,6 +366,9 @@ if __name__ == "__main__":
     file_number = args.num_files or int(
         input("How many files per patient do you wish to generate: ")
     )
+    file_size = args.file_size or int(
+        input("What is the file size in MB you wish to generate: ")
+    )
     file_keys, metadata_content = create_test_file_keys_and_metadata_rows(
         int(number_of_patients), int(file_number)
     )
@@ -362,7 +383,11 @@ if __name__ == "__main__":
     ):
 
         upload_metadata_to_s3(body=metadata_content)
-        upload_source_file_to_staging(SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME)
+        upload_source_file_to_staging(
+            source_pdf_path=SOURCE_PDF_FILE,
+            file_key=SOURCE_PDF_FILE_NAME,
+            target_size_mb=file_size,
+        )
 
         upload_lg_files_to_staging(file_keys, SOURCE_PDF_FILE_NAME)
     # if (

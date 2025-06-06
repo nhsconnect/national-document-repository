@@ -23,13 +23,18 @@ on:
         required: true
         type: "string"
         default: "development"
-      num-patients:
+      num_patients:
         description: "How many patients to create (default = 1)"
         required: false
         type: "string"
         default: "1"
       file_count:
         description: "How many files per patient to generate."
+        required: false
+        type: "string"
+        default: "1"
+      file_size:
+        description: "File size to generate."
         required: false
         type: "string"
         default: "1"
@@ -71,9 +76,10 @@ jobs:
             --delete-table \
             --download-data \
             --build-files \
-            --num-patients "${{ inputs.num-patients }}" \
+            --num-patients "${{ inputs.num_patients }}" \
             --upload \
             --num-files "${{ inputs.file_count }}" \
+            --file-size "${{ inputs.file_size }}" \
             --empty-lloydgeorge-store
         working-directory: ./tests/bulk-upload/scripts
 
