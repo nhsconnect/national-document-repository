@@ -279,6 +279,11 @@ def get_user_input():
     parser.add_argument("--num-patients", help="Amount of patients to create")
     parser.add_argument("--num-files", help="Number of files per patient to build.")
     parser.add_argument(
+        "--file-size",
+        type=int,
+        help="Target file size in MB",
+    )
+    parser.add_argument(
         "--empty-lloydgeorge-store",
         action="store_true",
         help="Remove all files from the LloydGeorge Record Buckets",
