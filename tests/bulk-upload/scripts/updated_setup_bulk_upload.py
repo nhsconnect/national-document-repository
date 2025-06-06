@@ -7,7 +7,8 @@ from io import BytesIO
 from typing import NamedTuple
 
 import boto3
-from pypdf import PdfWriter
+
+# from pypdf import PdfWriter
 
 SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
@@ -159,19 +160,22 @@ def upload_source_file_to_staging(
     source_pdf_path: str, file_key: str, target_size_mb: int = 1
 ):
     # reader = PdfReader(source_pdf_path)
-    writer = PdfWriter()
+    # writer = PdfWriter()
     buffer = BytesIO()
-    size_mb = 0
+    # size_mb = 0
+    # empty content non pdf
+    size_bytes = target_size_mb * 1024 * 1024
+    buffer = BytesIO(b"\0" * size_bytes)
 
-    # adding blank page
-    while size_mb < target_size_mb:
-        writer.add_blank_page(width=595, height=842)
-
-        buffer.seek(0)
-        buffer.truncate(0)
-
-        writer.write(buffer)
-        size_mb = buffer.tell() / (1024 * 1024)
+    # # adding blank page
+    # while size_mb < target_size_mb:
+    #     writer.add_blank_page(width=595, height=842)
+    #
+    #     buffer.seek(0)
+    #     buffer.truncate(0)
+    #
+    #     writer.write(buffer)
+    #     size_mb = buffer.tell() / (1024 * 1024)
 
     # adding valid page
     # while size_mb < target_size_mb:
