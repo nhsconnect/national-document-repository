@@ -160,7 +160,7 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
         )
 
 
-def inflate_pdf_file(source_pdf_path: str, target_pdf_path: str, target_size_mb: int):
+def inflate_pdf_file(source_pdf_path: str, target_pdf_path: str, target_size_mb: float):
     with open(source_pdf_path, "rb") as original:
         content = original.read()
 
@@ -168,12 +168,12 @@ def inflate_pdf_file(source_pdf_path: str, target_pdf_path: str, target_size_mb:
         new_pdf.write(content)
 
         current_size = len(content)
-        target_size = target_size_mb * 1024 * 1024
+        target_size = int(target_size_mb * 1024 * 1024)
         padding_size = target_size - current_size
 
         if padding_size > 0:
             # Append a PDF comment block that does nothing but take up space
-            padding = b"\n%" + b"0" * (padding_size - 3)
+            padding = b"\n%" + b"0" * max(padding_size - 2, 0)
             new_pdf.write(padding)
 
 
@@ -426,7 +426,7 @@ if __name__ == "__main__":
     file_number = args.num_files or int(
         input("How many files per patient do you wish to generate: ")
     )
-    file_size = args.file_size or int(
+    file_size = args.file_size or float(
         input("What is the file size in MB you wish to generate: ")
     )
     file_keys, metadata_content = create_test_file_keys_and_metadata_rows(
@@ -444,14 +444,10 @@ if __name__ == "__main__":
 
         upload_metadata_to_s3(body=metadata_content)
 
-        inflate_pdf_file(SOURCE_PDF_FILE, UPDATED_SOURCE_PDF_FILE, target_size_mb=1)
+        inflate_pdf_file(
+            SOURCE_PDF_FILE, UPDATED_SOURCE_PDF_FILE, target_size_mb=file_size
+        )
         upload_source_file_to_staging(UPDATED_SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME)
-
-        # upload_source_file_to_staging(
-        #     source_pdf_path=SOURCE_PDF_FILE,
-        #     file_key=SOURCE_PDF_FILE_NAME,
-        #     target_size_mb=file_size,
-        # )
 
         upload_lg_files_to_staging(file_keys, SOURCE_PDF_FILE_NAME)
     # if (
