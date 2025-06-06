@@ -29,7 +29,10 @@ patient_1_file_2 = sample_metadata_model.model_copy(
     }
 )
 patient_1 = StagingMetadata(
-    nhs_number="1234567890", files=[patient_1_file_1, patient_1_file_2], retries=0
+    nhs_number="1234567890",
+    ods_code="Y12345",
+    files=[patient_1_file_1, patient_1_file_2],
+    retries=0,
 )
 
 patient_2_file_1 = sample_metadata_model.model_copy(
@@ -38,7 +41,9 @@ patient_2_file_1 = sample_metadata_model.model_copy(
         "scan_date": "04/09/2022",
     }
 )
-patient_2 = StagingMetadata(nhs_number="123456789", files=[patient_2_file_1], retries=0)
+patient_2 = StagingMetadata(
+    nhs_number="123456789", ods_code="Y12345", files=[patient_2_file_1], retries=0
+)
 MOCK_METADATA = [patient_1, patient_2]
 
 
@@ -53,13 +58,16 @@ patient_2_file_1_with_short_nhs_number = patient_2_file_1.model_copy(
 )
 patient_1_with_temp_nhs_number = StagingMetadata(
     nhs_number="1234567890",
+    ods_code="Y12345",
     files=[
         patient_1_file_1_with_temp_nhs_number,
         patient_1_file_2_with_temp_nhs_number,
     ],
 )
 patient_2_with_short_nhs_number = StagingMetadata(
-    nhs_number="123456789", files=[patient_2_file_1_with_short_nhs_number]
+    ods_code="Y12345",
+    nhs_number="123456789",
+    files=[patient_2_file_1_with_short_nhs_number],
 )
 
 patient_3_with_missing_nhs_number_metadata_file = sample_metadata_model.model_copy(
@@ -70,7 +78,9 @@ patient_3_with_missing_nhs_number_metadata_file = sample_metadata_model.model_co
     }
 )
 patient_3_with_missing_nhs_number = StagingMetadata(
-    nhs_number="0000000000", files=[patient_3_with_missing_nhs_number_metadata_file]
+    ods_code="Y12345",
+    nhs_number="0000000000",
+    files=[patient_3_with_missing_nhs_number_metadata_file],
 )
 
 EXPECTED_PARSED_METADATA = [

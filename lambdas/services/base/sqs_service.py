@@ -28,12 +28,14 @@ class SQSService:
         queue_url: str,
         message_body: str,
         nhs_number: str,
+        ods_code: str,
         group_id: str,
     ):
         self.client.send_message(
             QueueUrl=queue_url,
             MessageAttributes={
                 "NhsNumber": {"DataType": "String", "StringValue": nhs_number},
+                "OdsCode": {"DataType": "String", "StringValue": ods_code},
             },
             MessageBody=message_body,
             MessageGroupId=group_id,

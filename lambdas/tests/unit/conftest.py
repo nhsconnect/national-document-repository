@@ -75,6 +75,7 @@ MOCK_STATISTICS_TABLE = "test_statistics_table"
 MOCK_STATISTICS_REPORT_BUCKET_NAME = "test_statistics_report_bucket"
 
 TEST_NHS_NUMBER = "9000000009"
+TEST_ODS_CODE = "Y12345"
 TEST_UUID = "1234-4567-8912-HSDF-TEST"
 TEST_FILE_KEY = "test_file_key"
 TEST_FILE_NAME = "test.pdf"
