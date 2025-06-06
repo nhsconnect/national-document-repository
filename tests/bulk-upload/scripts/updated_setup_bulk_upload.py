@@ -284,13 +284,13 @@ def build_metadata_csv_row(file_key: str, file_count: int, nhs_number: str) -> s
     scan_id = "NEC"
     user_id = "NEC"
     upload_date = date_today
-    file_path = "/" + file_key
+    file_path = file_key
     row = ",".join(
         [
             file_path,
             str(file_count),
             "M85143",
-            str(nhs_number),
+            nhs_number,
             section,
             sub_section,
             scan_date,
