@@ -20,10 +20,10 @@ def lambda_handler(event, _context):
     logger.info("Received event. Starting bulk upload process")
     feature_flag_service = FeatureFlagService()
     validation_strict_mode_flag_object = feature_flag_service.get_feature_flags_by_flag(
-        FeatureFlags.LLOYD_GEORGE_VALIDATION_STRICT_MODE_ENABLED.value
+        FeatureFlags.LLOYD_GEORGE_VALIDATION_STRICT_MODE_ENABLED
     )
     validation_strict_mode = validation_strict_mode_flag_object[
-        FeatureFlags.LLOYD_GEORGE_VALIDATION_STRICT_MODE_ENABLED.value
+        FeatureFlags.LLOYD_GEORGE_VALIDATION_STRICT_MODE_ENABLED
     ]
 
     if validation_strict_mode:

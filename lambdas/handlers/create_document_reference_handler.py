@@ -43,7 +43,7 @@ def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.UPLOAD_RECORD.value
 
     feature_flag_service = FeatureFlagService()
-    upload_flag_name = FeatureFlags.UPLOAD_LAMBDA_ENABLED.value
+    upload_flag_name = FeatureFlags.UPLOAD_LAMBDA_ENABLED
     upload_lambda_enabled_flag_object = feature_flag_service.get_feature_flags_by_flag(
         upload_flag_name
     )

@@ -34,7 +34,7 @@ class LoginService:
         self.oidc_service = OidcService()
         self.ods_api_service = OdsApiService()
 
-    def generate_session(self, state, auth_code) -> dict:
+    def generate_session(self, state: str, auth_code: str) -> dict:
         logger.info("Login process started")
 
         try:
@@ -159,7 +159,7 @@ class LoginService:
 
         return state_match
 
-    def remove_used_state(self, state):
+    def remove_used_state(self, state: str):
         state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
         deletion_key = {"State": state}
         self.db_service.delete_item(table_name=state_table_name, key=deletion_key)

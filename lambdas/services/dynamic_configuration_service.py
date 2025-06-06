@@ -11,7 +11,7 @@ class DynamicConfigurationService:
         self.feature_flag_service = FeatureFlagService()
 
     def set_auth_ssm_prefix(self) -> None:
-        auth_flag_name = FeatureFlags.USE_SMARTCARD_AUTH.value
+        auth_flag_name = FeatureFlags.USE_SMARTCARD_AUTH
         use_smartcard_lambda_enabled_flag_object = (
             self.feature_flag_service.get_feature_flags_by_flag(auth_flag_name)
         )

@@ -45,7 +45,6 @@ class OdsApiService:
             raise OdsErrorException("Failed to fetch organisation data from ODS")
 
     def fetch_organisation_with_permitted_role(self, ods_code: str) -> Dict:
-
         if not ods_code:
             raise TooManyOrgsException(
                 "No single organisation found for identified ods codes"

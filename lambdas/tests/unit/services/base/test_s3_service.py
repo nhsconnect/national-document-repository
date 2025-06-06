@@ -410,7 +410,7 @@ def test_save_or_create_file(mock_service, mock_client):
     assert kwargs["Bucket"] == MOCK_BUCKET
     assert kwargs["Key"] == TEST_FILE_NAME
     assert kwargs["Body"].read() == body
-    
+
 
 def test_returns_binary_file_content_when_file_exists(
     mock_service, mock_client, mocker
@@ -430,4 +430,3 @@ def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
 
     with pytest.raises(ClientError):
         mock_service.get_binary_file("test-bucket", "nonexistent-key")
-

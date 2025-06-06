@@ -37,7 +37,7 @@ def lambda_handler(event, context):
     failed_message = "Update upload state failed"
     logger.info("Update upload state handler triggered")
     feature_flag_service = FeatureFlagService()
-    upload_flag_name = FeatureFlags.UPLOAD_LAMBDA_ENABLED.value
+    upload_flag_name = FeatureFlags.UPLOAD_LAMBDA_ENABLED
     upload_lambda_enabled_flag_object = feature_flag_service.get_feature_flags_by_flag(
         upload_flag_name
     )

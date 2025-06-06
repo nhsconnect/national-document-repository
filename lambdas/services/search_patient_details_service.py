@@ -121,7 +121,7 @@ class SearchPatientDetailsService:
 
     def _is_arf_upload_enabled(self):
         """Check if ARF upload workflow is enabled via feature flags"""
-        upload_flag_name = FeatureFlags.UPLOAD_ARF_WORKFLOW_ENABLED.value
+        upload_flag_name = FeatureFlags.UPLOAD_ARF_WORKFLOW_ENABLED
         upload_lambda_enabled_flag_object = (
             self.feature_flag_service.get_feature_flags_by_flag(upload_flag_name)
         )

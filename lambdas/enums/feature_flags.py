@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class FeatureFlags(Enum):
+class FeatureFlags(StrEnum):
     UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED = "uploadLloydGeorgeWorkflowEnabled"
     UPLOAD_LAMBDA_ENABLED = "uploadLambdaEnabled"
     UPLOAD_ARF_WORKFLOW_ENABLED = "uploadArfWorkflowEnabled"
@@ -9,3 +9,4 @@ class FeatureFlags(Enum):
     LLOYD_GEORGE_VALIDATION_STRICT_MODE_ENABLED = (
         "lloydGeorgeValidationStrictModeEnabled"
     )
+    MOCK_CIS2_LOGIN_ENABLED = "mockCis2LoginEnabled"
