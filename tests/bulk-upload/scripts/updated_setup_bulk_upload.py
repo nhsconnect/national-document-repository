@@ -1,17 +1,11 @@
 import argparse
-
-# import os
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from enum import StrEnum
-
-# from io import BytesIO
 from typing import NamedTuple
 
 import boto3
-
-# from pypdf import PdfWriter
 
 SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
@@ -100,7 +94,6 @@ def generate_nhs_number(nhs_number: str):
     return nhs_number
 
 
-# 9of20_Lloyd_George_Record_[Brad Edmond Avery]_[9730787212]_[13-09-2006]
 def generate_file_name(
     current_file_number: int, number_of_files: int, person_name: str, nhs_number: str
 ) -> str:
@@ -177,58 +170,7 @@ def inflate_pdf_file(source_pdf_path: str, target_pdf_path: str, target_size_mb:
             new_pdf.write(padding)
 
 
-def upload_source_file_to_staging(
-    source_pdf_path: str, file_key: str, target_size_mb: int = 1
-):
-    # reader = PdfReader(source_pdf_path)
-    # writer = PdfWriter()
-    # buffer = BytesIO()
-    # size_mb = 0
-
-    # empty content non pdf
-    # size_bytes = target_size_mb * 1024 * 1024
-    # buffer = BytesIO(b"\0" * size_bytes)
-
-    # # adding blank page
-    # while size_mb < target_size_mb:
-    #     writer.add_blank_page(width=595, height=842)
-    #
-    #     buffer.seek(0)
-    #     buffer.truncate(0)
-    #
-    #     writer.write(buffer)
-    #     size_mb = buffer.tell() / (1024 * 1024)
-
-    # adding valid page
-    # while size_mb < target_size_mb:
-    #     for page in reader.pages:
-    #         writer.add_page(page)
-    #
-    #     buffer.seek(0)
-    #     buffer.truncate(0)
-    #     writer.write(buffer)
-    #     size_mb = buffer.tell() / (1024 * 1024)
-
-    # buffer.seek(0)
-    # client = boto3.client("s3")
-    # client.put_object(
-    #     Bucket=STAGING_BUCKET,
-    #     Key=file_key,
-    #     Body=buffer,
-    #     StorageClass="INTELLIGENT_TIERING",
-    # )
-    #
-    # scan_result = "Clean"
-    # client.put_object_tagging(
-    #     Bucket=STAGING_BUCKET,
-    #     Key=file_key,
-    #     Tagging={
-    #         "TagSet": [
-    #             {"Key": "scan-result", "Value": scan_result},
-    #             {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
-    #         ]
-    #     },
-    # )
+def upload_source_file_to_staging(source_pdf_path: str, file_key: str):
     with open(source_pdf_path, "rb") as buffer:
         client = boto3.client("s3")
         client.put_object(
@@ -282,28 +224,6 @@ def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
                 print(f"Finished processing {key}")
             except Exception as e:
                 print(f"Failed processing {key}: {e}")
-
-
-# for target_file_key in lg_file_keys:
-#         client.copy_object(
-#             CopySource={"Bucket": STAGING_BUCKET, "Key": source_pdf_file_key},
-#             Bucket=STAGING_BUCKET,
-#             Key=target_file_key,
-#             StorageClass="INTELLIGENT_TIERING",
-#             MetadataDirective="COPY",
-#         )
-#
-#         scan_result = "Clean"
-#         client.put_object_tagging(
-#             Bucket=STAGING_BUCKET,
-#             Key=target_file_key,
-#             Tagging={
-#                 "TagSet": [
-#                     {"Key": "scan-result", "Value": scan_result},
-#                     {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
-#                 ]
-#             },
-#         )
 
 
 def check_confirmation(confirmation: str):
