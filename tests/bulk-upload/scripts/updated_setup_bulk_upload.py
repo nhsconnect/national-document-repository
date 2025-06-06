@@ -336,7 +336,7 @@ def get_user_input():
     parser.add_argument("--num-files", help="Number of files per patient to build.")
     parser.add_argument(
         "--file-size",
-        type=int,
+        type=float,
         help="Target file size in MB",
     )
     parser.add_argument(
