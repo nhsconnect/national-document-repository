@@ -51,7 +51,6 @@ class StagingMetadata(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     nhs_number: str = Field(default=NHS_NUMBER_PLACEHOLDER, alias=NHS_NUMBER_FIELD_NAME)
-    ods_code: str = Field(default=ODS_CODE_PLACEHOLDER, alias=ODS_CODE)
     files: list[MetadataFile]
     retries: int = 0
 

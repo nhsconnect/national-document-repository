@@ -2,11 +2,7 @@ import json
 
 import pytest
 from services.base.sqs_service import SQSService
-from tests.unit.conftest import (
-    MOCK_LG_METADATA_SQS_QUEUE,
-    TEST_NHS_NUMBER,
-    TEST_ODS_CODE,
-)
+from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, TEST_NHS_NUMBER
 
 
 @pytest.fixture()
@@ -39,14 +35,12 @@ def test_send_message_with_nhs_number_attr(set_env, mocked_sqs_client, service):
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,
         message_body=test_message_body,
         nhs_number=TEST_NHS_NUMBER,
-        ods_code=TEST_ODS_CODE,
     )
 
     mocked_sqs_client.send_message.assert_called_with(
         QueueUrl=MOCK_LG_METADATA_SQS_QUEUE,
         MessageAttributes={
             "NhsNumber": {"DataType": "String", "StringValue": TEST_NHS_NUMBER},
-            "OdsCode": {"DataType": "String", "StringValue": TEST_ODS_CODE},
         },
         MessageBody=test_message_body,
         MessageGroupId="test_group_id",

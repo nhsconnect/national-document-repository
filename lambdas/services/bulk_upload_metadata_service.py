@@ -96,7 +96,6 @@ class BulkUploadMetadataService:
         return [
             StagingMetadata(
                 nhs_number=nhs_number,
-                ods_code=ods_code,
                 files=patients[nhs_number, ods_code],
             )
             for (nhs_number, ods_code) in patients
@@ -109,14 +108,12 @@ class BulkUploadMetadataService:
 
         for staging_metadata in staging_metadata_list:
             nhs_number = staging_metadata.nhs_number
-            ods_code = staging_metadata.ods_code
             logger.info(f"Sending metadata for patientId: {nhs_number}")
 
             self.sqs_service.send_message_with_nhs_number_attr_fifo(
                 queue_url=self.metadata_queue_url,
                 message_body=staging_metadata.model_dump_json(by_alias=True),
                 nhs_number=nhs_number,
-                ods_code=ods_code,
                 group_id=sqs_group_id,
             )
 

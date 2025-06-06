@@ -46,21 +46,18 @@ def test_process_metadata_send_metadata_to_sqs_queue(
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
             nhs_number="1234567890",
-            ods_code="Y12345",
             group_id="bulk_upload_123412342",
         ),
         call(
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
             nhs_number="123456789",
-            ods_code="Y12345",
             group_id="bulk_upload_123412342",
         ),
         call(
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
             nhs_number="0000000000",
-            ods_code="Y12345",
             group_id="bulk_upload_123412342",
         ),
     ]
@@ -225,14 +222,12 @@ def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service, metadata_servic
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
             nhs_number="1234567890",
-            ods_code="Y12345",
             group_id="bulk_upload_123412342",
         ),
         call(
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
             nhs_number="123456789",
-            ods_code="Y12345",
             group_id="bulk_upload_123412342",
         ),
     ]
