@@ -1,9 +1,12 @@
 import argparse
+
+# import os
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from enum import StrEnum
-from io import BytesIO
+
+# from io import BytesIO
 from typing import NamedTuple
 
 import boto3
@@ -12,6 +15,7 @@ import boto3
 
 SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
+UPDATED_SOURCE_PDF_FILE = "../updated_source_to_copy_from.pdf"
 
 NHS_NUMBER_INVALID_FILE_NAME = []
 NHS_NUMBER_INVALID_FILES_NUMBER = []
@@ -156,16 +160,34 @@ def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str)
         )
 
 
+def inflate_pdf_file(source_pdf_path: str, target_pdf_path: str, target_size_mb: int):
+    with open(source_pdf_path, "rb") as original:
+        content = original.read()
+
+    with open(target_pdf_path, "wb") as new_pdf:
+        new_pdf.write(content)
+
+        current_size = len(content)
+        target_size = target_size_mb * 1024 * 1024
+        padding_size = target_size - current_size
+
+        if padding_size > 0:
+            # Append a PDF comment block that does nothing but take up space
+            padding = b"\n%" + b"0" * (padding_size - 3)
+            new_pdf.write(padding)
+
+
 def upload_source_file_to_staging(
     source_pdf_path: str, file_key: str, target_size_mb: int = 1
 ):
     # reader = PdfReader(source_pdf_path)
     # writer = PdfWriter()
-    buffer = BytesIO()
+    # buffer = BytesIO()
     # size_mb = 0
+
     # empty content non pdf
-    size_bytes = target_size_mb * 1024 * 1024
-    buffer = BytesIO(b"\0" * size_bytes)
+    # size_bytes = target_size_mb * 1024 * 1024
+    # buffer = BytesIO(b"\0" * size_bytes)
 
     # # adding blank page
     # while size_mb < target_size_mb:
@@ -187,26 +209,45 @@ def upload_source_file_to_staging(
     #     writer.write(buffer)
     #     size_mb = buffer.tell() / (1024 * 1024)
 
-    buffer.seek(0)
-    client = boto3.client("s3")
-    client.put_object(
-        Bucket=STAGING_BUCKET,
-        Key=file_key,
-        Body=buffer,
-        StorageClass="INTELLIGENT_TIERING",
-    )
+    # buffer.seek(0)
+    # client = boto3.client("s3")
+    # client.put_object(
+    #     Bucket=STAGING_BUCKET,
+    #     Key=file_key,
+    #     Body=buffer,
+    #     StorageClass="INTELLIGENT_TIERING",
+    # )
+    #
+    # scan_result = "Clean"
+    # client.put_object_tagging(
+    #     Bucket=STAGING_BUCKET,
+    #     Key=file_key,
+    #     Tagging={
+    #         "TagSet": [
+    #             {"Key": "scan-result", "Value": scan_result},
+    #             {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+    #         ]
+    #     },
+    # )
+    with open(source_pdf_path, "rb") as buffer:
+        client = boto3.client("s3")
+        client.put_object(
+            Bucket=STAGING_BUCKET,
+            Key=file_key,
+            Body=buffer,
+            StorageClass="INTELLIGENT_TIERING",
+        )
 
-    scan_result = "Clean"
-    client.put_object_tagging(
-        Bucket=STAGING_BUCKET,
-        Key=file_key,
-        Tagging={
-            "TagSet": [
-                {"Key": "scan-result", "Value": scan_result},
-                {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
-            ]
-        },
-    )
+        client.put_object_tagging(
+            Bucket=STAGING_BUCKET,
+            Key=file_key,
+            Tagging={
+                "TagSet": [
+                    {"Key": "scan-result", "Value": "Clean"},
+                    {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
+                ]
+            },
+        )
 
 
 def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
@@ -402,6 +443,10 @@ if __name__ == "__main__":
     ):
 
         upload_metadata_to_s3(body=metadata_content)
+
+        inflate_pdf_file(SOURCE_PDF_FILE, UPDATED_SOURCE_PDF_FILE, target_size_mb=1)
+        upload_source_file_to_staging(UPDATED_SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME)
+
         upload_source_file_to_staging(
             source_pdf_path=SOURCE_PDF_FILE,
             file_key=SOURCE_PDF_FILE_NAME,
