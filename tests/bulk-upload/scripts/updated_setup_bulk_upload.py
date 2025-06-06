@@ -1,6 +1,7 @@
 import argparse
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import date
 from enum import StrEnum
 from typing import NamedTuple
 
@@ -99,7 +100,7 @@ def generate_file_name(
     return (
         f"{current_file_number}of{number_of_files}"
         f"_Lloyd_George_Record_[{person_name}]"
-        f"_[{nhs_number}]_[13-09-2006]"
+        f"_[{nhs_number}]_[13-09-2006].pdf"
     )
 
 
@@ -107,12 +108,16 @@ def build_file_path(nhs_number: str, file_name: str) -> str:
     return f"{nhs_number}/{file_name}"
 
 
-def create_test_file_keys(
+def create_test_file_keys_and_metadata_rows(
     requested_patients_number: int = 2, number_of_files_for_each_patient: int = 3
 ):
     result = []
     nhs_number = NHS_NUMBER
-
+    metadata_rows = []
+    header_row = (
+        "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,"
+        "SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD"
+    )
     for _ in range(requested_patients_number):
         patient_name = generate_random_name()
         nhs_number = generate_nhs_number(nhs_number)
@@ -125,8 +130,15 @@ def create_test_file_keys(
                 nhs_number=nhs_number,
             )
             file_key = build_file_path(nhs_number, file_name)
+            # generate metadata row
+            metadata_rows.append(
+                build_metadata_csv_row(
+                    file_key, file_count=file_num, nhs_number=nhs_number
+                )
+            )
             result.append(file_key)
-    return result
+    metadata_content = "\n".join([header_row, *metadata_rows])
+    return result, metadata_content
 
 
 def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str):
@@ -188,7 +200,7 @@ def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
         )
         return target_file_key
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=20) as executor:
         futures = [executor.submit(copy_and_tag, key) for key in lg_file_keys]
         for future in as_completed(futures):
             try:
@@ -264,6 +276,43 @@ def get_user_input():
     return args
 
 
+def build_metadata_csv_row(file_key: str, file_count: int, nhs_number: str) -> str:
+    date_today = date.today().strftime("%d/%m/%Y")
+    section = "LG"
+    sub_section = ""
+    scan_date = "01/01/2023"
+    scan_id = "NEC"
+    user_id = "NEC"
+    upload_date = date_today
+    file_path = "/" + file_key
+    row = ",".join(
+        [
+            file_path,
+            str(file_count),
+            "M85143",
+            str(nhs_number),
+            section,
+            sub_section,
+            scan_date,
+            scan_id,
+            user_id,
+            upload_date,
+        ]
+    )
+    return row
+
+
+def upload_metadata_to_s3(body: str):
+    client = boto3.client("s3")
+    client.put_object(
+        Bucket=STAGING_BUCKET,
+        Key="metadata.csv",
+        Body=body,
+        ContentType="text/csv",
+        StorageClass="INTELLIGENT_TIERING",
+    )
+
+
 if __name__ == "__main__":
     args = get_user_input()
     print("Welcome to test set up script")
@@ -299,7 +348,9 @@ if __name__ == "__main__":
     file_number = args.num_files or int(
         input("How many files per patient do you wish to generate: ")
     )
-    file_keys = create_test_file_keys(int(number_of_patients), int(file_number))
+    file_keys, metadata_content = create_test_file_keys_and_metadata_rows(
+        int(number_of_patients), int(file_number)
+    )
 
     if (
         args.upload
@@ -309,10 +360,8 @@ if __name__ == "__main__":
         ).lower()
         == "y"
     ):
-        # fileKeys = [
-        #     (SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME),
-        #     # (source_file_name, SOURCE_PDF_FILE_NAME),
-        # ]
+
+        upload_metadata_to_s3(body=metadata_content)
         upload_source_file_to_staging(SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME)
 
         upload_lg_files_to_staging(file_keys, SOURCE_PDF_FILE_NAME)
