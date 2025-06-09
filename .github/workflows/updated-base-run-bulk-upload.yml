@@ -87,6 +87,5 @@ jobs:
         run: |
           python run_bulk_upload.py \
             --environment "${{ inputs.sandbox }}" \
-            --disable-pds-stub \
             --start-bulk-upload
         working-directory: ./tests/bulk-upload/scripts
