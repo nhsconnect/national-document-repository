@@ -1,6 +1,5 @@
 import argparse
 import json
-import sys
 
 import boto3
 
@@ -55,10 +54,7 @@ if __name__ == "__main__":
 
     bulk_upload_lambda_name = f"{args.environment}_BulkUploadLambda"
     search_lambda_name = f"{args.environment}_SearchPatientDetailsLambda"
-    if args.disable_pds_stub or (
-        sys.stdin.isatty()
-        and input("Would you like to disable the FHIR Stub: ").lower() == "y"
-    ):
+    if args.disable_pds_stub or input("Would you like to disable the FHIR Stub: "):
         new_variables = {"PDS_FHIR_IS_STUBBED": "false"}
         update_lambda_environment_variables(bulk_upload_lambda_name, new_variables)
         update_lambda_environment_variables(search_lambda_name, new_variables)
