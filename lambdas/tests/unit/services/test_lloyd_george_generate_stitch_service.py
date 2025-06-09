@@ -189,7 +189,7 @@ def test_stitch_lloyd_george_record_raises_404_if_no_docs(patched_stitch_service
 def test_stitch_lloyd_george_record(
     patched_stitch_service,
     mocker,
-    mock_stitch_pdf_into_steam,
+    mock_stitch_pdf_into_stream,
     mock_get_total_file_size_in_bytes,
 ):
     patched_stitch_service.get_lloyd_george_record_for_patient.return_value = (
@@ -207,7 +207,7 @@ def test_stitch_lloyd_george_record(
 
     patched_stitch_service.get_documents_for_stitching.assert_called_once()
     patched_stitch_service.get_total_file_size_in_bytes.assert_called_once()
-    mock_stitch_pdf_into_steam.assert_called_once()
+    mock_stitch_pdf_into_stream.assert_called_once()
     patched_stitch_service.upload_stitched_lg_record.assert_called_once()
     assert (
         patched_stitch_service.stitch_trace_object.total_file_size_in_bytes
@@ -248,7 +248,7 @@ def test_get_documents_for_stitching(patched_stitch_service, mocker):
 
 def test_get_documents_for_stitching_raise_500_error_if_failed_to_get_dynamodb_record(
     mock_tempfile,
-    mock_stitch_pdf_into_steam,
+    mock_stitch_pdf_into_stream,
     mock_get_total_file_size_in_bytes,
     patched_stitch_service,
 ):
@@ -266,13 +266,13 @@ def test_get_documents_for_stitching_raise_500_error_if_failed_to_get_dynamodb_r
     patched_stitch_service.download_lloyd_george_files.assert_called_once()
     patched_stitch_service.get_most_recent_created_date.assert_not_called()
     mock_get_total_file_size_in_bytes.assert_not_called()
-    mock_stitch_pdf_into_steam.assert_not_called()
+    mock_stitch_pdf_into_stream.assert_not_called()
     patched_stitch_service.upload_stitched_lg_record.assert_not_called()
 
 
 def test_get_documents_for_stitching_raise_500_error_if_failed_to_download_lg_files(
     mock_tempfile,
-    mock_stitch_pdf_into_steam,
+    mock_stitch_pdf_into_stream,
     mock_get_total_file_size_in_bytes,
     patched_stitch_service,
 ):
@@ -291,17 +291,17 @@ def test_get_documents_for_stitching_raise_500_error_if_failed_to_download_lg_fi
     mock_get_total_file_size_in_bytes.assert_not_called()
     patched_stitch_service.upload_stitched_lg_record.assert_not_called()
     patched_stitch_service.get_most_recent_created_date.assert_not_called()
-    mock_stitch_pdf_into_steam.assert_not_called()
+    mock_stitch_pdf_into_stream.assert_not_called()
 
 
 def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_stitch_pdf(
     mock_tempfile,
-    mock_stitch_pdf_into_steam,
+    mock_stitch_pdf_into_stream,
     mock_get_total_file_size_in_bytes,
     patched_stitch_service,
     mocker,
 ):
-    mock_stitch_pdf_into_steam.side_effect = PdfReadError()
+    mock_stitch_pdf_into_stream.side_effect = PdfReadError()
     patched_stitch_service.get_documents_for_stitching = mocker.MagicMock(
         return_value=MOCK_DOWNLOADED_LLOYD_GEORGE_FILES
     )
@@ -317,7 +317,7 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_stitch_pdf(
 
 def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_upload_stitched_pdf(
     mock_tempfile,
-    mock_stitch_pdf_into_steam,
+    mock_stitch_pdf_into_stream,
     mock_get_total_file_size_in_bytes,
     patched_stitch_service,
     mocker,
