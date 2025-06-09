@@ -5,7 +5,10 @@ from glob import glob
 
 from requests import Response
 from services.patient_search_service import PatientSearch
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import PdsErrorException
+
+logger = LoggingService(__name__)
 
 
 class MockPdsApiService(PatientSearch):
@@ -46,11 +49,17 @@ class MockPdsApiService(PatientSearch):
             response.status_code = 200
             response._content = json.dumps(pds_patient).encode("utf-8")
         else:
+            logger.info(
+                f"did not find nhs number = {nhs_number} "
+                f"in the mock pdf results,"
+                f"always_pass_mock variable = self.always_pass_mock"
+            )
             if self.always_pass_mock:
                 response.status_code = 200
                 pds_patient = mock_pds_results[3]
                 pds_patient["id"] = nhs_number
                 pds_patient["identifier"][0]["value"] = nhs_number
+                logger.info(f"created a new patient  = {pds_patient}")
 
             response.status_code = 404
 
