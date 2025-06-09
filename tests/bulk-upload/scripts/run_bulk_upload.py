@@ -63,7 +63,7 @@ if __name__ == "__main__":
         update_lambda_environment_variables(bulk_upload_lambda_name, new_variables)
         update_lambda_environment_variables(search_lambda_name, new_variables)
     else:
-        new_variables = {"PDS_FHIR_IS_STUBBED": "true"}
+        new_variables = {"PDS_FHIR_IS_STUBBED": "true", "PDS_FHIR_ALWAYS_TRUE": "true"}
         update_lambda_environment_variables(bulk_upload_lambda_name, new_variables)
         update_lambda_environment_variables(search_lambda_name, new_variables)
     if args.start_bulk_upload or input(

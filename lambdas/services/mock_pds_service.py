@@ -9,7 +9,8 @@ from utils.exceptions import PdsErrorException
 
 
 class MockPdsApiService(PatientSearch):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, always_pass_mock: bool = False, *args, **kwargs):
+        self.always_pass_mock = always_pass_mock
         pass
 
     def pds_request(self, nhs_number: str, *args, **kwargs) -> Response:
@@ -41,11 +42,16 @@ class MockPdsApiService(PatientSearch):
                 break
 
         response = Response()
-
         if bool(pds_patient):
             response.status_code = 200
             response._content = json.dumps(pds_patient).encode("utf-8")
         else:
+            if self.always_pass_mock:
+                response.status_code = 200
+                pds_patient = mock_pds_results[3]
+                pds_patient["id"] = nhs_number
+                pds_patient["identifier"][0]["value"] = nhs_number
+
             response.status_code = 404
 
         return response

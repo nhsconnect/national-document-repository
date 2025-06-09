@@ -53,7 +53,9 @@ def get_pds_service() -> PatientSearch:
         auth_service = NhsOauthService(ssm_service)
         return PdsApiService(ssm_service, auth_service)
     else:
-        return MockPdsApiService()
+        return MockPdsApiService(
+            always_pass_mock=os.getenv("PDS_FHIR_ALWAYS_TRUE") in ["True", "true"]
+        )
 
 
 def redact_id_to_last_4_chars(str_id: str) -> str:
