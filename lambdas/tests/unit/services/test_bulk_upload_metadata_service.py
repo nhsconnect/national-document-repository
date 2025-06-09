@@ -10,6 +10,7 @@ from services.bulk_upload_metadata_service import BulkUploadMetadataService
 from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, MOCK_STAGING_STORE_BUCKET
 from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_PARSED_METADATA,
+    EXPECTED_PARSED_METADATA_2,
     EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
     EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
@@ -19,6 +20,7 @@ from utils.exceptions import BulkUploadMetadataException
 
 METADATA_FILE_DIR = "tests/unit/helpers/data/bulk_upload"
 MOCK_METADATA_CSV = f"{METADATA_FILE_DIR}/metadata.csv"
+MOCK_DUPLICATE_ODS_METADATA_CSV = f"{METADATA_FILE_DIR}/duplicate_ods_metadata.csv"
 MOCK_INVALID_METADATA_CSV_FILES = [
     f"{METADATA_FILE_DIR}/metadata_invalid.csv",
     f"{METADATA_FILE_DIR}/metadata_invalid_empty_nhs_number.csv",
@@ -204,6 +206,12 @@ def test_download_metadata_from_s3_raise_error_when_failed_to_download(
 def test_csv_to_staging_metadata(set_env, metadata_service):
     actual = metadata_service.csv_to_staging_metadata(MOCK_METADATA_CSV)
     expected = EXPECTED_PARSED_METADATA
+    assert actual == expected
+
+
+def test_duplicates_csv_to_staging_metadata(set_env, metadata_service):
+    actual = metadata_service.csv_to_staging_metadata(MOCK_DUPLICATE_ODS_METADATA_CSV)
+    expected = EXPECTED_PARSED_METADATA_2
     assert actual == expected
 
 
