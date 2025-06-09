@@ -192,6 +192,10 @@ def upload_source_file_to_staging(source_pdf_path: str, file_key: str):
         )
 
 
+def delete_file_from_staging(file_key: str):
+    client.delete_object(Bucket=STAGING_BUCKET, Key=file_key)
+
+
 def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
     def copy_and_tag(target_file_key):
         client.copy_object(
@@ -201,16 +205,10 @@ def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
             StorageClass=S3_STORAGE_CLASS,
             MetadataDirective="COPY",
         )
-        scan_result = "Clean"
         client.put_object_tagging(
             Bucket=STAGING_BUCKET,
             Key=target_file_key,
-            Tagging={
-                "TagSet": [
-                    {"Key": "scan-result", "Value": scan_result},
-                    {"Key": "date-scanned", "Value": "2023-11-14T21:10:33Z"},
-                ]
-            },
+            Tagging={"TagSet": S3_SCAN_TAGS},
         )
         return target_file_key
 
@@ -367,6 +365,8 @@ if __name__ == "__main__":
         upload_source_file_to_staging(UPDATED_SOURCE_PDF_FILE, SOURCE_PDF_FILE_NAME)
 
         upload_lg_files_to_staging(file_keys, SOURCE_PDF_FILE_NAME)
+
+        delete_file_from_staging(SOURCE_PDF_FILE_NAME)
     # if (
     #     args.empty_lloydgeorge_store
     #     or input(

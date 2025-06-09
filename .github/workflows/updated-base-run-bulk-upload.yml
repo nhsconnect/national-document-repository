@@ -83,10 +83,10 @@ jobs:
             --empty-lloydgeorge-store
         working-directory: ./tests/bulk-upload/scripts
 
-#      - name: Run Bulk Upload
-#        run: |
-#          python run_bulk_upload.py \
-#            --environment "${{ inputs.sandbox }}" \
-#            --disable-pds-stub \
-#            --start-bulk-upload
-#        working-directory: ./tests/bulk-upload/scripts
+      - name: Run Bulk Upload
+        run: |
+          python run_bulk_upload.py \
+            --environment "${{ inputs.sandbox }}" \
+            --disable-pds-stub \
+            --start-bulk-upload
+        working-directory: ./tests/bulk-upload/scripts
