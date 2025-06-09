@@ -34,7 +34,7 @@ class DocumentManifestZipService:
 
     def stream_zip_documents(self) -> BytesIO:
         logger.info("Streaming and zipping documents in-memory")
-        documents = self.zip_trace_object.files_to_download  # Dict[str, str]
+        documents = self.zip_trace_object.files_to_download
 
         zip_buffer = BytesIO()
 
@@ -42,7 +42,6 @@ class DocumentManifestZipService:
             for document_location, document_name in documents.items():
                 file_bucket, file_key = self.get_file_bucket_and_key(document_location)
                 try:
-                    # Stream file from S3 and close stream at the end
                     with closing(
                         self.s3_service.get_object_stream(file_bucket, file_key)
                     ) as s3_object_stream:
