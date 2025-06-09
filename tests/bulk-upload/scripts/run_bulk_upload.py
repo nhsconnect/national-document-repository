@@ -62,6 +62,10 @@ if __name__ == "__main__":
         new_variables = {"PDS_FHIR_IS_STUBBED": "false"}
         update_lambda_environment_variables(bulk_upload_lambda_name, new_variables)
         update_lambda_environment_variables(search_lambda_name, new_variables)
+    else:
+        new_variables = {"PDS_FHIR_IS_STUBBED": "true"}
+        update_lambda_environment_variables(bulk_upload_lambda_name, new_variables)
+        update_lambda_environment_variables(search_lambda_name, new_variables)
     if args.start_bulk_upload or input(
         "Would you like to start the Bulk Upload Process:"
     ):
