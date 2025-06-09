@@ -8,7 +8,7 @@ import boto3
 SOURCE_PDF_FILE_NAME = "source_to_copy_from.pdf"
 SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
 UPDATED_SOURCE_PDF_FILE = "../updated_source_to_copy_from.pdf"
-NHS_NUMBER = "0000000000"
+NHS_NUMBER = "1000000000"
 
 CSV_HEADER_ROW = (
     "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,"
