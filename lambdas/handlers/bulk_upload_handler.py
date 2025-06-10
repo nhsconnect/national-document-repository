@@ -48,7 +48,9 @@ def lambda_handler(event, _context):
             status_code=http_status_code, body=response_body, methods="GET"
         ).create_api_gateway_response()
 
-    bulk_upload_service = BulkUploadService(strict_mode=validation_strict_mode)
+    bulk_upload_service = BulkUploadService(
+        strict_mode=validation_strict_mode, pds_fhir_always_true=pds_fhir_always_true
+    )
 
     try:
         bulk_upload_service.process_message_queue(event["Records"])

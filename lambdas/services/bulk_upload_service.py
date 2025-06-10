@@ -47,7 +47,7 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadService:
-    def __init__(self, strict_mode):
+    def __init__(self, strict_mode, pds_fhir_always_true=False):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
         self.s3_repository = BulkUploadS3Repository()
@@ -56,6 +56,7 @@ class BulkUploadService:
         self.unhandled_messages = []
         self.file_path_cache = {}
         self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
+        self.pds_fhir_always_true = pds_fhir_always_true
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -118,21 +119,22 @@ class BulkUploadService:
             raise InvalidMessageException(str(e))
 
         logger.info("SQS event is valid. Validating NHS number and file names")
-        try:
-            file_names = [
-                os.path.basename(metadata.file_path)
-                for metadata in staging_metadata.files
-            ]
-            request_context.patient_nhs_no = staging_metadata.nhs_number
-            validate_lg_file_names(file_names, staging_metadata.nhs_number)
+        if not self.pds_fhir_always_true:
+            try:
+                file_names = [
+                    os.path.basename(metadata.file_path)
+                    for metadata in staging_metadata.files
+                ]
+                request_context.patient_nhs_no = staging_metadata.nhs_number
+                validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
-            pds_patient_details = getting_patient_info_from_pds(
-                staging_metadata.nhs_number
-            )
-            patient_ods_code = (
-                pds_patient_details.get_ods_code_or_inactive_status_for_gp()
-            )
-            if os.getenv("PDS_FHIR_ALWAYS_TRUE", "false").lower() == "false":
+                pds_patient_details = getting_patient_info_from_pds(
+                    staging_metadata.nhs_number
+                )
+                patient_ods_code = (
+                    pds_patient_details.get_ods_code_or_inactive_status_for_gp()
+                )
+
                 if not self.strict_mode:
                     (
                         name_validation_accepted_reason,
@@ -171,21 +173,23 @@ class BulkUploadService:
                         accepted_reason, "PDS record is restricted"
                     )
 
-        except (
-            LGInvalidFilesException,
-            PatientRecordAlreadyExistException,
-        ) as error:
-            logger.info(
-                f"Detected issue related to patient number: {staging_metadata.nhs_number}"
-            )
-            logger.error(error)
-            logger.info("Will stop processing Lloyd George record for this patient.")
+            except (
+                LGInvalidFilesException,
+                PatientRecordAlreadyExistException,
+            ) as error:
+                logger.info(
+                    f"Detected issue related to patient number: {staging_metadata.nhs_number}"
+                )
+                logger.error(error)
+                logger.info(
+                    "Will stop processing Lloyd George record for this patient."
+                )
 
-            reason = str(error)
-            self.dynamo_repository.write_report_upload_to_dynamo(
-                staging_metadata, UploadStatus.FAILED, reason, patient_ods_code
-            )
-            return
+                reason = str(error)
+                self.dynamo_repository.write_report_upload_to_dynamo(
+                    staging_metadata, UploadStatus.FAILED, reason, patient_ods_code
+                )
+                return
 
         logger.info(
             "NHS Number and filename validation complete. Checking virus scan has marked files as Clean"
