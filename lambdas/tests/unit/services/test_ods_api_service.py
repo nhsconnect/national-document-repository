@@ -4,13 +4,7 @@ import pytest
 from enums.lambda_error import LambdaError
 from requests import Response
 from services.base.ssm_service import SSMService
-from services.ods_api_service import (
-    OdsApiService,
-    find_icb_for_user,
-    get_user_gp_org_role_code,
-    get_user_primary_org_role_code,
-    parse_ods_response,
-)
+from services.ods_api_service import OdsApiService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from tests.unit.helpers.data.ods.ods_organisation_response import (
     NO_RELS_RESPONSE,
@@ -25,6 +19,14 @@ from utils.exceptions import (
     TooManyOrgsException,
 )
 from utils.lambda_exceptions import LoginException
+
+
+@pytest.fixture
+def service_under_test(set_env, mocker):
+    service = OdsApiService()
+    mocker.patch.object(service, "ssm_service")
+    mocker.patch.object(service, "token_handler_ssm_service")
+    return service
 
 
 def test_fetch_organisation_data_returns_organisation_data(mocker):
@@ -67,12 +69,15 @@ def mock_ods_responses():
 
 
 def test_parse_ods_response_extracts_data_and_includes_role_code_passed_as_arg(
+    service_under_test,
     mock_ods_responses,
 ):
     test_response = mock_ods_responses["pcse_org"]
     role_code = "this should be the role code and not the one in the mock data"
 
-    actual = parse_ods_response(test_response, role_code, "Test_icb_code")
+    actual = service_under_test._parse_ods_response(
+        test_response, role_code, "Test_icb_code"
+    )
     expected = {
         "name": "Primary Care Support England",
         "org_ods_code": "X4S4L",
@@ -150,7 +155,7 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
     assert expected == actual
 
 
-def test_fetch_org_with_permitted_role_itoc(mocker):
+def test_fetch_org_with_permitted_role_itoc(service_under_test, mocker):
     itoc_ods = "Y90123"
 
     mocker.patch.object(
@@ -158,17 +163,15 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
         "fetch_organisation_data",
         return_value=itoc_ods,
     )
-    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_pcse_ods_code", return_value="X4S4L"
+    service_under_test.ssm_service.get_ssm_parameter.return_value = "RO76"
+    service_under_test.token_handler_ssm_service.get_pcse_ods_code.return_value = (
+        "X4S4L"
     )
-    mocker.patch.object(
-        TokenHandlerSSMService, "get_itoc_ods_codes", return_value="Y90123"
+    service_under_test.token_handler_ssm_service.get_itoc_ods_codes.return_value = (
+        "Y90123"
     )
-    mocker.patch.object(
-        TokenHandlerSSMService,
-        "get_allowed_list_of_ods_codes",
-        return_value="R0013,R0014,R0015",
+    service_under_test.ssm_service.get_allowed_list_of_ods_codes.return_value = (
+        "R0013,R0014,R0015"
     )
 
     expected = {
@@ -178,9 +181,7 @@ def test_fetch_org_with_permitted_role_itoc(mocker):
         "icb_ods_code": "ITOC",
     }
 
-    actual = OdsApiService.fetch_organisation_with_permitted_role(
-        OdsApiService(), itoc_ods
-    )
+    actual = service_under_test.fetch_organisation_with_permitted_role(itoc_ods)
 
     assert expected == actual
 
@@ -264,38 +265,42 @@ def test_fetch_org_with_permitted_role_raises_exception_if_more_than_one_org_for
         (ORGANISATION_RESPONSE, "ICB_ODS_CODE"),
     ],
 )
-def test_find_org_relationship_icb_responses(org_data, expected):
-    actual = find_icb_for_user(org_data)
+def test_find_org_relationship_icb_responses(service_under_test, org_data, expected):
+    actual = service_under_test._find_icb_for_user(org_data)
     assert actual == expected
 
 
-def test_get_user_primary_org_role_code(mock_ods_responses):
+def test_get_user_primary_org_role_code(service_under_test, mock_ods_responses):
     expected = "fake_role_code"
-    actual = get_user_primary_org_role_code(mock_ods_responses["not_gp_or_pcse"])
+    actual = service_under_test._get_user_primary_org_role_code(
+        mock_ods_responses["not_gp_or_pcse"]
+    )
     assert actual == expected
 
 
 def test_get_user_gp_org_role_code_returns_none_when_not_found(
-    mock_ods_responses, mocker
+    service_under_test, mock_ods_responses, mocker
 ):
     mocker.patch.object(SSMService, "get_ssm_parameter", return_value="fake_role_code")
     expected = None
-    actual = get_user_gp_org_role_code(mock_ods_responses["gp_org"])
+    actual = service_under_test._get_user_gp_org_role_code(mock_ods_responses["gp_org"])
     assert actual == expected
 
 
-def test_get_user_gp_org_role_code(mocker, mock_ods_responses):
+def test_get_user_gp_org_role_code(service_under_test, mocker, mock_ods_responses):
     mocker.patch.object(SSMService, "get_ssm_parameter", return_value="RO76")
     expected = "RO76"
-    actual = get_user_gp_org_role_code(mock_ods_responses["gp_org"])
+    actual = service_under_test._get_user_gp_org_role_code(mock_ods_responses["gp_org"])
     assert actual == expected
 
 
-def test_get_user_gp_org_role_code_raises_login_exception(mocker, mock_ods_responses):
+def test_get_user_gp_org_role_code_raises_login_exception(
+    service_under_test, mocker, mock_ods_responses
+):
     mocker.patch.object(SSMService, "get_ssm_parameter", return_value="")
     expected = LoginException(500, LambdaError.LoginGpOrgRoleCode)
 
     with pytest.raises(LoginException) as actual:
-        get_user_gp_org_role_code(mock_ods_responses["gp_org"])
+        service_under_test._get_user_gp_org_role_code(mock_ods_responses["gp_org"])
 
     assert actual.value.__dict__ == expected.__dict__

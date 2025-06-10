@@ -95,7 +95,7 @@ def _get_and_validate_query_params(
     return auth_code, state
 
 
-def _generate_error_response(exc: Exception, service):
+def _generate_error_response(exc: Exception, service: LoginService):
     if isinstance(exc, (KeyError, TypeError)):
         logger.error(
             f"{LambdaError.LoginNoAuth.to_str()}: {str(exc)}",

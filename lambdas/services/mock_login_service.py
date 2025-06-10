@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from models.oidc_models import IdTokenClaimSet
 from services.login_service import LoginService
+from services.mock_ods_api_service import MockOdsApiService
 from typing_extensions import override
 from utils.audit_logging_setup import LoggingService
 
@@ -14,6 +15,7 @@ logger = LoggingService(__name__)
 class MockLoginService(LoginService):
     def __init__(self):
         super().__init__()
+        self.ods_api_service = MockOdsApiService()
         self.base_mock_api_url = "https://identity.ptl.api.platform.nhs.uk"
         self.mock_api_key = os.environ.get("MOCK_CIS2_API_KEY_SSM")
 
@@ -25,9 +27,9 @@ class MockLoginService(LoginService):
         state: str | None = None,
         auth_code: str | None = None,
     ) -> dict:
-        # TODO - Fetch MOCK_CIS2_API_KEY_SSM from SSM
+        # TODO - Fetch MOCK_CIS2_API_KEY_SSM from SSM using os var
 
-        # TODO - Compare password to SSM param
+        # TODO - Compare password to new password SSM param (for extra security)
 
         logger.info("Fetching mock user information")
         userinfo = self.get_mock_user_info(username)
@@ -35,7 +37,8 @@ class MockLoginService(LoginService):
         mock_id_token_claim_set = IdTokenClaimSet(
             sub=userinfo["sub"],  # subject claim. user's login ID at CIS2
             sid="",  # user's session ID at CIS2
-            exp=0,  # token expiry time
+            exp=0,  # TODO: Look at ndr-dev id claim set and put same value here
+            # (Might match access token endpoint 'expires_in': 3600'?)
             selected_roleid=userinfo["selected_roleid"],
         )
         selected_role_id = mock_id_token_claim_set.selected_roleid
@@ -47,13 +50,13 @@ class MockLoginService(LoginService):
             userinfo, selected_role_id, "R"
         )
 
-        # TODO - Mock out
-        # permitted_orgs_details = (
-        #     self.ods_api_service.fetch_organisation_with_permitted_role(
-        #         org_ods_codes
-        #     )
-        # )
-        permitted_orgs_details = {}
+        logger.info("Extracting user's organisation and smartcard codes")
+        org_ods_codes = self.oidc_service.fetch_user_org_code(
+            userinfo, selected_role_id
+        )
+        permitted_orgs_details = (
+            self.ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
+        )
 
         logger.info("Calculating repository role")
         repository_role = self.generate_repository_role(
