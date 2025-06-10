@@ -48,19 +48,20 @@ class MockPdsApiService(PatientSearch):
         if bool(pds_patient):
             response.status_code = 200
             response._content = json.dumps(pds_patient).encode("utf-8")
+        elif self.always_pass_mock:
+            response.status_code = 200
+            pds_patient = mock_pds_results[3]
+            pds_patient["id"] = nhs_number
+            pds_patient["identifier"][0]["value"] = nhs_number
+            response._content = json.dumps(pds_patient).encode("utf-8")
+            logger.info(f"created a new patient = {pds_patient}")
         else:
             response.status_code = 404
             logger.info(
                 f"did not find nhs number = {nhs_number} "
-                f"in the mock pdf results,"
+                f"in the mock pdf results, "
                 f"always_pass_mock variable = {self.always_pass_mock}"
             )
-            if self.always_pass_mock:
-                response.status_code = 200
-                pds_patient = mock_pds_results[3]
-                pds_patient["id"] = nhs_number
-                pds_patient["identifier"][0]["value"] = nhs_number
-                logger.info(f"created a new patient  = {pds_patient}")
 
         return response
 
