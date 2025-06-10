@@ -35,22 +35,6 @@ NHS_NUMBER_ALREADY_UPLOADED = []
 NHS_NUMBER_WRONG_DOB = []
 
 
-#
-# class Patient(NamedTuple):
-#     full_name: str
-#     date_of_birth: str
-#     nhs_number: str
-#     ods_code: str
-
-
-# class PatientsDataFile(StrEnum):
-#     JigginsLane = "ODS_Code_M85143.csv"
-#     NoOds = "NoODS_ExpiredODS.csv"
-#     H81109 = "ODS_Code_H81109.csv"
-#     GPWithAccentCharPatients = "ODS_Code_H85686.csv"
-#     MockPDS = "ODS_MockPDS.csv"
-
-
 def generate_random_name():
     first_names = [
         "Alice",
@@ -138,7 +122,7 @@ def create_test_file_keys_and_metadata_rows(
                 nhs_number=nhs_number,
             )
             file_key = build_file_path(nhs_number, file_name)
-            # generate metadata row
+
             metadata_rows.append(
                 build_metadata_csv_row(
                     file_key, file_count=file_num, nhs_number=nhs_number

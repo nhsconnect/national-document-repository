@@ -119,22 +119,22 @@ class BulkUploadService:
             raise InvalidMessageException(str(e))
 
         logger.info("SQS event is valid. Validating NHS number and file names")
-        if not self.pds_fhir_always_true:
-            try:
-                file_names = [
-                    os.path.basename(metadata.file_path)
-                    for metadata in staging_metadata.files
-                ]
-                request_context.patient_nhs_no = staging_metadata.nhs_number
-                validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
-                pds_patient_details = getting_patient_info_from_pds(
-                    staging_metadata.nhs_number
-                )
-                patient_ods_code = (
-                    pds_patient_details.get_ods_code_or_inactive_status_for_gp()
-                )
+        try:
+            file_names = [
+                os.path.basename(metadata.file_path)
+                for metadata in staging_metadata.files
+            ]
+            request_context.patient_nhs_no = staging_metadata.nhs_number
+            validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
+            pds_patient_details = getting_patient_info_from_pds(
+                staging_metadata.nhs_number
+            )
+            patient_ods_code = (
+                pds_patient_details.get_ods_code_or_inactive_status_for_gp()
+            )
+            if not self.pds_fhir_always_true:
                 if not self.strict_mode:
                     (
                         name_validation_accepted_reason,
@@ -173,23 +173,21 @@ class BulkUploadService:
                         accepted_reason, "PDS record is restricted"
                     )
 
-            except (
-                LGInvalidFilesException,
-                PatientRecordAlreadyExistException,
-            ) as error:
-                logger.info(
-                    f"Detected issue related to patient number: {staging_metadata.nhs_number}"
-                )
-                logger.error(error)
-                logger.info(
-                    "Will stop processing Lloyd George record for this patient."
-                )
+        except (
+            LGInvalidFilesException,
+            PatientRecordAlreadyExistException,
+        ) as error:
+            logger.info(
+                f"Detected issue related to patient number: {staging_metadata.nhs_number}"
+            )
+            logger.error(error)
+            logger.info("Will stop processing Lloyd George record for this patient.")
 
-                reason = str(error)
-                self.dynamo_repository.write_report_upload_to_dynamo(
-                    staging_metadata, UploadStatus.FAILED, reason, patient_ods_code
-                )
-                return
+            reason = str(error)
+            self.dynamo_repository.write_report_upload_to_dynamo(
+                staging_metadata, UploadStatus.FAILED, reason, patient_ods_code
+            )
+            return
 
         logger.info(
             "NHS Number and filename validation complete. Checking virus scan has marked files as Clean"
