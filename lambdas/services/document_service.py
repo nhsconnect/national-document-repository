@@ -143,13 +143,16 @@ class DocumentService:
         self,
         table_name: str,
         document_references: list[DocumentReference],
-        update_fields: dict,
+        update_fields_name: set[str] = None,
     ):
+
         for reference in document_references:
             self.dynamo_service.update_item(
                 table_name=table_name,
                 key_pair={DocumentReferenceMetadataFields.ID.value: reference.id},
-                updated_fields=update_fields,
+                updated_fields=reference.model_dump(
+                    exclude_none=True, by_alias=True, include=update_fields_name
+                ),
             )
 
     def hard_delete_metadata_records(

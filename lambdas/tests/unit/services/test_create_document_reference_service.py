@@ -1,6 +1,7 @@
 import pytest
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.snomed_codes import SnomedCodes
 from freezegun import freeze_time
 from models.document_reference import DocumentReference, UploadRequestDocument
 from services.create_document_reference_service import CreateDocumentReferenceService
@@ -55,8 +56,8 @@ def mock_s3(mocker, mock_create_doc_ref_service):
 
 
 @pytest.fixture()
-def mock_prepare_doc_object(mock_create_doc_ref_service, mocker):
-    yield mocker.patch.object(mock_create_doc_ref_service, "prepare_doc_object")
+def mock_create_document_reference(mock_create_doc_ref_service, mocker):
+    yield mocker.patch.object(mock_create_doc_ref_service, "create_document_reference")
 
 
 @pytest.fixture()
@@ -120,13 +121,13 @@ def undo_mocking_for_is_upload_in_process(mock_create_doc_ref_service):
 
 def test_create_document_reference_request_empty_list(
     mock_create_doc_ref_service,
-    mock_prepare_doc_object,
+    mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
 ):
     mock_create_doc_ref_service.create_document_reference_request(TEST_NHS_NUMBER, [])
 
-    mock_prepare_doc_object.assert_not_called()
+    mock_create_document_reference.assert_not_called()
     mock_prepare_pre_signed_url.assert_not_called()
     mock_create_reference_in_dynamodb.assert_not_called()
 
@@ -134,7 +135,7 @@ def test_create_document_reference_request_empty_list(
 def test_create_document_reference_request_with_arf_list_happy_path(
     mock_create_doc_ref_service,
     mocker,
-    mock_prepare_doc_object,
+    mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
@@ -161,15 +162,15 @@ def test_create_document_reference_request_with_arf_list_happy_path(
             document_references[index],
         )
 
-    mock_prepare_doc_object.side_effect = side_effects
+    mock_create_document_reference.side_effect = side_effects
 
     mock_create_doc_ref_service.create_document_reference_request(
         TEST_NHS_NUMBER, ARF_FILE_LIST
     )
 
-    mock_prepare_doc_object.assert_has_calls(
+    mock_create_document_reference.assert_has_calls(
         [
-            mocker.call(TEST_NHS_NUMBER, "", validated_doc)
+            mocker.call(TEST_NHS_NUMBER, "", validated_doc, None)
             for validated_doc in PARSED_ARF_FILE_LIST
         ],
         any_order=True,
@@ -187,7 +188,7 @@ def test_create_document_reference_request_with_arf_list_happy_path(
 def test_create_document_reference_request_with_lg_list_happy_path(
     mock_create_doc_ref_service,
     mocker,
-    mock_prepare_doc_object,
+    mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
@@ -209,19 +210,25 @@ def test_create_document_reference_request_with_lg_list_happy_path(
                 content_type=NA_STRING,
                 file_name=file["fileName"],
                 doc_type=SupportedDocumentTypes.LG,
+                document_snomed_code_type=SnomedCodes.LLOYD_GEORGE.value.code,
             )
         )
         side_effects.append(document_references[index])
 
-    mock_prepare_doc_object.side_effect = side_effects
+    mock_create_document_reference.side_effect = side_effects
 
     mock_create_doc_ref_service.create_document_reference_request(
         TEST_NHS_NUMBER, LG_FILE_LIST
     )
 
-    mock_prepare_doc_object.assert_has_calls(
+    mock_create_document_reference.assert_has_calls(
         [
-            mocker.call(TEST_NHS_NUMBER, TEST_CURRENT_GP_ODS, validated_doc)
+            mocker.call(
+                TEST_NHS_NUMBER,
+                TEST_CURRENT_GP_ODS,
+                validated_doc,
+                SnomedCodes.LLOYD_GEORGE.value.code,
+            )
             for validated_doc in PARSED_LG_FILE_LIST
         ],
         any_order=True,
@@ -239,7 +246,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
 def test_create_document_reference_request_with_both_list(
     mock_create_doc_ref_service,
     mocker,
-    mock_prepare_doc_object,
+    mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
@@ -268,18 +275,23 @@ def test_create_document_reference_request_with_both_list(
         file_names=arf_file_names,
     )
 
-    mock_prepare_doc_object.side_effect = prepare_doc_object_mock_return_values
+    mock_create_document_reference.side_effect = prepare_doc_object_mock_return_values
 
     mock_create_doc_ref_service.create_document_reference_request(
         TEST_NHS_NUMBER, files_list
     )
 
     expected_calls_for_prepare_doc_object = [
-        mocker.call(TEST_NHS_NUMBER, TEST_CURRENT_GP_ODS, validated_doc)
+        mocker.call(
+            TEST_NHS_NUMBER,
+            TEST_CURRENT_GP_ODS,
+            validated_doc,
+            SnomedCodes.LLOYD_GEORGE.value.code,
+        )
         for validated_doc in PARSED_ARF_FILE_LIST + PARSED_LG_FILE_LIST
     ]
 
-    mock_prepare_doc_object.assert_has_calls(
+    mock_create_document_reference.assert_has_calls(
         expected_calls_for_prepare_doc_object, any_order=True
     )
     mock_prepare_pre_signed_url.assert_has_calls(
@@ -298,7 +310,7 @@ def test_create_document_reference_request_with_both_list(
 def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_create_doc_ref_service,
     mocker,
-    mock_prepare_doc_object,
+    mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
@@ -319,11 +331,12 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
                 content_type=NA_STRING,
                 file_name=file["fileName"],
                 doc_type=SupportedDocumentTypes.LG,
+                document_snomed_code_type=SnomedCodes.LLOYD_GEORGE.value.code,
             )
         )
         side_effects.append(document_references[index])
 
-    mock_prepare_doc_object.side_effect = side_effects
+    mock_create_document_reference.side_effect = side_effects
     mock_validate_lg.side_effect = LGInvalidFilesException("test")
 
     with pytest.raises(CreateDocumentRefException):
@@ -331,9 +344,14 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
             TEST_NHS_NUMBER, LG_FILE_LIST
         )
 
-    mock_prepare_doc_object.assert_has_calls(
+    mock_create_document_reference.assert_has_calls(
         [
-            mocker.call(TEST_NHS_NUMBER, TEST_CURRENT_GP_ODS, validated_doc)
+            mocker.call(
+                TEST_NHS_NUMBER,
+                TEST_CURRENT_GP_ODS,
+                validated_doc,
+                SnomedCodes.LLOYD_GEORGE.value.code,
+            )
             for validated_doc in PARSED_LG_FILE_LIST
         ],
         any_order=True,
@@ -348,7 +366,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
 
 
 def test_create_document_reference_invalid_nhs_number(
-    mock_prepare_doc_object,
+    mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
 ):
@@ -360,13 +378,13 @@ def test_create_document_reference_invalid_nhs_number(
             nhs_number, ARF_FILE_LIST
         )
 
-    mock_prepare_doc_object.assert_not_called()
+    mock_create_document_reference.assert_not_called()
     mock_prepare_pre_signed_url.assert_not_called()
     mock_create_reference_in_dynamodb.assert_not_called()
 
 
 def test_create_document_reference_failed_to_parse_pds_response(
-    mock_prepare_doc_object,
+    mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_getting_patient_info_from_pds,
@@ -381,7 +399,7 @@ def test_create_document_reference_failed_to_parse_pds_response(
             TEST_NHS_NUMBER, LG_FILE_LIST
         )
 
-    mock_prepare_doc_object.assert_not_called()
+    mock_create_document_reference.assert_not_called()
     mock_prepare_pre_signed_url.assert_not_called()
     mock_create_reference_in_dynamodb.assert_not_called()
 
@@ -559,7 +577,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
     )
     nhs_doc_class.model_dump.return_value = {}
 
-    actual_document_reference = mock_create_doc_ref_service.prepare_doc_object(
+    actual_document_reference = mock_create_doc_ref_service.create_document_reference(
         nhs_number, current_gp_ods, validated_document
     )
 
@@ -573,6 +591,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
         content_type="text/plain",
         file_name="test1.txt",
         doc_type=SupportedDocumentTypes.ARF.value,
+        document_snomed_code_type=None,
         uploading=True,
         author=current_gp_ods,
         custodian=current_gp_ods,
@@ -596,8 +615,8 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
         return_value=mocked_doc,
     )
 
-    actual_document_reference = mock_create_doc_ref_service.prepare_doc_object(
-        nhs_number, current_gp_ods, validated_document
+    actual_document_reference = mock_create_doc_ref_service.create_document_reference(
+        nhs_number, current_gp_ods, validated_document, snomed_code_type="SNOMED"
     )
 
     assert actual_document_reference == mocked_doc
@@ -611,6 +630,7 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
         file_name="1of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
         doc_type=SupportedDocumentTypes.LG.value,
         uploading=True,
+        document_snomed_code_type="SNOMED",
         author=TEST_CURRENT_GP_ODS,
         custodian=TEST_CURRENT_GP_ODS,
         doc_status="preliminary",

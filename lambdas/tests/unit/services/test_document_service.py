@@ -238,14 +238,12 @@ def test_delete_documents_death_delete(
 def test_update_documents(mock_service, mock_dynamo_service):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
-    test_update_fields = {
-        "TestField": "test",
-    }
+    test_update_fields = {"doc_status"}
 
     update_item_call = call(
         table_name=MOCK_TABLE_NAME,
         key_pair={"ID": test_doc_ref.id},
-        updated_fields=test_update_fields,
+        updated_fields={"DocStatus": "final"},
     )
 
     mock_service.update_documents(

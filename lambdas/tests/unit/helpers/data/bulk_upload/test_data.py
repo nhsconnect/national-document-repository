@@ -180,7 +180,7 @@ def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"
         author=TEST_CURRENT_GP_ODS,
         custodian=TEST_CURRENT_GP_ODS,
         doc_status="preliminary",
-        creation="03/09/2022",
+        document_scan_creation="2022-09-03",
     )
     doc_ref.virus_scanner_result = VirusScanResult.CLEAN
     return doc_ref

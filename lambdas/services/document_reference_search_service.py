@@ -163,7 +163,8 @@ class DocumentReferenceSearchService(DocumentService):
         document_retrieve_endpoint = os.getenv("DOCUMENT_RETRIEVE_ENDPOINT_APIM", "")
         document_details = Attachment(
             title=document_reference.file_name,
-            creation=document_reference.created,
+            creation=document_reference.document_scan_creation
+            or document_reference.created,
             url=document_retrieve_endpoint
             + "/"
             + SnomedCodes.LLOYD_GEORGE.value.code
@@ -175,6 +176,9 @@ class DocumentReferenceSearchService(DocumentService):
                 nhsNumber=document_reference.nhs_number,
                 attachment=document_details,
                 custodian=document_reference.current_gp_ods,
+                snomed_code_doc_type=SnomedCodes.find_by_code(
+                    document_reference.document_snomed_code_type
+                ),
             )
             .create_fhir_document_reference_object(document_reference)
             .model_dump(exclude_none=True)

@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from datetime import datetime
 
 import pydantic
 from botocore.exceptions import ClientError
@@ -385,7 +386,9 @@ class BulkUploadService:
     ) -> DocumentReference:
         s3_bucket_name = self.bulk_upload_s3_repository.lg_bucket_name
         file_name = os.path.basename(file_metadata.file_path)
-
+        scan_date_formatted = datetime.strptime(
+            file_metadata.scan_date, "%d/%m/%Y"
+        ).strftime("%Y-%m-%d")
         document_reference = DocumentReference(
             id=str(uuid.uuid4()),
             nhs_number=nhs_number,
@@ -394,7 +397,7 @@ class BulkUploadService:
             current_gp_ods=current_gp_ods,
             custodian=current_gp_ods,
             author=file_metadata.gp_practice_code,
-            creation=file_metadata.scan_date,
+            document_scan_creation=scan_date_formatted,
             doc_status="preliminary",
         )
         document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)

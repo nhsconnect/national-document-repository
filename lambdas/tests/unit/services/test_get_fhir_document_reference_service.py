@@ -228,6 +228,8 @@ def test_create_document_reference_fhir_response_with_presign_url_document_data(
     modified_doc = copy.deepcopy(test_doc)
     modified_doc.file_name = "different_file.pdf"
     modified_doc.created = "2023-05-15T10:30:00.000Z"
+    modified_doc.document_scan_creation = "2023-05-15"
+
     patched_service.s3_service.get_file_size.return_value = 8000000
     patched_service.get_presigned_url = mocker.MagicMock(
         return_value="https://new-test-url.com"
@@ -237,10 +239,7 @@ def test_create_document_reference_fhir_response_with_presign_url_document_data(
     result_json = json.loads(result)
     assert result_json["content"][0]["attachment"]["url"] == "https://new-test-url.com"
     assert result_json["content"][0]["attachment"]["title"] == "different_file.pdf"
-    assert (
-        result_json["content"][0]["attachment"]["creation"]
-        == "2023-05-15T10:30:00.000Z"
-    )
+    assert result_json["content"][0]["attachment"]["creation"] == "2023-05-15"
 
 
 def test_create_document_reference_fhir_response_with_binary_document_data(
@@ -252,6 +251,8 @@ def test_create_document_reference_fhir_response_with_binary_document_data(
     modified_doc = copy.deepcopy(test_doc)
     modified_doc.file_name = "different_file.pdf"
     modified_doc.created = "2023-05-15T10:30:00.000Z"
+    modified_doc.document_scan_creation = "2023-05-15"
+
     patched_service.s3_service.get_file_size.return_value = 7999999
     mock_binary_file = b"binary data"
     patched_service.s3_service.get_binary_file.return_value = mock_binary_file
@@ -262,7 +263,4 @@ def test_create_document_reference_fhir_response_with_binary_document_data(
         mock_binary_file
     ).decode("utf-8")
     assert result_json["content"][0]["attachment"]["title"] == "different_file.pdf"
-    assert (
-        result_json["content"][0]["attachment"]["creation"]
-        == "2023-05-15T10:30:00.000Z"
-    )
+    assert result_json["content"][0]["attachment"]["creation"] == "2023-05-15"

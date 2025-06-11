@@ -289,6 +289,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_document_reference.nhs_number = "9000000009"
     mock_document_reference.file_name = "test_document.pdf"
     mock_document_reference.created = "2023-05-01T12:00:00Z"
+    mock_document_reference.document_scan_creation = "2023-05-01"
     mock_document_reference.id = "Y05868-1634567890"
     mock_document_reference.current_gp_ods = "Y12345"
 
@@ -326,7 +327,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
                     "contentType": "application/pdf",
                     "language": "en-GB",
                     "title": "test_document.pdf",
-                    "creation": "2023-05-01T12:00:00Z",
+                    "creation": "2023-05-01",
                     "url": "https://api.gov.uk/DocumentReference/123",
                 }
             }
@@ -354,7 +355,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
 
     mock_attachment.assert_called_once_with(
         title=mock_document_reference.file_name,
-        creation=mock_document_reference.created,
+        creation=mock_document_reference.document_scan_creation,
         url=f"https://api.gov.uk/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_document_reference.id}",
     )
 
@@ -378,8 +379,12 @@ def test_create_document_reference_fhir_response_integration(
     mock_document_reference.nhs_number = "9000000009"
     mock_document_reference.file_name = "test_document.pdf"
     mock_document_reference.created = "2023-05-01T12:00:00"
+    mock_document_reference.document_scan_creation = "2023-05-01"
     mock_document_reference.id = "Y05868-1634567890"
     mock_document_reference.current_gp_ods = "Y12345"
+    mock_document_reference.author = "Y12345"
+    mock_document_reference.doc_status = "final"
+    mock_document_reference.custodian = "Y12345"
 
     expected_fhir_response = {
         "id": "Y05868-1634567890",
@@ -399,7 +404,7 @@ def test_create_document_reference_fhir_response_integration(
                     "contentType": "application/pdf",
                     "language": "en-GB",
                     "title": "test_document.pdf",
-                    "creation": "2023-05-01T12:00:00",
+                    "creation": "2023-05-01",
                     "url": "https://api.gov.uk/DocumentReference/16521000000101~Y05868-1634567890",
                 }
             }

@@ -1,4 +1,3 @@
-import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from enums.snomed_codes import SnomedCode, SnomedCodes
@@ -228,18 +227,23 @@ class DocumentReferenceInfo(BaseModel):
 
         return DocumentReference(
             id=document.id,
+            docStatus=document.doc_status,
             type=CodeableConcept(
                 coding=self._create_snomed_coding(self.snomed_code_doc_type)
             ),
             subject=Reference(**self._create_identifier("nhs-number", self.nhs_number)),
             content=[DocumentReferenceContent(attachment=self.attachment)],
-            date=datetime.datetime.now().isoformat(),
+            date=document.created,
             author=[
                 Reference(
-                    **self._create_identifier("ods-organization-code", self.custodian)
+                    **self._create_identifier(
+                        "ods-organization-code", document.author or self.custodian
+                    )
                 )
             ],
             custodian=Reference(
-                **self._create_identifier("ods-organization-code", self.custodian)
+                **self._create_identifier(
+                    "ods-organization-code", document.custodian or self.custodian
+                )
             ),
         )

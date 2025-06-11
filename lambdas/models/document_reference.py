@@ -48,7 +48,7 @@ class DocumentReference(BaseModel):
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(DATE_FORMAT)
     )
-    creation: str = Field(
+    document_scan_creation: str = Field(
         default_factory=lambda: datetime.date(datetime.now()).isoformat(),
     )
     current_gp_ods: str = Field(default=None)
@@ -68,7 +68,9 @@ class DocumentReference(BaseModel):
         "unknown",
     ] = Field(default="preliminary")
     doc_type: str = Field(default=None)
-    document_snomed_code_type: str = Field(default=SnomedCodes.LLOYD_GEORGE.value.code)
+    document_snomed_code_type: Optional[str] = Field(
+        default=SnomedCodes.LLOYD_GEORGE.value.code
+    )
     file_location: str = ""
     file_name: str
     file_size: int = Field(default=None)
@@ -87,7 +89,7 @@ class DocumentReference(BaseModel):
     )
     uploaded: bool = Field(default=False)
     uploading: bool = Field(default=False)
-    version: str = Field(default="1", exclude=True)
+    version: str = Field(default="1")
     virus_scanner_result: str = Field(default=None)
 
     def model_dump_camel_case(self, *args, **kwargs):

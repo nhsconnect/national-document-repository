@@ -1,7 +1,9 @@
 import os
+from typing import Optional
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference, UploadRequestDocument
 from pydantic import ValidationError
@@ -62,28 +64,29 @@ class CreateDocumentReferenceService:
 
         try:
             validate_nhs_number(nhs_number)
-
+            snomed_code_type = None
             current_gp_ods = ""
             if has_lg_document:
                 pds_patient_details = getting_patient_info_from_pds(nhs_number)
                 current_gp_ods = (
                     pds_patient_details.get_ods_code_or_inactive_status_for_gp()
                 )
+                snomed_code_type = SnomedCodes.LLOYD_GEORGE.value.code
 
             for validated_doc in upload_request_documents:
-                document_reference = self.prepare_doc_object(
-                    nhs_number, current_gp_ods, validated_doc
+                document_reference = self.create_document_reference(
+                    nhs_number, current_gp_ods, validated_doc, snomed_code_type
                 )
 
                 match document_reference.doc_type:
-                    case SupportedDocumentTypes.ARF.value:
+                    case SupportedDocumentTypes.ARF:
                         arf_documents.append(document_reference)
                         arf_documents_dict_format.append(
                             document_reference.model_dump(
                                 by_alias=True, exclude_none=True
                             )
                         )
-                    case SupportedDocumentTypes.LG.value:
+                    case SupportedDocumentTypes.LG:
                         lg_documents.append(document_reference)
                         lg_documents_dict_format.append(
                             document_reference.model_dump(
@@ -161,43 +164,36 @@ class CreateDocumentReferenceService:
 
         return upload_request_document_list
 
-    def prepare_doc_object(
-        self, nhs_number: str, current_gp_ods: str, validated_doc: UploadRequestDocument
-    ) -> DocumentReference:
-
-        logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
-
-        document_reference = self.create_document_reference(
-            nhs_number,
-            current_gp_ods,
-            validated_doc,
-            s3_bucket_name=self.staging_bucket_name,
-            sub_folder=self.upload_sub_folder,
-        )
-
-        return document_reference
-
     def create_document_reference(
         self,
         nhs_number: str,
         current_gp_ods: str,
         validated_doc: UploadRequestDocument,
-        s3_bucket_name: str,
-        sub_folder="",
+        s3_bucket_name: str = None,
+        sub_folder: str = "",
+        snomed_code_type: Optional[str] = None,
     ) -> DocumentReference:
+
+        if s3_bucket_name is None:
+            s3_bucket_name = self.staging_bucket_name
+            sub_folder = self.upload_sub_folder
+
+        logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
+
         s3_object_key = create_reference_id()
 
         document_reference = DocumentReference(
             id=s3_object_key,
-            author=current_gp_ods,
             nhs_number=nhs_number,
+            author=current_gp_ods,
             current_gp_ods=current_gp_ods,
             custodian=current_gp_ods,
-            s3_bucket_name=s3_bucket_name,
-            sub_folder=sub_folder,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
             doc_type=validated_doc.docType,
+            document_snomed_code_type=snomed_code_type,
+            s3_bucket_name=s3_bucket_name,
+            sub_folder=sub_folder,
             uploading=True,
             doc_status="preliminary",
         )
