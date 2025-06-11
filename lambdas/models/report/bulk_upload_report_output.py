@@ -26,8 +26,15 @@ class ReportBase:
             return [patient[0] for patient in self.total_successful]
         return []
 
-    def get_total_successful_count(self) -> int:
+    def get_total_successful(self) -> int:
         return len(self.total_successful)
+
+    def get_total_successful_percentage(self) -> str:
+        successful_percentage = "0"
+        if self.total_ingested:
+            success_rate = (len(self.total_successful) / len(self.total_ingested)) * 100
+            successful_percentage = f"{success_rate:.2f}".rstrip("0").rstrip(".")
+        return f"{successful_percentage}%"
 
     def get_total_registered_elsewhere_count(self) -> int:
         return len(self.total_registered_elsewhere)
