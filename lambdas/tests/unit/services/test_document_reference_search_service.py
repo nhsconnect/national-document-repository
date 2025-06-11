@@ -363,6 +363,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
         nhsNumber=mock_document_reference.nhs_number,
         attachment=mock_attachment_instance,
         custodian=mock_document_reference.current_gp_ods,
+        snomed_code_doc_type=None,
     )
 
     mock_doc_ref_info_instance.create_fhir_document_reference_object.assert_called_once()
