@@ -250,33 +250,6 @@ def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service, metadata_servic
     assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
 
 
-def test_send_metadata_duplicates_to_sqs(
-    set_env, mocker, mock_sqs_service, metadata_service
-):
-    mocker.patch("uuid.uuid4", return_value="123412342")
-    expected_calls = [
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
-            nhs_number="1234567890",
-            group_id="bulk_upload_123412342",
-        ),
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
-            nhs_number="123456789",
-            group_id="bulk_upload_123412342",
-        ),
-    ]
-
-    metadata_service.send_metadata_to_fifo_sqs(MOCK_METADATA)
-
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
-        expected_calls
-    )
-    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
-
-
 def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(
     set_env, mock_sqs_service, metadata_service
 ):
