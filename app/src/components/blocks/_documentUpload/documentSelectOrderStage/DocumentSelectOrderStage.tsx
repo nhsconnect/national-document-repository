@@ -1,4 +1,4 @@
-import { BackLink, Button, Select, Table } from 'nhsuk-react-components';
+import { Button, Select, Table } from 'nhsuk-react-components';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     DOCUMENT_TYPE,
@@ -7,8 +7,7 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import LinkButton from '../../../generic/linkButton/LinkButton';
-import { FieldErrors, FieldValues, useForm } from 'react-hook-form';
-import _ from 'cypress/types/lodash';
+import { FieldValues, useForm } from 'react-hook-form';
 import { SelectRef } from '../../../../types/generic/selectRef';
 import { useNavigate } from 'react-router';
 import BackButton from '../../../generic/backButton/BackButton';
@@ -16,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
+import { getDocument } from 'pdfjs-dist';
 
 type Props = {
     documents: UploadDocument[];
@@ -152,8 +152,36 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
     useEffect(() => {
         if (documents.length === 0) {
             navigate(routes.DOCUMENT_UPLOAD);
+            return;
         }
-    }, [navigate]);
+
+        const setPagesNumbers = async () => {
+            const updatedDocs = documents.map(async (doc: UploadDocument) => {
+                const buffer = await doc.file.arrayBuffer();
+                const pdf = await getDocument(buffer).promise;
+
+                let pageInfo: boolean[] = new Array(pdf.numPages);
+                pageInfo = pageInfo.fill(false, 0, pdf.numPages);
+                // for (let i = 1; i <= pdf.numPages; i++) {
+                //     const page = await pdf.getPage(1);
+                //     const text = await page.getTextContent();
+
+                //     pageInfo.push(text.items.length > 0);
+                // }
+
+                return {
+                    ...doc,
+                    pageInfo,
+                };
+            });
+
+            const docs = await Promise.all(updatedDocs);
+
+            setDocuments(docs);
+        };
+
+        setPagesNumbers();
+    }, [navigate, setDocuments]);
 
     return (
         <>
@@ -193,6 +221,8 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                             <Table.Head>
                                 <Table.Row>
                                     <Table.Cell width="45%">Filename</Table.Cell>
+                                    <Table.Cell>Pages</Table.Cell>
+                                    {/* <Table.Cell>Has pages without OCR</Table.Cell> */}
                                     <Table.Cell
                                         style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
                                     >
@@ -218,6 +248,10 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                                             <Table.Cell>
                                                 <div>{document.file.name}</div>
                                             </Table.Cell>
+                                            <Table.Cell>{document.pageInfo?.length}</Table.Cell>
+                                            {/* <Table.Cell>
+                                                {(document.pageInfo?.filter(p => !p).length ?? 0) > 0 ? 'Yes' : 'No'}
+                                            </Table.Cell> */}
                                             <Table.Cell>
                                                 {DocumentPositionDropdown(
                                                     document.id,
@@ -229,6 +263,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                                                     href={URL.createObjectURL(document.file)}
                                                     aria-label="Preview - opens in a new tab"
                                                     target="_blank"
+                                                    rel="noreferrer"
                                                 >
                                                     View
                                                 </a>

@@ -2,6 +2,7 @@ import PDFMerger from 'pdf-merger-js/browser';
 import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import { useEffect, useState } from 'react';
 import PdfViewer from '../../../generic/pdfViewer/PdfViewer';
+import moment from 'moment';
 
 type Props = {
     documents: UploadDocument[];
@@ -14,6 +15,8 @@ const DocumentUploadLloydGeorgePreview = ({ documents }: Props) => {
             return;
         }
 
+        const start = moment().unix();
+        console.log(`start merge @ ${start}`);
         const render = async () => {
             const merger = new PDFMerger();
 
@@ -28,6 +31,9 @@ const DocumentUploadLloydGeorgePreview = ({ documents }: Props) => {
             const blob = await merger.saveAsBlob();
             const url = URL.createObjectURL(blob);
 
+            const end = moment().unix();
+            console.log(`end merge @ ${end}`);
+            console.log(`merge duration: ${end - start} seconds`);
             return setMergedPdfUrl(url);
         };
 
