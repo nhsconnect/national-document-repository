@@ -10,6 +10,12 @@ SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
 UPDATED_SOURCE_PDF_FILE = "../updated_source_to_copy_from.pdf"
 NHS_NUMBER = "1000000000"
 
+ENVIRONMENT = "test"
+STAGING_BUCKET = f"{ENVIRONMENT}-staging-bulk-store"
+LLOYD_GEORGE_BUCKET = f"{ENVIRONMENT}-lloyd-george-store"
+BULK_UPLOAD_TABLE_NAME = f"{ENVIRONMENT}_BulkUploadReport"
+LG_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeReferenceMetadata"
+
 CSV_HEADER_ROW = (
     "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,"
     "SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD"
@@ -206,10 +212,8 @@ def upload_lg_files_to_staging(lg_file_keys: list[str], source_pdf_file_key):
                 print(f"Failed processing {key}: {e}")
 
 
-def check_confirmation(confirmation: str):
-    if confirmation in ["Y", "y", "Yes", "YES"]:
-        return True
-    return False
+def check_confirmation(confirmation: str) -> bool:
+    return confirmation.strip().lower() in {"y", "yes"}
 
 
 def get_user_input():
@@ -310,15 +314,6 @@ if __name__ == "__main__":
             print("Exiting Script")
             exit(0)
 
-    # if (
-    #         args.delete_table
-    #         or input(
-    #     "Would you like to remove all existing data from the dynamo tables? (y/N) "
-    # ).lower()
-    #         == "y"
-    # ):
-    #     removing_previous_uploads()
-
     number_of_patients = args.num_patients or int(
         input("How many patients do you wish to generate")
     )
@@ -351,14 +346,5 @@ if __name__ == "__main__":
         upload_lg_files_to_staging(file_keys, SOURCE_PDF_FILE_NAME)
 
         delete_file_from_staging(SOURCE_PDF_FILE_NAME)
-    # if (
-    #     args.empty_lloydgeorge_store
-    #     or input(
-    #         "Would you like to remove all records "
-    #         "from the LloydGeorgeRecord Bucket (y/N) "
-    #     ).lower()
-    #     == "y"
-    # ):
-    #     copy_to_s3(file_names_and_keys, "source_to_copy_from.pdf")
 
     exit(0)
