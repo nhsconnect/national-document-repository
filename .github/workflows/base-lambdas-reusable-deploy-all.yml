@@ -514,7 +514,7 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: fhir_document_reference_search_handler
-      lambda_aws_name: SearchDocumentReferencesFHIRLambda
+      lambda_aws_name: SearchDocumentReferencesFHIR
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
