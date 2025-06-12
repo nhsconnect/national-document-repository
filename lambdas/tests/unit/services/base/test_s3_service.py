@@ -413,6 +413,13 @@ def test_save_or_create_file(mock_service, mock_client):
     assert kwargs["Body"].read() == body
 
 
+def test_returns_binary_file_content_when_file_exists(
+    mock_service, mock_client, mocker
+):
+    mock_client.get_object.return_value = {
+        "Body": mocker.Mock(read=lambda: b"file-content")
+    }
+
 def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
     mock_client.get_object.side_effect = MOCK_CLIENT_ERROR
 
@@ -424,7 +431,7 @@ def test_upload_file_obj_success(mock_service, mock_client):
     file_obj = BytesIO(b"sample file content")
     extra_args = {"ContentType": "application/pdf"}
 
-    mock_service.upload_file_obj(file_obj, MOCK_BUCKET, TEST_FILE_KEY, extra_args)
+    mock_service.upload_file_obj(file_obj, MOCK_BUCKET, TEST_FILE_KEY, extra_args=extra_args)
 
     mock_client.upload_fileobj.assert_called_once_with(
         Fileobj=file_obj,
@@ -449,4 +456,15 @@ def test_upload_file_obj_raises_client_error(mock_service, mock_client):
         Bucket=MOCK_BUCKET,
         Key=TEST_FILE_KEY,
         ExtraArgs={},
+    )
+
+def test_get_object_stream_returns_body_stream(mock_service, mock_client, mocker):
+    mock_stream = mocker.Mock(name="MockS3BodyStream")
+    mock_client.get_object.return_value = {"Body": mock_stream}
+
+    result = mock_service.get_object_stream(bucket=MOCK_BUCKET, key=TEST_FILE_KEY)
+
+    assert result == mock_stream
+    mock_client.get_object.assert_called_once_with(
+        Bucket=MOCK_BUCKET, Key=TEST_FILE_KEY
     )
