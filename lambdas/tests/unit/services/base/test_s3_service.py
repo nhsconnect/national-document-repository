@@ -1,4 +1,5 @@
 import datetime
+from io import BytesIO
 
 import pytest
 from botocore.exceptions import ClientError
@@ -419,18 +420,43 @@ def test_returns_binary_file_content_when_file_exists(
         "Body": mocker.Mock(read=lambda: b"file-content")
     }
 
-    result = mock_service.get_binary_file("test-bucket", "test-key")
-
-    assert result == b"file-content"
-    mock_client.get_object.assert_called_once_with(Bucket="test-bucket", Key="test-key")
-
-
 def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
     mock_client.get_object.side_effect = MOCK_CLIENT_ERROR
 
     with pytest.raises(ClientError):
-        mock_service.get_binary_file("test-bucket", "nonexistent-key")
+        mock_service.get_object_stream("test-bucket", "nonexistent-key")
 
+
+def test_upload_file_obj_success(mock_service, mock_client):
+    file_obj = BytesIO(b"sample file content")
+    extra_args = {"ContentType": "application/pdf"}
+
+    mock_service.upload_file_obj(file_obj, MOCK_BUCKET, TEST_FILE_KEY, extra_args=extra_args)
+
+    mock_client.upload_fileobj.assert_called_once_with(
+        Fileobj=file_obj,
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_KEY,
+        ExtraArgs=extra_args,
+    )
+
+
+def test_upload_file_obj_raises_client_error(mock_service, mock_client):
+    file_obj = BytesIO(b"sample file content")
+
+    mock_client.upload_fileobj.side_effect = ClientError(
+        {"Error": {"Code": "403", "Message": "Forbidden"}}, "UploadFileObj"
+    )
+
+    with pytest.raises(ClientError):
+        mock_service.upload_file_obj(file_obj, MOCK_BUCKET, TEST_FILE_KEY)
+
+    mock_client.upload_fileobj.assert_called_once_with(
+        Fileobj=file_obj,
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_KEY,
+        ExtraArgs={},
+    )
 
 def test_get_object_stream_returns_body_stream(mock_service, mock_client, mocker):
     mock_stream = mocker.Mock(name="MockS3BodyStream")
@@ -441,34 +467,4 @@ def test_get_object_stream_returns_body_stream(mock_service, mock_client, mocker
     assert result == mock_stream
     mock_client.get_object.assert_called_once_with(
         Bucket=MOCK_BUCKET, Key=TEST_FILE_KEY
-    )
-
-
-def test_upload_file_obj_success(mock_service, mock_client, mocker):
-    mock_file_obj = mocker.Mock(name="MockFileObj")
-
-    mock_service.upload_file_obj(mock_file_obj, MOCK_BUCKET, TEST_FILE_KEY)
-
-    mock_client.upload_fileobj.assert_called_once_with(
-        mock_file_obj, MOCK_BUCKET, TEST_FILE_KEY
-    )
-
-
-def test_upload_file_obj_raises_client_error(mock_service, mock_client, mocker):
-    mock_file_obj = mocker.Mock(name="MockFileObj")
-    mock_client.upload_fileobj.side_effect = MOCK_CLIENT_ERROR
-
-    with pytest.raises(ClientError) as except_info:
-        mock_service.upload_file_obj(mock_file_obj, MOCK_BUCKET, TEST_FILE_KEY)
-
-    mock_client.upload_fileobj.assert_called_once_with(
-        mock_file_obj, MOCK_BUCKET, TEST_FILE_KEY
-    )
-    assert (
-        except_info.value.response["Error"]["Code"]
-        == MOCK_CLIENT_ERROR.response["Error"]["Code"]
-    )
-    assert (
-        except_info.value.response["Error"]["Message"]
-        == MOCK_CLIENT_ERROR.response["Error"]["Message"]
     )
