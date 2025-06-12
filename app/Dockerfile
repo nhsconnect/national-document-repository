@@ -1,5 +1,5 @@
 # Build the App
-FROM node:18-alpine as builder
+FROM node:24-alpine AS builder
 RUN apk add unzip wget
 WORKDIR /app
 

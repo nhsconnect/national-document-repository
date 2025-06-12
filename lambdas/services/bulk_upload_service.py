@@ -21,6 +21,7 @@ from utils.exceptions import (
     BulkUploadException,
     DocumentInfectedException,
     InvalidMessageException,
+    InvalidNhsNumberException,
     PatientRecordAlreadyExistException,
     PdsErrorException,
     PdsTooManyRequestsException,
@@ -42,6 +43,7 @@ from utils.unicode_utils import (
     convert_to_nfc_form,
     convert_to_nfd_form,
 )
+from utils.utilities import validate_nhs_number
 
 logger = LoggingService(__name__)
 
@@ -126,8 +128,8 @@ class BulkUploadService:
                 for metadata in staging_metadata.files
             ]
             request_context.patient_nhs_no = staging_metadata.nhs_number
+            validate_nhs_number(staging_metadata.nhs_number)
             validate_lg_file_names(file_names, staging_metadata.nhs_number)
-
             pds_patient_details = getting_patient_info_from_pds(
                 staging_metadata.nhs_number
             )
@@ -174,6 +176,7 @@ class BulkUploadService:
                     )
 
         except (
+            InvalidNhsNumberException,
             LGInvalidFilesException,
             PatientRecordAlreadyExistException,
         ) as error:

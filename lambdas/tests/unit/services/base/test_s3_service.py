@@ -400,6 +400,18 @@ def test_file_size_return_int(mock_service, mock_client):
     )
 
 
+def test_save_or_create_file(mock_service, mock_client):
+    body = TEST_FILE_KEY.encode("utf-8")
+    mock_service.save_or_create_file(MOCK_BUCKET, TEST_FILE_NAME, body)
+
+    mock_client.put_object.assert_called()
+    args, kwargs = mock_client.put_object.call_args
+
+    assert kwargs["Bucket"] == MOCK_BUCKET
+    assert kwargs["Key"] == TEST_FILE_NAME
+    assert kwargs["Body"].read() == body
+    
+
 def test_returns_binary_file_content_when_file_exists(
     mock_service, mock_client, mocker
 ):
@@ -418,3 +430,4 @@ def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
 
     with pytest.raises(ClientError):
         mock_service.get_binary_file("test-bucket", "nonexistent-key")
+

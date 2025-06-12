@@ -39,6 +39,7 @@ class PatientsDataFile(StrEnum):
     H81109 = "ODS_Code_H81109.csv"
     GPWithAccentCharPatients = "ODS_Code_H85686.csv"
     MockPDS = "ODS_MockPDS.csv"
+    NHSNumberInvalid = "NHS_Number_Validation.csv"
 
 
 def build_test_files_for_bulk_upload(
