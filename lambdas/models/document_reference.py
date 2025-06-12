@@ -67,7 +67,7 @@ class DocumentReference(BaseModel):
         "deprecated",
         "unknown",
     ] = Field(default="preliminary")
-    doc_type: str = Field(default=None)
+    doc_type: str = Field(default=None, exclude=True)
     document_snomed_code_type: Optional[str] = Field(
         default=SnomedCodes.LLOYD_GEORGE.value.code
     )

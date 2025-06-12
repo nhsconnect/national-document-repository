@@ -169,14 +169,11 @@ class CreateDocumentReferenceService:
         nhs_number: str,
         current_gp_ods: str,
         validated_doc: UploadRequestDocument,
-        s3_bucket_name: str = None,
-        sub_folder: str = "",
         snomed_code_type: Optional[str] = None,
     ) -> DocumentReference:
 
-        if s3_bucket_name is None:
-            s3_bucket_name = self.staging_bucket_name
-            sub_folder = self.upload_sub_folder
+        s3_bucket_name = self.staging_bucket_name
+        sub_folder = self.upload_sub_folder
 
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
