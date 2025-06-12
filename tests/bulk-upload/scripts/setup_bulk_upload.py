@@ -583,7 +583,13 @@ if __name__ == "__main__":
         or input("Would you like to download the test data from S3? (y/N) ").lower()
         == "y"
     ):
-        download_all_files_from_s3("ndr-testdata", "../test_patients_data")
+        bucket_name = args.environment = "-test-data"
+        if args.environment.startswith("ndr") and len(args.environment) == 4:
+            # Sandboxes use the dev bucket
+            bucket_name = "ndr-dev-test-data"
+        download_all_files_from_s3(
+            args.environment + bucket_name, "../test_patients_data"
+        )
 
     if (
         args.build_files
