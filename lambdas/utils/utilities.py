@@ -11,10 +11,7 @@ from services.base.ssm_service import SSMService
 from services.mock_pds_service import MockPdsApiService
 from services.patient_search_service import PatientSearch
 from services.pds_api_service import PdsApiService
-from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidResourceIdException
-
-logger = LoggingService(__name__)
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
@@ -56,7 +53,6 @@ def get_pds_service() -> PatientSearch:
         auth_service = NhsOauthService(ssm_service)
         return PdsApiService(ssm_service, auth_service)
     else:
-        logger.info(f"PDS_FHIR_ALWAYS_TRUE = {os.getenv('PDS_FHIR_ALWAYS_TRUE')}")
         return MockPdsApiService(
             always_pass_mock=os.getenv("PDS_FHIR_ALWAYS_TRUE") in ["True", "true"]
         )
