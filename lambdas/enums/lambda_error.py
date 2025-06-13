@@ -8,26 +8,22 @@ from utils.request_context import request_context
 
 class LambdaError(Enum):
     def create_error_response(
-        self, params: Optional[dict] = None, **kwargs) -> ErrorResponse:
+        self, params: Optional[dict] = None, **kwargs
+    ) -> ErrorResponse:
         err_code = self.value["err_code"]
         message = self.value["message"]
         if "%" in message and params:
             message = message % params
         interaction_id = getattr(request_context, "request_id", None)
         error_response = ErrorResponse(
-            err_code=err_code,
-            message=message,
-            interaction_id=interaction_id,
-            **kwargs
+            err_code=err_code, message=message, interaction_id=interaction_id, **kwargs
         )
         return error_response
 
     def to_str(self) -> str:
         return f"[{self.value['err_code']}] {self.value['message']}"
 
-    def create_error_body(
-        self, params: Optional[dict] = None, **kwargs
-    ) -> str:
+    def create_error_body(self, params: Optional[dict] = None, **kwargs) -> str:
         return self.create_error_response(params, **kwargs).create()
 
     """

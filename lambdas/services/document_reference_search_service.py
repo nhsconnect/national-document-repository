@@ -7,14 +7,13 @@ from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.snomed_codes import SnomedCodes
-from inflection import underscore
-from models.document_reference import DocumentReference, SearchDocumentReference
+from models.document_reference import DocumentReference
 from models.fhir.R4.bundle import Bundle, BundleEntry
 from models.fhir.R4.fhir_document_reference import Attachment, DocumentReferenceInfo
 from pydantic import ValidationError
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import UploadCompleted
+from utils.common_query_filters import NotDeleted, UploadCompleted
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentRefSearchException
@@ -109,33 +108,32 @@ class DocumentReferenceSearchService(DocumentService):
     ) -> list[dict]:
         results = []
         for document in documents:
+            if not document.file_size:
+                document.file_size = self.s3_service.get_file_size(
+                    s3_bucket_name=document.s3_bucket_name,
+                    object_key=document.s3_file_key,
+                )
+
             if return_fhir:
                 fhir_response = self.create_document_reference_fhir_response(document)
                 results.append(fhir_response)
             else:
                 document_model = self._build_document_model(document)
-                search_result = SearchDocumentReference(**document_model)
-                results.append(search_result.model_dump(by_alias=True))
+                results.append(document_model)
         return results
 
     def _build_document_model(self, document: DocumentReference) -> dict:
-        base_model = document.model_dump(
+        document_formatted = document.model_dump_camel_case(
+            exclude_none=True,
             include={
-                underscore(DocumentReferenceMetadataFields.ID.value),
-                underscore(DocumentReferenceMetadataFields.FILE_NAME.value),
-                underscore(DocumentReferenceMetadataFields.CREATED.value),
-                underscore(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value),
-            }
+                "id",
+                "file_name",
+                "created",
+                "virus_scanner_result",
+                "file_size",
+            },
         )
-        base_model.update(
-            {
-                "file_size": self.s3_service.get_file_size(
-                    s3_bucket_name=document.get_file_bucket(),
-                    object_key=document.get_file_key(),
-                )
-            }
-        )
-        return base_model
+        return document_formatted
 
     def _build_filter_expression(self, filter_values: dict[str, str]):
         filter_builder = DynamoQueryFilterBuilder()
@@ -149,17 +147,13 @@ class DocumentReferenceSearchService(DocumentService):
             elif filter_key == "file_type":
                 # placeholder for future filtering
                 pass
-        filter_builder.add_condition(
-            attribute=str(DocumentReferenceMetadataFields.DELETED.value),
-            attr_operator=AttributeOperator.EQUAL,
-            filter_value="",
-        )
+
         filter_builder.add_condition(
             attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
             attr_operator=AttributeOperator.EQUAL,
             filter_value=True,
         )
-        filter_expression = filter_builder.build()
+        filter_expression = filter_builder.build() & NotDeleted
         return filter_expression
 
     def create_document_reference_fhir_response(
@@ -169,7 +163,8 @@ class DocumentReferenceSearchService(DocumentService):
         document_retrieve_endpoint = os.getenv("DOCUMENT_RETRIEVE_ENDPOINT_APIM", "")
         document_details = Attachment(
             title=document_reference.file_name,
-            creation=document_reference.created,
+            creation=document_reference.document_scan_creation
+            or document_reference.created,
             url=document_retrieve_endpoint
             + "/"
             + SnomedCodes.LLOYD_GEORGE.value.code
@@ -181,6 +176,9 @@ class DocumentReferenceSearchService(DocumentService):
                 nhsNumber=document_reference.nhs_number,
                 attachment=document_details,
                 custodian=document_reference.current_gp_ods,
+                snomed_code_doc_type=SnomedCodes.find_by_code(
+                    document_reference.document_snomed_code_type
+                ),
             )
             .create_fhir_document_reference_object(document_reference)
             .model_dump(exclude_none=True)

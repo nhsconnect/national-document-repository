@@ -1,4 +1,4 @@
-from models.nhs_document_reference import UploadRequestDocument
+from models.document_reference import UploadRequestDocument
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.s3_responses import MOCK_PRESIGNED_URL_RESPONSE
 

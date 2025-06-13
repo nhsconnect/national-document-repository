@@ -135,7 +135,7 @@ class UploadConfirmResultService:
         self, table_name: str, document_reference: str, bucket_name: str
     ):
         file_location = f"s3://{bucket_name}/{self.nhs_number}/{document_reference}"
-
+        file_size = self.s3_service.get_file_size(bucket_name, file_location)
         self.dynamo_service.update_item(
             table_name=table_name,
             key_pair={DocumentReferenceMetadataFields.ID.value: document_reference},
@@ -143,6 +143,8 @@ class UploadConfirmResultService:
                 "Uploaded": True,
                 "Uploading": False,
                 "FileLocation": file_location,
+                "DocStatus": "final",
+                "FileSize": file_size,
             },
         )
 
