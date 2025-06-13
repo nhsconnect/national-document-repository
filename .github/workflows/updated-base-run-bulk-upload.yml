@@ -1,0 +1,91 @@
+name: "Updated Base Bulk Upload - Execute a Bulk Upload"
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+on:
+  workflow_call:
+    inputs:
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
+      base_branch:
+        description: "Which Feature Branch for the Bulk Upload Script"
+        required: false
+        type: "string"
+        default: "main"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
+      num_patients:
+        description: "How many patients to create (default = 1)"
+        required: false
+        type: "string"
+        default: "1"
+      file_count:
+        description: "How many files per patient to generate."
+        required: false
+        type: "string"
+        default: "1"
+      file_size:
+        description: "File size to generate."
+        required: false
+        type: "string"
+        default: "1"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+jobs:
+  perform-bulk-upload:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Configure AWS Credentials for ${{ vars.AWS_REGION }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3
+        working-directory: ./tests/bulk-upload/scripts
+
+      - name: Setup Bulk Upload
+        run: |
+          python updated_setup_bulk_upload.py \
+            --environment "${{ inputs.sandbox }}" \
+            --delete-table \
+            --download-data \
+            --build-files \
+            --num-patients "${{ inputs.num_patients }}" \
+            --upload \
+            --num-files "${{ inputs.file_count }}" \
+            --file-size "${{ inputs.file_size }}" \
+            --empty-lloydgeorge-store
+        working-directory: ./tests/bulk-upload/scripts
+
+      - name: Run Bulk Upload
+        run: |
+          python run_bulk_upload.py \
+            --environment "${{ inputs.sandbox }}" \
+            --start-bulk-upload
+        working-directory: ./tests/bulk-upload/scripts
