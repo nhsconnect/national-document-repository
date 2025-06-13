@@ -108,7 +108,7 @@ class PostFhirDocumentReferenceService:
 
     def _get_dynamo_table_for_doc_type(self, doc_type: SnomedCode) -> str:
         """Get the appropriate DynamoDB table name based on a document type"""
-        if doc_type == SnomedCodes.LLOYD_GEORGE:
+        if doc_type == SnomedCodes.LLOYD_GEORGE.value:
             return self.lg_dynamo_table
         else:
             return self.arf_dynamo_table
