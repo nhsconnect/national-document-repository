@@ -26,13 +26,13 @@ on:
       num_patients:
         description: "How many patients to create (default = 1)"
         required: false
-        type: "string"
-        default: "1"
+        type: "number"
+        default: 1
       file_count:
         description: "How many files per patient to generate."
         required: false
-        type: "string"
-        default: "1"
+        type: "number"
+        default: 1
       file_size:
         description: "File size to generate."
         required: false

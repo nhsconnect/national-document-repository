@@ -236,8 +236,10 @@ def get_user_input():
     parser.add_argument(
         "--build-files", action="store_true", help="Build the test files."
     )
-    parser.add_argument("--num-patients", help="Amount of patients to create")
-    parser.add_argument("--num-files", help="Number of files per patient to build.")
+    parser.add_argument("--num-patients", type=int, help="Amount of patients to create")
+    parser.add_argument(
+        "--num-files", type=int, help="Number of files per patient to build."
+    )
     parser.add_argument(
         "--file-size",
         type=float,
