@@ -27,6 +27,7 @@ import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/Feedback
 import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
 import NonAuthGuard from './guards/notAuthGuard/NonAuthGuard';
 import PatientAccessAuditPage from '../pages/patientAccessAuditPage/PatientAccessAuditPage';
+import MockCis2LoginPage from '../pages/mockCis2LoginPage/mockCis2LoginPage';
 
 const {
     START,
@@ -56,6 +57,7 @@ const {
     REPORT_DOWNLOAD_WILDCARD,
     PATIENT_ACCESS_AUDIT,
     PATIENT_ACCESS_AUDIT_WILDCARD,
+    MOCK_CIS2_LOGIN_PAGE,
 } = routes;
 
 type Routes = {
@@ -231,6 +233,10 @@ export const routeMap: Routes = {
     [REPORT_DOWNLOAD_WILDCARD]: {
         page: <ReportDownloadPage />,
         type: ROUTE_TYPE.PRIVATE,
+    },
+    [MOCK_CIS2_LOGIN_PAGE]: {
+        page: <MockCis2LoginPage />,
+        type: ROUTE_TYPE.PUBLIC,
     },
     // App guard routes
     [VERIFY_PATIENT]: {

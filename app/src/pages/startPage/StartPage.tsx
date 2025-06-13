@@ -21,7 +21,7 @@ function StartPage(props: Props) {
         setIsLoading(true);
         e.preventDefault();
         if (isLocal) {
-            navigate(routes.AUTH_CALLBACK);
+            navigate(routes.MOCK_CIS2_LOGIN_PAGE); // replace this with whatever my route for logging in is
         } else {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
         }
