@@ -16,13 +16,13 @@ on:
       num_patients:
         description: "How many patients to create (default = 1)"
         required: true
-        type: number
-        default: 1
+        type: "string"
+        default: "1"
       file_count:
         description: "How many files per patient"
         required: true
-        type: number
-        default: 1
+        type: "string"
+        default: "1"
       file_size:
         description: "File size in MB"
         required: true
@@ -37,6 +37,6 @@ jobs:
       sandbox: "${{ inputs.sandbox }}"
       num_patients: ${{ inputs.num_patients }}
       file_count: ${{ inputs.file_count }}
-      file_size: "${{ inputs.file_size }}"
+      file_size: ${{ inputs.file_size }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
