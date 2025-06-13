@@ -6,6 +6,7 @@ from models.fhir.R4.base_models import (
     CodeableConcept,
     Coding,
     Extension,
+    Meta,
     Period,
     Reference,
 )
@@ -112,7 +113,7 @@ class DocumentReference(BaseModel):
         "deprecated",
         "unknown",
     ] = "final"
-    status: Literal["current", "superseded"] = "current"
+    status: Literal["current", "superseded", "entered-in-error"] = "current"
     type: Optional[CodeableConcept] = None
     category: Optional[List[CodeableConcept]] = None
     subject: Optional[Reference] = None
@@ -122,6 +123,7 @@ class DocumentReference(BaseModel):
     custodian: Optional[Reference] = None
     content: List[DocumentReferenceContent]
     context: Optional[DocumentReferenceContext] = None
+    meta: Optional[Meta] = None
 
 
 class DocumentReferenceInfo(BaseModel):
