@@ -76,9 +76,9 @@ jobs:
             --delete-table \
             --download-data \
             --build-files \
-            --num-patients "${{ inputs.num_patients }}" \
+            --num-patients ${{ inputs.num_patients }} \
             --upload \
-            --num-files "${{ inputs.file_count }}" \
+            --num-files ${{ inputs.file_count }} \
             --file-size "${{ inputs.file_size }}" \
             --empty-lloydgeorge-store
         working-directory: ./tests/bulk-upload/scripts
