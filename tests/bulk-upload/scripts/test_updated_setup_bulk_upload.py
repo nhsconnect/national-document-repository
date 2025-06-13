@@ -5,7 +5,7 @@ from datetime import date
 from unittest.mock import patch
 
 import pytest
-from updated_setup_bulk_upload import (  # copy_to_s3,
+from updated_setup_bulk_upload import (
     S3_STORAGE_CLASS,
     STAGING_BUCKET,
     build_file_path,
@@ -154,36 +154,6 @@ def test_create_test_file_keys_and_metadata_rows_calls(mocker):
     assert mock_generate_file_name.call_count == expected_file_calls
     assert mock_build_file_path.call_count == expected_file_calls
     assert mock_build_metadata_csv_row.call_count == expected_file_calls
-
-
-#
-# def test_copy_to_s3_makes_correct_calls(mocker):
-#     mock_client = mocker.patch("updated_setup_bulk_upload.client")
-#     mocker.patch("updated_setup_bulk_upload.STAGING_BUCKET","test-staging-bulk-store")
-#     mocker.patch("updated_setup_bulk_upload.S3_STORAGE_CLASS", "INTELLIGENT_TIERING")
-#
-#     file_names_and_keys = [
-#         ("file1.pdf", "1234567890/file1.pdf"),
-#         ("file2.pdf", "1234567890/file2.pdf"),
-#     ]
-#     source_file_key = "1234567890/original.pdf"
-#
-#     copy_to_s3(file_names_and_keys, source_file_key)
-#
-#     assert mock_client.copy_object.call_count == 2
-#     mock_client.copy_object.assert_any_call(
-#         Bucket="test-staging-bulk-store",
-#         Key="1234567890/file1.pdf",
-#         CopySource={"Bucket": "test-staging-bulk-store", "Key": source_file_key},
-#         StorageClass="INTELLIGENT_TIERING",
-#     )
-#     mock_client.copy_object.assert_any_call(
-#         Bucket="test-staging-bulk-store",
-#         Key="1234567890/file2.pdf",
-#         CopySource={"Bucket": "test-staging-bulk-store", "Key": source_file_key},
-#         StorageClass="INTELLIGENT_TIERING",
-#     )
-#
 
 
 def test_inflate_pdf_file_creates_file_with_expected_size():

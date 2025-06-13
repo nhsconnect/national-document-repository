@@ -133,16 +133,6 @@ def create_test_file_keys_and_metadata_rows(
     return result, metadata_content
 
 
-# def copy_to_s3(file_names_and_keys: list[tuple[str, str]], source_file_key: str):
-#     for file_name, file_key in file_names_and_keys:
-#         client.copy_object(
-#             Bucket=STAGING_BUCKET,
-#             Key=file_key,
-#             CopySource={"Bucket": STAGING_BUCKET, "Key": source_file_key},
-#             StorageClass=S3_STORAGE_CLASS,
-#         )
-
-
 def inflate_pdf_file(source_pdf_path: str, target_pdf_path: str, target_size_mb: float):
     with open(source_pdf_path, "rb") as original:
         content = original.read()
