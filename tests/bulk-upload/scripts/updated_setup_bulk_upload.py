@@ -10,8 +10,8 @@ SOURCE_PDF_FILE = "../source_to_copy_from.pdf"
 UPDATED_SOURCE_PDF_FILE = "../updated_source_to_copy_from.pdf"
 NHS_NUMBER = "1000000000"
 
-ENVIRONMENT = "test"
-STAGING_BUCKET = f"{ENVIRONMENT}-staging-bulk-store"
+# ENVIRONMENT = "test"
+# STAGING_BUCKET = f"{ENVIRONMENT}-staging-bulk-store"
 # LLOYD_GEORGE_BUCKET = f"{ENVIRONMENT}-lloyd-george-store"
 # BULK_UPLOAD_TABLE_NAME = f"{ENVIRONMENT}_BulkUploadReport"
 # LG_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeReferenceMetadata"
@@ -301,7 +301,7 @@ if __name__ == "__main__":
     ENVIRONMENT = args.environment or input(
         "Please enter the environment you want to use:"
     )
-    # STAGING_BUCKET = f"{ENVIRONMENT}-staging-bulk-store"
+    STAGING_BUCKET = f"{ENVIRONMENT}-staging-bulk-store"
     # LLOYD_GEORGE_BUCKET = f"{ENVIRONMENT}-lloyd-george-store"
     # BULK_UPLOAD_TABLE_NAME = f"{ENVIRONMENT}_BulkUploadReport"
     # LG_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeReferenceMetadata"
