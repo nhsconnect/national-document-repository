@@ -400,6 +400,18 @@ def test_file_size_return_int(mock_service, mock_client):
     )
 
 
+def test_save_or_create_file(mock_service, mock_client):
+    body = TEST_FILE_KEY.encode("utf-8")
+    mock_service.save_or_create_file(MOCK_BUCKET, TEST_FILE_NAME, body)
+
+    mock_client.put_object.assert_called()
+    args, kwargs = mock_client.put_object.call_args
+
+    assert kwargs["Bucket"] == MOCK_BUCKET
+    assert kwargs["Key"] == TEST_FILE_NAME
+    assert kwargs["Body"].read() == body
+
+
 def test_returns_binary_file_content_when_file_exists(
     mock_service, mock_client, mocker
 ):
@@ -418,3 +430,45 @@ def test_raises_exception_when_file_does_not_exist(mock_service, mock_client):
 
     with pytest.raises(ClientError):
         mock_service.get_binary_file("test-bucket", "nonexistent-key")
+
+
+def test_get_object_stream_returns_body_stream(mock_service, mock_client, mocker):
+    mock_stream = mocker.Mock(name="MockS3BodyStream")
+    mock_client.get_object.return_value = {"Body": mock_stream}
+
+    result = mock_service.get_object_stream(bucket=MOCK_BUCKET, key=TEST_FILE_KEY)
+
+    assert result == mock_stream
+    mock_client.get_object.assert_called_once_with(
+        Bucket=MOCK_BUCKET, Key=TEST_FILE_KEY
+    )
+
+
+def test_upload_file_obj_success(mock_service, mock_client, mocker):
+    mock_file_obj = mocker.Mock(name="MockFileObj")
+
+    mock_service.upload_file_obj(mock_file_obj, MOCK_BUCKET, TEST_FILE_KEY)
+
+    mock_client.upload_fileobj.assert_called_once_with(
+        mock_file_obj, MOCK_BUCKET, TEST_FILE_KEY
+    )
+
+
+def test_upload_file_obj_raises_client_error(mock_service, mock_client, mocker):
+    mock_file_obj = mocker.Mock(name="MockFileObj")
+    mock_client.upload_fileobj.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(ClientError) as except_info:
+        mock_service.upload_file_obj(mock_file_obj, MOCK_BUCKET, TEST_FILE_KEY)
+
+    mock_client.upload_fileobj.assert_called_once_with(
+        mock_file_obj, MOCK_BUCKET, TEST_FILE_KEY
+    )
+    assert (
+        except_info.value.response["Error"]["Code"]
+        == MOCK_CLIENT_ERROR.response["Error"]["Code"]
+    )
+    assert (
+        except_info.value.response["Error"]["Message"]
+        == MOCK_CLIENT_ERROR.response["Error"]["Message"]
+    )
