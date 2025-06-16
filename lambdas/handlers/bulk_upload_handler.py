@@ -28,11 +28,6 @@ def lambda_handler(event, _context):
         FeatureFlags.LLOYD_GEORGE_VALIDATION_STRICT_MODE_ENABLED.value
     ]
     pds_fhir_always_true = os.getenv("PDS_FHIR_ALWAYS_TRUE", "false").lower() == "true"
-    if pds_fhir_always_true:
-        logger.info(
-            "PDS_FHIR_ALWAYS_TRUE is true — overriding validation_strict_mode to False"
-        )
-        validation_strict_mode = False
 
     if validation_strict_mode:
         logger.info("Lloyd George validation strict mode is enabled")

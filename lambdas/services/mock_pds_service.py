@@ -37,7 +37,8 @@ class MockPdsApiService(PatientSearch):
         response = Response()
         if self.always_pass_mock:
             response.status_code = 200
-            pds_patient = mock_pds_results[3]
+            pds_patient_index = 3
+            pds_patient = mock_pds_results[pds_patient_index]
             pds_patient["id"] = nhs_number
             pds_patient["identifier"][0]["value"] = nhs_number
             response._content = json.dumps(pds_patient).encode("utf-8")
