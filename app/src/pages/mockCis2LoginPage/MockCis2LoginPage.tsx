@@ -1,19 +1,34 @@
-import { FormGroup, Form } from 'nhsuk-react-components';
-import { useState } from 'react';
+import { FormGroup, Form, Button } from 'nhsuk-react-components';
+import { FieldValues, useForm } from 'react-hook-form';
 
+type LoginFormData = {
+    username: string;
+    password: string;
+};
 const MockCis2LoginPage = () => {
-    const [username, setUsername] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<LoginFormData>({
+        reValidateMode: 'onSubmit',
+    });
+    const submit = async (fieldValues: FieldValues) => {
+        const { username, password } = fieldValues;
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+        if (username && password) {
+            // Save or send login details here
+            console.log('Username:', username);
+            console.log('Password:', password);
+            // await submitLoginDetails(username,password)
+        }
     };
 
     return (
         <div className="nhsuk-main-wrapper--s">
             <div className="nhsuk-grid-row">
                 <div className="nhsuk-grid-column-two-thirds">
-                    <Form onSubmit={handleSubmit}>
+                    <Form onSubmit={handleSubmit(submit)}>
                         <FormGroup>
                             <div className="form-label-group">
                                 <div className="nhsuk-form-group position-relative">
@@ -22,8 +37,13 @@ const MockCis2LoginPage = () => {
                                         className="nhsuk-input"
                                         type="text"
                                         id="username"
-                                        onChange={(e) => setUsername(e.target.value)}
-                                    ></input>
+                                        {...register('username', { required: true })}
+                                    />
+                                    {errors.username && (
+                                        <span className="nhsuk-error-message">
+                                            Username is required
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </FormGroup>
@@ -33,15 +53,20 @@ const MockCis2LoginPage = () => {
                                     <label htmlFor="password">Password</label>
                                     <input
                                         className="nhsuk-input"
-                                        type="text"
+                                        type="password"
                                         id="password"
-                                        onChange={(e) => setPassword(e.target.value)}
-                                    ></input>
+                                        {...register('password', { required: true })}
+                                    />
+                                    {errors.password && (
+                                        <span className="nhsuk-error-message">
+                                            Password is required
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-                            <div className="form-label-group">
-                                <button className="nhsuk-button">Continue</button>
-                            </div>
+                            <Button type="submit" id="submit-login-details">
+                                Continue
+                            </Button>
                         </FormGroup>
                     </Form>
                 </div>
