@@ -10,6 +10,7 @@ from models.fhir.R4.fhir_document_reference import (
 from services.post_fhir_document_reference_service import (
     PostFhirDocumentReferenceService,
 )
+from utils.exceptions import PatientNotFoundException
 from utils.lambda_exceptions import CreateDocumentRefException
 
 
@@ -19,9 +20,11 @@ def mock_service(set_env, mocker):
     mock_dynamo = mocker.patch(
         "services.post_fhir_document_reference_service.DynamoDBService"
     )
+    mocker.patch("services.post_fhir_document_reference_service.get_pds_service")
     service = PostFhirDocumentReferenceService()
     service.s3_service = mock_s3.return_value
     service.dynamo_service = mock_dynamo.return_value
+
     yield service
 
 
@@ -199,6 +202,19 @@ def test_dynamo_error(mock_service, valid_fhir_doc):
     assert excinfo.value.error == LambdaError.CreateDocUpload
 
 
+def test_pds_error(mock_service, valid_fhir_doc, mocker):
+    """Test handling of PDS error."""
+
+    mock_service._check_nhs_number_with_pds = mocker.MagicMock()
+    mock_service._check_nhs_number_with_pds.side_effect = CreateDocumentRefException(
+        400, LambdaError.MockError
+    )
+    with pytest.raises(CreateDocumentRefException) as excinfo:
+        mock_service.process_fhir_document_reference(valid_fhir_doc)
+    assert excinfo.value.status_code == 400
+    assert excinfo.value.error == LambdaError.MockError
+
+
 def test_s3_presigned_url_error(mock_service, valid_fhir_doc):
     """Test handling of S3 presigned URL error."""
     # Setup
@@ -228,3 +244,18 @@ def test_s3_upload_error(mock_service, valid_fhir_doc_with_binary):
 
     assert excinfo.value.status_code == 500
     assert excinfo.value.error == LambdaError.CreateDocPresign
+
+
+def test_check_nhs_number_with_pds_raise_error(mock_service, mocker):
+    """Test handling of PDS error."""
+    mock_service_object = mocker.MagicMock()
+    mocker.patch(
+        "services.post_fhir_document_reference_service.get_pds_service",
+        return_value=mock_service_object,
+    )
+    mock_service_object.fetch_patient_details.side_effect = PatientNotFoundException(
+        "test test"
+    )
+    with pytest.raises(CreateDocumentRefException) as excinfo:
+        mock_service._check_nhs_number_with_pds("9000000009")
+    assert excinfo.value.status_code == 400
