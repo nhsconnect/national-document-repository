@@ -36,19 +36,16 @@ class MockPdsApiService(PatientSearch):
         pds_patient: dict = {}
         response = Response()
         if self.always_pass_mock:
-            response.status_code = 200
             pds_patient_index = 3
             pds_patient = mock_pds_results[pds_patient_index]
             pds_patient["id"] = nhs_number
             pds_patient["identifier"][0]["value"] = nhs_number
-            response._content = json.dumps(pds_patient).encode("utf-8")
-            return response
-
-        for result in mock_pds_results:
-            mock_patient_nhs_number = result.get("id")
-            if mock_patient_nhs_number == nhs_number:
-                pds_patient = result
-                break
+        else:
+            for result in mock_pds_results:
+                mock_patient_nhs_number = result.get("id")
+                if mock_patient_nhs_number == nhs_number:
+                    pds_patient = result
+                    break
 
         if bool(pds_patient):
             response.status_code = 200
