@@ -13,8 +13,13 @@ from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.exceptions import (
+    InvalidResourceIdException,
+    PatientNotFoundException,
+    PdsErrorException,
+)
 from utils.lambda_exceptions import CreateDocumentRefException
-from utils.utilities import create_reference_id, validate_nhs_number
+from utils.utilities import create_reference_id, get_pds_service, validate_nhs_number
 
 logger = LoggingService(__name__)
 
@@ -47,6 +52,7 @@ class PostFhirDocumentReferenceService:
             # Extract NHS number from the FHIR document
             nhs_number = self._extract_nhs_number_from_fhir(validated_fhir_doc)
             validate_nhs_number(nhs_number)
+            self._check_nhs_number_with_pds(nhs_number)
 
             # Extract document type
             doc_type = self._determine_document_type(validated_fhir_doc)
@@ -130,7 +136,7 @@ class PostFhirDocumentReferenceService:
             document_snomed_code_type=doc_type.code,
             doc_status="preliminary",
             status="current",
-            creation=fhir_doc.content[0].attachment.creation,
+            document_scan_creation=fhir_doc.content[0].attachment.creation,
         )
 
         return document_reference
@@ -207,3 +213,17 @@ class PostFhirDocumentReferenceService:
         )
 
         return fhir_response
+
+    def _check_nhs_number_with_pds(self, nhs_number: str) -> None:
+        try:
+            pds_service = get_pds_service()
+            pds_service.fetch_patient_details(nhs_number)
+        except (
+            PatientNotFoundException,
+            InvalidResourceIdException,
+            PdsErrorException,
+        ) as e:
+            logger.error(f"Error occurred when fetching patient details: {str(e)}")
+            raise CreateDocumentRefException(
+                400, LambdaError.CreatePatientSearchInvalid
+            )

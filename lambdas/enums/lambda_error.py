@@ -93,6 +93,11 @@ class LambdaError(Enum):
         "err_code": "CDR_5002",
         "message": "An error occurred when creating pre-signed url for document reference",
     }
+    CreatePatientSearchInvalid = {
+        "err_code": "CDR_5003",
+        "message": "Failed to validate patient",
+        "fhir_coding": FhirIssueCoding.INVALID,
+    }
 
     """
        Errors for InvalidDocTypeException
