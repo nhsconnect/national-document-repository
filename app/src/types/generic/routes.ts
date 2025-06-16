@@ -29,6 +29,7 @@ export enum routes {
     PATIENT_ACCESS_AUDIT = '/patient/access-audit',
     PATIENT_ACCESS_AUDIT_WILDCARD = '/patient/access-audit/*',
     MOCK_CIS2_LOGIN_PAGE = '/login',
+    MOCK_ROLE_SELECT_PAGE = '/role-select-page',
 }
 
 export enum routeChildren {

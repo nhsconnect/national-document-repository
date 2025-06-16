@@ -27,7 +27,8 @@ import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/Feedback
 import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
 import NonAuthGuard from './guards/notAuthGuard/NonAuthGuard';
 import PatientAccessAuditPage from '../pages/patientAccessAuditPage/PatientAccessAuditPage';
-import MockCis2LoginPage from '../pages/mockCis2LoginPage/mockCis2LoginPage';
+import MockCis2LoginPage from '../pages/mockCis2LoginPage/MockCis2LoginPage';
+import MockRoleSelectPage from '../pages/mockRoleSelectPage/MockRoleSelectPage';
 
 const {
     START,
@@ -58,6 +59,7 @@ const {
     PATIENT_ACCESS_AUDIT,
     PATIENT_ACCESS_AUDIT_WILDCARD,
     MOCK_CIS2_LOGIN_PAGE,
+    MOCK_ROLE_SELECT_PAGE,
 } = routes;
 
 type Routes = {
@@ -236,6 +238,10 @@ export const routeMap: Routes = {
     },
     [MOCK_CIS2_LOGIN_PAGE]: {
         page: <MockCis2LoginPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
+    [MOCK_ROLE_SELECT_PAGE]: {
+        page: <MockRoleSelectPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
     // App guard routes
