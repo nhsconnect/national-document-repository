@@ -16,6 +16,7 @@ import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
 import { ReactComponent as FileSVG } from '../../../../styles/file-input.svg';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import LinkButton from '../../../generic/linkButton/LinkButton';
+import { getDocument } from 'pdfjs-dist';
 
 type Props = {
     setDocuments: SetUploadDocuments;
@@ -57,29 +58,40 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         }
 
         if (fileArray) {
-            updateFileList(fileArray.filter(validateFileType));
+            void updateFileList(fileArray.filter(validateFileType));
         }
     };
 
     const onInput = (e: FileInputEvent) => {
         const fileArray = Array.from(e.target.files ?? new FileList()).filter(validateFileType);
 
-        updateFileList(fileArray);
+        void updateFileList(fileArray);
     };
 
-    const updateFileList = (fileArray: File[]) => {
-        const documentMap: Array<UploadDocument> = fileArray
+    const updateFileList = async (fileArray: File[]) => {
+        const documentMap = fileArray
             .filter((f) => !documents.some((d) => d.file.name === f.name))
-            .map((file) => ({
-                id: uuidv4(),
-                file,
-                state: DOCUMENT_UPLOAD_STATE.SELECTED,
-                progress: 0,
-                docType: documentType,
-                attempts: 0,
-            }));
+            .map(async (file) => {
+                const buffer = await file.arrayBuffer();
+                const pdf = await getDocument(buffer).promise;
 
-        updateDocuments([...documentMap, ...documents]);
+                let pageInfo: boolean[] = new Array(pdf.numPages);
+                pageInfo = pageInfo.fill(false, 0, pdf.numPages);
+
+                return {
+                    id: uuidv4(),
+                    file,
+                    state: DOCUMENT_UPLOAD_STATE.SELECTED,
+                    progress: 0,
+                    docType: documentType,
+                    attempts: 0,
+                    pageInfo,
+                };
+            });
+
+        const docs = await Promise.all(documentMap);
+
+        updateDocuments([...docs, ...documents]);
     };
 
     const onRemove = (index: number) => {

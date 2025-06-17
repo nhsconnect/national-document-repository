@@ -28,6 +28,7 @@ type FormData = {
 const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
     const navigate = useNavigate();
     const [errorMessage, setError] = useState('');
+    const [previewLoading, setPreviewLoading] = useState(false);
 
     const documentPositionKey = (documentId: string): string => {
         return `document-${documentId}-position`;
@@ -43,7 +44,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
         return defaults;
     };
 
-    const { handleSubmit, getValues, register, formState } = useForm<FormData>({
+    const { handleSubmit, getValues, register, unregister, formState } = useForm<FormData>({
         reValidateMode: 'onChange',
         shouldFocusError: true,
         defaultValues: getDefaultValues(),
@@ -107,6 +108,9 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
 
     const onRemove = (index: number) => {
         let updatedDocList: UploadDocument[] = [];
+        const key = documentPositionKey(documents[index].id);
+        unregister(key);
+
         if (index >= 0) {
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
@@ -154,34 +158,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
             navigate(routes.DOCUMENT_UPLOAD);
             return;
         }
-
-        const setPagesNumbers = async () => {
-            const updatedDocs = documents.map(async (doc: UploadDocument) => {
-                const buffer = await doc.file.arrayBuffer();
-                const pdf = await getDocument(buffer).promise;
-
-                let pageInfo: boolean[] = new Array(pdf.numPages);
-                pageInfo = pageInfo.fill(false, 0, pdf.numPages);
-                // for (let i = 1; i <= pdf.numPages; i++) {
-                //     const page = await pdf.getPage(1);
-                //     const text = await page.getTextContent();
-
-                //     pageInfo.push(text.items.length > 0);
-                // }
-
-                return {
-                    ...doc,
-                    pageInfo,
-                };
-            });
-
-            const docs = await Promise.all(updatedDocs);
-
-            setDocuments(docs);
-        };
-
-        setPagesNumbers();
-    }, [navigate, setDocuments]);
+    }, [navigate]);
 
     return (
         <>
@@ -273,6 +250,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                                                     type="button"
                                                     aria-label={`Remove ${document.file.name} from selection`}
                                                     className="link-button"
+                                                    disabled={previewLoading}
                                                     onClick={() => {
                                                         onRemove(index);
                                                     }}
@@ -293,6 +271,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                                     onClick={() => {
                                         navigate(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL);
                                     }}
+                                    disabled={previewLoading}
                                 >
                                     Remove all
                                 </LinkButton>
@@ -314,6 +293,8 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                                                 (doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE,
                                             )
                                             .sort((a, b) => a.position! - b.position!)}
+                                        previewLoading={previewLoading}
+                                        setPreviewLoading={setPreviewLoading}
                                     />
                                 </>
                             )}
@@ -324,6 +305,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                     id="form-submit"
                     data-testid="form-submit-button"
                     className="mt-4"
+                    disabled={previewLoading}
                 >
                     Confirm the file order and continue
                 </Button>
