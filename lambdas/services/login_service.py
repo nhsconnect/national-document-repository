@@ -204,7 +204,13 @@ class LoginService:
     def has_matching_org_ods_code(
         organisation: dict, ods_code: str | list[str]
     ) -> bool:
-        return organisation["org_ods_code"].upper() in ods_code.upper()
+        org_ods_code = organisation["org_ods_code"].upper()
+        codes = (
+            [ods_code.upper()]
+            if isinstance(ods_code, str)
+            else [code.upper() for code in ods_code]
+        )
+        return org_ods_code in codes
 
     def issue_auth_token(
         self,
