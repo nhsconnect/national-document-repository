@@ -507,6 +507,7 @@ jobs:
 
   deploy_fhir_document_reference_search_lambda:
     name: Deploy Search Document References FHIR Lambda
+    if: inputs.environment == 'development' ||  inputs.environment == 'test'
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -514,7 +515,7 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: fhir_document_reference_search_handler
-      lambda_aws_name: SearchDocumentReferencesFHIRLambda
+      lambda_aws_name: SearchDocumentReferencesFHIR
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
