@@ -13,7 +13,7 @@ const MockCis2LoginPage = () => {
     } = useForm<LoginFormData>({
         reValidateMode: 'onSubmit',
     });
-    const submit = async (fieldValues: FieldValues) => {
+    const submit = async (fieldValues: LoginFormData) => {
         const { username, password } = fieldValues;
 
         if (username && password) {
@@ -64,10 +64,10 @@ const MockCis2LoginPage = () => {
                                     )}
                                 </div>
                             </div>
-                            <Button type="submit" id="submit-login-details">
-                                Continue
-                            </Button>
                         </FormGroup>
+                        <Button type="submit" id="submit-login-details">
+                            Continue
+                        </Button>
                     </Form>
                 </div>
             </div>
