@@ -87,8 +87,8 @@ class DocumentReference(BaseModel):
     ttl: Optional[int] = Field(
         alias=str(DocumentReferenceMetadataFields.TTL.value), default=None
     )
-    uploaded: bool = Field(default=False)
-    uploading: bool = Field(default=False)
+    uploaded: bool = Field(default=None)
+    uploading: bool = Field(default=None)
     version: str = Field(default="1")
     virus_scanner_result: str = Field(default=None)
 

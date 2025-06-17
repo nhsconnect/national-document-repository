@@ -1,3 +1,4 @@
+import io
 import os
 from typing import Any, Dict, Optional
 
@@ -148,9 +149,7 @@ class PostFhirDocumentReferenceService:
         try:
             self.dynamo_service.create_item(
                 table_name,
-                document_reference.model_dump(
-                    exclude_none=True, by_alias=True, exclude_defaults=True
-                ),
+                document_reference.model_dump(exclude_none=True, by_alias=True),
             )
             logger.info(f"Successfully created document reference in {table_name}")
         except ClientError as e:
@@ -162,8 +161,9 @@ class PostFhirDocumentReferenceService:
     ) -> None:
         """Store binary content in S3"""
         try:
+            binary_file = io.BytesIO(binary_content)
             self.s3_service.upload_file_obj(
-                file_obj=binary_content,
+                file_obj=binary_file,
                 s3_bucket_name=document_reference.s3_bucket_name,
                 file_key=document_reference.s3_file_key,
             )
@@ -197,10 +197,24 @@ class PostFhirDocumentReferenceService:
         presigned_url: Optional[Dict[str, Any]],
     ) -> str:
         """Create a FHIR response document"""
-        document_reference_ndr.id = document_reference_fhir.id
+
+        document_reference_fhir.id = document_reference_ndr.id
 
         if presigned_url:
-            document_reference_fhir.content[0].attachment.url = presigned_url["url"]
+            attachment_url = presigned_url["url"]
+        else:
+            document_retrieve_endpoint = os.getenv(
+                "DOCUMENT_RETRIEVE_ENDPOINT_APIM", ""
+            )
+            attachment_url = (
+                document_retrieve_endpoint
+                + "/"
+                + SnomedCodes.LLOYD_GEORGE.value.code
+                + "~"
+                + document_reference_ndr.id
+            )
+
+        document_reference_fhir.content[0].attachment.url = attachment_url
         document_reference_fhir.status = document_reference_ndr.status
         document_reference_fhir.docStatus = document_reference_ndr.doc_status
 
