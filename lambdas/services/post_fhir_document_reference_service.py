@@ -197,12 +197,8 @@ class PostFhirDocumentReferenceService:
         presigned_url: Optional[Dict[str, Any]],
     ) -> str:
         """Create a FHIR response document"""
-        # Create a copy of the original FHIR document
-
-        # Add document reference ID
         document_reference_ndr.id = document_reference_fhir.id
 
-        # Add pre-signed URL information if available
         if presigned_url:
             document_reference_fhir.content[0].attachment.url = presigned_url["url"]
         document_reference_fhir.status = document_reference_ndr.status

@@ -507,6 +507,7 @@ jobs:
 
   deploy_fhir_document_reference_upload_lambda:
     name: Deploy Upload Document References FHIR Lambda
+    if: inputs.environment == 'development' || inputs.environment == 'test'
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -514,13 +515,14 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: post_fhir_document_reference_handler
-      lambda_aws_name: UploadDocumentReferencesFHIR
+      lambda_aws_name: PostDocumentReferencesFHIR
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_fhir_document_reference_search_lambda:
     name: Deploy Search Document References FHIR Lambda
-    if: inputs.environment == 'development' ||  inputs.environment == 'test'
+    if: inputs.environment == 'development' || inputs.environment == 'test'
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
