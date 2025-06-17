@@ -14,13 +14,14 @@ import useTitle from '../../helpers/hooks/useTitle';
 type Props = {};
 
 function StartPage(props: Props) {
+    const env = import.meta.env.MODE;
     const navigate = useNavigate();
     const baseAPIUrl = useBaseAPIUrl();
     const [isLoading, setIsLoading] = useState(false);
     const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         setIsLoading(true);
         e.preventDefault();
-        if (isLocal) {
+        if (isLocal || env == 'development') {
             navigate(routes.MOCK_CIS2_LOGIN_PAGE); // replace this with whatever my route for logging in is
         } else {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
