@@ -7,7 +7,7 @@ import waitForSeconds from '../utils/waitForSeconds';
 import { DownloadManifestError } from '../../types/generic/errors';
 import { isRunningInCypress } from '../utils/isLocal';
 
-export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 10;
+export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 3;
 
 type Args = {
     nhsNumber: string;
@@ -33,9 +33,10 @@ const getPresignedUrlForZip = async (args: Args) => {
 
     const jobId = await requestJobId(args);
     let pendingCount = 0;
-
-    while (pendingCount < 3) {
-        await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+    while (pendingCount < 10) {
+        if (pendingCount > 0) {
+            await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+        }
         const pollingResponse = await pollForPresignedUrl({
             baseUrl,
             baseHeaders,
