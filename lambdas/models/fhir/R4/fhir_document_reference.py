@@ -10,8 +10,7 @@ from models.fhir.R4.base_models import (
     Period,
     Reference,
 )
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel
+from pydantic import BaseModel, Field
 
 # Constants
 FHIR_BASE_URL = "https://fhir.nhs.uk/Id"
@@ -128,8 +127,6 @@ class DocumentReference(BaseModel):
 
 class DocumentReferenceInfo(BaseModel):
     """Information needed to create a DocumentReference resource."""
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     nhs_number: str
     custodian: Optional[str] = None

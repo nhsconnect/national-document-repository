@@ -360,7 +360,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     )
 
     mock_doc_ref_info.assert_called_once_with(
-        nhsNumber=mock_document_reference.nhs_number,
+        nhs_number=mock_document_reference.nhs_number,
         attachment=mock_attachment_instance,
         custodian=mock_document_reference.current_gp_ods,
         snomed_code_doc_type=None,
@@ -386,6 +386,7 @@ def test_create_document_reference_fhir_response_integration(
     mock_document_reference.author = "Y12345"
     mock_document_reference.doc_status = "final"
     mock_document_reference.custodian = "Y12345"
+    mock_document_reference.document_snomed_code_type = "16521000000101"
 
     expected_fhir_response = {
         "id": "Y05868-1634567890",

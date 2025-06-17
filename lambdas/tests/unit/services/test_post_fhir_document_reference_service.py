@@ -121,7 +121,6 @@ def test_process_fhir_document_reference_with_binary(
     assert isinstance(result, str)
     result_json = json.loads(result)
     assert result_json["resourceType"] == "DocumentReference"
-    assert "url" not in result_json["content"][0]["attachment"]
 
     # Verify
     mock_service.s3_service.upload_file_obj.assert_called_once()

@@ -6,10 +6,11 @@ from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.snomed_codes import SnomedCode, SnomedCodes
 from models.document_reference import DocumentReference
-from models.fhir.R4.fhir_document_reference import SNOMED_URL
+from models.fhir.R4.fhir_document_reference import SNOMED_URL, Attachment
 from models.fhir.R4.fhir_document_reference import (
     DocumentReference as FhirDocumentReference,
 )
+from models.fhir.R4.fhir_document_reference import DocumentReferenceInfo
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
@@ -79,9 +80,7 @@ class PostFhirDocumentReferenceService:
 
             # Save document reference to DynamoDB
             self._save_document_reference_to_dynamo(dynamo_table, document_reference)
-            return self._create_fhir_response(
-                document_reference, validated_fhir_doc, presigned_url
-            )
+            return self._create_fhir_response(document_reference, presigned_url)
 
         except ValidationError as e:
             logger.error(f"FHIR document validation error: {str(e)}")
@@ -193,12 +192,9 @@ class PostFhirDocumentReferenceService:
     def _create_fhir_response(
         self,
         document_reference_ndr: DocumentReference,
-        document_reference_fhir: FhirDocumentReference,
         presigned_url: Optional[Dict[str, Any]],
     ) -> str:
         """Create a FHIR response document"""
-
-        document_reference_fhir.id = document_reference_ndr.id
 
         if presigned_url:
             attachment_url = presigned_url["url"]
@@ -213,16 +209,26 @@ class PostFhirDocumentReferenceService:
                 + "~"
                 + document_reference_ndr.id
             )
-
-        document_reference_fhir.content[0].attachment.url = attachment_url
-        document_reference_fhir.status = document_reference_ndr.status
-        document_reference_fhir.docStatus = document_reference_ndr.doc_status
-
-        fhir_response = document_reference_fhir.model_dump_json(
-            exclude_none=True, by_alias=True
+        document_details = Attachment(
+            title=document_reference_ndr.file_name,
+            creation=document_reference_ndr.document_scan_creation
+            or document_reference_ndr.created,
+            url=attachment_url,
+        )
+        fhir_document_reference = (
+            DocumentReferenceInfo(
+                nhs_number=document_reference_ndr.nhs_number,
+                attachment=document_details,
+                custodian=document_reference_ndr.custodian,
+                snomed_code_doc_type=SnomedCodes.find_by_code(
+                    document_reference_ndr.document_snomed_code_type
+                ),
+            )
+            .create_fhir_document_reference_object(document_reference_ndr)
+            .model_dump_json(exclude_none=True)
         )
 
-        return fhir_response
+        return fhir_document_reference
 
     def _check_nhs_number_with_pds(self, nhs_number: str) -> None:
         try:
