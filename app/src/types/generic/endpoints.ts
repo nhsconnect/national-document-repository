@@ -18,4 +18,6 @@ export enum endpoints {
     UPLOAD_DOCUMENT_STATE = '/UploadState',
 
     ODS_REPORT = '/OdsReport',
+
+    ORGANISATION_SEARCH = '/SearchOrg',
 }

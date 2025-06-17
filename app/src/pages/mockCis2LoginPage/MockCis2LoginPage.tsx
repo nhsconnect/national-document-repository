@@ -1,11 +1,19 @@
 import { FormGroup, Form, Button } from 'nhsuk-react-components';
-import { FieldValues, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
+import { routes } from '../../types/generic/routes';
+import { OrganisationDetails } from '../../types/generic/organisationDetails';
+import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
+import { errorToParams } from '../../helpers/utils/errorToParams';
+import { useOrganisationDetailsContext } from '../../providers/OrganisationProvider/OrganisationProvider';
 
 type LoginFormData = {
     username: string;
     password: string;
 };
+
 const MockCis2LoginPage = () => {
+    const navigate = useNavigate();
     const {
         register,
         handleSubmit,
@@ -13,6 +21,7 @@ const MockCis2LoginPage = () => {
     } = useForm<LoginFormData>({
         reValidateMode: 'onSubmit',
     });
+    const [, setOrganisationDetails] = useOrganisationDetailsContext();
     const submit = async (fieldValues: LoginFormData) => {
         const { username, password } = fieldValues;
 
@@ -21,6 +30,35 @@ const MockCis2LoginPage = () => {
             console.log('Username:', username);
             console.log('Password:', password);
             // await submitLoginDetails(username,password)
+            try {
+                //     const organisationDetails = await getOrganisationDetails({
+                //     username,
+                //     password,
+                //     baseUrl,
+                //     baseHeaders,
+                // });
+
+                const organisationDetails: OrganisationDetails[] = [
+                    { role: 'GP Admin', odsCode: 'A12345', practiceName: 'Sunrise Health Centre' },
+                    {
+                        role: 'Receptionist',
+                        odsCode: 'B67890',
+                        practiceName: 'Moonlight Medical Practice',
+                    },
+                    {
+                        role: 'Practice Manager',
+                        odsCode: 'C13579',
+                        practiceName: 'Riverbank Surgery',
+                    },
+                ];
+                // [OrganisationDetails]
+                //need to figure out how to pass the response
+                setOrganisationDetails(organisationDetails);
+                navigate(routes.MOCK_ROLE_SELECT_PAGE);
+            } catch (e) {
+                const error = e as AxiosError;
+                navigate(routes.SERVER_ERROR + errorToParams(error));
+            }
         }
     };
 

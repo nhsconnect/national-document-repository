@@ -7,6 +7,7 @@ import { AwsRum, AwsRumConfig } from 'aws-rum-web';
 import { NdrTokenData } from './types/generic/ndrTokenData';
 import { decodeJwtToken } from './helpers/utils/jwtDecoder';
 import PatientAccessAuditProvider from './providers/patientAccessAuditProvider/PatientAccessAuditProvider';
+import OrganisationDetailsProvider from './providers/OrganisationProvider/OrganisationProvider';
 
 const cypress =
     import.meta.env.VITE_MONITOR_ACCOUNT_ID === 'not provided yet' &&
@@ -63,9 +64,11 @@ function App() {
         <ConfigProvider>
             <SessionProvider>
                 <PatientDetailsProvider>
-                    <PatientAccessAuditProvider>
-                        <AppRouter />
-                    </PatientAccessAuditProvider>
+                    <OrganisationDetailsProvider>
+                        <PatientAccessAuditProvider>
+                            <AppRouter />
+                        </PatientAccessAuditProvider>
+                    </OrganisationDetailsProvider>
                 </PatientDetailsProvider>
             </SessionProvider>
         </ConfigProvider>

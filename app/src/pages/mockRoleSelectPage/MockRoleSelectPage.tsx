@@ -5,30 +5,21 @@ import { useNavigate } from 'react-router-dom';
 import { routes } from '../../types/generic/routes';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
+import { useOrganisationDetailsContext } from '../../providers/OrganisationProvider/OrganisationProvider';
+import { OrganisationDetails } from '../../types/generic/organisationDetails';
 
 function MockRoleSelectPage() {
-    type Organisation = {
-        role: string;
-        odsCode: string;
-        practiceName: string;
-    };
-
-    const organisationList: Organisation[] = [
-        { role: 'GP Admin', odsCode: 'A12345', practiceName: 'Sunrise Health Centre' },
-        { role: 'Receptionist', odsCode: 'B67890', practiceName: 'Moonlight Medical Practice' },
-        { role: 'Practice Manager', odsCode: 'C13579', practiceName: 'Riverbank Surgery' },
-    ];
+    const [organisationDetails] = useOrganisationDetailsContext();
+    console.log('organisationDetails =', organisationDetails);
+    const organisationList: OrganisationDetails[] = organisationDetails ?? [];
 
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
     const [session, setSession] = useSessionContext();
-    const [selectedOrganisation, setSelectedOrganisation] = useState<Organisation | null>(null);
-
-    const { register, handleSubmit, setValue, watch } = useForm();
+    const { handleSubmit, setValue, watch } = useForm();
 
     const submit = (fieldValues: FieldValues) => {
         const selectedOds = fieldValues.odsCode;
-        console.log('organisation:', fieldValues.odsCode);
 
         if (!selectedOds) {
             setInputError('Select one organisation you would like to view');
@@ -36,10 +27,10 @@ function MockRoleSelectPage() {
         }
 
         const selected = organisationList.find((org) => org.odsCode === selectedOds);
-        console.log('Selected organisation:', selected);
 
         if (selected) {
-            setSelectedOrganisation(selected);
+            // You could store selected organisation in context or session here if needed
+            console.log('Selected organisation:', selected);
         }
 
         setSession({
@@ -50,16 +41,18 @@ function MockRoleSelectPage() {
         navigate(routes.SEARCH_PATIENT);
     };
 
-    const selectedOds = watch('organisation');
+    if (organisationList.length === 0) {
+        return <p>Loading organisation details...</p>;
+    }
 
     return (
         <div className="role-select-page-div">
             {inputError && (
                 <ErrorBox
-                    messageTitle={'There is a problem'}
+                    messageTitle="There is a problem"
                     messageLinkBody={inputError}
-                    errorInputLink={'#select-org-input'}
-                    errorBoxSummaryId={'error-box-summary'}
+                    errorInputLink="#select-org-input"
+                    errorBoxSummaryId="error-box-summary"
                 />
             )}
 
