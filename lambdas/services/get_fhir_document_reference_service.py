@@ -120,7 +120,7 @@ class GetFhirDocumentReferenceService:
 
         fhir_document_reference = (
             DocumentReferenceInfo(
-                nhsNumber=document_reference.nhs_number,
+                nhs_number=document_reference.nhs_number,
                 custodian=document_reference.current_gp_ods,
                 attachment=document_details,
                 snomed_code_doc_type=SnomedCodes.find_by_code(

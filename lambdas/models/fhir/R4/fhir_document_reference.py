@@ -98,7 +98,7 @@ class DocumentReference(BaseModel):
     """FHIR DocumentReference resource."""
 
     id: Optional[str] = None
-    resourceType: Literal["DocumentReference"] = "DocumentReference"
+    resourceType: Literal["DocumentReference"]
     docStatus: Literal[
         "registered",
         "partial",
@@ -184,6 +184,7 @@ class DocumentReferenceInfo(BaseModel):
         nrl_content_stability_extension = [ContentStabilityExtension()]
 
         fhir_document_ref = DocumentReference(
+            resourceType="DocumentReference",
             subject=Reference(**self._create_identifier("nhs-number", self.nhs_number)),
             content=[DocumentReferenceContent(attachment=self.attachment)],
             custodian=Reference(
@@ -225,6 +226,7 @@ class DocumentReferenceInfo(BaseModel):
         """
 
         return DocumentReference(
+            resourceType="DocumentReference",
             id=document.id,
             docStatus=document.doc_status,
             type=CodeableConcept(
