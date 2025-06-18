@@ -11,7 +11,7 @@ const PdfViewer = ({ fileUrl, customClasses, onLoaded }: Props) => {
 
     useEffect(() => {
         const test = async () => {
-            while (!document.querySelector('#viewer.pdfViewer')) {}
+            while (!document.querySelector('pdfjs-viewer-element')) {}
 
             if (onLoaded && !loaded) {
                 loaded = true;

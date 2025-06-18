@@ -225,7 +225,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                                             <Table.Cell>
                                                 <div>{document.file.name}</div>
                                             </Table.Cell>
-                                            <Table.Cell>{document.pageInfo?.length}</Table.Cell>
+                                            <Table.Cell>{document.numPages}</Table.Cell>
                                             {/* <Table.Cell>
                                                 {(document.pageInfo?.filter(p => !p).length ?? 0) > 0 ? 'Yes' : 'No'}
                                             </Table.Cell> */}

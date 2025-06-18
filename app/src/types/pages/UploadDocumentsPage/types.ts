@@ -37,7 +37,7 @@ export type UploadDocument = {
     ref?: string;
     key?: string;
     position?: number;
-    pageInfo?: boolean[];
+    numPages?: number;
 };
 
 export type UploadFilesErrors = {

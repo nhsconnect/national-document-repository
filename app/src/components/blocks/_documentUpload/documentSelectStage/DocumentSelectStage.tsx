@@ -75,9 +75,6 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                 const buffer = await file.arrayBuffer();
                 const pdf = await getDocument(buffer).promise;
 
-                let pageInfo: boolean[] = new Array(pdf.numPages);
-                pageInfo = pageInfo.fill(false, 0, pdf.numPages);
-
                 return {
                     id: uuidv4(),
                     file,
@@ -85,7 +82,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                     progress: 0,
                     docType: documentType,
                     attempts: 0,
-                    pageInfo,
+                    numPages: pdf.numPages,
                 };
             });
 
