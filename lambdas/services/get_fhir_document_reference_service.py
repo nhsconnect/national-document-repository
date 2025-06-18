@@ -10,6 +10,7 @@ from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import CurrentStatusFile
 from utils.lambda_exceptions import GetFhirDocumentReferenceException
 from utils.request_context import request_context
 
@@ -46,6 +47,7 @@ class GetFhirDocumentReferenceService:
             table=table,
             search_condition=document_id,
             search_key="ID",
+            query_filter=CurrentStatusFile,
         )
         if len(documents) > 0:
             logger.info("Document found for given id")
@@ -102,21 +104,20 @@ class GetFhirDocumentReferenceService:
             size=file_size,
             contentType=document_reference.content_type,
         )
-        if file_size < FileSize.MAX_FILE_SIZE:
-            logger.info("File size is smaller than 8MB. Returning binary file.")
-            binary_file = self.s3_service.get_binary_file(
-                s3_bucket_name=bucket_name,
-                file_key=file_location,
-            )
-            base64_encoded_file = base64.b64encode(binary_file)
-            document_details.data = base64_encoded_file
+        if document_reference.doc_status == "final":
+            if file_size < FileSize.MAX_FILE_SIZE:
+                logger.info("File size is smaller than 8MB. Returning binary file.")
+                binary_file = self.s3_service.get_binary_file(
+                    s3_bucket_name=bucket_name,
+                    file_key=file_location,
+                )
+                base64_encoded_file = base64.b64encode(binary_file)
+                document_details.data = base64_encoded_file
 
-        else:
-            logger.info("File size is larger than 8MB. Generating presigned URL.")
-            presign_url = self.get_presigned_url(bucket_name, file_location)
-            document_details.url = presign_url
-
-        # Create and return the FHIR DocumentReference object as a JSON string.
+            else:
+                logger.info("File size is larger than 8MB. Generating presigned URL.")
+                presign_url = self.get_presigned_url(bucket_name, file_location)
+                document_details.url = presign_url
 
         fhir_document_reference = (
             DocumentReferenceInfo(
