@@ -85,7 +85,7 @@ class GetFhirDocumentReferenceService:
 
         Args:
             document_reference (DocumentReference): The document reference object containing metadata
-                about the file (e.g., bucket name, file key, file size, etc.).
+                about the file (e.g. bucket name, file key, file size, etc.).
 
         Returns:
             str: A JSON string representing the FHIR DocumentReference object.

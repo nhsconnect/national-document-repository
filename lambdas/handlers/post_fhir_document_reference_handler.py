@@ -2,12 +2,14 @@ from services.post_fhir_document_reference_service import (
     PostFhirDocumentReferenceService,
 )
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions_fhir
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = LoggingService(__name__)
 
 
+@handle_lambda_exceptions_fhir
 def lambda_handler(event, context):
     """
     Handler for processing FHIR Document Reference requests.

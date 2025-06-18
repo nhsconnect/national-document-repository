@@ -11,11 +11,13 @@ from models.fhir.R4.fhir_document_reference import (
     DocumentReference as FhirDocumentReference,
 )
 from models.fhir.R4.fhir_document_reference import DocumentReferenceInfo
+from models.pds_models import PatientDetails
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
+    InvalidNhsNumberException,
     InvalidResourceIdException,
     PatientNotFoundException,
     PdsErrorException,
@@ -54,7 +56,7 @@ class PostFhirDocumentReferenceService:
             # Extract NHS number from the FHIR document
             nhs_number = self._extract_nhs_number_from_fhir(validated_fhir_doc)
             validate_nhs_number(nhs_number)
-            self._check_nhs_number_with_pds(nhs_number)
+            patient_details = self._check_nhs_number_with_pds(nhs_number)
 
             # Extract document type
             doc_type = self._determine_document_type(validated_fhir_doc)
@@ -67,7 +69,10 @@ class PostFhirDocumentReferenceService:
 
             # Create a document reference model
             document_reference = self._create_document_reference(
-                nhs_number, doc_type, validated_fhir_doc
+                nhs_number,
+                doc_type,
+                validated_fhir_doc,
+                patient_details.general_practice_ods,
             )
 
             presigned_url = None
@@ -82,7 +87,7 @@ class PostFhirDocumentReferenceService:
             self._save_document_reference_to_dynamo(dynamo_table, document_reference)
             return self._create_fhir_response(document_reference, presigned_url)
 
-        except ValidationError as e:
+        except (ValidationError, InvalidNhsNumberException) as e:
             logger.error(f"FHIR document validation error: {str(e)}")
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
         except ClientError as e:
@@ -120,16 +125,23 @@ class PostFhirDocumentReferenceService:
             return self.arf_dynamo_table
 
     def _create_document_reference(
-        self, nhs_number: str, doc_type: SnomedCode, fhir_doc: FhirDocumentReference
+        self,
+        nhs_number: str,
+        doc_type: SnomedCode,
+        fhir_doc: FhirDocumentReference,
+        current_gp_ods: str,
     ) -> DocumentReference:
         """Create a document reference model"""
         document_id = create_reference_id()
         document_reference = DocumentReference(
             id=document_id,
             nhs_number=nhs_number,
-            current_gp_ods=fhir_doc.custodian.identifier.value,
-            custodian=fhir_doc.custodian.identifier.value,
-            author=fhir_doc.author[0].identifier.value,
+            current_gp_ods=current_gp_ods,
+            custodian=(
+                fhir_doc.custodian.identifier.value
+                if fhir_doc.custodian
+                else current_gp_ods
+            ),
             s3_bucket_name=self.staging_bucket_name,
             content_type=fhir_doc.content[0].attachment.contentType,
             file_name=fhir_doc.content[0].attachment.title,
@@ -138,6 +150,8 @@ class PostFhirDocumentReferenceService:
             status="current",
             document_scan_creation=fhir_doc.content[0].attachment.creation,
         )
+        if fhir_doc.author:
+            document_reference.author = fhir_doc.author[0].identifier.value
 
         return document_reference
 
@@ -230,10 +244,10 @@ class PostFhirDocumentReferenceService:
 
         return fhir_document_reference
 
-    def _check_nhs_number_with_pds(self, nhs_number: str) -> None:
+    def _check_nhs_number_with_pds(self, nhs_number: str) -> PatientDetails:
         try:
             pds_service = get_pds_service()
-            pds_service.fetch_patient_details(nhs_number)
+            return pds_service.fetch_patient_details(nhs_number)
         except (
             PatientNotFoundException,
             InvalidResourceIdException,

@@ -3,6 +3,7 @@ import os
 import re
 import uuid
 from datetime import datetime
+from os import environ
 from urllib.parse import urlparse
 
 from inflection import camelize
@@ -21,6 +22,8 @@ def validate_nhs_number(nhs_number: str) -> bool:
     Validate an NHS number using the Modulus 11 algorithm.
     https://www.datadictionary.nhs.uk/attributes/nhs_number.html
     """
+    if environ.get("PDS_FHIR_IS_STUBBED", True) in ["True", "true"]:
+        return True
     nhs_number = re.sub(r"\D", "", nhs_number)
 
     if not re.fullmatch(r"\d{10}", nhs_number):

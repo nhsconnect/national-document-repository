@@ -43,7 +43,7 @@ class DocumentReference(BaseModel):
     )
 
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
-    author: str = Field(default=None, exclude=True)
+    author: str = Field(default=None)
     content_type: str = Field(default=DEFAULT_CONTENT_TYPE)
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(DATE_FORMAT)

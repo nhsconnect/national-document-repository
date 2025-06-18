@@ -10,17 +10,27 @@ from models.fhir.R4.fhir_document_reference import (
 from services.post_fhir_document_reference_service import (
     PostFhirDocumentReferenceService,
 )
+from unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE as mock_pds_patient_details
 from utils.exceptions import PatientNotFoundException
 from utils.lambda_exceptions import CreateDocumentRefException
 
 
 @pytest.fixture
-def mock_service(set_env, mocker):
+def mock_pds_service_fetch(mocker):
+    mock_service_object = mocker.MagicMock()
+    mocker.patch(
+        "services.post_fhir_document_reference_service.get_pds_service",
+        return_value=mock_service_object,
+    )
+    mock_service_object.fetch_patient_details.return_value = mock_pds_patient_details
+
+
+@pytest.fixture
+def mock_service(set_env, mocker, mock_pds_service_fetch):
     mock_s3 = mocker.patch("services.post_fhir_document_reference_service.S3Service")
     mock_dynamo = mocker.patch(
         "services.post_fhir_document_reference_service.DynamoDBService"
     )
-    mocker.patch("services.post_fhir_document_reference_service.get_pds_service")
     service = PostFhirDocumentReferenceService()
     service.s3_service = mock_s3.return_value
     service.dynamo_service = mock_dynamo.return_value
@@ -113,7 +123,7 @@ def test_process_fhir_document_reference_with_presigned_url(
 def test_process_fhir_document_reference_with_binary(
     mock_service, valid_fhir_doc_with_binary
 ):
-    """Test happy path with binary data in the request."""
+    """Test a happy path with binary data in the request."""
     # Execute
     result = mock_service.process_fhir_document_reference(valid_fhir_doc_with_binary)
 
@@ -129,7 +139,7 @@ def test_process_fhir_document_reference_with_binary(
 
 
 def test_validation_error(mock_service):
-    """Test handling of invalid FHIR document."""
+    """Test handling of an invalid FHIR document."""
     # Execute & Assert
     with pytest.raises(CreateDocumentRefException) as excinfo:
         mock_service.process_fhir_document_reference("{invalid json}")
@@ -145,7 +155,7 @@ def test_validation_error(mock_service):
         (
             lambda doc: {
                 **doc,
-                "type": {"coding": [{"system": "wrong-system", "value": "9000000009"}]},
+                "type": {"coding": [{"system": "wrong-system", "code": "9000000009"}]},
             },
             LambdaError.CreateDocInvalidType,
         ),
