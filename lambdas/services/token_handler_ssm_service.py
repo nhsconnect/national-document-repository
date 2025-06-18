@@ -37,7 +37,7 @@ class TokenHandlerSSMService(AwsSsmExtensionService):
 
         if None in response:
             logger.error(
-                LambdaError.LoginBadSSM.to_str(),
+                LambdaError.LoginNoSSM.to_str(),
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(500, LambdaError.LoginNoSSM)
