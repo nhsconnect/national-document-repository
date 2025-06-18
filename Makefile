@@ -18,6 +18,9 @@ ZIP_COMMON_FILES = lambdas/utils lambdas/models lambdas/services lambdas/reposit
 
 default: help
 
+help:  ## This help message
+	@grep '^[^#[:space:]].*:' Makefile
+
 clean: clean-build clean-py clean-test
 
 clean-build:

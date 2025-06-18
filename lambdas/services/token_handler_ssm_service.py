@@ -1,5 +1,5 @@
 from enums.lambda_error import LambdaError
-from services.base.ssm_service import SSMService
+from services.base.aws_param_extension_service import AwsSsmExtensionService
 from utils.audit_logging_setup import LoggingService
 from utils.constants.ssm import (
     ALLOWED_ODS_CODES_LIST,
@@ -15,7 +15,7 @@ from utils.lambda_exceptions import LoginException
 logger = LoggingService(__name__)
 
 
-class TokenHandlerSSMService(SSMService):
+class TokenHandlerSSMService(AwsSsmExtensionService):
     def __init__(self):
         super().__init__()
 
