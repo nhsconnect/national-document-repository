@@ -3,13 +3,9 @@ import tempfile
 from io import BytesIO
 
 import pytest
-from pypdf import PdfReader, PdfWriter
+from pypdf import PdfWriter
 from pypdf.errors import PyPdfError
-from services.pdf_stitch_service import (
-    count_page_number,
-    stitch_pdf,
-    stitch_pdf_into_stream,
-)
+from services.pdf_stitch_service import count_page_number, stitch_pdf
 
 
 def test_stitch_pdf():
@@ -70,16 +66,3 @@ def create_in_memory_pdf(page_count: int = 1) -> BytesIO:
     writer.write(stream)
     stream.seek(0)
     return stream
-
-
-def test_stitch_pdf_into_stream_returns_combined_pdf():
-    pdf_streams = [
-        create_in_memory_pdf(1),
-        create_in_memory_pdf(2),
-        create_in_memory_pdf(3),
-    ]
-
-    result_stream = stitch_pdf_into_stream(pdf_streams)
-
-    result_reader = PdfReader(result_stream)
-    assert len(result_reader.pages) == 6

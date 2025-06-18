@@ -1,25 +1,10 @@
 import os
-from io import BytesIO
 from uuid import uuid4
 
 from pypdf import PdfReader, PdfWriter
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
-
-
-def stitch_pdf_into_stream(pdf_streams: list[BytesIO]) -> BytesIO:
-    writer = PdfWriter()
-
-    for stream in pdf_streams:
-        reader = PdfReader(stream)
-        for page in reader.pages:
-            writer.add_page(page)
-
-    output_stream = BytesIO()
-    writer.write(output_stream)
-    output_stream.seek(0)
-    return output_stream
 
 
 def stitch_pdf(filenames: list[str], temp_folder: str = "/tmp/") -> str:

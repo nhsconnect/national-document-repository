@@ -169,6 +169,14 @@ class S3Service:
         response = self.client.get_object(Bucket=bucket, Key=key)
         return response.get("Body")
 
+    def stream_s3_object_to_memory(self, bucket: str, key: str) -> BytesIO:
+        response = self.client.get_object(Bucket=bucket, Key=key)
+        buf = BytesIO()
+        for chunk in iter(lambda: response["Body"].read(64 * 1024), b""):
+            buf.write(chunk)
+        buf.seek(0)
+        return buf
+
     def upload_file_obj(
         self,
         file_obj: io.BytesIO,

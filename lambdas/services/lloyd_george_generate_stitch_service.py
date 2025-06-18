@@ -8,10 +8,10 @@ from enums.lambda_error import LambdaError
 from enums.trace_status import TraceStatus
 from models.document_reference import DocumentReference
 from models.stitch_trace import StitchTrace
+from pypdf import PdfReader, PdfWriter
 from pypdf.errors import PyPdfError
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
-from services.pdf_stitch_service import stitch_pdf_into_stream
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import NoAvailableDocument
 from utils.filename_utils import extract_page_number
@@ -51,19 +51,17 @@ class LloydGeorgeStitchService:
             destination_key = (
                 f"{self.combined_file_folder}/{filename_for_stitched_file}"
             )
-
-            all_lg_parts = self.get_documents_for_stitching(
-                documents_for_stitching=documents_for_stitching
+            ordered_documents = self.prepare_documents_for_stitching(
+                documents_for_stitching
             )
+            stitched_lg_stream = self.stream_and_stitch_documents(ordered_documents)
             self.stitch_trace_object.total_file_size_in_bytes = (
-                self.get_total_file_size_in_bytes(all_lg_parts)
+                stitched_lg_stream.getbuffer().nbytes
             )
-            stitched_lg_stream = stitch_pdf_into_stream(all_lg_parts)
             self.upload_stitched_lg_record(
                 stitched_lg_stream=stitched_lg_stream,
                 filename_on_bucket=destination_key,
             )
-
             self.stitch_trace_object.stitched_file_location = destination_key
 
             logger.audit_splunk_info(
@@ -78,31 +76,39 @@ class LloydGeorgeStitchService:
             )
             raise LGStitchServiceException(500, LambdaError.StitchClient)
 
-    def get_documents_for_stitching(
-        self, documents_for_stitching: list[DocumentReference]
-    ):
-        try:
-            self.update_trace_status(TraceStatus.PROCESSING)
-            sorted_documents_for_stitching = self.sort_documents_by_filenames(
-                documents_for_stitching
+    def stream_and_stitch_documents(
+        self, documents: list[DocumentReference]
+    ) -> BytesIO:
+        writer = PdfWriter()
+
+        for doc in documents:
+            s3_key = get_file_key_from_s3_url(doc.file_location)
+            memory_stream = self.s3_service.stream_s3_object_to_memory(
+                bucket=self.lloyd_george_bucket_name,
+                key=s3_key,
             )
-            all_lg_parts = self.download_lloyd_george_files(
-                sorted_documents_for_stitching
-            )
-            self.stitch_trace_object.number_of_files = len(documents_for_stitching)
-            self.stitch_trace_object.file_last_updated = (
-                self.get_most_recent_created_date(sorted_documents_for_stitching)
-            )
-        except ClientError as e:
-            logger.error(
-                f"{LambdaError.StitchNoService.to_str()}: {str(e)}",
-                {"Result": "Lloyd George stitching failed"},
-            )
-            raise LGStitchServiceException(
-                500,
-                LambdaError.StitchNoService,
-            )
-        return all_lg_parts
+
+            reader = PdfReader(memory_stream)
+            for page in reader.pages:
+                writer.add_page(page)
+
+        output_stream = BytesIO()
+        writer.write(output_stream)
+        output_stream.seek(0)
+        return output_stream
+
+    def prepare_documents_for_stitching(
+        self, documents: list[DocumentReference]
+    ) -> list[DocumentReference]:
+        self.update_trace_status(TraceStatus.PROCESSING)
+
+        sorted_docs = self.sort_documents_by_filenames(documents)
+        self.stitch_trace_object.number_of_files = len(sorted_docs)
+        self.stitch_trace_object.file_last_updated = self.get_most_recent_created_date(
+            sorted_docs
+        )
+
+        return sorted_docs
 
     @staticmethod
     def sort_documents_by_filenames(
@@ -116,26 +122,6 @@ class LloydGeorgeStitchService:
                 {"Result": "Lloyd George stitching failed"},
             )
             raise LGStitchServiceException(500, LambdaError.StitchValidation)
-
-    def download_lloyd_george_files(
-        self, ordered_lg_records: list[DocumentReference]
-    ) -> list[BytesIO]:
-        all_lg_parts = []
-
-        for lg_part in ordered_lg_records:
-            file_location_on_s3 = lg_part.file_location
-            s3_file_path = get_file_key_from_s3_url(file_location_on_s3)
-
-            s3_stream = self.s3_service.get_object_stream(
-                bucket=self.lloyd_george_bucket_name,
-                key=s3_file_path,
-            )
-            memory_stream = BytesIO(s3_stream.read())
-            memory_stream.seek(0)
-
-            all_lg_parts.append(memory_stream)
-
-        return all_lg_parts
 
     def upload_stitched_lg_record(
         self, stitched_lg_stream: BytesIO, filename_on_bucket: str
@@ -153,14 +139,12 @@ class LloydGeorgeStitchService:
                 extra_args=extra_args,
             )
             logger.info(
-                f"Successfully uploaded the stitched file to bucket {self.lloyd_george_bucket_name}"
-                f" with file key {filename_on_bucket}"
+                f"Uploaded stitched file to {self.lloyd_george_bucket_name} with key {filename_on_bucket}"
             )
-            self.stitch_trace_object.stitched_file_location = filename_on_bucket
         except ValueError as e:
             logger.error(
                 f"{LambdaError.StitchCloudFront.to_str()}: {str(e)}",
-                {"Result": "Failed to format CloudFront URL due to invalid input."},
+                {"Result": "Failed to format CloudFront URL."},
             )
             raise LGStitchServiceException(500, LambdaError.StitchCloudFront)
 
