@@ -31,8 +31,10 @@ describe('UnauthorisedLoginPage', () => {
                 'In order to keep patient information safe, only authorised accounts can access this service',
                 'This includes:',
                 'GP practice staff who work at the practice the patient is registered with who have one of these roles on their smart cards:',
-                'GP Admin Role: R8010, R8013, R1790, R8008',
-                'GP Clinical Role: R8000',
+                'GP Admin Role:',
+                'R8010, R8013, R1790, R8008',
+                'GP Clinical Role:',
+                'R8000',
                 'PCSE staff where a patient does not have an active registration',
                 "If you don't have access and feel you should have, please contact your local Registration Authority",
             ];
