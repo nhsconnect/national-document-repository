@@ -27,8 +27,6 @@ type Props = {
 const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const hasFileInput = documents.length > 0;
-
     const navigate = useNavigate();
 
     const validateFileType = (file: File): boolean => {
@@ -72,20 +70,37 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         const documentMap = fileArray
             .filter((f) => !documents.some((d) => d.file.name === f.name))
             .map(async (file) => {
-                //const buffer = await file.arrayBuffer();
-                //const pdf = await getDocument(buffer).promise;
-                //const pageCount = pdf.numPages;
-                //pdf.destroy();
-
-                return {
+                const document: UploadDocument = {
                     id: uuidv4(),
                     file,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     progress: 0,
                     docType: documentType,
                     attempts: 0,
-                    //numPages: pageCount,
+                    numPages: 0,
                 };
+
+                const buffer = await file.arrayBuffer();
+
+                try {
+                    const pdf = await getDocument(buffer).promise;
+                    await pdf.getPage(1);
+                    document.numPages = pdf.numPages;
+                    await pdf.destroy();
+                } catch (e) {
+                    const error = e as Error;
+                    document.state = DOCUMENT_UPLOAD_STATE.FAILED;
+
+                    let errorMessage = 'Failed to read PDF.';
+                    if (error.message.startsWith('Invalid PDF')) {
+                        errorMessage = 'PDF Invalid.';
+                    } else if (error.message.includes('password')) {
+                        errorMessage = 'PDF is password protected.';
+                    }
+                    document.error = `${errorMessage} Please remove this file to continue with the upload.`;
+                }
+
+                return document;
             });
 
         const docs = await Promise.all(documentMap);
@@ -120,6 +135,13 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         }
 
         return '';
+    };
+
+    const documentsValid = () => {
+        return (
+            documents.length > 0 &&
+            documents.some((doc) => doc.state === DOCUMENT_UPLOAD_STATE.FAILED)
+        );
     };
 
     const pageTitle = () => {
@@ -238,6 +260,9 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                                     <Table.Row key={document.id} id={document.file.name}>
                                         <Table.Cell>
                                             <div>{document.file.name}</div>
+                                            {document.error && (
+                                                <div style={{ color: 'red' }}>{document.error}</div>
+                                            )}
                                         </Table.Cell>
                                         <Table.Cell>
                                             {formatFileSize(document.file.size)}
@@ -272,7 +297,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
             )}
             <div className="lloydgeorge_upload-submission">
                 <Button
-                    disabled={!hasFileInput}
+                    disabled={!documentsValid()}
                     type="button"
                     id="upload-button"
                     onClick={() => navigate(routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER)}
