@@ -1,5 +1,4 @@
 @import 'govuk-frontend/dist/govuk/components/phase-banner/phase-banner';
-@import 'govuk-frontend/dist/govuk/components/warning-text/warning-text';
 @import 'govuk-frontend/dist/govuk/components/notification-banner/notification-banner';
 
 @import 'nhsuk-frontend/packages/nhsuk';
@@ -871,17 +870,6 @@ $hunit: '%';
 
 .govuk-phase-banner__content__tag {
     padding-right: 10px;
-}
-
-.govuk-warning-text__icon {
-    border: 3px solid $color_nhsuk-yellow;
-    background: $color_nhsuk-yellow;
-    color: $nhsuk-text-color;
-}
-
-.govuk-warning-text {
-    display: flex;
-    align-items: center;
 }
 
 .nhs-warning-color {
