@@ -72,8 +72,10 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         const documentMap = fileArray
             .filter((f) => !documents.some((d) => d.file.name === f.name))
             .map(async (file) => {
-                const buffer = await file.arrayBuffer();
-                const pdf = await getDocument(buffer).promise;
+                //const buffer = await file.arrayBuffer();
+                //const pdf = await getDocument(buffer).promise;
+                //const pageCount = pdf.numPages;
+                //pdf.destroy();
 
                 return {
                     id: uuidv4(),
@@ -82,7 +84,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                     progress: 0,
                     docType: documentType,
                     attempts: 0,
-                    numPages: pdf.numPages,
+                    //numPages: pageCount,
                 };
             });
 
