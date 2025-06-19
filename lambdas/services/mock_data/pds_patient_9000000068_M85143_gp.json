@@ -1,10 +1,10 @@
 {
   "resourceType": "Patient",
-  "id": "9000000004",
+  "id": "9000000068",
   "identifier": [
     {
       "system": "https://fhir.nhs.uk/Id/nhs-number",
-      "value": "9000000004",
+      "value": "9000000068",
       "extension": [
         {
           "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSNumberVerificationStatus",

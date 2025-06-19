@@ -5,6 +5,7 @@ from pydantic_core import PydanticCustomError
 
 METADATA_FILENAME = "metadata.csv"
 NHS_NUMBER_FIELD_NAME = "NHS-NO"
+ODS_CODE = "GP-PRACTICE-CODE"
 NHS_NUMBER_PLACEHOLDER = "0000000000"
 
 
