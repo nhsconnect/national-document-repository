@@ -142,3 +142,25 @@ def test_create_document_reference_fhir_response_with_binary_document_data(
     ).decode("utf-8")
     assert result_json["content"][0]["attachment"]["title"] == "different_file.pdf"
     assert result_json["content"][0]["attachment"]["creation"] == "2023-05-15"
+
+
+def test_create_document_reference_fhir_response_non_final_status(
+    patched_service, mocker
+):
+    """Test FHIR response creation for documents with non-final status."""
+    test_doc = create_test_doc_store_refs()[0]
+    modified_doc = copy.deepcopy(test_doc)
+    modified_doc.doc_status = "preliminary"
+
+    patched_service.get_presigned_url = mocker.MagicMock()
+
+    result = patched_service.create_document_reference_fhir_response(modified_doc)
+    result_json = json.loads(result)
+
+    # Should not include data or url fields
+    assert "data" not in result_json["content"][0]["attachment"]
+    assert "url" not in result_json["content"][0]["attachment"]
+
+    # Verify methods were not called
+    patched_service.s3_service.get_binary_file.assert_not_called()
+    patched_service.get_presigned_url.assert_not_called()
