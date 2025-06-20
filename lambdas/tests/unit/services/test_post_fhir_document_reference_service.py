@@ -102,19 +102,29 @@ def valid_fhir_doc_with_binary(valid_fhir_doc):
 def test_process_fhir_document_reference_with_presigned_url(
     mock_service, valid_fhir_doc
 ):
-    presigned_url = {
-        "url": "https://test-bucket.s3.amazonaws.com/test-key",
-        "fields": {},
+    mock_presigned_url_response = {
+        "url": "https://test-bucket.s3.amazonaws.com/",
+        "fields": {
+            "key": "test-file-key",
+            "x-amz-algorithm": "test-algorithm",
+        },
     }
-    mock_service.s3_service.create_upload_presigned_url.return_value = presigned_url
+    mock_service.s3_service.create_upload_presigned_url.return_value = (
+        mock_presigned_url_response
+    )
 
     result = mock_service.process_fhir_document_reference(valid_fhir_doc)
+    expected_pre_sign_url = mock_presigned_url_response["url"]
+    expected_pre_sign_url += f"?key={mock_presigned_url_response['fields']['key']}"
+    expected_pre_sign_url += (
+        f"&x-amz-algorithm={mock_presigned_url_response['fields']['x-amz-algorithm']}"
+    )
 
     # Assert
     assert isinstance(result, str)
     result_json = json.loads(result)
     assert result_json["resourceType"] == "DocumentReference"
-    assert result_json["content"][0]["attachment"]["url"] == presigned_url["url"]
+    assert result_json["content"][0]["attachment"]["url"] == expected_pre_sign_url
 
     # Verify
     mock_service.s3_service.create_upload_presigned_url.assert_called_once()
