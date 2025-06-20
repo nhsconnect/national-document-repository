@@ -1,7 +1,7 @@
 import base64
 import io
 import os
-from typing import Any, Dict, Optional
+import urllib.parse
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -188,18 +188,22 @@ class PostFhirDocumentReferenceService:
             logger.error(f"Failed to store binary in S3: {str(e)}")
             raise CreateDocumentRefException(500, LambdaError.CreateDocPresign)
 
-    def _create_presigned_url(
-        self, document_reference: DocumentReference
-    ) -> Dict[str, Any]:
+    def _create_presigned_url(self, document_reference: DocumentReference) -> str:
         """Create a pre-signed URL for uploading a file"""
         try:
-            presigned_url = self.s3_service.create_upload_presigned_url(
+            response = self.s3_service.create_upload_presigned_url(
                 document_reference.s3_bucket_name, document_reference.s3_file_key
             )
             logger.info(
                 f"Successfully created pre-signed URL for {document_reference.s3_file_key}"
             )
-            return presigned_url
+            url = response["url"]
+            fields = response["fields"]
+            field_string = "&".join(
+                f"{key}={urllib.parse.quote(value)}" for key, value in fields.items()
+            )
+
+            return f"{url}?{field_string}"
         except ClientError as e:
             logger.error(f"Failed to create pre-signed URL: {str(e)}")
             raise CreateDocumentRefException(500, LambdaError.CreateDocPresign)
@@ -207,12 +211,12 @@ class PostFhirDocumentReferenceService:
     def _create_fhir_response(
         self,
         document_reference_ndr: DocumentReference,
-        presigned_url: Optional[Dict[str, Any]],
+        presigned_url: str,
     ) -> str:
         """Create a FHIR response document"""
 
         if presigned_url:
-            attachment_url = presigned_url["url"]
+            attachment_url = presigned_url
         else:
             document_retrieve_endpoint = os.getenv(
                 "DOCUMENT_RETRIEVE_ENDPOINT_APIM", ""

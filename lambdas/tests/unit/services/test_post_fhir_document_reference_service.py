@@ -10,7 +10,9 @@ from models.fhir.R4.fhir_document_reference import (
 from services.post_fhir_document_reference_service import (
     PostFhirDocumentReferenceService,
 )
-from unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE as mock_pds_patient_details
+from tests.unit.conftest import (
+    EXPECTED_PARSED_PATIENT_BASE_CASE as mock_pds_patient_details,
+)
 from utils.exceptions import PatientNotFoundException
 from utils.lambda_exceptions import CreateDocumentRefException
 
