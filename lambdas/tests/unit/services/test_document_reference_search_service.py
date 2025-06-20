@@ -13,8 +13,8 @@ from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_reference_search_service import DocumentReferenceSearchService
+from tests.unit.conftest import APIM_API_URL
 from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
-from unit.conftest import APIM_API_URL
 from utils.common_query_filters import NotDeleted, UploadCompleted
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentRefSearchException

@@ -125,13 +125,11 @@ def test_process_fhir_document_reference_with_presigned_url(
         f"&x-amz-algorithm={mock_presigned_url_response['fields']['x-amz-algorithm']}"
     )
 
-    # Assert
     assert isinstance(result, str)
     result_json = json.loads(result)
     assert result_json["resourceType"] == "DocumentReference"
     assert result_json["content"][0]["attachment"]["url"] == expected_pre_sign_url
 
-    # Verify
     mock_service.s3_service.create_upload_presigned_url.assert_called_once()
     mock_service.dynamo_service.create_item.assert_called_once()
     mock_service.s3_service.upload_file_obj.assert_not_called()
@@ -200,11 +198,9 @@ def test_document_validation_errors(
     mock_service, valid_fhir_doc, modify_doc, expected_error
 ):
     """Test validation error scenarios."""
-    # Setup
     doc = json.loads(valid_fhir_doc)
     modified_doc = FhirDocumentReference(**modify_doc(doc))
 
-    # Execute & Assert
     with pytest.raises(CreateDocumentRefException) as e:
         mock_service._determine_document_type(modified_doc)
 
@@ -214,13 +210,11 @@ def test_document_validation_errors(
 
 def test_dynamo_error(mock_service, valid_fhir_doc):
     """Test handling of DynamoDB error."""
-    # Setup
     mock_service.dynamo_service.create_item.side_effect = ClientError(
         {"Error": {"Code": "InternalServerError", "Message": "Test error"}},
         "CreateItem",
     )
 
-    # Execute & Assert
     with pytest.raises(CreateDocumentRefException) as excinfo:
         mock_service.process_fhir_document_reference(valid_fhir_doc)
 
@@ -304,12 +298,10 @@ def test_s3_presigned_url_error(mock_service, valid_fhir_doc):
 
 def test_s3_upload_error(mock_service, valid_fhir_doc_with_binary):
     """Test handling of S3 upload error."""
-    # Setup
     mock_service.s3_service.upload_file_obj.side_effect = ClientError(
         {"Error": {"Code": "InternalServerError", "Message": "Test error"}}, "PutObject"
     )
 
-    # Execute & Assert
     with pytest.raises(CreateDocumentRefException) as excinfo:
         mock_service.process_fhir_document_reference(valid_fhir_doc_with_binary)
 
@@ -340,7 +332,6 @@ def test_extract_nhs_number_from_fhir_with_invalid_system(mock_service, mocker):
         identifier=Identifier(system="invalid-system", value="9000000009")
     )
 
-    # Execute & Assert
     with pytest.raises(CreateDocumentRefException) as excinfo:
         mock_service._extract_nhs_number_from_fhir(fhir_doc)
 
@@ -432,7 +423,6 @@ def test_create_document_reference_without_custodian(mock_service, mocker):
         current_gp_ods=current_gp_ods,
     )
 
-    # Assert
     assert (
         result.custodian == current_gp_ods
     )  # Custodian should default to current_gp_ods
@@ -441,12 +431,10 @@ def test_create_document_reference_without_custodian(mock_service, mocker):
 def test_create_fhir_response_with_presigned_url(mock_service, mocker):
     """Test _create_fhir_response method with a presigned URL."""
 
-    # Setup
     mocker.patch.object(
         SnomedCodes, "find_by_code", return_value=SnomedCodes.LLOYD_GEORGE.value
     )
 
-    # Create a document reference
     document_ref = DocumentReference(
         id="test-id",
         nhs_number="9000000009",
@@ -460,10 +448,8 @@ def test_create_fhir_response_with_presigned_url(mock_service, mocker):
     )
     presigned_url = "https://test-presigned-url.com"
 
-    # Execute
     result = mock_service._create_fhir_response(document_ref, presigned_url)
 
-    # Assert
     result_json = json.loads(result)
     assert result_json["resourceType"] == "DocumentReference"
     assert result_json["content"][0]["attachment"]["url"] == presigned_url
@@ -472,13 +458,11 @@ def test_create_fhir_response_with_presigned_url(mock_service, mocker):
 def test_create_fhir_response_without_presigned_url(mock_service, mocker):
     """Test _create_fhir_response method without a presigned URL (for binary uploads)."""
 
-    # Setup
     mocker.patch.object(
         SnomedCodes, "find_by_code", return_value=SnomedCodes.LLOYD_GEORGE.value
     )
     custom_endpoint = f"{APIM_API_URL}/DocumentReference"
 
-    # Create a document reference
     document_ref = DocumentReference(
         id="test-id",
         nhs_number="9000000009",
@@ -491,10 +475,8 @@ def test_create_fhir_response_without_presigned_url(mock_service, mocker):
         document_scan_creation="2023-01-01T12:00:00Z",
     )
 
-    # Execute
     result = mock_service._create_fhir_response(document_ref, None)
 
-    # Assert
     result_json = json.loads(result)
     assert result_json["resourceType"] == "DocumentReference"
     expected_url = (
