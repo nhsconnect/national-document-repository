@@ -1,13 +1,19 @@
 import json
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from time import sleep
 
 import boto3
 import requests
-from enums.alarm_history_fields import AlarmHistoryFields
+from botocore.exceptions import ClientError
+from enums.alarm_history_field import AlarmHistoryField
+from enums.alarm_severity import AlarmSeverity
+from enums.alarm_state import AlarmState
+from jinja2 import Template
 from models.alarm_entry import AlarmEntry
+from pydantic import ValidationError
+from requests import HTTPError
 from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 
@@ -15,21 +21,17 @@ logger = LoggingService(__name__)
 
 
 class IMAlertingService:
+    REQUEST_TIMEOUT_SECONDS = 60
+    # time to wait between alerts - If the severity has changed after this time, we want to show the new severity
+    ALARM_OK_WAIT_SECONDS = 180
+    ALARM_TTL_TIME_SECONDS = 300
+    SLACK_POST_CHAT_API = "https://slack.com/api/chat.postMessage"
+    SLACK_UPDATE_CHAT_API = "https://slack.com/api/chat.update"
+    SLACK_REACTIONS_API = "https://slack.com/api/reactions."
+
     def __init__(self, message):
         self.dynamo_service = DynamoDBService()
         self.table_name = os.environ["ALARM_HISTORY_DYNAMODB_NAME"]
-        self.alarm_severities = {
-            "high": "\U0001F534",
-            "medium": "\U0001F7E0",
-            "low": "\U0001F7E1",
-            "ok": "\U0001F7E2",
-        }
-        self.slack_emojis = {
-            self.alarm_severities["high"]: "red_circle",
-            self.alarm_severities["medium"]: "large_orange_circle",
-            self.alarm_severities["low"]: "large_yellow_circle",
-            self.alarm_severities["ok"]: "large_green_circle",
-        }
         self.webhook_url = os.environ["TEAMS_WEBHOOK_URL"]
         self.confluence_base_url = os.environ["CONFLUENCE_BASE_URL"]
         self.message = message
@@ -39,61 +41,79 @@ class IMAlertingService:
         }
 
     def handle_alarm_alert(self):
-
-        # alarm_name = self.message["AlarmName"] we don't care about the name any more, use the arn to get the tags
         alarm_state = self.message["NewStateValue"]
         alarm_time = self.message["StateChangeTime"]
-
         alarm_tags = self.get_all_alarm_tags()
-        alarm_name = alarm_tags["alarm_group"] + " " + alarm_tags["alarm_metric"]
+        alarm_name = f"{alarm_tags['alarm_group']} {alarm_tags['alarm_metric']}"
+        alarm_history = self.get_alarm_history(alarm_name)
 
-        alarm_entries = self.get_alarm_history(alarm_name)
-
-        if not alarm_entries and alarm_state == "OK":
-            logger.info(
-                f"Alarm {alarm_name} is in OK state and no entries found for {alarm_name}"
+        try:
+            if alarm_history:
+                self.handle_existing_alarm_history(
+                    alarm_history, alarm_state, alarm_name, alarm_time, alarm_tags
+                )
+            else:
+                self.handle_empty_alarm_history(
+                    alarm_state, alarm_name, alarm_time, alarm_tags
+                )
+        except ValidationError:
+            logger.error(
+                f"Failed to validate the model for the new alarm_entry for alarm: {alarm_name}"
             )
-            return
 
-        if not alarm_entries and alarm_state == "ALARM":
-            logger.info(f"No current alarm history for {alarm_name}")
+    def handle_existing_alarm_history(
+        self, alarm_history, alarm_state, alarm_name, alarm_time, alarm_tags
+    ):
+        active_alarms = self.find_active_alarm_entries(alarm_history)
+
+        if active_alarms:
+            for alarm_entry in active_alarms:
+                self.handle_current_alarm_episode(
+                    alarm_entry=alarm_entry,
+                    alarm_state=alarm_state,
+                    tags=alarm_tags,
+                )
+        else:
+            logger.info(
+                f"All alarm entries for {alarm_name} have expired, creating a new one"
+            )
+            self.handle_new_alarm_episode(
+                alarm_name=alarm_name,
+                alarm_time=alarm_time,
+                tags=alarm_tags,
+            )
+
+    def find_active_alarm_entries(self, alarm_history):
+        return [
+            alarm_entry
+            for alarm_entry in alarm_history
+            if not self.is_episode_expired(alarm_entry)
+        ]
+
+    def handle_empty_alarm_history(
+        self, alarm_state, alarm_name, alarm_time, alarm_tags
+    ):
+        logger.info(
+            f"No existing alarm history for {alarm_name} - alarm is in {alarm_state} state"
+        )
+
+        if alarm_state == AlarmState.ALARM:
             self.handle_new_alarm_episode(
                 alarm_name=alarm_name, alarm_time=alarm_time, tags=alarm_tags
             )
 
-        else:
-            all_alarms_expired = all(
-                self.is_episode_expired(alarm_entry) for alarm_entry in alarm_entries
-            )
-            if all_alarms_expired:
-                logger.info(
-                    f"All alarm entries for {alarm_name} have expired, creating a new one"
-                )
-                self.handle_new_alarm_episode(
-                    alarm_name=alarm_name,
-                    alarm_time=alarm_time,
-                    tags=alarm_tags,
-                )
-            else:
-                for alarm_entry in alarm_entries:
-                    if not self.is_episode_expired(alarm_entry):
-                        self.handle_current_alarm_episode(
-                            alarm_entry=alarm_entry,
-                            alarm_state=alarm_state,
-                            tags=alarm_tags,
-                        )
-
     def is_episode_expired(self, alarm_entry: AlarmEntry) -> bool:
-        if alarm_entry.time_to_exist:
-            current_time = datetime.now().timestamp()
-            return current_time >= alarm_entry.time_to_exist
-        else:
+        if not alarm_entry.time_to_exist:
             return False
+
+        current_timestamp = datetime.now().timestamp()
+        return current_timestamp >= alarm_entry.time_to_exist
 
     def handle_new_alarm_episode(self, alarm_name: str, alarm_time: str, tags: dict):
         logger.info(
             f"Creating new alarm episode {alarm_name}:{self.create_alarm_timestamp(alarm_time)}"
         )
+
         new_entry = AlarmEntry(
             alarm_name_metric=alarm_name,
             time_created=self.create_alarm_timestamp(alarm_time),
@@ -102,12 +122,9 @@ class IMAlertingService:
         )
         AlarmEntry.model_validate(new_entry)
         self.update_alarm_state_history(new_entry, tags)
+        self.create_alarm_entry(new_entry)
         self.send_teams_alert(new_entry)
         self.send_initial_slack_alert(new_entry)
-        self.create_alarm_entry(new_entry)
-
-    #     feels like alarm entry should be done first so that it exists in dynamo before send message
-    # means adding in extra update when the slack response comes in so the correct object has the slack thread_ts needed
 
     def handle_current_alarm_episode(
         self, alarm_entry: AlarmEntry, alarm_state: str, tags: dict
@@ -115,149 +132,222 @@ class IMAlertingService:
         logger.info(
             f"Updating alarm episode {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
         )
-        if alarm_state == "ALARM":
-            logger.info(f"Handling Alarm action for {alarm_entry.alarm_name_metric}")
 
-            self.update_alarm_state_history(tags=tags, alarm_entry=alarm_entry)
-            self.send_teams_alert(alarm_entry)
-            self.send_slack_response(alarm_entry)
-            self.update_original_slack_message(alarm_entry)
-            self.update_alarm_table(alarm_entry)
+        match alarm_state:
+            case AlarmState.ALARM:
+                logger.info(
+                    f"Handling Alarm action for {alarm_entry.alarm_name_metric}"
+                )
 
-        if alarm_state == "OK":
-            self.handle_ok_action_trigger(tags=tags, alarm_entry=alarm_entry)
+                self.update_alarm_state_history(tags=tags, alarm_entry=alarm_entry)
+                self.send_teams_alert(alarm_entry)
+                self.send_slack_response(alarm_entry)
+                self.update_original_slack_message(alarm_entry)
+                self.update_alarm_history_table(alarm_entry)
+            case AlarmState.OK:
+                self.handle_ok_action_trigger(tags=tags, alarm_entry=alarm_entry)
+            # TODO Add the ability to handle AlarmState.INSUFFICIENT_DATA
 
     def create_alarm_entry(self, alarm_entry: AlarmEntry):
         new_entry = alarm_entry.model_dump(
             by_alias=True,
             exclude_none=True,
         )
-        logger.info(f"Creating new alarm entry for {alarm_entry.alarm_name_metric}")
-        self.dynamo_service.create_item(table_name=self.table_name, item=new_entry)
+        logger.info(
+            f"Creating new alarm entry in {self.table_name} table for {alarm_entry.alarm_name_metric}"
+        )
+        try:
+            self.dynamo_service.create_item(table_name=self.table_name, item=new_entry)
+        except ClientError:
+            logger.error(
+                f"Failed to create new alarm entry in {self.table_name} table for {alarm_entry.alarm_name_metric}"
+            )
 
     def handle_ok_action_trigger(self, tags: dict, alarm_entry: AlarmEntry):
         logger.info(f"Handling OK action trigger for {alarm_entry.alarm_name_metric}")
 
-        if self.all_alarm_state_ok(tags):
-            logger.info("Waiting for other alarms to be triggered before setting TTL.")
-            sleep(180)
-            if self.is_last_updated(alarm_entry):
-                logger.info(
-                    f"All alarms for {alarm_entry.alarm_name_metric} are in OK state, adding TTL."
-                )
-                alarm_entry.history.append(self.alarm_severities["ok"])
-                alarm_entry.last_updated = int(datetime.now().timestamp())
-                self.add_ttl_to_alarm_entry(alarm_entry)
-                self.update_alarm_table(alarm_entry)
-                self.send_teams_alert(alarm_entry)
-                self.send_slack_response(alarm_entry)
-                self.update_original_slack_message(alarm_entry)
+        if not self.all_alarm_state_ok(tags):
+            logger.info(
+                "Not all alarms are in OK state. Skipping handling OK action trigger"
+            )
+            return
 
-            else:
-                logger.info("Alarm entry has been updated since reaching OK state")
-                return
+        self.wait_for_alarm_stabilisation()
+
+        if self.is_last_updated(alarm_entry):
+            logger.info(
+                f"All alarms for {alarm_entry.alarm_name_metric} are in OK state, adding TTL."
+            )
+            self.finalise_ok_alarm_state(alarm_entry)
+        else:
+            logger.info(
+                f"Alarm entry for {alarm_entry.alarm_name_metric} has been updated since reaching OK state"
+            )
+
+    """
+    We want to wait for a set time (ALARM_OK_WAIT_SECONDS) to allow the alarm's OK state to stabilise before updating 
+    the teams & slack alerts to display OK. This will prevent a situation where an alarm temporarily reaches an OK
+    state and then immediately triggers a second alert if it transitions back to an ALARM state.
+    """
+
+    def wait_for_alarm_stabilisation(self):
+        logger.info("Waiting for other alarms to be triggered before setting TTL.")
+        sleep(self.ALARM_OK_WAIT_SECONDS)
+
+    def finalise_ok_alarm_state(self, alarm_entry: AlarmEntry):
+        alarm_entry.history.append(AlarmSeverity.OK)
+        alarm_entry.last_updated = int(datetime.now().timestamp())
+        self.add_ttl_to_alarm_entry(alarm_entry)
+        self.update_alarm_history_table(alarm_entry)
+        self.send_teams_alert(alarm_entry)
+        self.send_slack_response(alarm_entry)
+        self.update_original_slack_message(alarm_entry)
 
     def update_alarm_state_history(self, alarm_entry: AlarmEntry, tags: dict):
+        severity_value = tags.get("severity")
 
-        for key in self.alarm_severities.keys():
-            if tags.get("severity", None) == key:
-                alarm_entry.history.append(self.alarm_severities[key])
+        if not severity_value:
+            logger.error("Missing severity value in alarm tags")
+            return
+
+        try:
+            alarm_severity = AlarmSeverity(severity_value)
+            alarm_entry.history.append(alarm_severity)
+        except ValueError:
+            logger.error(f"Invalid severity value: {severity_value}")
+
         alarm_entry.time_to_exist = None
         alarm_entry.last_updated = int(datetime.now().timestamp())
 
     def get_alarm_history(self, alarm_name: str):
         logger.info(f"Checking if {alarm_name} already exists on alarm table")
 
-        results = self.dynamo_service.query_all_fields(
-            table_name=self.table_name,
-            search_key="AlarmNameMetric",
-            search_condition=alarm_name,
-        )
+        try:
+            results = self.dynamo_service.query_all_fields(
+                table_name=self.table_name,
+                search_key="AlarmNameMetric",
+                search_condition=alarm_name,
+            )
 
-        return (
-            [AlarmEntry.model_validate(item) for item in results["Items"]]
-            if results
-            else []
-        )
+            return (
+                [AlarmEntry.model_validate(item) for item in results["Items"]]
+                if results
+                else []
+            )
+        except ValidationError:
+            logger.error(
+                f"Failed to validate the alarm history model for alarm: {alarm_name}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error while checking if alarm {alarm_name} exists on alarm table. Exception is: {e}"
+            )
+        # If there's an error getting the history, return an empty list, we'll attempt to create a new entry
+        return []
 
     def is_last_updated(self, alarm_entry: AlarmEntry) -> bool:
-        response = self.dynamo_service.get_item(
-            table_name=self.table_name,
-            key={
-                AlarmHistoryFields.ALARMNAMEMETRIC: alarm_entry.alarm_name_metric,
-                AlarmHistoryFields.TIMECREATED: alarm_entry.time_created,
-            },
-        )
-        entry_to_compare = AlarmEntry.model_validate(response["Item"])
-
-        if alarm_entry.last_updated >= entry_to_compare.last_updated:
-            logger.info(
-                f"No other alarm triggered since {alarm_entry.alarm_name_metric}:{alarm_entry.time_created} last updated"
+        try:
+            response = self.dynamo_service.get_item(
+                table_name=self.table_name,
+                key={
+                    AlarmHistoryField.ALARMNAMEMETRIC: alarm_entry.alarm_name_metric,
+                    AlarmHistoryField.TIMECREATED: alarm_entry.time_created,
+                },
             )
-            return True
-        else:
-            logger.info(
-                f"Another alarm for {alarm_entry.alarm_name_metric}:{alarm_entry.time_created} triggered since last updated"
+            entry_to_compare = AlarmEntry.model_validate(response["Item"])
+
+            if alarm_entry.last_updated >= entry_to_compare.last_updated:
+                logger.info(
+                    f"No other alarm triggered since {alarm_entry.alarm_name_metric}:{alarm_entry.time_created} last updated"
+                )
+                return True
+            else:
+                logger.info(
+                    f"Another alarm for {alarm_entry.alarm_name_metric}:{alarm_entry.time_created} triggered since last updated"
+                )
+                return False
+        except Exception as e:
+            logger.error(
+                f"Unexpected error while checking if alarm_entry is last updated. "
+                f"Returning False as it's not clear if this is the case. Exception is: {e}"
             )
             return False
 
-    def update_alarm_table(self, alarm_entry: AlarmEntry) -> str:
-
+    def update_alarm_history_table(self, alarm_entry: AlarmEntry):
         logger.info(f"Updating alarm table entry for: {alarm_entry.alarm_name_metric}")
 
         fields_to_update = {
-            AlarmHistoryFields.HISTORY: alarm_entry.history,
-            AlarmHistoryFields.LASTUPDATED: int(datetime.now().timestamp()),
-            AlarmHistoryFields.TIMETOEXIST: alarm_entry.time_to_exist,
+            AlarmHistoryField.HISTORY: alarm_entry.history,
+            AlarmHistoryField.LASTUPDATED: int(datetime.now().timestamp()),
+            AlarmHistoryField.TIMETOEXIST: alarm_entry.time_to_exist,
         }
 
-        self.dynamo_service.update_item(
-            table_name=self.table_name,
-            key_pair={
-                AlarmHistoryFields.ALARMNAMEMETRIC: alarm_entry.alarm_name_metric,
-                AlarmHistoryFields.TIMECREATED: alarm_entry.time_created,
-            },
-            updated_fields=fields_to_update,
-        )
+        try:
+            self.dynamo_service.update_item(
+                table_name=self.table_name,
+                key_pair={
+                    AlarmHistoryField.ALARMNAMEMETRIC: alarm_entry.alarm_name_metric,
+                    AlarmHistoryField.TIMECREATED: alarm_entry.time_created,
+                },
+                updated_fields=fields_to_update,
+            )
+        except HTTPError as e:
+            logger.error(
+                f"Updating alarm table entry returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error updating alarm table entry for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
 
     def all_alarm_state_ok(self, tags: dict) -> bool:
-
         tag_filter = self.build_tag_filter(tags)
-        client = boto3.client("resourcegroupstaggingapi")
         logger.info(f"Getting resources with tags: {tag_filter}")
-        response = client.get_resources(
-            ResourceTypeFilters=["cloudwatch:alarm"], TagFilters=tag_filter
-        )
 
-        resources = response["ResourceTagMappingList"]
-        arns = []
-        for resource in resources:
-            arns.append(resource["ResourceARN"])
+        try:
+            client = boto3.client("resourcegroupstaggingapi")
+            response = client.get_resources(
+                ResourceTypeFilters=["cloudwatch:alarm"], TagFilters=tag_filter
+            )
 
-        alarm_names = self.extract_alarm_names_from_arns(arns)
+            resources = response["ResourceTagMappingList"]
+            arns = [resource["ResourceARN"] for resource in resources]
 
-        cloudwatch_client = boto3.client("cloudwatch")
-        cloudwatch_response = cloudwatch_client.describe_alarms(
-            AlarmNames=alarm_names,
-        )
+            alarm_names = self.extract_alarm_names_from_arns(arns)
 
-        alarm_states = [
-            alarm["StateValue"] for alarm in cloudwatch_response["MetricAlarms"]
-        ]
+            cloudwatch_client = boto3.client("cloudwatch")
+            cloudwatch_response = cloudwatch_client.describe_alarms(
+                AlarmNames=alarm_names,
+            )
 
-        return all(state == "OK" for state in alarm_states)
+            return all(
+                alarm["StateValue"] == AlarmState.OK
+                for alarm in cloudwatch_response["MetricAlarms"]
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error while checking alarm state. "
+                f"Returning False as it's not clear if the alarm has stabilised or not. Exception is: {e}"
+            )
+            return False
 
     def get_all_alarm_tags(self) -> dict:
         logger.info(f"Getting all alarm tags for {self.message['AlarmArn']}")
-        client = boto3.client("cloudwatch")
-        response = client.list_tags_for_resource(ResourceARN=self.message["AlarmArn"])
 
         tags = {}
 
-        if response["Tags"]:
+        try:
+            client = boto3.client("cloudwatch")
+            response = client.list_tags_for_resource(
+                ResourceARN=self.message["AlarmArn"]
+            )
 
-            for tag in response["Tags"]:
-                tags[tag["Key"]] = tag["Value"]
+            if response["Tags"]:
+                for tag in response["Tags"]:
+                    tags[tag["Key"]] = tag["Value"]
+        except Exception as e:
+            (logger.error(f"Unexpected error while getting alarm tags: {e}"))
+
         return tags
 
     def build_tag_filter(self, tags: dict) -> list:
@@ -274,35 +364,31 @@ class IMAlertingService:
         alarm_names = []
         for arn in arn_list:
             match = re.search(r"alarm:([^:]+)$", arn)
-            if match:
-                alarm_names.append(match.group(1))
-            else:
+            if not match:
                 raise ValueError(f"Invalid alarm ARN format: {arn}")
+            alarm_names.append(match.group(1))
         return alarm_names
 
     def add_ttl_to_alarm_entry(self, alarm_entry: AlarmEntry):
         alarm_entry.time_to_exist = int(
-            (datetime.now() + timedelta(minutes=5)).timestamp()
+            (
+                datetime.now() + timedelta(seconds=self.ALARM_TTL_TIME_SECONDS)
+            ).timestamp()
         )
 
     def create_alarm_timestamp(self, alarm_time: str) -> int:
         return int(datetime.fromisoformat(alarm_time).timestamp())
 
     def format_time_string(self, time_stamp: int) -> str:
-        return datetime.strftime(
-            datetime.fromtimestamp(time_stamp), "%H:%M:%S %d-%m-%Y"
-        )
+        dt = datetime.fromtimestamp(time_stamp, tz=timezone.utc)
+        return dt.strftime("%H:%M:%S %d-%m-%Y %Z")
 
     def format_alarm_name(self, alarm_name: str) -> str:
         underscore_stripped_string = alarm_name.replace("_", " ")
         return underscore_stripped_string.rsplit(" ", 1)[0].title()
 
     def unpack_alarm_history(self, alarm_history: list) -> str:
-        history_string = ""
-        for item in alarm_history:
-            history_string += item + " "
-
-        return history_string
+        return " ".join(alarm_history)
 
     def create_action_url(self, base_url: str, alarm_name: str) -> str:
         url_extension = alarm_name.replace(" ", "%20")
@@ -311,179 +397,185 @@ class IMAlertingService:
         return f"{base_url}{search_query}{url_extension}"
 
     def send_teams_alert(self, alarm_entry: AlarmEntry):
-        logger.info(f"Sending teams alert for: {alarm_entry.alarm_name_metric}")
-
-        payload = json.dumps(
-            {
-                "type": "message",
-                "attachments": [
-                    {
-                        "contentType": "application/vnd.microsoft.card.adaptive",
-                        "contentUrl": None,
-                        "content": {
-                            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                            "type": "AdaptiveCard",
-                            "version": "1.4",
-                            "body": [
-                                {
-                                    "type": "TextBlock",
-                                    "size": "Medium",
-                                    "weight": "Bolder",
-                                    "text": f"{alarm_entry.alarm_name_metric} Alert: {alarm_entry.history[-1]}",
-                                    "wrap": True,
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "text": f"Entry: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}",
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "text": f"Alarm History: {self.unpack_alarm_history(alarm_entry.history)}",
-                                    "wrap": True,
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    # look at how we are handling time entries on other models and tables.
-                                    "text": f"This state change happened at: {self.format_time_string(alarm_entry.last_updated)}",
-                                    "wrap": True,
-                                },
-                            ],
-                            "actions": [
-                                {
-                                    "type": "Action.OpenUrl",
-                                    "title": "Find out what to do",
-                                    "url": self.create_action_url(
-                                        self.confluence_base_url,
-                                        alarm_entry.alarm_name_metric,
-                                    ),
-                                },
-                            ],
-                        },
-                    }
-                ],
-            }
+        logger.info(
+            f"Sending Microsoft Teams alert for: {alarm_entry.alarm_name_metric}"
         )
 
-        headers = {"Content-Type": "application/json"}
+        try:
+            teams_message = self.compose_teams_message(alarm_entry)
+            payload = json.dumps(teams_message)
 
-        requests.request("POST", self.webhook_url, headers=headers, data=payload)
+            headers = {"Content-Type": "application/json"}
+
+            response = requests.post(
+                self.webhook_url,
+                headers=headers,
+                data=payload,
+                timeout=self.REQUEST_TIMEOUT_SECONDS,
+            )
+            response.raise_for_status()
+            logger.info(
+                f"Microsoft Teams alert sent successfully for: {alarm_entry.alarm_name_metric}"
+            )
+
+        except HTTPError as e:
+            logger.error(
+                f"Microsoft Teams webhook returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error sending Microsoft Teams alert for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
+
+    def compose_teams_message(self, alarm_entry: AlarmEntry):
+        with open("teams_alert.json", "r") as f:
+            template_content = f.read()
+
+        template = Template(template_content)
+
+        context = {
+            "alarm_entry": alarm_entry,
+            "alarm_history": self.unpack_alarm_history(alarm_entry.history),
+            "formatted_time": self.format_time_string(alarm_entry.last_updated),
+            "action_url": self.create_action_url(
+                self.confluence_base_url, alarm_entry.alarm_name_metric
+            ),
+        }
+
+        return template.render(context)
 
     def send_initial_slack_alert(self, alarm_entry: AlarmEntry):
-        logger.info(
-            f"Sending initial slack alert for: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
-        )
-        slack_message = {}
-        slack_message["channel"] = alarm_entry.channel_id
-        slack_message["blocks"] = self.compose_slack_message(alarm_entry)
+        slack_message = {
+            "channel": alarm_entry.channel_id,
+            "blocks": self.compose_slack_message_blocks(alarm_entry),
+        }
 
-        slack_post_chat_api = "https://slack.com/api/chat.postMessage"
-        response = requests.request(
-            "POST",
-            slack_post_chat_api,
-            data=json.dumps(slack_message),
-            headers=self.slack_headers,
-        )
-        logger.info(f"Slack response: {response.text}")
-        response_json = json.loads(response.content)
-        slack_timestamp = response_json["ts"]
-        alarm_entry.slack_timestamp = slack_timestamp
+        try:
+            response = requests.post(
+                self.SLACK_POST_CHAT_API,
+                data=json.dumps(slack_message),
+                headers=self.slack_headers,
+                timeout=self.REQUEST_TIMEOUT_SECONDS,
+            )
 
-        self.change_reaction(alarm_entry, "add")
+            logger.info(f"Slack response: {response.text}")
+            response.raise_for_status()
+            alarm_entry.slack_timestamp = json.loads(response.content)["ts"]
+
+            self.change_reaction(alarm_entry, "add")
+
+            self.update_alarm_history_table(alarm_entry)
+        except HTTPError as e:
+            logger.error(
+                f"Initial Slack alert returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error sending Initial Slack alert for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
 
     def send_slack_response(self, alarm_entry: AlarmEntry):
         logger.info(
             f"Sending slack thread response for: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
         )
-        slack_message = {}
-        slack_message["channel"] = alarm_entry.channel_id
-        slack_message["thread_ts"] = alarm_entry.slack_timestamp
-        slack_message["blocks"] = self.compose_slack_message(alarm_entry)
 
-        slack_post_chat_api = "https://slack.com/api/chat.postMessage"
-        requests.request(
-            "POST",
-            slack_post_chat_api,
-            data=json.dumps(slack_message),
-            headers=self.slack_headers,
-        )
-        self.change_reaction(alarm_entry, "remove")
-        self.change_reaction(alarm_entry, "add")
+        slack_message = {
+            "channel": alarm_entry.channel_id,
+            "thread_ts": alarm_entry.slack_timestamp,
+            "blocks": self.compose_slack_message_blocks(alarm_entry),
+        }
+
+        try:
+            requests.post(
+                self.SLACK_POST_CHAT_API,
+                data=json.dumps(slack_message),
+                headers=self.slack_headers,
+                timeout=self.REQUEST_TIMEOUT_SECONDS,
+            )
+            self.change_reaction(alarm_entry, "remove")
+            self.change_reaction(alarm_entry, "add")
+        except HTTPError as e:
+            logger.error(
+                f"Sending Slack response returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error sending Slack response for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
 
     def change_reaction(self, alarm_entry: AlarmEntry, action: str):
         logger.info(
             f"Changing slack reaction for alarm: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
         )
-        change_message = {}
-        emoji = (
-            self.slack_emojis.get(alarm_entry.history[-2])
-            if action == "remove"
-            else self.slack_emojis.get(alarm_entry.history[-1])
+
+        severity = (
+            alarm_entry.history[-2]
+            if action == "remove" and len(alarm_entry.history) > 1
+            else alarm_entry.history[-1]
         )
-        change_message["name"] = emoji
-        change_message["channel"] = alarm_entry.channel_id
-        change_message["timestamp"] = alarm_entry.slack_timestamp
-        changeResponse = requests.post(
-            "https://slack.com/api/reactions." + action,
-            json=change_message,
-            headers=self.slack_headers,
-        )
-        logger.info(
-            action + " " + emoji + " reaction response: " + str(changeResponse.content)
-        )
+        emoji = severity.additional_value
+
+        change_message = {
+            "name": emoji,
+            "channel": alarm_entry.channel_id,
+            "timestamp": alarm_entry.slack_timestamp,
+        }
+
+        try:
+            change_response = requests.post(
+                self.SLACK_REACTIONS_API + action,
+                json=change_message,
+                headers=self.slack_headers,
+            )
+            logger.info(
+                f"{action} {emoji} reaction response: {str(change_response.content)}"
+            )
+        except HTTPError as e:
+            logger.error(
+                f"Changing Slack reaction returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error changing slack reaction for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
 
     def update_original_slack_message(self, alarm_entry: AlarmEntry):
-        slack_message = {}
-        slack_message["channel"] = alarm_entry.channel_id
-        slack_message["ts"] = alarm_entry.slack_timestamp
-        slack_message["blocks"] = self.compose_slack_message(alarm_entry)
+        try:
+            slack_message = {
+                "channel": alarm_entry.channel_id,
+                "ts": alarm_entry.slack_timestamp,
+                "blocks": self.compose_slack_message_blocks(alarm_entry),
+            }
 
-        slack_update_chat_api = "https://slack.com/api/chat.update"
-        requests.request(
-            "POST",
-            slack_update_chat_api,
-            data=json.dumps(slack_message),
-            headers=self.slack_headers,
-        )
+            requests.post(
+                self.SLACK_UPDATE_CHAT_API,
+                data=json.dumps(slack_message),
+                headers=self.slack_headers,
+                timeout=self.REQUEST_TIMEOUT_SECONDS,
+            )
+        except HTTPError as e:
+            logger.error(
+                f"Updating original Slack message returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error updating original Slack message for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
 
-    def compose_slack_message(self, alarm_entry: AlarmEntry):
-        blocks = [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": f"{alarm_entry.alarm_name_metric} Alert: {alarm_entry.history[-1]}",
-                },
-            },
-            {
-                "type": "divider",
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "plain_text",
-                    "text": f"Alarm History: {self.unpack_alarm_history(alarm_entry.history)}",
-                },
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "plain_text",
-                    "text": f"This state change happened at: {self.format_time_string(alarm_entry.last_updated)}",
-                },
-            },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"*Info:*\n <{self.create_action_url(self.confluence_base_url, alarm_entry.alarm_name_metric)}>",
-                },
-            },
-            # {
-            #     "type": "image",
-            #     "image_url": "https://singlecolorimage.com/get/"
-            #     + alarm_entry.history[-1]
-            #     + "/1x1",
-            #     "alt_text": f"{self.slack_emojis.get(alarm_entry.history[-1])}",
-            # },
-        ]
-        return blocks
+    def compose_slack_message_blocks(self, alarm_entry: AlarmEntry):
+        with open("slack_alert_blocks.json", "r") as f:
+            template_content = f.read()
+
+        template = Template(template_content)
+
+        context = {
+            "alarm_entry": alarm_entry,
+            "alarm_history": self.unpack_alarm_history(alarm_entry.history),
+            "formatted_time": self.format_time_string(alarm_entry.last_updated),
+            "action_url": self.create_action_url(
+                self.confluence_base_url, alarm_entry.alarm_name_metric
+            ),
+        }
+
+        rendered_json = template.render(context)
+        return json.loads(rendered_json)

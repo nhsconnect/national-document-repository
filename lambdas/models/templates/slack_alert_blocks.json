@@ -1,0 +1,33 @@
+[
+    {
+        "type": "header",
+        "text": {
+            "type": "plain_text",
+            "text": "{{ alarm_entry.alarm_name_metric }} Alert: {{ alarm_entry.history[-1] }}"
+        }
+    },
+    {
+        "type": "divider"
+    },
+    {
+        "type": "section",
+        "text": {
+            "type": "plain_text",
+            "text": "Alarm History: {{ alarm_history }}"
+        }
+    },
+    {
+        "type": "section",
+        "text": {
+            "type": "plain_text",
+            "text": "This state change happened at: {{ formatted_time }}"
+        }
+    },
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "*Info:*\n <{{ action_url }}>"
+        }
+    }
+]

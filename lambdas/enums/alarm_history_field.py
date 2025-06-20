@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class AlarmHistoryFields(StrEnum):
+class AlarmHistoryField(StrEnum):
     ALARMNAMEMETRIC = "AlarmNameMetric"
     TIMECREATED = "TimeCreated"
     LASTUPDATED = "LastUpdated"
