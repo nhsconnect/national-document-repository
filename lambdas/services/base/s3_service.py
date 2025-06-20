@@ -176,3 +176,17 @@ class S3Service:
         return self.client.put_object(
             Bucket=source_bucket, Key=file_key, Body=BytesIO(body)
         )
+
+    def get_object_stream(self, bucket: str, key: str):
+        response = self.client.get_object(Bucket=bucket, Key=key)
+        return response.get("Body")
+
+    def upload_file_obj(self, file_obj, s3_bucket_name: str, file_key: str):
+        try:
+            self.client.upload_fileobj(file_obj, s3_bucket_name, file_key)
+            logger.info(f"Uploaded file object to s3://{s3_bucket_name}/{file_key}")
+        except ClientError as e:
+            logger.error(
+                f"Failed to upload file object to s3://{s3_bucket_name}/{file_key} - {e}"
+            )
+            raise e

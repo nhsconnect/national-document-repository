@@ -54,13 +54,13 @@ def lambda_handler(event, context):
             "GET",
         ).create_api_gateway_response()
     except LoginException as e:
-        if e.error == LambdaError.LoginNoRole:
+        if e.status_code == 401:
             allowed_roles = (
                 login_service.token_handler_ssm_service.get_smartcard_role_codes()
             )
             body = LambdaError.LoginNoRole.create_error_body(roles=allowed_roles)
             return ApiGatewayResponse(
-                401,
+                e.status_code,
                 body,
                 "GET",
             ).create_api_gateway_response()

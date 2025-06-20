@@ -1,7 +1,6 @@
-$govuk-compatibility-govukelements: true;
-@import 'govuk-frontend/govuk/components/phase-banner/phase-banner';
-@import 'govuk-frontend/govuk/components/warning-text/warning-text';
-@import 'govuk-frontend/govuk/components/notification-banner/notification-banner';
+@import 'govuk-frontend/dist/govuk/components/phase-banner/phase-banner';
+@import 'govuk-frontend/dist/govuk/components/warning-text/warning-text';
+@import 'govuk-frontend/dist/govuk/components/notification-banner/notification-banner';
 
 @import 'nhsuk-frontend/packages/nhsuk';
 @import 'nhsuk-frontend/packages/core/all';
@@ -665,6 +664,11 @@ $hunit: '%';
     .nhsuk-card__description.report_download-complete_details-content_description,
     .nhsuk-card__description.lloydgeorge_download-complete_details-content_description {
         font-size: 1.2rem !important;
+    }
+}
+@media (min-width: 380px) {
+    #available-files-table-title .table-column-header {
+        word-break: keep-all;
     }
 }
 
