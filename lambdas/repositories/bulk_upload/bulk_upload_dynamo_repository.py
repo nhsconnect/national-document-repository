@@ -2,7 +2,7 @@ import os
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.upload_status import UploadStatus
-from models.nhs_document_reference import NHSDocumentReference
+from models.document_reference import DocumentReference
 from models.report.bulk_upload_report import BulkUploadReport
 from models.staging_metadata import StagingMetadata
 from services.base.dynamo_service import DynamoDBService
@@ -17,14 +17,13 @@ class BulkUploadDynamoRepository:
         self.lg_dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
         self.lg_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
 
-        self.dynamo_records_in_transaction: list[NHSDocumentReference] = []
+        self.dynamo_records_in_transaction: list[DocumentReference] = []
         self.dynamo_repository = DynamoDBService()
 
-    def create_record_in_lg_dynamo_table(
-        self, document_reference: NHSDocumentReference
-    ):
+    def create_record_in_lg_dynamo_table(self, document_reference: DocumentReference):
         self.dynamo_repository.create_item(
-            table_name=self.lg_dynamo_table, item=document_reference.to_dict()
+            table_name=self.lg_dynamo_table,
+            item=document_reference.model_dump(by_alias=True, exclude_none=True),
         )
         self.dynamo_records_in_transaction.append(document_reference)
 
