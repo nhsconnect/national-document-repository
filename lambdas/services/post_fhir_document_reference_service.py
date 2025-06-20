@@ -1,3 +1,4 @@
+import base64
 import io
 import os
 from typing import Any, Dict, Optional
@@ -174,7 +175,7 @@ class PostFhirDocumentReferenceService:
     ) -> None:
         """Store binary content in S3"""
         try:
-            binary_file = io.BytesIO(binary_content)
+            binary_file = io.BytesIO(base64.b64decode(binary_content))
             self.s3_service.upload_file_obj(
                 file_obj=binary_file,
                 s3_bucket_name=document_reference.s3_bucket_name,
