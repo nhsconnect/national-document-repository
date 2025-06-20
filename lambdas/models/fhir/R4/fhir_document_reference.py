@@ -44,7 +44,7 @@ class Attachment(BaseModel):
     url: Optional[str] = None
     size: Optional[int] = None
     hash: Optional[str] = None
-    title: Optional[str] = None
+    title: Optional[str]
     creation: Optional[str] = None
     data: Optional[bytes] = None
 
@@ -117,7 +117,7 @@ class DocumentReference(BaseModel):
     category: Optional[List[CodeableConcept]] = None
     subject: Optional[Reference]
     date: Optional[str] = None
-    author: Optional[List[Reference]] = None
+    author: Optional[List[Reference]]
     authenticator: Optional[Reference] = None
     custodian: Optional[Reference] = None
     content: List[DocumentReferenceContent]

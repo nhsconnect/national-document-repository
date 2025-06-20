@@ -144,6 +144,7 @@ class PostFhirDocumentReferenceService:
                 else current_gp_ods
             ),
             s3_bucket_name=self.staging_bucket_name,
+            author=fhir_doc.author[0].identifier.value,
             content_type=fhir_doc.content[0].attachment.contentType,
             file_name=fhir_doc.content[0].attachment.title,
             document_snomed_code_type=doc_type.code,
@@ -151,8 +152,6 @@ class PostFhirDocumentReferenceService:
             status="current",
             document_scan_creation=fhir_doc.content[0].attachment.creation,
         )
-        if fhir_doc.author:
-            document_reference.author = fhir_doc.author[0].identifier.value
 
         return document_reference
 
