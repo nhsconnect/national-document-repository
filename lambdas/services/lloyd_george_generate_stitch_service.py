@@ -1,4 +1,5 @@
 import os
+import time
 import uuid
 from io import BytesIO
 from urllib import parse
@@ -8,7 +9,7 @@ from enums.lambda_error import LambdaError
 from enums.trace_status import TraceStatus
 from models.document_reference import DocumentReference
 from models.stitch_trace import StitchTrace
-from pypdf import PdfReader, PdfWriter
+from pypdf import PdfWriter
 from pypdf.errors import PyPdfError
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
@@ -43,6 +44,9 @@ class LloydGeorgeStitchService:
 
     def stitch_lloyd_george_record(self):
         try:
+            timings = {}
+            start = time.time()
+            timings["fetch_file_locations"] = time.time() - start
             documents_for_stitching = self.get_lloyd_george_record_for_patient()
             if not documents_for_stitching:
                 raise LGStitchServiceException(404, LambdaError.StitchNotFound)
@@ -54,16 +58,21 @@ class LloydGeorgeStitchService:
             ordered_documents = self.prepare_documents_for_stitching(
                 documents_for_stitching
             )
+
             stitched_lg_stream = self.stream_and_stitch_documents(ordered_documents)
+            timings["stitch_documents"] = time.time() - start
+            # move code below to stream and stich
             self.stitch_trace_object.total_file_size_in_bytes = (
                 stitched_lg_stream.getbuffer().nbytes
             )
+            start = time.time()
+            timings["upload"] = time.time() - start
             self.upload_stitched_lg_record(
                 stitched_lg_stream=stitched_lg_stream,
                 filename_on_bucket=destination_key,
             )
             self.stitch_trace_object.stitched_file_location = destination_key
-
+            logger.info("Stitch timings (seconds):", timings)
             logger.audit_splunk_info(
                 "User has viewed Lloyd George records",
                 {"Result": "Successful viewing LG"},
@@ -88,9 +97,11 @@ class LloydGeorgeStitchService:
                 key=s3_key,
             )
 
-            reader = PdfReader(memory_stream)
-            for page in reader.pages:
-                writer.add_page(page)
+            # reader = PdfReader(memory_stream)
+            # for page in reader.pages:
+            #     writer.add_page(page)
+            writer.append(memory_stream)
+            memory_stream.close()
 
         output_stream = BytesIO()
         writer.write(output_stream)
