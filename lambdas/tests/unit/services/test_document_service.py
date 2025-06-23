@@ -235,7 +235,7 @@ def test_delete_documents_death_delete(
     )
 
 
-def test_update_documents(mock_service, mock_dynamo_service):
+def test_update_document(mock_service, mock_dynamo_service):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_update_fields = {"doc_status"}
@@ -246,13 +246,9 @@ def test_update_documents(mock_service, mock_dynamo_service):
         updated_fields={"DocStatus": "final"},
     )
 
-    mock_service.update_documents(
-        MOCK_TABLE_NAME, [test_doc_ref, test_doc_ref], test_update_fields
-    )
+    mock_service.update_document(MOCK_TABLE_NAME, test_doc_ref, test_update_fields)
 
-    mock_dynamo_service.update_item.assert_has_calls(
-        [update_item_call, update_item_call]
-    )
+    mock_dynamo_service.update_item.assert_has_calls([update_item_call])
 
 
 def test_hard_delete_metadata_records(mock_service, mock_dynamo_service):
