@@ -11,12 +11,12 @@ class DynamicConfigurationService:
         self.feature_flag_service = FeatureFlagService()
 
     def set_auth_ssm_prefix(self) -> None:
-        auth_flag_name = FeatureFlags.USE_SMARTCARD_AUTH.value
-        use_smartcard_lambda_enabled_flag_object = (
+        auth_flag_name = FeatureFlags.MOCK_LOGIN_ENABLED.value
+        use_mock_login_enabled_flag_object = (
             self.feature_flag_service.get_feature_flags_by_flag(auth_flag_name)
         )
-        if use_smartcard_lambda_enabled_flag_object[auth_flag_name]:
-            request_context.auth_ssm_prefix = "/auth/smartcard/"
+        if use_mock_login_enabled_flag_object[auth_flag_name]:
+            request_context.auth_ssm_prefix = "/auth/mock/"
         else:
-            request_context.auth_ssm_prefix = "/auth/password/"
+            request_context.auth_ssm_prefix = "/auth/smartcard/"
         logger.info("Setting auth ssm prefix to " + request_context.auth_ssm_prefix)

@@ -13,7 +13,7 @@ def configuration_service(mocker):
 
 def test_set_auth_ssm_prefix_to_password_when_flag_is_disabled(configuration_service):
     configuration_service.feature_flag_service.get_feature_flags_by_flag.return_value = {
-        FeatureFlags.USE_SMARTCARD_AUTH.value: False
+        FeatureFlags.MOCK_LOGIN_ENABLED.value: False
     }
 
     configuration_service.set_auth_ssm_prefix()
@@ -23,7 +23,7 @@ def test_set_auth_ssm_prefix_to_password_when_flag_is_disabled(configuration_ser
 
 def test_set_auth_ssm_prefix_to_smartcard_when_flag_is_enable(configuration_service):
     configuration_service.feature_flag_service.get_feature_flags_by_flag.return_value = {
-        FeatureFlags.USE_SMARTCARD_AUTH.value: True
+        FeatureFlags.MOCK_LOGIN_ENABLED.value: True
     }
 
     configuration_service.set_auth_ssm_prefix()
