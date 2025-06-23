@@ -23,9 +23,9 @@ class AwsSsmExtensionService:
             )
             raise LoginException(500, LambdaError.EnvMissing)
 
-    def get_ssm_parameter(self, parameter_key: str):
+    def get_ssm_parameter(self, parameter_key: str, with_decryption: bool = False):
         req = urllib.request.Request(
-            f"http://localhost:2773/systemsmanager/parameters/get?name={parameter_key}"
+            f"http://localhost:2773/systemsmanager/parameters/get?name={parameter_key}&withDecryption={with_decryption}"
         )
         req.add_header("X-Aws-Parameters-Secrets-Token", self.aws_session_token)
         try:
