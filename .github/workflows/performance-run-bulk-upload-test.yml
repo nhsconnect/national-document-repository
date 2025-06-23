@@ -31,7 +31,7 @@ on:
 
 jobs:
   bulk_upload:
-    uses: performance-base-run-bulk-upload.yml
+    uses: ./.github/workflows/performance-base-run-bulk-upload.yml
     with:
       environment: development
       sandbox: "${{ inputs.sandbox }}"
