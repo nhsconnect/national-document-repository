@@ -16,7 +16,7 @@ class MockLoginRedirectService(LoginRedirectService):
         )
         # environment = os.environ["ENVIRONMENT"] # This may be unnecessary if 'host' contains the environment
 
-        host = event["headers"].get("host")
+        host = event["headers"].get("Host")
         logger.info(f"Mock login redirect host: {host}")
 
         url = f"https://{host}{mock_login_route}"
