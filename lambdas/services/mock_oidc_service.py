@@ -220,7 +220,8 @@ class OidcService:
                 "key": key,
                 "ods_code": ods_code,
                 "nhsid_nrbac_roles": {
-                    "role_code": role_code,
+                    "person_roleid": role_code,
+                    "org_code": ods_code,
                 },
             }
             logger.info(f"User info: {user_info}")
