@@ -71,6 +71,16 @@ MOCK_STITCH_TRACE_OBJECT = StitchTrace(nhs_number=TEST_NHS_NUMBER, expire_at=999
 
 
 @pytest.fixture
+def single_mock_doc():
+    return build_lg_doc_ref_list([1])[0]
+
+
+@pytest.fixture
+def multiple_mock_docs():
+    return build_lg_doc_ref_list([1, 2, 3])
+
+
+@pytest.fixture
 def stitch_service(set_env):
     yield LloydGeorgeStitchService(MOCK_STITCH_TRACE_OBJECT)
 
@@ -204,10 +214,10 @@ def test_get_lloyd_george_record_for_patient(
     )
 
 
-def test_sort_documents_by_filenames_base_case(stitch_service):
+def test_sort_documents_by_filenames_base_case(stitch_service, multiple_mock_docs):
     lg_not_in_order = build_lg_doc_ref_list([3, 1, 2])
 
-    expected = build_lg_doc_ref_list([1, 2, 3])
+    expected = multiple_mock_docs
     actual = stitch_service.sort_documents_by_filenames(lg_not_in_order)
 
     assert actual == expected
@@ -224,23 +234,26 @@ def test_sort_documents_by_filenames_for_more_than_10_files(stitch_service):
     assert actual == expected
 
 
+def test_sort_documents_by_filenames_logs_error_on_failure(
+    stitch_service, mocker, single_mock_doc
+):
+    bad_doc = single_mock_doc
+    bad_doc.file_name = "not_a_valid_format.pdf"
+
+    mock_logger = mocker.patch("services.lloyd_george_generate_stitch_service.logger")
+
+    with pytest.raises(LGStitchServiceException):
+        stitch_service.sort_documents_by_filenames([bad_doc])
+
+    mock_logger.error.assert_called_once()
+
+
 def test_get_most_recent_created_date(stitch_service):
     lg_record = build_lg_doc_ref_list(page_numbers=[1, 2, 3])
     lg_record[2].created = "2024-12-14T16:46:07.678657Z"
 
     expected = "2024-12-14T16:46:07.678657Z"
     actual = stitch_service.get_most_recent_created_date(lg_record)
-
-    assert actual == expected
-
-
-def test_get_total_file_size(mocker, stitch_service):
-    file1 = BytesIO(b"x" * 19000)
-    file2 = BytesIO(b"x" * 20000)
-    file3 = BytesIO(b"x" * 21000)
-
-    expected = 60000
-    actual = stitch_service.get_total_file_size_in_bytes([file1, file2, file3])
 
     assert actual == expected
 
@@ -293,7 +306,7 @@ def create_mock_pdf_stream() -> BytesIO:
     return buffer
 
 
-def test_stream_and_stitch_documents(stitch_service, mocker):
+def test_stream_and_stitch_documents(stitch_service, mocker, multiple_mock_docs):
     mock_get_file_key = mocker.patch(
         "services.lloyd_george_generate_stitch_service.get_file_key_from_s3_url",
         return_value="mocked_file_key.pdf",
@@ -309,7 +322,7 @@ def test_stream_and_stitch_documents(stitch_service, mocker):
     stitch_service.s3_service = mock_s3_service
     stitch_service.lloyd_george_bucket_name = MOCK_LG_BUCKET
 
-    documents = build_lg_doc_ref_list([1, 2, 3])
+    documents = multiple_mock_docs
 
     result = stitch_service.stream_and_stitch_documents(documents)
 
@@ -320,8 +333,10 @@ def test_stream_and_stitch_documents(stitch_service, mocker):
     assert mock_get_file_key.call_count == 3
 
 
-def test_prepare_documents_for_stitching(patched_stitch_service, mocker):
-    mock_documents = build_lg_doc_ref_list([1, 2, 3])
+def test_prepare_documents_for_stitching(
+    patched_stitch_service, mocker, multiple_mock_docs
+):
+    mock_documents = multiple_mock_docs
 
     mock_update_trace_status = mocker.patch.object(
         patched_stitch_service, "update_trace_status"
@@ -340,8 +355,8 @@ def test_prepare_documents_for_stitching(patched_stitch_service, mocker):
     mock_get_recent_date.assert_called_once()
 
 
-def test_stitch_lloyd_george_record(patched_stitch_service, mocker):
-    mock_docs = build_lg_doc_ref_list([1, 2, 3])
+def test_stitch_lloyd_george_record(patched_stitch_service, mocker, multiple_mock_docs):
+    mock_docs = multiple_mock_docs
     patched_stitch_service.get_lloyd_george_record_for_patient = mocker.Mock(
         return_value=mock_docs
     )
@@ -362,3 +377,41 @@ def test_stitch_lloyd_george_record(patched_stitch_service, mocker):
     )
     patched_stitch_service.stream_and_stitch_documents.assert_called_once()
     patched_stitch_service.upload_stitched_lg_record.assert_called_once()
+
+
+def test_stitch_lloyd_george_record_single_file(
+    patched_stitch_service, mocker, single_mock_doc
+):
+    mock_doc = single_mock_doc
+    patched_stitch_service.get_lloyd_george_record_for_patient = mocker.Mock(
+        return_value=[mock_doc]
+    )
+    patched_stitch_service.prepare_documents_for_stitching = mocker.Mock()
+    patched_stitch_service.get_total_file_size_in_bytes = mocker.Mock(return_value=1234)
+
+    patched_stitch_service.stream_and_stitch_documents = mocker.Mock()
+
+    # Act
+    patched_stitch_service.stitch_lloyd_george_record()
+
+    patched_stitch_service.get_lloyd_george_record_for_patient.assert_called_once()
+    patched_stitch_service.prepare_documents_for_stitching.assert_called_once_with(
+        [mock_doc]
+    )
+    patched_stitch_service.get_total_file_size_in_bytes.assert_called_once_with(
+        document=mock_doc
+    )
+
+    patched_stitch_service.stream_and_stitch_documents.assert_not_called()
+
+
+def test_get_total_file_size_in_bytes(stitch_service, mocker, single_mock_doc):
+    mock_doc = single_mock_doc
+    mock_s3_service = mocker.Mock()
+    stitch_service.s3_service = mock_s3_service
+
+    stitch_service.get_total_file_size_in_bytes(document=mock_doc)
+
+    mock_s3_service.get_file_size.assert_called_once_with(
+        mock_doc.get_file_bucket(), mock_doc.get_file_key()
+    )

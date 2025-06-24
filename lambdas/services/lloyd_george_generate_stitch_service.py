@@ -174,9 +174,6 @@ class LloydGeorgeStitchService:
     def get_most_recent_created_date(documents: list[DocumentReference]) -> str:
         return max(doc.created for doc in documents)
 
-    # def get_total_file_size_in_bytes(file_streams: list[BytesIO]) -> int:
-    #     return sum(len(f.getbuffer()) for f in file_streams)
-    # @staticmethod
     def get_total_file_size_in_bytes(self, document: DocumentReference) -> int:
         bucket = document.get_file_bucket()
         key = document.get_file_key()
