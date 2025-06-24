@@ -10,6 +10,7 @@ from enums.lambda_error import LambdaError
 from enums.trace_status import TraceStatus
 from models.document_reference import DocumentReference
 from models.stitch_trace import StitchTrace
+from pikepdf import Pdf
 from pypdf.errors import PyPdfError
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
@@ -91,22 +92,22 @@ class LloydGeorgeStitchService:
             )
             raise LGStitchServiceException(500, LambdaError.StitchClient)
 
+    def fetch_pdf(self, doc: DocumentReference) -> pikepdf.Pdf:
+        s3_key = get_file_key_from_s3_url(doc.file_location)
+        stream = self.s3_service.stream_s3_object_to_memory(
+            bucket=self.lloyd_george_bucket_name,
+            key=s3_key,
+        )
+        stream.seek(0)
+        return pikepdf.Pdf.open(stream)
+
     def stream_and_stitch_documents(
         self, documents: list[DocumentReference]
     ) -> BytesIO:
-        output_pdf = pikepdf.Pdf.new()
-
-        def fetch_pdf(doc: DocumentReference) -> pikepdf.Pdf:
-            s3_key = get_file_key_from_s3_url(doc.file_location)
-            stream = self.s3_service.stream_s3_object_to_memory(
-                bucket=self.lloyd_george_bucket_name,
-                key=s3_key,
-            )
-            stream.seek(0)
-            return pikepdf.Pdf.open(stream)
+        output_pdf = Pdf.new()
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [executor.submit(fetch_pdf, doc) for doc in documents]
+            futures = [executor.submit(self.fetch_pdf, doc) for doc in documents]
 
             for future in futures:
                 pdf = future.result()
@@ -124,7 +125,10 @@ class LloydGeorgeStitchService:
     ) -> list[DocumentReference]:
         self.update_trace_status(TraceStatus.PROCESSING)
 
-        sorted_docs = self.sort_documents_by_filenames(documents)
+        if len(documents) == 1:
+            sorted_docs = documents
+        else:
+            sorted_docs = self.sort_documents_by_filenames(documents)
         self.stitch_trace_object.number_of_files = len(sorted_docs)
         self.stitch_trace_object.file_last_updated = self.get_most_recent_created_date(
             sorted_docs

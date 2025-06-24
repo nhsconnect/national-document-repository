@@ -415,3 +415,18 @@ def test_get_total_file_size_in_bytes(stitch_service, mocker, single_mock_doc):
     mock_s3_service.get_file_size.assert_called_once_with(
         mock_doc.get_file_bucket(), mock_doc.get_file_key()
     )
+
+
+def test_fetch_pdf_calls_expected_methods(stitch_service, mocker, single_mock_doc):
+    mock_get_file_key = mocker.patch(
+        "services.lloyd_george_generate_stitch_service.get_file_key_from_s3_url"
+    )
+    mock_stream_s3 = mocker.patch.object(
+        stitch_service.s3_service, "stream_s3_object_to_memory"
+    )
+    mocker.patch("services.lloyd_george_generate_stitch_service.pikepdf.Pdf.open")
+
+    stitch_service.fetch_pdf(single_mock_doc)
+
+    assert mock_get_file_key.called
+    assert mock_stream_s3.called
