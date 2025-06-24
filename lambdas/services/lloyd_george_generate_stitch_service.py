@@ -1,5 +1,4 @@
 import os
-import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
@@ -45,42 +44,45 @@ class LloydGeorgeStitchService:
 
     def stitch_lloyd_george_record(self):
         try:
-            timings = {}
-            start = time.time()
             documents_for_stitching = self.get_lloyd_george_record_for_patient()
             if not documents_for_stitching:
                 raise LGStitchServiceException(404, LambdaError.StitchNotFound)
-            timings["get_lloyd_george_record_for_patient"] = time.time() - start
-            start = time.time()
-            filename_for_stitched_file = f"{self.stitch_file_name}.pdf"
-            destination_key = (
-                f"{self.combined_file_folder}/{filename_for_stitched_file}"
-            )
-            ordered_documents = self.prepare_documents_for_stitching(
-                documents_for_stitching
-            )
-            timings["prepare_documents_for_stitching"] = time.time() - start
-            start = time.time()
-            stitched_lg_stream = self.stream_and_stitch_documents(ordered_documents)
-            timings["stream_and_stitch_documents"] = time.time() - start
-            start = time.time()
-            self.stitch_trace_object.total_file_size_in_bytes = (
-                stitched_lg_stream.getbuffer().nbytes
-            )
 
-            self.upload_stitched_lg_record(
-                stitched_lg_stream=stitched_lg_stream,
-                filename_on_bucket=destination_key,
-            )
-            timings["upload_stitched_lg_record"] = time.time() - start
-            logger.info("Stitch timings (seconds):", timings)
+            if len(documents_for_stitching) == 1:
+                document_to_stitch = documents_for_stitching[0]
+                file_location = document_to_stitch.file_location
+                file_s3_key = get_file_key_from_s3_url(file_location)
 
-            self.stitch_trace_object.stitched_file_location = destination_key
+                self.prepare_documents_for_stitching(documents_for_stitching)
+                self.stitch_trace_object.total_file_size_in_bytes = (
+                    self.get_total_file_size_in_bytes(document=document_to_stitch)
+                )
+                self.stitch_trace_object.stitched_file_location = file_s3_key
 
-            logger.audit_splunk_info(
-                "User has viewed Lloyd George records",
-                {"Result": "Successful viewing LG"},
-            )
+            else:
+                filename_for_stitched_file = f"{self.stitch_file_name}.pdf"
+                destination_key = (
+                    f"{self.combined_file_folder}/{filename_for_stitched_file}"
+                )
+                ordered_documents = self.prepare_documents_for_stitching(
+                    documents_for_stitching
+                )
+                stitched_lg_stream = self.stream_and_stitch_documents(ordered_documents)
+                self.stitch_trace_object.total_file_size_in_bytes = (
+                    stitched_lg_stream.getbuffer().nbytes
+                )
+
+                self.upload_stitched_lg_record(
+                    stitched_lg_stream=stitched_lg_stream,
+                    filename_on_bucket=destination_key,
+                )
+
+                self.stitch_trace_object.stitched_file_location = destination_key
+
+                logger.audit_splunk_info(
+                    "User has viewed Lloyd George records",
+                    {"Result": "Successful viewing LG"},
+                )
 
         except (ClientError, PyPdfError, FileNotFoundError, NoAvailableDocument) as e:
             logger.error(
@@ -89,35 +91,6 @@ class LloydGeorgeStitchService:
             )
             raise LGStitchServiceException(500, LambdaError.StitchClient)
 
-    # Getting full file, and adding stream(does not wait till all streams are ready)instead of page,
-    # with PDF Writter and threads (2.4s faster, 500MB extra memory)
-    # def stream_and_stitch_documents(
-    #     self, documents: list[DocumentReference]
-    # ) -> BytesIO:
-    #     writer = PdfWriter()
-    #
-    #     def fetch_pdf_stream(doc: DocumentReference) -> BytesIO:
-    #         s3_key = get_file_key_from_s3_url(doc.file_location)
-    #         stream = self.s3_service.stream_s3_object_to_memory(
-    #             bucket=self.lloyd_george_bucket_name,
-    #             key=s3_key,
-    #         )
-    #         stream.seek(0)
-    #         return stream
-    #
-    #     with ThreadPoolExecutor(max_workers=5) as executor:
-    #         futures = [executor.submit(fetch_pdf_stream, doc) for doc in documents]
-    #
-    #         for future in futures:
-    #             pdf_stream = future.result()
-    #             writer.append(pdf_stream)
-    #
-    #     output_stream = BytesIO()
-    #     writer.write(output_stream)
-    #     output_stream.seek(0)
-    #     return output_stream
-
-    # pykepdf
     def stream_and_stitch_documents(
         self, documents: list[DocumentReference]
     ) -> BytesIO:
@@ -201,9 +174,13 @@ class LloydGeorgeStitchService:
     def get_most_recent_created_date(documents: list[DocumentReference]) -> str:
         return max(doc.created for doc in documents)
 
-    @staticmethod
-    def get_total_file_size_in_bytes(file_streams: list[BytesIO]) -> int:
-        return sum(len(f.getbuffer()) for f in file_streams)
+    # def get_total_file_size_in_bytes(file_streams: list[BytesIO]) -> int:
+    #     return sum(len(f.getbuffer()) for f in file_streams)
+    # @staticmethod
+    def get_total_file_size_in_bytes(self, document: DocumentReference) -> int:
+        bucket = document.get_file_bucket()
+        key = document.get_file_key()
+        return self.s3_service.get_file_size(bucket, key)
 
     def update_stitch_job_complete(self):
         logger.info("Writing stitch trace to db")
