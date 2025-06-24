@@ -507,6 +507,7 @@ jobs:
 
   deploy_fhir_document_reference_search_lambda:
     name: Deploy Search Document References FHIR Lambda
+    if: inputs.environment == 'development' ||  inputs.environment == 'test'
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
