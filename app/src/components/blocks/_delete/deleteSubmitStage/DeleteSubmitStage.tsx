@@ -176,7 +176,7 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
                     <div>
                         <WarningCallout>
                             <WarningCallout.Label>Important</WarningCallout.Label>
-                            <p> This cannot be undone </p>
+                            <p> This cannot be undone. </p>
                         </WarningCallout>
                     </div>
                     <Radios
