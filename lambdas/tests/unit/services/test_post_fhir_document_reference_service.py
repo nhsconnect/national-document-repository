@@ -312,7 +312,7 @@ def test_s3_upload_error(mock_service, valid_fhir_doc_with_binary):
         mock_service.process_fhir_document_reference(valid_fhir_doc_with_binary)
 
     assert excinfo.value.status_code == 500
-    assert excinfo.value.error == LambdaError.CreateDocPresign
+    assert excinfo.value.error == LambdaError.CreateDocNoParse
 
 
 def test_check_nhs_number_with_pds_raise_error(mock_service, mocker):
@@ -634,7 +634,7 @@ def test_store_binary_in_s3_with_client_error(mock_service):
         mock_service._store_binary_in_s3(TEST_DOCUMENT_REFERENCE, binary_data)
 
     assert excinfo.value.status_code == 500
-    assert excinfo.value.error == LambdaError.CreateDocPresign
+    assert excinfo.value.error == LambdaError.CreateDocNoParse
 
 
 def test_store_binary_in_s3_with_large_binary_data(mock_service):
