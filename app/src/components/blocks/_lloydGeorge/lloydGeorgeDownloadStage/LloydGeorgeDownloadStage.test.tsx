@@ -102,7 +102,7 @@ describe('LloydGeorgeDownloadStage', () => {
             vi.advanceTimersByTime(2000);
         });
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(screen.getByText('100% downloaded...')).toBeInTheDocument();
         });
 
@@ -122,7 +122,7 @@ describe('LloydGeorgeDownloadStage', () => {
             vi.advanceTimersByTime(2000);
         });
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(
                 routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE,
             );

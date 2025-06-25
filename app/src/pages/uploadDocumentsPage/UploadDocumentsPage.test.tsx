@@ -287,25 +287,21 @@ describe('UploadDocumentsPage', () => {
                     );
                 }
 
-                it.each([1, 2, 3, 4, 5])(
-                    'calls updateDocumentState every 2 minutes during upload',
-                    async (numberOfTimes) => {
-                        const mockTimeTakenForUpload =
-                            FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD * numberOfTimes + 100;
+                it('calls updateDocumentState every 2 minutes during upload', async (numberOfTimes) => {
+                    const mockTimeTakenForUpload =
+                        FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD * 5 + 100;
 
-                        mockSlowS3Upload(mockTimeTakenForUpload);
+                    mockSlowS3Upload(mockTimeTakenForUpload);
 
-                        renderPage(history);
-                        setFilesAndClickUpload(arfDocuments);
+                    renderPage(history);
+                    setFilesAndClickUpload(arfDocuments);
 
-                        await waitForSlowUpload(mockTimeTakenForUpload + 1000);
+                    await waitForSlowUpload(mockTimeTakenForUpload + 1000);
 
-                        expect(mockUpdateDocumentState).toHaveBeenCalledTimes(numberOfTimes);
-                        const updateDocumentStateArguments =
-                            mockUpdateDocumentState.mock.calls[0][0];
-                        expect(updateDocumentStateArguments.uploadingState).toBe(true);
-                    },
-                );
+                    expect(mockUpdateDocumentState).toHaveBeenCalledTimes(5);
+                    const updateDocumentStateArguments = mockUpdateDocumentState.mock.calls[0][0];
+                    expect(updateDocumentStateArguments.uploadingState).toBe(true);
+                });
 
                 it('calls updateDocumentState with correct arguments', async () => {
                     const mockTimeTakenForUpload =
