@@ -21,11 +21,11 @@ function PhaseBanner() {
     );
 
     return (
-        <div className="govuk-phase-banner">
+        <div className="nhsuk-phase-banner">
             <div className="nhsuk-width-container">
-                <div className="govuk-phase-banner__content">
-                    <Tag className="govuk-phase-banner__content__tag ">New service</Tag>
-                    <p className="govuk-phase-banner__text">
+                <div className="nhsuk-phase-banner__content">
+                    <Tag className="nhsuk-phase-banner__content__tag ">New service</Tag>
+                    <p className="nhsuk-phase-banner__text">
                         Your {linkToFeedbackPage} will help us to improve this service.
                     </p>
                 </div>

@@ -297,20 +297,34 @@ def test_generate_repository_role_pcse(set_env, mocker):
     mocker.patch("services.login_service.OidcService")
 
     mocker.patch.object(
-        TokenHandlerSSMService,
-        "get_smartcard_role_gp_admin",
-        return_value=["wrong_role_code"],
-    )
-    mocker.patch.object(
-        TokenHandlerSSMService,
-        "get_smartcard_role_gp_clinical",
-        return_value=["wrong_role_code"],
-    )
-    mocker.patch.object(
         TokenHandlerSSMService, "get_smartcard_role_pcse", return_value=[user_role_code]
     )
     mocker.patch.object(
         TokenHandlerSSMService, "get_pcse_ods_code", return_value=ods_code
+    )
+
+    login_service = LoginService()
+
+    expected = RepositoryRole.PCSE
+    actual = login_service.generate_repository_role(org, user_role_code)
+    assert expected == actual
+
+
+def test_generate_repository_role_pcse_itoc(set_env, mocker):
+    ods_code = "ods_code"
+    user_role_code = "role_code"
+    org_role_code = "org_role_code"
+    org = {"org_ods_code": ods_code, "role_code": org_role_code}
+    mocker.patch("services.login_service.OidcService")
+
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_smartcard_role_pcse", return_value=[user_role_code]
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_pcse_ods_code", return_value="wrong_ods_code"
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_itoc_ods_codes", return_value=ods_code
     )
 
     login_service = LoginService()
@@ -327,17 +341,17 @@ def test_generate_repository_role_no_role_raises_auth_error(set_env, mocker):
 
     mocker.patch.object(
         TokenHandlerSSMService,
+        "get_smartcard_role_pcse",
+        return_value=["wrong_role_code"],
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService,
         "get_smartcard_role_gp_admin",
         return_value=["wrong_role_code"],
     )
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_clinical",
-        return_value=["wrong_role_code"],
-    )
-    mocker.patch.object(
-        TokenHandlerSSMService,
-        "get_smartcard_role_pcse",
         return_value=["wrong_role_code"],
     )
 
