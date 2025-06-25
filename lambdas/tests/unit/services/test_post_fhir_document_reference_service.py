@@ -18,7 +18,7 @@ from tests.unit.conftest import APIM_API_URL
 from tests.unit.conftest import (
     EXPECTED_PARSED_PATIENT_BASE_CASE as mock_pds_patient_details,
 )
-from unit.helpers.data.bulk_upload.test_data import TEST_DOCUMENT_REFERENCE
+from tests.unit.helpers.data.bulk_upload.test_data import TEST_DOCUMENT_REFERENCE
 from utils.exceptions import PatientNotFoundException
 from utils.lambda_exceptions import CreateDocumentRefException
 
