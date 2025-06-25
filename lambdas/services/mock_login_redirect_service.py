@@ -13,13 +13,12 @@ class MockLoginRedirectService(LoginRedirectService):
 
     def prepare_redirect_response(self, event):
         mock_login_route = self.ssm_service.get_ssm_parameter(
-            self.ssm_prefix + "MOCK_LOGIN_ROUTE"
+            self.ssm_prefix
+            + "MOCK_LOGIN_ROUTE"  # TODO: Make sure to redirect to actual route before merge
         )
 
         host = event["headers"].get("Host")
         clean_url = re.sub(r"^api-", "", host)
-
-        logger.info(f"Mock login clean url (after remove 'api-': {clean_url}")
 
         url = f"https://{clean_url}{mock_login_route}"
 

@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import random
 from typing import Dict, Tuple, override
 
 import jwt
@@ -222,7 +223,9 @@ class OidcService:
                         "org_code": ods_code,
                     }
                 ],
-                "nhsid_useruid": "",  # TODO: What value should this be set to?
+                "nhsid_useruid": random.randint(
+                    10000,
+                ),  # TODO: What value should this be set to?
             }
             logger.info(f"User info: {user_info}")
             return user_info
