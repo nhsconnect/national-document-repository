@@ -1,7 +1,7 @@
 import datetime
 import json
 import random
-from typing import Dict, Tuple, override
+from typing import Dict, Tuple
 
 from models.oidc_models import AccessToken, IdTokenClaimSet
 from scripts.mns_subscription import ssm_service
@@ -38,7 +38,6 @@ class MockOidcService:
         self.ssm_prefix = getattr(request_context, "auth_ssm_prefix", "")
         self.ssm_service = SSMService()
 
-    @override
     def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
 
         deserialised_auth_code = json.loads(auth_code)
@@ -60,7 +59,6 @@ class MockOidcService:
         logger.error("Provided key does not match Key stored in SSM")
         raise OidcApiException("Failed to retrieve access token from ID Provider")
 
-    @override
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         """
         Fetch user information from the OIDC provider.
