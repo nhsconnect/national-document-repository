@@ -8,7 +8,12 @@ from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import NHS_NUMBER_FIELD_NAME, MetadataFile, StagingMetadata
+from models.staging_metadata import (
+    NHS_NUMBER_FIELD_NAME,
+    ODS_CODE,
+    MetadataFile,
+    StagingMetadata,
+)
 from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
@@ -81,14 +86,19 @@ class BulkUploadMetadataService:
             for row in csv_reader:
                 file_metadata = MetadataFile.model_validate(row)
                 nhs_number = row[NHS_NUMBER_FIELD_NAME]
-                if nhs_number not in patients:
-                    patients[nhs_number] = [file_metadata]
+                ods_code = row[ODS_CODE]
+                key = (nhs_number, ods_code)
+                if key not in patients:
+                    patients[key] = [file_metadata]
                 else:
-                    patients[nhs_number] += [file_metadata]
+                    patients[key].append(file_metadata)
 
         return [
-            StagingMetadata(nhs_number=nhs_number, files=patients[nhs_number])
-            for nhs_number in patients
+            StagingMetadata(
+                nhs_number=nhs_number,
+                files=patients[nhs_number, ods_code],
+            )
+            for (nhs_number, ods_code) in patients
         ]
 
     def send_metadata_to_fifo_sqs(

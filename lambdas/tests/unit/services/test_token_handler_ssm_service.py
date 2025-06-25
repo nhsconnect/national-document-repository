@@ -92,7 +92,7 @@ MOCK_ITOC_ODS_CODE_RESPONSE = {
     "Parameter": {
         "Name": ITOC_ODS_CODES,
         "Type": "SecureString",
-        "Value": "R0012",
+        "Value": "R0012,R0120",
         "Version": 123,
         "Selector": "string",
         "SourceResult": "string",
@@ -286,7 +286,7 @@ def test_get_pcse_ods_code_raises_login_exception(mock_service, mock_ssm):
 
 def test_get_itoc_ods_codes(mock_service, mock_ssm):
     mock_ssm.get_parameter.return_value = MOCK_ITOC_ODS_CODE_RESPONSE
-    expected = "R0012"
+    expected = ["R0012", "R0120"]
 
     actual = mock_service.get_itoc_ods_codes()
 
