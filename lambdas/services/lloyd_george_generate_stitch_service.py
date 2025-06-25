@@ -4,7 +4,6 @@ from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from urllib import parse
 
-import pikepdf
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.trace_status import TraceStatus
@@ -92,14 +91,14 @@ class LloydGeorgeStitchService:
             )
             raise LGStitchServiceException(500, LambdaError.StitchClient)
 
-    def fetch_pdf(self, doc: DocumentReference) -> pikepdf.Pdf:
+    def fetch_pdf(self, doc: DocumentReference) -> Pdf:
         s3_key = get_file_key_from_s3_url(doc.file_location)
         stream = self.s3_service.stream_s3_object_to_memory(
             bucket=self.lloyd_george_bucket_name,
             key=s3_key,
         )
         stream.seek(0)
-        return pikepdf.Pdf.open(stream)
+        return Pdf.open(stream)
 
     def stream_and_stitch_documents(
         self, documents: list[DocumentReference]
