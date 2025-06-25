@@ -1,5 +1,6 @@
 # import os
 import random
+import re
 import string
 
 from services.login_redirect_service import LoginRedirectService
@@ -14,12 +15,13 @@ class MockLoginRedirectService(LoginRedirectService):
         mock_login_route = self.ssm_service.get_ssm_parameter(
             self.ssm_prefix + "MOCK_LOGIN_ROUTE"
         )
-        # environment = os.environ["ENVIRONMENT"] # This may be unnecessary if 'host' contains the environment
 
         host = event["headers"].get("Host")
-        logger.info(f"Mock login redirect host: {host}")
+        clean_url = re.sub(r"^https?://api-", "https://", host)
 
-        url = f"https://{host}{mock_login_route}"
+        logger.info(f"Mock login clean url: {clean_url}")
+
+        url = f"https://{clean_url}{mock_login_route}"
 
         state = "".join(random.choices(string.ascii_letters + string.digits, k=30))
 

@@ -206,8 +206,7 @@ class OidcService:
         logger.info(f"Access token for user info request: {access_token}")
 
         deserialised_access_token = json.loads(access_token)
-        key, ods_code, repository_role = (
-            deserialised_access_token["key"],
+        ods_code, repository_role = (
             deserialised_access_token["odsCode"],
             deserialised_access_token["repositoryRole"],
         )
@@ -217,12 +216,13 @@ class OidcService:
 
         if deserialised_access_token:
             user_info = {
-                "key": key,
-                "ods_code": ods_code,
-                "nhsid_nrbac_roles": {
-                    "person_roleid": role_code,
-                    "org_code": ods_code,
-                },
+                "nhsid_nrbac_roles": [
+                    {
+                        "person_roleid": role_code,  # TODO: Replace role_code with an actual selected_role_id
+                        "org_code": ods_code,
+                    }
+                ],
+                "nhsid_useruid": "",  # TODO: What value should this be set to?
             }
             logger.info(f"User info: {user_info}")
             return user_info
