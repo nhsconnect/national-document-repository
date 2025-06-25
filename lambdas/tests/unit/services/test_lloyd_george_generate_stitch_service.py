@@ -424,7 +424,7 @@ def test_fetch_pdf_calls_expected_methods(stitch_service, mocker, single_mock_do
     mock_stream_s3 = mocker.patch.object(
         stitch_service.s3_service, "stream_s3_object_to_memory"
     )
-    mocker.patch("services.lloyd_george_generate_stitch_service.pikepdf.Pdf.open")
+    mocker.patch("services.lloyd_george_generate_stitch_service.Pdf.open")
 
     stitch_service.fetch_pdf(single_mock_doc)
 
