@@ -1,8 +1,10 @@
 import os
 import re
+import time
 import uuid
 from datetime import datetime, timezone
 from io import BytesIO
+from itertools import islice
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -26,6 +28,15 @@ from utils.lambda_exceptions import PdfStitchingException
 from utils.utilities import DATE_FORMAT, create_reference_id
 
 logger = LoggingService(__name__)
+
+
+def batch(iterable, size):
+    it = iter(iterable)
+    while True:
+        chunk = list(islice(it, size))
+        if not chunk:
+            break
+        yield chunk
 
 
 class PdfStitchingService:
@@ -318,6 +329,8 @@ class PdfStitchingService:
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
 
     def process_manual_trigger(self, ods_code: str, queue_url):
+        delay_between_batch_messages = 1
+        batch_size = 10
         nhs_numbers = self.document_service.get_nhs_numbers_based_on_ods_code(
             ods_code=ods_code
         )
@@ -328,13 +341,22 @@ class PdfStitchingService:
         logger.info(f"{len(nhs_numbers)} found under ODS code: {ods_code}")
 
         sqs_service = SQSService()
-        for nhs_number in nhs_numbers:
-            pdf_stitching_sqs_message = PdfStitchingSqsMessage(
-                nhs_number=nhs_number,
-                snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
-            )
-            logger.info(f"Processing manual trigger for nhs number {nhs_number}")
-            sqs_service.send_message_standard(
+        for chunk in batch(nhs_numbers, batch_size):
+            messages = []
+            for nhs_number in chunk:
+                logger.info(f"Preparing message for NHS number: {nhs_number}")
+                message = PdfStitchingSqsMessage(
+                    nhs_number=nhs_number,
+                    snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+                ).model_dump_json()
+                messages.append(message)
+
+            sqs_service.send_message_batch_standard(
                 queue_url=queue_url,
-                message_body=pdf_stitching_sqs_message.model_dump_json(),
+                messages=messages,
+                delay_between_batch_messages=delay_between_batch_messages,
             )
+            # 1 batch is 10 messages
+            # we can send up to 300 messages a second
+            # a 0.2s delay means 5 batches, so 50 messages
+            time.sleep(0.2)
