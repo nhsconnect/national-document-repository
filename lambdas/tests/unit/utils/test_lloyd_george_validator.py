@@ -902,7 +902,7 @@ def test_parse_pds_response_return_the_patient_object(
     mock_pds_call, mock_valid_pds_response
 ):
     actual = parse_pds_response(mock_valid_pds_response)
-    assert actual.id == "9000000002"
+    assert actual.id == "9000000017"
     assert actual.name[0].given == ["Jane"]
     assert actual.name[0].family == "Smith"
 
