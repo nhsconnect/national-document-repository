@@ -96,7 +96,7 @@ class LambdaError(Enum):
     CreatePatientSearchInvalid = {
         "err_code": "CDR_5003",
         "message": "Failed to validate patient",
-        "fhir_coding": FhirIssueCoding.INVALID,
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
 
     """
