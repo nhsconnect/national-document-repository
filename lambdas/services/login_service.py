@@ -10,6 +10,7 @@ from models.oidc_models import IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
+from services.mock_oidc_service import MockOidcService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService, get_selected_roleid
 from services.token_handler_ssm_service import TokenHandlerSSMService
@@ -32,6 +33,7 @@ class LoginService:
         self.db_service = DynamoDBService()
         self.token_handler_ssm_service = TokenHandlerSSMService()
         self.oidc_service = OidcService()
+        self.mock_oidc_service = MockOidcService()
         self.ods_api_service = OdsApiService()
 
     def generate_session(self, state, auth_code) -> dict:
@@ -57,13 +59,21 @@ class LoginService:
 
         logger.info("Fetching access token from OIDC Provider")
         try:
-            access_token, id_token_claim_set = self.oidc_service.fetch_tokens(auth_code)
+            if getattr(request_context, "auth_ssm_prefix") == "/auth/mock":
+                access_token, id_token_claim_set = self.mock_oidc_service.fetch_tokens(
+                    auth_code
+                )
+                logger.info("Fetching Mock user information")
+                userinfo = self.mock_oidc_service.fetch_userinfo(access_token)
+            else:
+                access_token, id_token_claim_set = self.oidc_service.fetch_tokens(
+                    auth_code
+                )
+                logger.info("Fetching user information from OIDC Provider")
+                userinfo = self.oidc_service.fetch_userinfo(access_token)
 
-            logger.info("Fetching user information from OIDC Provider")
-            userinfo = self.oidc_service.fetch_userinfo(access_token)
             selected_role_id = get_selected_roleid(id_token_claim_set)
-            logger.debug(f"Selected role ID: {selected_role_id}")
-
+            logger.info(f"Selected role ID: {selected_role_id}")
             logger.info("Extracting user's organisation and smartcard codes")
             org_ods_codes = self.oidc_service.fetch_user_org_code(
                 userinfo, selected_role_id
