@@ -22,7 +22,6 @@ import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import WarningText from '../../../generic/warningText/WarningText';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
@@ -175,7 +174,10 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
                         Are you sure you want to permanently remove this record?
                     </h2>
                     <div>
-                        <WarningText text="This can not be undone" />
+                        <WarningCallout>
+                            <WarningCallout.Label>Important</WarningCallout.Label>
+                            <p> This cannot be undone. </p>
+                        </WarningCallout>
                     </div>
                     <Radios
                         id="delete-docs"
