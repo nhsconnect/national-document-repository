@@ -35,7 +35,7 @@ def lambda_handler(event, context):
         )
 
         return ApiGatewayResponse(
-            status_code=200, body=fhir_response, methods="GET"
+            status_code=200, body=fhir_response, methods="POST"
         ).create_api_gateway_response()
 
     except CreateDocumentRefException as exception:
@@ -45,5 +45,5 @@ def lambda_handler(event, context):
             body=exception.error.create_error_response().create_error_fhir_response(
                 exception.error.value.get("fhir_coding")
             ),
-            methods="GET",
+            methods="POST",
         ).create_api_gateway_response()

@@ -1,4 +1,5 @@
 import base64
+import binascii
 import io
 import os
 import urllib.parse
@@ -98,23 +99,30 @@ class PostFhirDocumentReferenceService:
     def _extract_nhs_number_from_fhir(self, fhir_doc: FhirDocumentReference) -> str:
         """Extract NHS number from FHIR document"""
         # Extract NHS number from subject.identifier where the system identifier is NHS number
-        identifier = fhir_doc.subject.identifier
-        if identifier.system == "https://fhir.nhs.uk/Id/nhs-number":
-            return identifier.value
+        if (
+            fhir_doc.subject
+            and fhir_doc.subject.identifier
+            and fhir_doc.subject.identifier.system
+            == "https://fhir.nhs.uk/Id/nhs-number"
+        ):
+            return fhir_doc.subject.identifier.value
 
         raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
 
     def _determine_document_type(self, fhir_doc: FhirDocumentReference) -> SnomedCode:
         """Determine the document type based on SNOMED code in the FHIR document"""
-        for coding in fhir_doc.type.coding:
-            if coding.system == SNOMED_URL:
-                if coding.code == SnomedCodes.LLOYD_GEORGE.value.code:
-                    return SnomedCodes.LLOYD_GEORGE.value
-            else:
-                logger.error(
-                    f"SNOMED code {coding.code} - {coding.display} is not supported"
-                )
-                raise CreateDocumentRefException(400, LambdaError.CreateDocInvalidType)
+        if fhir_doc.type and fhir_doc.type.coding:
+            for coding in fhir_doc.type.coding:
+                if coding.system == SNOMED_URL:
+                    if coding.code == SnomedCodes.LLOYD_GEORGE.value.code:
+                        return SnomedCodes.LLOYD_GEORGE.value
+                else:
+                    logger.error(
+                        f"SNOMED code {coding.code} - {coding.display} is not supported"
+                    )
+                    raise CreateDocumentRefException(
+                        400, LambdaError.CreateDocInvalidType
+                    )
         logger.error("SNOMED code not found in FHIR document")
         raise CreateDocumentRefException(400, LambdaError.CreateDocInvalidType)
 
@@ -174,7 +182,7 @@ class PostFhirDocumentReferenceService:
     ) -> None:
         """Store binary content in S3"""
         try:
-            binary_file = io.BytesIO(base64.b64decode(binary_content))
+            binary_file = io.BytesIO(base64.b64decode(binary_content, validate=True))
             self.s3_service.upload_file_obj(
                 file_obj=binary_file,
                 s3_bucket_name=document_reference.s3_bucket_name,
@@ -183,9 +191,18 @@ class PostFhirDocumentReferenceService:
             logger.info(
                 f"Successfully stored binary content in S3: {document_reference.s3_file_key}"
             )
+        except (binascii.Error, ValueError) as e:
+            logger.error(f"Failed to decode base64: {str(e)}")
+            raise CreateDocumentRefException(500, LambdaError.CreateDocNoParse)
+        except MemoryError as e:
+            logger.error(f"File too large to process: {str(e)}")
+            raise CreateDocumentRefException(500, LambdaError.CreateDocNoParse)
         except ClientError as e:
             logger.error(f"Failed to store binary in S3: {str(e)}")
-            raise CreateDocumentRefException(500, LambdaError.CreateDocPresign)
+            raise CreateDocumentRefException(500, LambdaError.CreateDocNoParse)
+        except (OSError, IOError) as e:
+            logger.error(f"I/O error when processing binary content: {str(e)}")
+            raise CreateDocumentRefException(500, LambdaError.CreateDocNoParse)
 
     def _create_presigned_url(self, document_reference: DocumentReference) -> str:
         """Create a pre-signed URL for uploading a file"""
