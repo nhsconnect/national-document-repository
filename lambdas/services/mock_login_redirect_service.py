@@ -17,11 +17,13 @@ class MockLoginRedirectService(LoginRedirectService):
         )
 
         host = event["headers"].get("Host")
-        clean_url = re.sub(r"^https?://api-", "https://", host)
+        clean_url = re.sub(r"^api-", "", host)
 
-        logger.info(f"Mock login clean url: {clean_url}")
+        logger.info(f"Mock login clean url (after remove 'api-': {clean_url}")
 
         url = f"https://{clean_url}{mock_login_route}"
+
+        logger.info(f"Mock login url: {url}")
 
         state = "".join(random.choices(string.ascii_letters + string.digits, k=30))
 
