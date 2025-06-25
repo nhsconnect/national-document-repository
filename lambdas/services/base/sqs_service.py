@@ -24,8 +24,8 @@ class SQSService:
         entries = []
         for i, body in enumerate(messages):
             delay = min(
-                i * delay_between_batch_messages, 900
-            )  # max delay is 900s (15mins)
+                i * delay_between_batch_messages, 900  # max delay is 900s (15mins)
+            )
             entries.append(
                 {
                     "Id": str(uuid.uuid4()),
@@ -41,7 +41,14 @@ class SQSService:
 
         if "Failed" in response and response["Failed"]:
             failed_ids = [f["Id"] for f in response["Failed"]]
-            raise Exception(f"Some messages failed to send: {failed_ids}")
+            failed_messages = [
+                entry["MessageBody"] for entry in entries if entry["Id"] in failed_ids
+            ]
+            error_msg = (
+                f"Some messages failed to send. Failed IDs: {failed_ids}. "
+                f"Failed message bodies: {failed_messages}"
+            )
+            raise Exception(error_msg)
 
     def send_message_with_attr(
         self, queue_url: str, message_body: str, attributes: dict

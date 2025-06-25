@@ -350,12 +350,14 @@ class PdfStitchingService:
                     snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
                 ).model_dump_json()
                 messages.append(message)
-
-            sqs_service.send_message_batch_standard(
-                queue_url=queue_url,
-                messages=messages,
-                delay_between_batch_messages=delay_between_batch_messages,
-            )
+            try:
+                sqs_service.send_message_batch_standard(
+                    queue_url=queue_url,
+                    messages=messages,
+                    delay_between_batch_messages=delay_between_batch_messages,
+                )
+            except Exception as e:
+                logger.error(f"Error sending batch to SQS: {str(e)}")
             # 1 batch is 10 messages
             # we can send up to 300 messages a second
             # a 0.2s delay means 5 batches, so 50 messages

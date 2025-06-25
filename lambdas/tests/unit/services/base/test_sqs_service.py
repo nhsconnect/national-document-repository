@@ -63,3 +63,30 @@ def test_send_message_fifo(set_env, mocked_sqs_client, service):
         MessageBody=test_message_body,
         MessageGroupId="test_group_id",
     )
+
+
+def test_send_message_batch_standard_success(
+    set_env, mocked_sqs_client, service, mocker
+):
+    messages = ["message1", "message2", "message3"]
+    uuids = ["id-1", "id-2", "id-3"]
+    mocker.patch("uuid.uuid4", side_effect=uuids.copy())
+
+    mocked_sqs_client.send_message_batch.return_value = {
+        "Successful": [{"Id": "id-1"}, {"Id": "id-2"}, {"Id": "id-3"}],
+        "Failed": [],
+    }
+
+    service.send_message_batch_standard(
+        queue_url="fake queue url",
+        messages=messages,
+        delay_between_batch_messages=0,
+    )
+
+    args = mocked_sqs_client.send_message_batch.call_args[1]
+    entries = args["Entries"]
+    assert len(entries) == 3
+    for i, entry in enumerate(entries):
+        assert entry["MessageBody"] == messages[i]
+        assert entry["DelaySeconds"] == 0
+        assert entry["Id"] == uuids[i]

@@ -663,10 +663,10 @@ def test_process_manual_trigger_calls_process_message_for_each_nhs_number(
         return_value=test_nhs_numbers,
     )
     mock_send_message = mocker.patch(
-        "lambdas.services.pdf_stitching_service.SQSService.send_message_standard"
+        "lambdas.services.pdf_stitching_service.SQSService.send_message_batch_standard"
     )
 
     mock_service.process_manual_trigger(ods_code=test_ods_code, queue_url="url")
 
     mock_get_nhs_numbers.assert_called_once_with(ods_code=test_ods_code)
-    assert mock_send_message.call_count == len(test_nhs_numbers)
+    assert mock_send_message.call_count == 1
