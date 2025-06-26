@@ -7,7 +7,7 @@ from pydantic.alias_generators import to_pascal
 
 
 class StatisticData(BaseModel):
-    model_config = ConfigDict(alias_generator=to_pascal, populate_by_name=True)
+    model_config = ConfigDict(alias_generator=to_pascal, validate_by_name=True)
     statistic_id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), alias="StatisticID"
     )
