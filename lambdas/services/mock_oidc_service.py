@@ -4,7 +4,6 @@ import random
 from typing import Dict, Tuple
 
 from models.oidc_models import AccessToken, IdTokenClaimSet
-from scripts.mns_subscription import ssm_service
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import OidcApiException
@@ -43,11 +42,11 @@ class MockOidcService:
         deserialised_auth_code = json.loads(auth_code)
         key = deserialised_auth_code["key"]
         repository_role = deserialised_auth_code["repositoryRole"]
-        role_code_string_list = ssm_service.get_ssm_parameter(
+        role_code_string_list = self.ssm_service.get_ssm_parameter(
             "auth/smartcard/role/" + repository_role
         )
         role_code = role_code_string_list.split(",")[0]
-        ssm_key = ssm_service.get_ssm_parameter(self.ssm_prefix + "KEY")
+        ssm_key = self.ssm_service.get_ssm_parameter(self.ssm_prefix + "KEY")
         expiry_time = int(
             (datetime.datetime.now() + datetime.timedelta(minutes=30)).timestamp()
         )
@@ -79,7 +78,7 @@ class MockOidcService:
             deserialised_access_token["odsCode"],
             deserialised_access_token["repositoryRole"],
         )
-        role_code = ssm_service.get_ssm_parameter(
+        role_code = self.ssm_service.get_ssm_parameter(
             "auth/smartcard/role/" + repository_role
         )
 
