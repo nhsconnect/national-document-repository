@@ -1,5 +1,5 @@
 import DeceasedPatientAccessAudit from './DeceasedPatientAccessAudit';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { LinkProps, MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
@@ -11,7 +11,6 @@ import {
     DeceasedAccessAuditReasons,
     PatientAccessAudit,
 } from '../../../../types/generic/accessAudit';
-import { act } from 'react-dom/test-utils';
 import useRole from '../../../../helpers/hooks/useRole';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
