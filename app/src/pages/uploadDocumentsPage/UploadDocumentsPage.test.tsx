@@ -264,18 +264,22 @@ describe('UploadDocumentsPage', () => {
             });
 
             describe('setInterval related logics', () => {
-                beforeAll(() => {
+                beforeEach(() => {
                     vi.useFakeTimers();
                 });
-                afterAll(() => {
+
+                afterEach(() => {
                     vi.useRealTimers();
+                    vi.resetAllMocks();
                 });
 
                 function mockSlowS3Upload(milliseconds: number) {
                     mockS3Upload.mockImplementationOnce(() => {
-                        vi.advanceTimersByTime(milliseconds);
-                        return Promise.resolve(successResponse);
+                        return new Promise((resolve) => {
+                            setTimeout(() => resolve(successResponse), milliseconds);
+                        });
                     });
+
                     mockS3Upload.mockResolvedValue(successResponse);
                 }
                 async function waitForSlowUpload(milliseconds: number) {
@@ -287,21 +291,33 @@ describe('UploadDocumentsPage', () => {
                     );
                 }
 
-                it('calls updateDocumentState every 2 minutes during upload', async (numberOfTimes) => {
-                    const mockTimeTakenForUpload =
-                        FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD * 5 + 100;
+                it.each([1, 2, 3, 4, 5])(
+                    'calls updateDocumentState every 2 minutes during upload (%i times)',
+                    async (numberOfTimes) => {
+                        const interval = FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD;
+                        const uploadDuration = interval * numberOfTimes + 100;
 
-                    mockSlowS3Upload(mockTimeTakenForUpload);
+                        mockSlowS3Upload(uploadDuration);
 
-                    renderPage(history);
-                    setFilesAndClickUpload(arfDocuments);
+                        renderPage(history);
+                        setFilesAndClickUpload(arfDocuments);
 
-                    await waitForSlowUpload(mockTimeTakenForUpload + 1000);
+                        // Confirm upload occurred
+                        await waitFor(() => {
+                            expect(mockS3Upload).toHaveBeenCalled();
+                        });
 
-                    expect(mockUpdateDocumentState).toHaveBeenCalledTimes(5);
-                    const updateDocumentStateArguments = mockUpdateDocumentState.mock.calls[0][0];
-                    expect(updateDocumentStateArguments.uploadingState).toBe(true);
-                });
+                        await act(async () => {
+                            vi.advanceTimersByTime(uploadDuration + 1000);
+                        });
+
+                        expect(mockUpdateDocumentState).toHaveBeenCalledTimes(numberOfTimes);
+
+                        mockUpdateDocumentState.mock.calls.forEach(([args]) => {
+                            expect(args.uploadingState).toBe(true);
+                        });
+                    },
+                );
 
                 it('calls updateDocumentState with correct arguments', async () => {
                     const mockTimeTakenForUpload =
@@ -313,16 +329,14 @@ describe('UploadDocumentsPage', () => {
                     setFilesAndClickUpload(arfDocuments);
                     await waitForSlowUpload(mockTimeTakenForUpload + 1000);
 
-                    const updateDocumentStateArguments = mockUpdateDocumentState.mock.calls[0][0];
-
-                    expect(updateDocumentStateArguments.uploadingState).toBe(true);
-                    expect(updateDocumentStateArguments.documents).toHaveLength(
-                        arfDocuments.length,
-                    );
-                    updateDocumentStateArguments.documents.forEach((doc: UploadDocument) => {
-                        expect(doc).toMatchObject({
-                            docType: 'ARF',
-                            ref: expect.stringContaining('uuid_for_file'),
+                    mockUpdateDocumentState.mock.calls.forEach(([args]) => {
+                        expect(args.uploadingState).toBe(true);
+                        expect(args.documents).toHaveLength(arfDocuments.length);
+                        args.documents.forEach((doc: UploadDocument) => {
+                            expect(doc).toMatchObject({
+                                docType: 'ARF',
+                                ref: expect.stringContaining('uuid_for_file'),
+                            });
                         });
                     });
                 });
