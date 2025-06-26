@@ -53,22 +53,26 @@ class LoginService:
             )
             raise LoginException(500, LambdaError.LoginClient)
 
-        logger.info("Setting up oidc service")
-
-        self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
-
-        logger.info("Fetching access token from OIDC Provider")
         try:
             if getattr(request_context, "auth_ssm_prefix") == "/auth/mock":
+                logger.info("Fetching access token from mock_oidc_service")
                 access_token, id_token_claim_set = self.mock_oidc_service.fetch_tokens(
                     auth_code
                 )
-                logger.info("Fetching Mock user information")
+
+                logger.info("Fetching user information from mock_oidc_service")
                 userinfo = self.mock_oidc_service.fetch_userinfo(access_token)
             else:
+                logger.info("Setting up oidc service")
+                self.oidc_service.set_up_oidc_parameters(
+                    SSMService, WebApplicationClient
+                )
+
+                logger.info("Fetching access token from OIDC Provider")
                 access_token, id_token_claim_set = self.oidc_service.fetch_tokens(
                     auth_code
                 )
+
                 logger.info("Fetching user information from OIDC Provider")
                 userinfo = self.oidc_service.fetch_userinfo(access_token)
 
