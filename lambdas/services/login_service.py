@@ -40,12 +40,13 @@ class LoginService:
         logger.info("Login process started")
 
         try:
-            if not self.have_matching_state_value_in_record(state):
-                logger.error(
-                    f"Mismatching state values. Cannot find state {state} in record",
-                    {"Result": "Unsuccessful login"},
-                )
-                raise LoginException(401, LambdaError.LoginBadState)
+            if getattr(request_context, "auth_ssm_prefix") == "/auth/smartcard/":
+                if not self.have_matching_state_value_in_record(state):
+                    logger.error(
+                        f"Mismatching state values. Cannot find state {state} in record",
+                        {"Result": "Unsuccessful login"},
+                    )
+                    raise LoginException(401, LambdaError.LoginBadState)
         except ClientError as e:
             logger.error(
                 f"{LambdaError.LoginClient.to_str()}: {str(e)}",
