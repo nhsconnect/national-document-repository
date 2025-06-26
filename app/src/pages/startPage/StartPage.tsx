@@ -16,14 +16,17 @@ type Props = {};
 function StartPage(props: Props) {
     const navigate = useNavigate();
     const baseAPIUrl = useBaseAPIUrl();
+    const env = import.meta.env.MODE;
     const [isLoading, setIsLoading] = useState(false);
     const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         setIsLoading(true);
         e.preventDefault();
-        if (isLocal) {
-            navigate(routes.AUTH_CALLBACK);
+        if (isLocal || env == 'development') {
+            // navigate(routes.AUTH_CALLBACK);
+            navigate(routes.MOCK_LOGIN);
         } else {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
+            //will only need this line ^ after backend changes have been done
         }
     };
     const pageHeader = 'Access and store digital patient documents';

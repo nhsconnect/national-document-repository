@@ -28,6 +28,7 @@ export enum routes {
     REPORT_DOWNLOAD_WILDCARD = '/create-report/*',
     PATIENT_ACCESS_AUDIT = '/patient/access-audit',
     PATIENT_ACCESS_AUDIT_WILDCARD = '/patient/access-audit/*',
+    MOCK_LOGIN = '/login',
 }
 
 export enum routeChildren {
