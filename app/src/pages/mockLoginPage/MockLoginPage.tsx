@@ -91,6 +91,7 @@ const MockLoginPage = () => {
                                         onChange={(e) => setRepositoryRole(e.target.value)}
                                         required
                                     >
+                                        <option value="">Select an option</option>
                                         <option value="gp_admin">GP Admin</option>
                                         <option value="gp_clinical">GP Clinical</option>
                                         <option value="pcse">PCSE</option>

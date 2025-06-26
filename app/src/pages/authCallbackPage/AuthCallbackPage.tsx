@@ -83,7 +83,9 @@ const AuthCallbackPage = () => {
 
         const urlSearchParams = new URLSearchParams(window.location.search);
         const code = urlSearchParams.get('code') ?? '';
+        console.log(`code ${code}`);
         const state = urlSearchParams.get('state') ?? '';
+        console.log(`state ${state}`);
         void handleCallback({ baseUrl, code, state });
     }, [baseUrl, setSession, navigate, mockLocal, setConfig]);
 
