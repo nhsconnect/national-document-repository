@@ -72,7 +72,7 @@ def get_pds_service() -> PatientSearch:
         return PdsApiService(ssm_service, auth_service)
     else:
         return MockPdsApiService(
-            always_pass_mock=os.getenv("PDS_FHIR_ALWAYS_TRUE") in ["True", "true"]
+            always_pass_mock=os.getenv("BYPASS_PDS") in ["True", "true"]
         )
 
 
