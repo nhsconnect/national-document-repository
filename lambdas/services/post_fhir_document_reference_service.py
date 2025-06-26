@@ -158,6 +158,7 @@ class PostFhirDocumentReferenceService:
             document_snomed_code_type=doc_type.code,
             doc_status="preliminary",
             status="current",
+            sub_folder="user_upload",
             document_scan_creation=fhir_doc.content[0].attachment.creation,
         )
 
