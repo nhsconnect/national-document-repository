@@ -21,7 +21,6 @@ logger = LoggingService(__name__)
     ]
 )
 def lambda_handler(event, context):
-
     logger.info(f"Received event: {event}")
     alarm_notifications = event.get("Records", [])
 
