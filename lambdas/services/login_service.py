@@ -54,7 +54,7 @@ class LoginService:
             raise LoginException(500, LambdaError.LoginClient)
 
         try:
-            if getattr(request_context, "auth_ssm_prefix") == "/auth/mock":
+            if getattr(request_context, "auth_ssm_prefix") == "/auth/mock/":
                 logger.info("Fetching access token from mock_oidc_service")
                 access_token, id_token_claim_set = self.mock_oidc_service.fetch_tokens(
                     auth_code
