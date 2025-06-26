@@ -40,11 +40,13 @@ class LambdaLayerUpdate:
                 if layer_name_match:
                     layer_name = layer_name_match.group(1)
 
-                    if layer_name in [
-                        "AWS-AppConfig-Extension",
-                        "LambdaInsightsExtension",
-                    ]:
-                        self.updated_lambda_arns.update({layer_name: layer_arn})
+                    self.updated_lambda_arns.update({layer_name: layer_arn})
+                    # if layer_name in [
+                    #     "AWS-AppConfig-Extension",
+                    #     "LambdaInsightsExtension",
+                    #     "AWS-Parameters-and-Secrets-Lambda-Extension",
+                    # ]:
+                    #     self.updated_lambda_arns.update({layer_name: layer_arn})
         except KeyError:
             print("Lambda layer default configuration not found")
             return
