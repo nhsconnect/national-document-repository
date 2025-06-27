@@ -209,8 +209,7 @@ class PdfStitchingService:
             + self.stitched_reference.id
         )
         doc_details = Attachment(
-            url=document_api_endpoint,
-            contentType="application/pdf",
+            url=document_api_endpoint, contentType="application/pdf", title=None
         )
         nrl_sqs_message = NrlSqsMessage(
             nhs_number=self.stitched_reference.nhs_number,
