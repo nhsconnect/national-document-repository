@@ -15,6 +15,7 @@ logger = LoggingService(__name__)
     names=[
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "STAGING_STORE_BUCKET_NAME",
+        "LLOYD_GEORGE_BUCKET_NAME",
     ]
 )
 @handle_lambda_exceptions
@@ -24,6 +25,7 @@ def lambda_handler(event, context):
 
     for s3_object in event.get("Records"):
         object_key = s3_object["s3"]["object"]["key"]
+        # TODO: Add file size from event
         upload_document_reference_service.handle_upload_document_reference_request(
             object_key
         )
