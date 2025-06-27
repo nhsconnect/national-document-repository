@@ -335,6 +335,10 @@ class PdfStitchingService:
         nhs_numbers = self.document_service.get_nhs_numbers_based_on_ods_code(
             ods_code=ods_code
         )
+        total_count = len(nhs_numbers)
+        unique_count = len(set(nhs_numbers))
+        duplicate_count = total_count - unique_count
+        logger.info(f"there are {duplicate_count} duplicated nhs numbers")
 
         if not nhs_numbers:
             logger.info(f"No NHS numbers found under ODS code: {ods_code}")

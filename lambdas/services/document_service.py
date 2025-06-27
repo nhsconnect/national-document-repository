@@ -81,7 +81,8 @@ class DocumentService:
             search_condition=ods_code,
             query_filter=NotDeleted,
         )
-        nhs_numbers = list({document.nhs_number for document in documents})
+        # nhs_numbers = list({document.nhs_number for document in documents})
+        nhs_numbers = [document.nhs_number for document in documents]
         return nhs_numbers
 
     def delete_document_references(
