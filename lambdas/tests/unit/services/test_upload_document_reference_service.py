@@ -5,7 +5,11 @@ from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from models.document_reference import DocumentReference
 from services.upload_document_reference_service import UploadDocumentReferenceService
-from unit.conftest import MOCK_LG_BUCKET, MOCK_LG_TABLE_NAME, MOCK_STAGING_STORE_BUCKET
+from tests.unit.conftest import (
+    MOCK_LG_BUCKET,
+    MOCK_LG_TABLE_NAME,
+    MOCK_STAGING_STORE_BUCKET,
+)
 from utils.exceptions import DocumentServiceException, FileProcessingException
 
 
