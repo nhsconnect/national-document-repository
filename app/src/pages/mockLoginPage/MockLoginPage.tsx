@@ -13,12 +13,11 @@ type LoginFormData = {
 const MockLoginPage = () => {
     const [key, setKey] = useState('');
     const [odsCode, setOdsCode] = useState('');
-    const [repositoryRole, setRepositoryRole] = useState('');
+    const [repositoryRole, setRepositoryRole] = useState('gp_admin');
     const navigate = useNavigate();
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log({ key, odsCode, repositoryRole });
 
         const formData: LoginFormData = { key, odsCode, repositoryRole };
         const json = JSON.stringify(formData);
@@ -30,8 +29,6 @@ const MockLoginPage = () => {
         queryParams.append('code', encodedData);
         queryParams.append('state', mockState);
 
-        const full = `${routes.AUTH_CALLBACK}?${queryParams.toString()}`;
-        console.log(full);
         navigate(`${routes.AUTH_CALLBACK}?${queryParams.toString()}`);
     };
 
@@ -50,7 +47,7 @@ const MockLoginPage = () => {
                                         className="nhsuk-input"
                                         id="key"
                                         name="key"
-                                        type="text"
+                                        type="password"
                                         value={key}
                                         onChange={(e) => setKey(e.target.value)}
                                         required
@@ -91,7 +88,6 @@ const MockLoginPage = () => {
                                         onChange={(e) => setRepositoryRole(e.target.value)}
                                         required
                                     >
-                                        <option value="">Select an option</option>
                                         <option value="gp_admin">GP Admin</option>
                                         <option value="gp_clinical">GP Clinical</option>
                                         <option value="pcse">PCSE</option>
