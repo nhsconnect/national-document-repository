@@ -210,8 +210,10 @@ class IMAlertingService:
             logger.error("Missing severity value in alarm tags")
             return
 
+        severity_value = severity_value.upper()
+
         try:
-            alarm_severity = AlarmSeverity(severity_value)
+            alarm_severity = AlarmSeverity[severity_value].value
             alarm_entry.history.append(alarm_severity)
         except ValueError:
             logger.error(f"Invalid severity value: {severity_value}")
@@ -388,7 +390,7 @@ class IMAlertingService:
         return underscore_stripped_string.rsplit(" ", 1)[0].title()
 
     def unpack_alarm_history(self, alarm_history: list) -> str:
-        return " ".join(alarm_history)
+        return " ".join(severity.additional_value for severity in alarm_history)
 
     def create_action_url(self, base_url: str, alarm_name: str) -> str:
         url_extension = alarm_name.replace(" ", "%20")
@@ -428,7 +430,7 @@ class IMAlertingService:
             )
 
     def compose_teams_message(self, alarm_entry: AlarmEntry):
-        with open("teams_alert.json", "r") as f:
+        with open(f"{os.getcwd()}/models/templates/teams_alert.json", "r") as f:
             template_content = f.read()
 
         template = Template(template_content)
@@ -563,7 +565,7 @@ class IMAlertingService:
             )
 
     def compose_slack_message_blocks(self, alarm_entry: AlarmEntry):
-        with open("slack_alert_blocks.json", "r") as f:
+        with open(f"{os.getcwd()}/models/templates/slack_alert_blocks.json", "r") as f:
             template_content = f.read()
 
         template = Template(template_content)
