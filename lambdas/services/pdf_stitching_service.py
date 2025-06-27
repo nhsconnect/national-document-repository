@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from io import BytesIO
 from itertools import islice
+from math import ceil
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -341,7 +342,12 @@ class PdfStitchingService:
         logger.info(f"{len(nhs_numbers)} found under ODS code: {ods_code}")
 
         sqs_service = SQSService()
-        for chunk in batch(nhs_numbers, batch_size):
+        total_batches = ceil(len(nhs_numbers) / batch_size)
+        logger.info(
+            f"total batches is {total_batches} batches for ODS code: {ods_code}"
+        )
+
+        for batch_index, chunk in enumerate(batch(nhs_numbers, batch_size), start=1):
             messages = []
             for nhs_number in chunk:
                 logger.info(f"Preparing message for NHS number: {nhs_number}")
@@ -351,14 +357,16 @@ class PdfStitchingService:
                 ).model_dump_json()
                 messages.append(message)
             try:
+                logger.info(f"test sending batch_index = {batch_index}")
                 sqs_service.send_message_batch_standard(
                     queue_url=queue_url,
                     messages=messages,
                     delay_between_batch_messages=delay_between_batch_messages,
                 )
+                logger.info(f"test send batch_index = {batch_index}")
             except Exception as e:
                 logger.error(f"Error sending batch to SQS: {str(e)}")
             # 1 batch is 10 messages
             # we can send up to 300 messages a second
             # a 0.2s delay means 5 batches, so 50 messages
-            time.sleep(0.2)
+            time.sleep(0.1)

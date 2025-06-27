@@ -21,10 +21,12 @@ class SQSService:
     def send_message_batch_standard(
         self, queue_url: str, messages: list[str], delay_between_batch_messages=0
     ):
+        base_delay = 1
         entries = []
         for i, body in enumerate(messages):
             delay = min(
-                i * delay_between_batch_messages, 900  # max delay is 900s (15mins)
+                base_delay + i * delay_between_batch_messages,
+                900,  # max delay is 900s (15mins)
             )
             entries.append(
                 {

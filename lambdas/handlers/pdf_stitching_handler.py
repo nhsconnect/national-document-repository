@@ -54,7 +54,8 @@ def handle_sqs_request(event, pdf_stitching_service):
             message_body = json.loads(message.get("body", ""))
             stitching_message = PdfStitchingSqsMessage.model_validate(message_body)
             request_context.patient_nhs_no = stitching_message.nhs_number
-            pdf_stitching_service.process_message(stitching_message=stitching_message)
+            # pdf_stitching_service.process_message(stitching_message=stitching_message)
+            logger.info("test ingested message")
         except (JSONDecodeError, ValidationError) as e:
             logger.error("Malformed PDF Stitching SQS message")
             logger.error(
@@ -69,6 +70,7 @@ def handle_sqs_request(event, pdf_stitching_service):
                 ).create_api_gateway_response()
             raise e
 
+    logger.info("test ingested batch")
     return ApiGatewayResponse(
         200, "Successfully processed PDF stitching SQS message", "GET"
     ).create_api_gateway_response()
