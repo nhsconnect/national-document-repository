@@ -63,7 +63,7 @@
         "web-vitals": "^2.1.4"
     },
     "devDependencies": {
-        "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+        "@babel/plugin-transform-private-property-in-object": "^7.21.11",
         "@types/jest-axe": "^3.5.9",
         "@types/node": "^22.15.24",
         "@types/react": "^18.2.19",
@@ -77,10 +77,11 @@
         "cypress": "^14.2.1",
         "cypress-real-events": "^1.14.0",
         "eslint": "^9.29.0",
-        "eslint-config-prettier": "^9.0.0",
-        "eslint-plugin-cypress": "^2.14.0",
-        "eslint-plugin-prettier": "^5.0.0",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-plugin-cypress": "^5.1.0",
+        "eslint-plugin-prettier": "^5.5.1",
         "eslint-plugin-unused-imports": "^4.1.4",
+        "typescript-eslint": "^8.35.0",
         "husky": "^8.0.3",
         "jest-axe": "^8.0.0",
         "jsdom": "^26.1.0",

@@ -18,9 +18,8 @@ const compat = new FlatCompat({
 });
 
 export default defineConfig([globalIgnores(["**/*.MD", "**/react-build-env-checker.js"]), {
-    extends: fixupConfigRules(
-        compat.extends("react-app", "plugin:prettier/recommended", "plugin:cypress/recommended"),
-    ),
+    
+    ...compat.extends("react-app", "plugin:prettier/recommended"),
 
     plugins: {
         "unused-imports": unusedImports,
