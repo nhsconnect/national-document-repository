@@ -14,27 +14,7 @@ logger = LoggingService(__name__)
 
 
 class MockOidcService:
-    VERIFY_ALL = {
-        "verify_signature": True,
-        "verify_exp": True,
-        "verify_nbf": True,
-        "verify_iat": True,
-        "verify_aud": True,
-        "verify_iss": True,
-    }
-
-    AAL_EXEMPT_ENVIRONMENTS = ["dev", "test", "pre-prod"]
-
     def __init__(self):
-        self._client_id = ""
-        self._client_secret = ""
-        self._oidc_issuer_url = ""
-        self._oidc_token_url = ""
-        self._oidc_userinfo_url = ""
-        self._oidc_callback_uri = ""
-        self._oidc_jwks_url = ""
-        self.oidc_client = None
-        self.environment = ""
         self.ssm_prefix = getattr(request_context, "auth_ssm_prefix", "")
         self.ssm_service = SSMService()
 
