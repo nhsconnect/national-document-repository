@@ -39,20 +39,20 @@ class LoginService:
     def generate_session(self, state, auth_code) -> dict:
         logger.info("Login process started")
 
-        try:
-            if getattr(request_context, "auth_ssm_prefix") == "/auth/smartcard/":
+        if getattr(request_context, "auth_ssm_prefix") == "/auth/smartcard/":
+            try:
                 if not self.have_matching_state_value_in_record(state):
                     logger.error(
                         f"Mismatching state values. Cannot find state {state} in record",
                         {"Result": "Unsuccessful login"},
                     )
                     raise LoginException(401, LambdaError.LoginBadState)
-        except ClientError as e:
-            logger.error(
-                f"{LambdaError.LoginClient.to_str()}: {str(e)}",
-                {"Result": "Unsuccessful login"},
-            )
-            raise LoginException(500, LambdaError.LoginClient)
+            except ClientError as e:
+                logger.error(
+                    f"{LambdaError.LoginClient.to_str()}: {str(e)}",
+                    {"Result": "Unsuccessful login"},
+                )
+                raise LoginException(500, LambdaError.LoginClient)
 
         try:
             if getattr(request_context, "auth_ssm_prefix") == "/auth/mock/":

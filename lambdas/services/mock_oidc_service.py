@@ -2,6 +2,7 @@ import datetime
 import json
 import random
 from typing import Dict, Tuple
+from urllib.parse import unquote
 
 from models.oidc_models import AccessToken, IdTokenClaimSet
 from services.base.ssm_service import SSMService
@@ -38,64 +39,58 @@ class MockOidcService:
         self.ssm_service = SSMService()
 
     def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
+        decoded_auth_code = unquote(auth_code)
+        deserialised_auth_code = json.loads(decoded_auth_code)
 
-        deserialised_auth_code = json.loads(auth_code)
         key = deserialised_auth_code["key"]
-        repository_role = deserialised_auth_code["repositoryRole"]
-        role_code_string_list = self.ssm_service.get_ssm_parameter(
-            "auth/smartcard/role/" + repository_role
-        )
-        role_code = role_code_string_list.split(",")[0]
         ssm_key = self.ssm_service.get_ssm_parameter(self.ssm_prefix + "KEY")
-        expiry_time = int(
-            (datetime.datetime.now() + datetime.timedelta(minutes=30)).timestamp()
-        )
 
         if key == ssm_key:
-            id_token_claimset = IdTokenClaimSet("Mock", "Mock1", expiry_time, role_code)
+            expiry_time = int(
+                (datetime.datetime.now() + datetime.timedelta(minutes=30)).timestamp()
+            )
+            id_token_claimset = IdTokenClaimSet(
+                sub="MOCK_SUB",
+                sid="MOCK_SID",
+                exp=expiry_time,
+                selected_roleid="MOCK_SELECTED_ROLEID",
+            )
             access_token = AccessToken(auth_code)
             return access_token, id_token_claimset
-        logger.error("Provided key does not match Key stored in SSM")
-        raise OidcApiException("Failed to retrieve access token from ID Provider")
+        else:
+            logger.error("Provided key does not match key stored in SSM")
+            raise OidcApiException(
+                "Failed to retrieve access token from mock_oidc_service"
+            )
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
-        """
-        Fetch user information from the OIDC provider.
+        decoded_access_token = unquote(access_token)
+        deserialised_access_token = json.loads(decoded_access_token)
 
-        Args:
-            access_token: The OAuth access token
-
-        Returns:
-            User information as a dictionary
-
-        Raises:
-            OidcApiException: If the request fails
-        """
-        logger.info(f"Access token for user info request: {access_token}")
-
-        deserialised_access_token = json.loads(access_token)
         ods_code, repository_role = (
             deserialised_access_token["odsCode"],
             deserialised_access_token["repositoryRole"],
         )
-        role_code = self.ssm_service.get_ssm_parameter(
-            "auth/smartcard/role/" + repository_role
-        )
 
         if deserialised_access_token:
+            role_code_string_list = self.ssm_service.get_ssm_parameter(
+                f"/auth/smartcard/role/{repository_role}"
+            )
+            role_code = role_code_string_list.split(",")[0]
+
             user_info = {
                 "nhsid_nrbac_roles": [
                     {
-                        "person_roleid": role_code,  # TODO: Replace role_code with an actual selected_role_id
+                        "person_roleid": "MOCK_SELECTED_ROLEID",
                         "org_code": ods_code,
+                        "role_code": role_code,
                     }
                 ],
-                "nhsid_useruid": random.randint(
-                    10000, 99999
-                ),  # TODO: What value should this be set to?
+                "nhsid_useruid": random.randint(10000, 99999),
             }
+
             logger.info(f"User info: {user_info}")
             return user_info
         else:
-            logger.error("Got error response from OIDC provider:")
+            logger.error("Got error response from mock_oidc_service:")
             raise OidcApiException("Failed to retrieve userinfo")
