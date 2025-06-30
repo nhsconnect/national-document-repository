@@ -79,18 +79,3 @@ def test_send_message_batch_standard_success(set_env, mocked_sqs_client, service
     args = mocked_sqs_client.send_message_batch.call_args[1]
     assert args["QueueUrl"] == queue_url
     assert len(args["Entries"]) == 2
-
-
-def test_send_message_batch_standard_failure(set_env, mocked_sqs_client, service):
-    queue_url = MOCK_LG_METADATA_SQS_QUEUE
-    messages = ["bad-msg"]
-
-    mocked_sqs_client.send_message_batch.return_value = {
-        "Successful": [],
-        "Failed": [{"Id": "some-id"}],
-    }
-
-    with pytest.raises(Exception) as e:
-        service.send_message_batch_standard(queue_url, messages)
-
-    assert "Some messages failed to send" in str(e.value)

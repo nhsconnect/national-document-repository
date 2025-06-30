@@ -18,8 +18,9 @@ class SQSService:
     def send_message_standard(self, queue_url: str, message_body: str):
         self.client.send_message(QueueUrl=queue_url, MessageBody=message_body)
 
-    def send_message_batch_standard(self, queue_url: str, messages: list[str]):
-        base_delay = 150
+    def send_message_batch_standard(
+        self, queue_url: str, messages: list[str], base_delay=0
+    ):
         entries = []
         for i, body in enumerate(messages):
             delay = base_delay
@@ -35,17 +36,7 @@ class SQSService:
             QueueUrl=queue_url,
             Entries=entries,
         )
-
-        if "Failed" in response and response["Failed"]:
-            failed_ids = [f["Id"] for f in response["Failed"]]
-            failed_messages = [
-                entry["MessageBody"] for entry in entries if entry["Id"] in failed_ids
-            ]
-            error_msg = (
-                f"Some messages failed to send. Failed IDs: {failed_ids}. "
-                f"Failed message bodies: {failed_messages}"
-            )
-            raise Exception(error_msg)
+        return response
 
     def send_message_with_attr(
         self, queue_url: str, message_body: str, attributes: dict

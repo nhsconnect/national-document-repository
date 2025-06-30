@@ -44,7 +44,7 @@ def lambda_handler(event, context):
 @validate_sqs_event
 def handle_sqs_request(event, pdf_stitching_service):
     request_context.app_interaction = LoggingAppInteraction.STITCH_RECORD.value
-
+    logger.info("Received PDF Stitching SQS message event")
     event_message_records = event.get("Records", [])
     for message in event_message_records:
         try:

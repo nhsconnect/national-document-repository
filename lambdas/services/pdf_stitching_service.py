@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from io import BytesIO
 from itertools import islice
+from typing import Iterable, Iterator, List
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -24,13 +25,14 @@ from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
+from utils.exceptions import InvalidMessageException
 from utils.lambda_exceptions import PdfStitchingException
 from utils.utilities import DATE_FORMAT, create_reference_id
 
 logger = LoggingService(__name__)
 
 
-def batch(iterable, size):
+def batch(iterable: Iterable[str], size: int) -> Iterator[List[str]]:
     it = iter(iterable)
     while True:
         chunk = list(islice(it, size))
@@ -330,6 +332,7 @@ class PdfStitchingService:
 
     def process_manual_trigger(self, ods_code: str, queue_url):
         batch_size = 10
+        base_delay = 150
         nhs_numbers = self.document_service.get_nhs_numbers_based_on_ods_code(
             ods_code=ods_code
         )
@@ -349,10 +352,23 @@ class PdfStitchingService:
                 ).model_dump_json()
                 messages.append(message)
             try:
-                sqs_service.send_message_batch_standard(
-                    queue_url=queue_url, messages=messages
+                response = sqs_service.send_message_batch_standard(
+                    queue_url=queue_url, messages=messages, base_delay=base_delay
                 )
-            except Exception as e:
+                if response.get("Failed"):
+                    failed_ids = [f["Id"] for f in response["Failed"]]
+                    failed_messages = [
+                        entry["MessageBody"]
+                        for entry in messages
+                        if any(entry in m for m in failed_ids)
+                    ]
+                    error_msg = (
+                        f"Some messages failed to send. Failed IDs: {failed_ids}. "
+                        f"Failed message bodies: {failed_messages}"
+                    )
+                    logger.error(error_msg)
+                    raise InvalidMessageException(error_msg)
+            except (InvalidMessageException, Exception) as e:
                 logger.error(f"Error sending batch to SQS: {str(e)}")
             # 1 batch is 10 messages
             # we can send up to 300 messages a second
