@@ -45,19 +45,15 @@ def lambda_handler(event, context):
 def handle_sqs_request(event, pdf_stitching_service):
     request_context.app_interaction = LoggingAppInteraction.STITCH_RECORD.value
 
-    logger.info("Received PDF Stitching SQS message event")
-    event_message_records = event.get("Records")
-
+    event_message_records = event.get("Records", [])
     for message in event_message_records:
         try:
             request_context.patient_nhs_no = ""
             message_body = json.loads(message.get("body", ""))
             stitching_message = PdfStitchingSqsMessage.model_validate(message_body)
             request_context.patient_nhs_no = stitching_message.nhs_number
-            # pdf_stitching_service.process_message(stitching_message=stitching_message)
-            logger.info("test ingested message")
+            pdf_stitching_service.process_message(stitching_message=stitching_message)
         except (JSONDecodeError, ValidationError) as e:
-            logger.error("Malformed PDF Stitching SQS message")
             logger.error(
                 f"Failed to parse PDF stitching from SQS message: {str(e)}",
                 {"Results": "Failed to stitch PDF"},
@@ -70,7 +66,6 @@ def handle_sqs_request(event, pdf_stitching_service):
                 ).create_api_gateway_response()
             raise e
 
-    logger.info("test ingested batch")
     return ApiGatewayResponse(
         200, "Successfully processed PDF stitching SQS message", "GET"
     ).create_api_gateway_response()

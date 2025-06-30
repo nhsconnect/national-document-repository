@@ -22,7 +22,7 @@ class MockPdsApiService(PatientSearch):
 
         parent_dir_of_this_file = os.path.join(os.path.dirname(__file__), os.pardir)
         all_mock_files = glob(
-            "../services/mock_data/*.json", root_dir=parent_dir_of_this_file
+            "services/mock_data/*.json", root_dir=parent_dir_of_this_file
         )
 
         try:

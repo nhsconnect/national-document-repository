@@ -58,19 +58,28 @@ class DocumentService:
         query_filter: Attr | ConditionBase = None,
     ) -> list[DocumentReference]:
         documents = []
+        exclusive_start_key = None
 
-        response = self.dynamo_service.query_table_by_index(
-            table_name=table,
-            index_name=index_name,
-            search_key=search_key,
-            search_condition=search_condition,
-            requested_fields=DocumentReferenceMetadataFields.list(),
-            query_filter=query_filter,
-        )
+        while True:
+            response = self.dynamo_service.query_table_by_index(
+                table_name=table,
+                index_name=index_name,
+                search_key=search_key,
+                search_condition=search_condition,
+                requested_fields=DocumentReferenceMetadataFields.list(),
+                query_filter=query_filter,
+                exclusive_start_key=exclusive_start_key,
+            )
 
-        for item in response["Items"]:
-            document = DocumentReference.model_validate(item)
-            documents.append(document)
+            for item in response["Items"]:
+                document = DocumentReference.model_validate(item)
+                documents.append(document)
+
+            if "LastEvaluatedKey" in response:
+                exclusive_start_key = response["LastEvaluatedKey"]
+            else:
+                break
+
         return documents
 
     def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
@@ -81,8 +90,7 @@ class DocumentService:
             search_condition=ods_code,
             query_filter=NotDeleted,
         )
-        # nhs_numbers = list({document.nhs_number for document in documents})
-        nhs_numbers = [document.nhs_number for document in documents]
+        nhs_numbers = list({document.nhs_number for document in documents})
         return nhs_numbers
 
     def delete_document_references(
