@@ -149,15 +149,15 @@ class IMAlertingService:
             # TODO Add the ability to handle AlarmState.INSUFFICIENT_DATA
 
     def create_alarm_entry(self, alarm_entry: AlarmEntry):
-        new_entry = alarm_entry.model_dump(
-            by_alias=True,
-            exclude_none=True,
-        )
         logger.info(
-            f"Creating new alarm entry in {self.table_name} table for {alarm_entry.alarm_name_metric}"
+            f"Creating new alarm entry in {self.table_name} table for {alarm_entry.alarm_name_metric}. "
+            f"Alarm entry will be saved as {alarm_entry}"
         )
+
         try:
-            self.dynamo_service.create_item(table_name=self.table_name, item=new_entry)
+            self.dynamo_service.create_item(
+                table_name=self.table_name, item=alarm_entry.to_dynamo()
+            )
         except ClientError:
             logger.error(
                 f"Failed to create new alarm entry in {self.table_name} table for {alarm_entry.alarm_name_metric}"
@@ -213,7 +213,7 @@ class IMAlertingService:
         severity_value = severity_value.upper()
 
         try:
-            alarm_severity = AlarmSeverity[severity_value].value
+            alarm_severity = AlarmSeverity[severity_value]
             alarm_entry.history.append(alarm_severity)
         except ValueError:
             logger.error(f"Invalid severity value: {severity_value}")
@@ -232,7 +232,7 @@ class IMAlertingService:
             )
 
             return (
-                [AlarmEntry.model_validate(item) for item in results["Items"]]
+                [AlarmEntry.from_dynamo(item) for item in results["Items"]]
                 if results
                 else []
             )
@@ -244,7 +244,6 @@ class IMAlertingService:
             logger.error(
                 f"Unexpected error while checking if alarm {alarm_name} exists on alarm table. Exception is: {e}"
             )
-        # If there's an error getting the history, return an empty list, we'll attempt to create a new entry
         return []
 
     def is_last_updated(self, alarm_entry: AlarmEntry) -> bool:
@@ -256,7 +255,7 @@ class IMAlertingService:
                     AlarmHistoryField.TIMECREATED: alarm_entry.time_created,
                 },
             )
-            entry_to_compare = AlarmEntry.model_validate(response["Item"])
+            entry_to_compare = AlarmEntry.from_dynamo(response["Item"])
 
             if alarm_entry.last_updated >= entry_to_compare.last_updated:
                 logger.info(
@@ -276,10 +275,12 @@ class IMAlertingService:
             return False
 
     def update_alarm_history_table(self, alarm_entry: AlarmEntry):
-        logger.info(f"Updating alarm table entry for: {alarm_entry.alarm_name_metric}")
+        logger.info(
+            f"Updating alarm table entry for: {alarm_entry.alarm_name_metric}. Alarm entry will be saved as {alarm_entry}"
+        )
 
         fields_to_update = {
-            AlarmHistoryField.HISTORY: alarm_entry.history,
+            AlarmHistoryField.HISTORY: alarm_entry.get_alarm_severity_list_as_string(),
             AlarmHistoryField.LASTUPDATED: int(datetime.now().timestamp()),
             AlarmHistoryField.TIMETOEXIST: alarm_entry.time_to_exist,
         }
@@ -389,8 +390,17 @@ class IMAlertingService:
         underscore_stripped_string = alarm_name.replace("_", " ")
         return underscore_stripped_string.rsplit(" ", 1)[0].title()
 
-    def unpack_alarm_history(self, alarm_history: list) -> str:
-        return " ".join(severity.additional_value for severity in alarm_history)
+    def unpack_alarm_history_unicode(self, alarm_history: list[AlarmSeverity]) -> str:
+        alarm_history_unicodes = [severity.value for severity in alarm_history]
+        return " ".join(alarm_history_unicodes)
+
+    def unpack_alarm_history_emoji_name(
+        self, alarm_history: list[AlarmSeverity]
+    ) -> str:
+        alarm_history_emoji_names = [
+            severity.additional_value for severity in alarm_history
+        ]
+        return " ".join(alarm_history_emoji_names)
 
     def create_action_url(self, base_url: str, alarm_name: str) -> str:
         url_extension = alarm_name.replace(" ", "%20")
@@ -437,7 +447,7 @@ class IMAlertingService:
 
         context = {
             "alarm_entry": alarm_entry,
-            "alarm_history": self.unpack_alarm_history(alarm_entry.history),
+            "alarm_history": self.unpack_alarm_history_unicode(alarm_entry.history),
             "formatted_time": self.format_time_string(alarm_entry.last_updated),
             "action_url": self.create_action_url(
                 self.confluence_base_url, alarm_entry.alarm_name_metric
@@ -572,7 +582,7 @@ class IMAlertingService:
 
         context = {
             "alarm_entry": alarm_entry,
-            "alarm_history": self.unpack_alarm_history(alarm_entry.history),
+            "alarm_history": self.unpack_alarm_history_emoji_name(alarm_entry.history),
             "formatted_time": self.format_time_string(alarm_entry.last_updated),
             "action_url": self.create_action_url(
                 self.confluence_base_url, alarm_entry.alarm_name_metric

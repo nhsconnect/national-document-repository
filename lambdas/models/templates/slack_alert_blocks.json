@@ -3,7 +3,7 @@
         "type": "header",
         "text": {
             "type": "plain_text",
-            "text": "{{ alarm_entry.alarm_name_metric }} Alert: {{ alarm_entry.history[-1] }}"
+            "text": "{{ alarm_entry.alarm_name_metric }} Alert: {{ alarm_entry.history[-1].additional_value }}"
         }
     },
     {
