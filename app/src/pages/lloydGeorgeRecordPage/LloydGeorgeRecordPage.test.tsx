@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import {
     buildPatientDetails,
@@ -15,7 +15,6 @@ import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import SessionProvider from '../../providers/sessionProvider/SessionProvider';
-import { act } from 'react-dom/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock, Mocked } from 'vitest';
 
 vi.mock('axios');
