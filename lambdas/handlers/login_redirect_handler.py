@@ -31,7 +31,7 @@ def lambda_handler(event, context):
 
     configuration_service = DynamicConfigurationService()
     configuration_service.set_auth_ssm_prefix()
-    if getattr(request_context, "auth_ssm_prefix") == "/auth/mock/":
+    if configuration_service.is_auth_mocked():
         mock_login_redirect_service = MockLoginRedirectService()
         location_header = mock_login_redirect_service.prepare_redirect_response(event)
         return ApiGatewayResponse(303, "", "GET").create_api_gateway_response(

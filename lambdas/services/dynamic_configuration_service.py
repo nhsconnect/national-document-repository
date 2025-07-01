@@ -28,3 +28,6 @@ class DynamicConfigurationService:
         else:
             request_context.auth_ssm_prefix = "/auth/smartcard/"
         logger.info("Setting auth ssm prefix to " + request_context.auth_ssm_prefix)
+
+    def is_auth_mocked(self) -> bool:
+        return getattr(request_context, "auth_ssm_prefix", "") == "/auth/mock/"

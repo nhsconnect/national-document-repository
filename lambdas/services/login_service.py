@@ -29,17 +29,19 @@ logger = LoggingService(__name__)
 
 
 class LoginService:
-    def __init__(self):
+    def __init__(self, mock_login_enabled: bool = False):
         self.db_service = DynamoDBService()
         self.token_handler_ssm_service = TokenHandlerSSMService()
-        self.oidc_service = OidcService()
-        self.mock_oidc_service = MockOidcService()
         self.ods_api_service = OdsApiService()
+        self.oidc_service = OidcService()
+        self.mock_login_enabled = mock_login_enabled
+        if mock_login_enabled:
+            self.mock_oidc_service = MockOidcService()
 
     def generate_session(self, state, auth_code) -> dict:
         logger.info("Login process started")
 
-        if getattr(request_context, "auth_ssm_prefix") == "/auth/smartcard/":
+        if not self.mock_login_enabled:
             try:
                 if not self.have_matching_state_value_in_record(state):
                     logger.error(
@@ -55,7 +57,7 @@ class LoginService:
                 raise LoginException(500, LambdaError.LoginClient)
 
         try:
-            if getattr(request_context, "auth_ssm_prefix") == "/auth/mock/":
+            if self.mock_login_enabled:
                 logger.info("Fetching access token from mock_oidc_service")
                 access_token, id_token_claim_set = self.mock_oidc_service.fetch_tokens(
                     auth_code

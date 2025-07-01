@@ -34,7 +34,9 @@ def lambda_handler(event, context):
 
         configuration_service = DynamicConfigurationService()
         configuration_service.set_auth_ssm_prefix()
-        login_service = LoginService()
+        login_service = LoginService(
+            mock_login_enabled=configuration_service.is_auth_mocked()
+        )
 
         response = login_service.generate_session(state, auth_code)
         logger.audit_splunk_info(

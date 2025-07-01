@@ -27,6 +27,7 @@ def mock_configuration_service(mocker):
         request_context.auth_ssm_prefix = "/auth/smartcard/"
 
     mock_instance.set_auth_ssm_prefix.side_effect = fake_set_auth_ssm_prefix
+    mock_instance.is_auth_mocked.return_value = False
     yield mock_service
 
 
