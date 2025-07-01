@@ -10,7 +10,7 @@ class StitchTrace(BaseModel):
     model_config = ConfigDict(
         alias_generator=to_pascal,
         use_enum_values=True,
-        populate_by_name=True,
+        validate_by_name=True,
     )
 
     id: str = Field(alias="ID", default_factory=lambda: str(uuid.uuid4()))

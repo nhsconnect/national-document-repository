@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from io import BytesIO
 from random import shuffle
 from unittest.mock import call
@@ -36,6 +37,7 @@ TEST_DOCUMENT_REFERENCES = create_test_lloyd_george_doc_store_refs()
 TEST_1_OF_1_DOCUMENT_REFERENCE = create_singular_test_lloyd_george_doc_store_ref()
 
 
+@freeze_time("2025-01-01 12:00:00")
 @pytest.fixture
 def mock_service(set_env, mocker):
     service = PdfStitchingService()
@@ -168,9 +170,7 @@ def test_process_message(
     test_message_body = json.loads(stitching_queue_message_event["Records"][0]["body"])
     test_message = PdfStitchingSqsMessage.model_validate(test_message_body)
     test_stream = BytesIO()
-    test_sorted_keys = [
-        reference.get_file_key() for reference in TEST_DOCUMENT_REFERENCES
-    ]
+    test_sorted_keys = [reference.s3_file_key for reference in TEST_DOCUMENT_REFERENCES]
 
     mock_sort_multipart_object_keys.return_value = test_sorted_keys
     mock_process_stitching.return_value = test_stream
@@ -180,7 +180,8 @@ def test_process_message(
     mock_service.process_message(test_message)
 
     mock_create_stitched_reference.assert_called_once_with(
-        document_reference=TEST_DOCUMENT_REFERENCES[0]
+        document_reference=TEST_DOCUMENT_REFERENCES[0],
+        stitch_file_size=sys.getsizeof(test_stream),
     )
     mock_sort_multipart_object_keys.assert_called_once_with()
     mock_process_stitching.assert_called_once_with(s3_object_keys=test_sorted_keys)
@@ -228,15 +229,15 @@ def test_process_message_handles_singular_or_none_references(
 )
 def test_create_stitched_reference(mock_service, mock_uuid, document_reference):
     assert not mock_service.stitched_reference
-
-    mock_service.create_stitched_reference(document_reference)
+    file_size = 1000000000
+    mock_service.create_stitched_reference(document_reference, file_size)
 
     actual = mock_service.stitched_reference
 
     assert actual.id == TEST_UUID
     assert actual.content_type == "application/pdf"
     assert actual.created == "2025-01-01T12:00:00.000000Z"
-    assert actual.deleted == ""
+    assert actual.deleted is None
     assert (
         actual.file_location == f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/{TEST_UUID}"
     )
@@ -249,6 +250,7 @@ def test_create_stitched_reference(mock_service, mock_uuid, document_reference):
     assert actual.uploaded is True
     assert actual.uploading is False
     assert actual.last_updated == 1735732800
+    assert actual.file_size == file_size
 
 
 def test_process_stitching(mock_service, mock_download_fileobj):
@@ -330,14 +332,18 @@ def test_migrate_multipart_references(mock_service):
             item={
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
-                "Deleted": "",
+                "DocumentScanCreation": "2024-01-01",
+                "DocStatus": "final",
+                "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[0].file_location}",
                 "FileName": f"{TEST_DOCUMENT_REFERENCES[0].file_name}",
                 "ID": f"{TEST_DOCUMENT_REFERENCES[0].id}",
                 "LastUpdated": 1704110400,
                 "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[0].nhs_number}",
+                "Status": "current",
                 "Uploaded": True,
                 "Uploading": False,
+                "Version": "1",
                 "VirusScannerResult": "Clean",
             },
         ),
@@ -346,12 +352,16 @@ def test_migrate_multipart_references(mock_service):
             item={
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
-                "Deleted": "",
+                "DocStatus": "final",
+                "DocumentScanCreation": "2024-01-01",
+                "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[1].file_location}",
                 "FileName": f"{TEST_DOCUMENT_REFERENCES[1].file_name}",
                 "ID": f"{TEST_DOCUMENT_REFERENCES[1].id}",
                 "LastUpdated": 1704110400,
                 "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[1].nhs_number}",
+                "Status": "current",
+                "Version": "1",
                 "Uploaded": True,
                 "Uploading": False,
                 "VirusScannerResult": "Clean",
@@ -362,12 +372,16 @@ def test_migrate_multipart_references(mock_service):
             item={
                 "ContentType": "application/pdf",
                 "Created": "2024-01-01T12:00:00.000Z",
-                "Deleted": "",
+                "DocStatus": "final",
+                "DocumentScanCreation": "2024-01-01",
+                "DocumentSnomedCodeType": "16521000000101",
                 "FileLocation": f"{TEST_DOCUMENT_REFERENCES[2].file_location}",
                 "FileName": f"{TEST_DOCUMENT_REFERENCES[2].file_name}",
                 "ID": f"{TEST_DOCUMENT_REFERENCES[2].id}",
                 "LastUpdated": 1704110400,
                 "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[2].nhs_number}",
+                "Status": "current",
+                "Version": "1",
                 "Uploaded": True,
                 "Uploading": False,
                 "VirusScannerResult": "Clean",
@@ -425,7 +439,8 @@ def test_migrate_multipart_references_handles_client_error_on_delete(
 
 @freeze_time("2024-01-01T12:00:00Z")
 def test_write_stitching_reference(mock_service, mock_uuid):
-    mock_service.create_stitched_reference(TEST_1_OF_1_DOCUMENT_REFERENCE)
+    file_size = 8000
+    mock_service.create_stitched_reference(TEST_1_OF_1_DOCUMENT_REFERENCE, file_size)
 
     mock_service.write_stitching_reference()
 
@@ -434,15 +449,20 @@ def test_write_stitching_reference(mock_service, mock_uuid):
         item={
             "ContentType": "application/pdf",
             "Created": "2024-01-01T12:00:00.000000Z",
-            "Deleted": "",
+            "DocStatus": "final",
+            "DocumentScanCreation": "2024-01-01",
+            "DocumentSnomedCodeType": "16521000000101",
             "CurrentGpOds": "Y12345",
             "FileLocation": f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/{TEST_UUID}",
             "FileName": f"{TEST_1_OF_1_DOCUMENT_REFERENCE.file_name}",
             "ID": f"{TEST_UUID}",
             "LastUpdated": TEST_1_OF_1_DOCUMENT_REFERENCE.last_updated,
             "NhsNumber": f"{TEST_1_OF_1_DOCUMENT_REFERENCE.nhs_number}",
+            "FileSize": 8000,
+            "Status": "current",
             "Uploaded": True,
             "Uploading": False,
+            "Version": "1",
             "VirusScannerResult": "Clean",
         },
     )
@@ -577,12 +597,16 @@ def test_rollback_reference_migration(mock_service):
                     "ContentType": "application/pdf",
                     "Created": TEST_DOCUMENT_REFERENCES[0].created,
                     "CurrentGpOds": TEST_DOCUMENT_REFERENCES[0].current_gp_ods,
-                    "Deleted": "",
+                    "DocStatus": "final",
+                    "DocumentScanCreation": "2024-01-01",
+                    "DocumentSnomedCodeType": "16521000000101",
                     "FileLocation": f"{TEST_DOCUMENT_REFERENCES[0].file_location}",
                     "FileName": f"{TEST_DOCUMENT_REFERENCES[0].file_name}",
                     "ID": f"{TEST_DOCUMENT_REFERENCES[0].id}",
                     "LastUpdated": 1704110400,
                     "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[0].nhs_number}",
+                    "Status": "current",
+                    "Version": "1",
                     "Uploaded": True,
                     "Uploading": False,
                     "VirusScannerResult": "Clean",
@@ -594,12 +618,16 @@ def test_rollback_reference_migration(mock_service):
                     "ContentType": "application/pdf",
                     "Created": TEST_DOCUMENT_REFERENCES[1].created,
                     "CurrentGpOds": TEST_DOCUMENT_REFERENCES[1].current_gp_ods,
-                    "Deleted": "",
+                    "DocStatus": "final",
+                    "DocumentScanCreation": "2024-01-01",
+                    "DocumentSnomedCodeType": "16521000000101",
                     "FileLocation": f"{TEST_DOCUMENT_REFERENCES[1].file_location}",
                     "FileName": f"{TEST_DOCUMENT_REFERENCES[1].file_name}",
                     "ID": f"{TEST_DOCUMENT_REFERENCES[1].id}",
                     "LastUpdated": 1704110400,
                     "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[1].nhs_number}",
+                    "Status": "current",
+                    "Version": "1",
                     "Uploaded": True,
                     "Uploading": False,
                     "VirusScannerResult": "Clean",
@@ -611,12 +639,16 @@ def test_rollback_reference_migration(mock_service):
                     "ContentType": "application/pdf",
                     "Created": TEST_DOCUMENT_REFERENCES[2].created,
                     "CurrentGpOds": TEST_DOCUMENT_REFERENCES[2].current_gp_ods,
-                    "Deleted": "",
+                    "DocStatus": "final",
+                    "DocumentScanCreation": "2024-01-01",
+                    "DocumentSnomedCodeType": "16521000000101",
                     "FileLocation": f"{TEST_DOCUMENT_REFERENCES[2].file_location}",
                     "FileName": f"{TEST_DOCUMENT_REFERENCES[2].file_name}",
                     "ID": f"{TEST_DOCUMENT_REFERENCES[2].id}",
                     "LastUpdated": 1704110400,
                     "NhsNumber": f"{TEST_DOCUMENT_REFERENCES[2].nhs_number}",
+                    "Status": "current",
+                    "Version": "1",
                     "Uploaded": True,
                     "Uploading": False,
                     "VirusScannerResult": "Clean",
