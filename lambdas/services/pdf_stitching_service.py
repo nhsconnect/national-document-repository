@@ -4,8 +4,6 @@ import time
 import uuid
 from datetime import datetime, timezone
 from io import BytesIO
-from itertools import islice
-from typing import Iterable, Iterator, List
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -27,18 +25,10 @@ from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
 from utils.exceptions import InvalidMessageException
 from utils.lambda_exceptions import PdfStitchingException
+from utils.sqs_utils import batch
 from utils.utilities import DATE_FORMAT, create_reference_id
 
 logger = LoggingService(__name__)
-
-
-def batch(iterable: Iterable[str], size: int) -> Iterator[List[str]]:
-    it = iter(iterable)
-    while True:
-        chunk = list(islice(it, size))
-        if not chunk:
-            break
-        yield chunk
 
 
 class PdfStitchingService:
