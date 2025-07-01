@@ -1,5 +1,6 @@
 from typing import Optional
 
+from enums.alarm_history_field import AlarmHistoryField
 from enums.alarm_severity import AlarmSeverity
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_pascal
@@ -20,13 +21,13 @@ class AlarmEntry(BaseModel):
     def to_dynamo(self):
         return {
             **self.model_dump(exclude={"history"}, by_alias=True),
-            "history": self.get_alarm_severity_list_as_string(),
+            AlarmHistoryField.HISTORY: self.get_alarm_severity_list_as_string(),
         }
 
     @classmethod
     def from_dynamo(cls, dynamo_entry):
-        dynamo_entry["history"] = [
-            AlarmSeverity[name] for name in dynamo_entry["history"]
+        dynamo_entry[AlarmHistoryField.HISTORY] = [
+            AlarmSeverity[name] for name in dynamo_entry[AlarmHistoryField.HISTORY]
         ]
         return cls(**dynamo_entry)
 

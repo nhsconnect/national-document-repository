@@ -125,6 +125,7 @@ class IMAlertingService:
         self.create_alarm_entry(new_entry)
         self.send_teams_alert(new_entry)
         self.send_initial_slack_alert(new_entry)
+        self.send_slack_response(new_entry)
 
     def handle_current_alarm_episode(
         self, alarm_entry: AlarmEntry, alarm_state: str, tags: dict
@@ -149,14 +150,16 @@ class IMAlertingService:
             # TODO Add the ability to handle AlarmState.INSUFFICIENT_DATA
 
     def create_alarm_entry(self, alarm_entry: AlarmEntry):
+        dynamodb_item = alarm_entry.to_dynamo()
+
         logger.info(
             f"Creating new alarm entry in {self.table_name} table for {alarm_entry.alarm_name_metric}. "
-            f"Alarm entry will be saved as {alarm_entry}"
+            f"dynamodb entry will be {dynamodb_item}"
         )
 
         try:
             self.dynamo_service.create_item(
-                table_name=self.table_name, item=alarm_entry.to_dynamo()
+                table_name=self.table_name, item=dynamodb_item
             )
         except ClientError:
             logger.error(
@@ -282,6 +285,7 @@ class IMAlertingService:
         fields_to_update = {
             AlarmHistoryField.HISTORY: alarm_entry.get_alarm_severity_list_as_string(),
             AlarmHistoryField.LASTUPDATED: int(datetime.now().timestamp()),
+            AlarmHistoryField.SLACKTIMESTAMP: alarm_entry.slack_timestamp,
             AlarmHistoryField.TIMETOEXIST: alarm_entry.time_to_exist,
         }
 
@@ -398,7 +402,7 @@ class IMAlertingService:
         self, alarm_history: list[AlarmSeverity]
     ) -> str:
         alarm_history_emoji_names = [
-            severity.additional_value for severity in alarm_history
+            f":{severity.additional_value}:" for severity in alarm_history
         ]
         return " ".join(alarm_history_emoji_names)
 
@@ -474,9 +478,9 @@ class IMAlertingService:
             response.raise_for_status()
             alarm_entry.slack_timestamp = json.loads(response.content)["ts"]
 
-            self.change_reaction(alarm_entry, "add")
-
             self.update_alarm_history_table(alarm_entry)
+
+            self.change_reaction(alarm_entry, "add")
         except HTTPError as e:
             logger.error(
                 f"Initial Slack alert returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
@@ -532,6 +536,10 @@ class IMAlertingService:
             "channel": alarm_entry.channel_id,
             "timestamp": alarm_entry.slack_timestamp,
         }
+
+        logger.info(
+            f"Changing Slack reaction {action} {emoji} reaction, change message sent to API is {change_message}"
+        )
 
         try:
             change_response = requests.post(
