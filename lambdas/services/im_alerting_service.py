@@ -407,8 +407,10 @@ class IMAlertingService:
         return " ".join(alarm_history_emoji_names)
 
     def create_action_url(self, base_url: str, alarm_name: str) -> str:
-        url_extension = alarm_name.replace(" ", "%20")
         search_query = "#:~:text="
+
+        url_extension = alarm_name.partition("_")[2]  # remove the "<ENV>_" prefix
+        url_extension.replace(" ", "%20")
 
         return f"{base_url}{search_query}{url_extension}"
 
@@ -418,13 +420,12 @@ class IMAlertingService:
         )
 
         try:
-            teams_message = self.compose_teams_message(alarm_entry)
-            payload = json.dumps(teams_message)
+            payload = self.compose_teams_message(alarm_entry)
 
             headers = {"Content-Type": "application/json"}
 
             response = requests.post(
-                self.webhook_url,
+                url=self.webhook_url,
                 headers=headers,
                 data=payload,
                 timeout=self.REQUEST_TIMEOUT_SECONDS,
@@ -468,7 +469,7 @@ class IMAlertingService:
 
         try:
             response = requests.post(
-                self.SLACK_POST_CHAT_API,
+                url=self.SLACK_POST_CHAT_API,
                 data=json.dumps(slack_message),
                 headers=self.slack_headers,
                 timeout=self.REQUEST_TIMEOUT_SECONDS,
@@ -503,7 +504,7 @@ class IMAlertingService:
 
         try:
             requests.post(
-                self.SLACK_POST_CHAT_API,
+                url=self.SLACK_POST_CHAT_API,
                 data=json.dumps(slack_message),
                 headers=self.slack_headers,
                 timeout=self.REQUEST_TIMEOUT_SECONDS,
@@ -543,7 +544,7 @@ class IMAlertingService:
 
         try:
             change_response = requests.post(
-                self.SLACK_REACTIONS_API + action,
+                url=self.SLACK_REACTIONS_API + action,
                 json=change_message,
                 headers=self.slack_headers,
             )
@@ -568,7 +569,7 @@ class IMAlertingService:
             }
 
             requests.post(
-                self.SLACK_UPDATE_CHAT_API,
+                url=self.SLACK_UPDATE_CHAT_API,
                 data=json.dumps(slack_message),
                 headers=self.slack_headers,
                 timeout=self.REQUEST_TIMEOUT_SECONDS,
