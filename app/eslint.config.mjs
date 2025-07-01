@@ -1,7 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
+import { fixupPluginRules } from "@eslint/compat";
 import unusedImports from "eslint-plugin-unused-imports";
-import cypress from "eslint-plugin-cypress";
+import pluginCypress from "eslint-plugin-cypress";
 import _import from "eslint-plugin-import";
 import globals from "globals";
 import path from "node:path";
@@ -20,10 +20,11 @@ const compat = new FlatCompat({
 export default defineConfig([globalIgnores(["**/*.MD", "**/react-build-env-checker.js"]), {
     
     ...compat.extends("react-app", "plugin:prettier/recommended"),
+    extends: [pluginCypress.configs.recommended],
 
     plugins: {
         "unused-imports": unusedImports,
-        cypress: fixupPluginRules(cypress),
+        cypress: pluginCypress,
         import: fixupPluginRules(_import),
     },
 
