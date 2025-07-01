@@ -97,7 +97,6 @@ class MNSNotificationService:
     ) -> None:
         if not patient_documents:
             return
-        update_needed = False
         for reference in patient_documents:
             logger.info("Updating patient document reference...")
 
@@ -105,7 +104,6 @@ class MNSNotificationService:
                 reference.current_gp_ods != updated_ods_code
                 or reference.custodian != updated_ods_code
             ):
-                update_needed = True
                 updated_custodian = updated_ods_code
                 if updated_ods_code in [
                     PatientOdsInactiveStatus.DECEASED,
@@ -115,12 +113,12 @@ class MNSNotificationService:
                 reference.current_gp_ods = updated_ods_code
                 reference.custodian = updated_custodian
                 reference.last_updated = int(datetime.now().timestamp())
-        if update_needed:
-            self.document_service.update_documents(
-                self.table,
-                patient_documents,
-                self.DOCUMENT_UPDATE_FIELDS,
-            )
+
+                self.document_service.update_document(
+                    self.table,
+                    reference,
+                    self.DOCUMENT_UPDATE_FIELDS,
+                )
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
         patient_details = self.pds_service.fetch_patient_details(nhs_number)

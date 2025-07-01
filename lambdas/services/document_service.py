@@ -139,21 +139,19 @@ class DocumentService:
         if file_exists:
             raise DocumentServiceException("Document located in S3 after deletion")
 
-    def update_documents(
+    def update_document(
         self,
         table_name: str,
-        document_references: list[DocumentReference],
+        document_reference: DocumentReference,
         update_fields_name: set[str] = None,
     ):
-
-        for reference in document_references:
-            self.dynamo_service.update_item(
-                table_name=table_name,
-                key_pair={DocumentReferenceMetadataFields.ID.value: reference.id},
-                updated_fields=reference.model_dump(
-                    exclude_none=True, by_alias=True, include=update_fields_name
-                ),
-            )
+        self.dynamo_service.update_item(
+            table_name=table_name,
+            key_pair={DocumentReferenceMetadataFields.ID.value: document_reference.id},
+            updated_fields=document_reference.model_dump(
+                exclude_none=True, by_alias=True, include=update_fields_name
+            ),
+        )
 
     def hard_delete_metadata_records(
         self, table_name: str, document_references: list[DocumentReference]

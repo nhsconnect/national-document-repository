@@ -170,10 +170,15 @@ class LoginService:
         logger.info(f"Smartcard Role: {smartcard_role}")
 
         if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
-            if self.has_pcse_org_ods_code(
+            if self.has_matching_org_ods_code(
                 organisation, self.token_handler_ssm_service.get_pcse_ods_code()
             ):
                 logger.info("PCSE: smartcard ODS identified")
+                return RepositoryRole.PCSE
+            elif self.has_matching_org_ods_code(
+                organisation, self.token_handler_ssm_service.get_itoc_ods_codes()
+            ):
+                logger.info("ITOC PCSE: smartcard ODS/role identified")
                 return RepositoryRole.PCSE
 
         if (
@@ -196,8 +201,16 @@ class LoginService:
         raise LoginException(401, LambdaError.LoginNoRole)
 
     @staticmethod
-    def has_pcse_org_ods_code(organisation: dict, ods_code: str) -> bool:
-        return organisation["org_ods_code"].upper() == ods_code.upper()
+    def has_matching_org_ods_code(
+        organisation: dict, ods_code: str | list[str]
+    ) -> bool:
+        org_ods_code = organisation["org_ods_code"].upper()
+        codes = (
+            [ods_code.upper()]
+            if isinstance(ods_code, str)
+            else [code.upper() for code in ods_code]
+        )
+        return org_ods_code in codes
 
     def issue_auth_token(
         self,

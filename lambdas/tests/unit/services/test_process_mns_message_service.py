@@ -240,11 +240,11 @@ def test_update_patient_ods_code_with_documents(mns_service, mock_document_refer
             datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
         )
 
-    mns_service.document_service.update_documents.assert_called_once_with(
-        mns_service.table,
-        mock_document_references,
-        mns_service.DOCUMENT_UPDATE_FIELDS,
-    )
+        mns_service.document_service.update_document.assert_any_call(
+            mns_service.table,
+            doc,
+            mns_service.DOCUMENT_UPDATE_FIELDS,
+        )
 
 
 @freeze_time(MOCK_UPDATE_TIME)
@@ -262,7 +262,11 @@ def test_update_patient_ods_code_with_deceased_status(
             datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
         )
 
-    mns_service.document_service.update_documents.assert_called_once()
+        mns_service.document_service.update_document.assert_any_call(
+            mns_service.table,
+            doc,
+            mns_service.DOCUMENT_UPDATE_FIELDS,
+        )
 
 
 @freeze_time(MOCK_UPDATE_TIME)
@@ -280,13 +284,17 @@ def test_update_patient_ods_code_with_suspended_status(
             datetime.fromisoformat(MOCK_UPDATE_TIME).timestamp()
         )
 
-    mns_service.document_service.update_documents.assert_called_once()
+        mns_service.document_service.update_document.assert_any_call(
+            mns_service.table,
+            doc,
+            mns_service.DOCUMENT_UPDATE_FIELDS,
+        )
 
 
 def test_update_patient_ods_code_no_documents(mns_service):
     mns_service.update_patient_ods_code([], NEW_ODS_CODE)
 
-    mns_service.document_service.update_documents.assert_not_called()
+    mns_service.document_service.update_document.assert_not_called()
 
 
 @freeze_time(MOCK_UPDATE_TIME)
@@ -299,7 +307,7 @@ def test_update_patient_ods_code_no_changes_needed(
 
     mns_service.update_patient_ods_code(mock_document_references, NEW_ODS_CODE)
 
-    mns_service.document_service.update_documents.assert_not_called()
+    mns_service.document_service.update_document.assert_not_called()
 
 
 def test_get_patient_documents(mns_service):
