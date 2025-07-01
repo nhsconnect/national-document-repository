@@ -13,14 +13,14 @@
         "type": "section",
         "text": {
             "type": "plain_text",
-            "text": "Alarm History: {{ alarm_history }}"
+            "text": "History: {{ alarm_history }}"
         }
     },
     {
         "type": "section",
         "text": {
             "type": "plain_text",
-            "text": "This state change happened at: {{ formatted_time }}"
+            "text": "Last state change: {{ formatted_time }}"
         }
     },
     {
