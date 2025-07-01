@@ -22,12 +22,12 @@
                     },
                     {
                         "type": "TextBlock",
-                        "text": "Alarm History: {{ alarm_history }}",
+                        "text": "History: {{ alarm_history }}",
                         "wrap": true
                     },
                     {
                         "type": "TextBlock",
-                        "text": "This state change happened at: {{ formatted_time }}",
+                        "text": "Last state change: {{ formatted_time }}",
                         "wrap": true
                     }
                 ],
