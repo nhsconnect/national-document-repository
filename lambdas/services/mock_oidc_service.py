@@ -47,30 +47,34 @@ class MockOidcService:
         decoded_access_token = unquote(access_token)
         deserialised_access_token = json.loads(decoded_access_token)
 
-        ods_code, repository_role = (
-            deserialised_access_token["odsCode"],
-            deserialised_access_token["repositoryRole"],
-        )
-
-        if deserialised_access_token:
-            role_code_string_list = self.ssm_service.get_ssm_parameter(
-                f"/auth/smartcard/role/{repository_role}"
+        try:
+            ods_code, repository_role = (
+                deserialised_access_token["odsCode"],
+                deserialised_access_token["repositoryRole"],
             )
-            role_code = role_code_string_list.split(",")[0]
 
-            user_info = {
-                "nhsid_nrbac_roles": [
-                    {
-                        "person_roleid": "MOCK_SELECTED_ROLEID",
-                        "org_code": ods_code,
-                        "role_code": role_code,
-                    }
-                ],
-                "nhsid_useruid": random.randint(10000, 99999),
-            }
+            if deserialised_access_token:
+                role_code_string_list = self.ssm_service.get_ssm_parameter(
+                    f"/auth/smartcard/role/{repository_role}"
+                )
+                role_code = role_code_string_list.split(",")[0]
 
-            logger.info(f"User info: {user_info}")
-            return user_info
-        else:
-            logger.error("Got error response from mock_oidc_service:")
+                user_info = {
+                    "nhsid_nrbac_roles": [
+                        {
+                            "person_roleid": "MOCK_SELECTED_ROLEID",
+                            "org_code": ods_code,
+                            "role_code": role_code,
+                        }
+                    ],
+                    "nhsid_useruid": random.randint(10000, 99999),
+                }
+
+                logger.info(f"User info: {user_info}")
+                return user_info
+            else:
+                logger.error("Got error response from mock_oidc_service:")
+                raise OidcApiException("Failed to retrieve userinfo")
+        except KeyError as error:
+            logger.error(f"Error while fetching userinfo: {error}")
             raise OidcApiException("Failed to retrieve userinfo")
