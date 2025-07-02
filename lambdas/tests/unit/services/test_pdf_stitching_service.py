@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import sys
@@ -177,8 +178,9 @@ def test_process_message(
     mock_retrieve_multipart_references.return_value = TEST_DOCUMENT_REFERENCES
 
     def set_stitched_reference(document_reference, stitch_file_size, *args, **kwargs):
-        mock_service.stitched_reference = document_reference
-        mock_service.stitched_reference.s3_file_key = "stitched/key.pdf"
+        copied_ref = copy.deepcopy(document_reference)
+        copied_ref.s3_file_key = "stitched/key.pdf"
+        mock_service.stitched_reference = copied_ref
 
     mock_create_stitched_reference.side_effect = set_stitched_reference
 
@@ -508,7 +510,7 @@ def test_sort_multipart_object_keys_sorts_references_and_returns_keys(mock_servi
 
     actual = mock_service.sort_multipart_object_keys()
 
-    assert expected == actual
+    assert actual == expected
 
 
 def test_sort_multipart_object_keys_raises_exception(mock_service):
