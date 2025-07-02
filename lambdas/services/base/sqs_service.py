@@ -18,12 +18,9 @@ class SQSService:
     def send_message_standard(self, queue_url: str, message_body: str):
         self.client.send_message(QueueUrl=queue_url, MessageBody=message_body)
 
-    def send_message_batch_standard(
-        self, queue_url: str, messages: list[str], base_delay=0
-    ):
+    def send_message_batch_standard(self, queue_url: str, messages: list[str], delay=0):
         entries = []
         for i, body in enumerate(messages):
-            delay = base_delay
             entries.append(
                 {
                     "Id": str(uuid.uuid4()),

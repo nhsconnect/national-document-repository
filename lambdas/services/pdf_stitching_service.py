@@ -343,7 +343,7 @@ class PdfStitchingService:
                 messages.append(message)
             try:
                 response = sqs_service.send_message_batch_standard(
-                    queue_url=queue_url, messages=messages, base_delay=base_delay
+                    queue_url, messages, base_delay
                 )
                 if response.get("Failed"):
                     failed_ids = [f["Id"] for f in response["Failed"]]
