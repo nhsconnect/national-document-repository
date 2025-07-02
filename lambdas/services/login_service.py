@@ -33,10 +33,8 @@ class LoginService:
         self.db_service = DynamoDBService()
         self.token_handler_ssm_service = TokenHandlerSSMService()
         self.ods_api_service = OdsApiService()
-        self.oidc_service = OidcService()
         self.mock_login_enabled = mock_login_enabled
-        if mock_login_enabled:
-            self.mock_oidc_service = MockOidcService()
+        self.oidc_service = MockOidcService() if mock_login_enabled else OidcService()
 
     def generate_session(self, state, auth_code) -> dict:
         logger.info("Login process started")
@@ -57,27 +55,14 @@ class LoginService:
                 raise LoginException(500, LambdaError.LoginClient)
 
         try:
-            if self.mock_login_enabled:
-                logger.info("Fetching access token from mock_oidc_service")
-                access_token, id_token_claim_set = self.mock_oidc_service.fetch_tokens(
-                    auth_code
-                )
+            logger.info("Setting up oidc service")
+            self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
-                logger.info("Fetching user information from mock_oidc_service")
-                userinfo = self.mock_oidc_service.fetch_userinfo(access_token)
-            else:
-                logger.info("Setting up oidc service")
-                self.oidc_service.set_up_oidc_parameters(
-                    SSMService, WebApplicationClient
-                )
+            logger.info("Fetching access token from OIDC Provider")
+            access_token, id_token_claim_set = self.oidc_service.fetch_tokens(auth_code)
 
-                logger.info("Fetching access token from OIDC Provider")
-                access_token, id_token_claim_set = self.oidc_service.fetch_tokens(
-                    auth_code
-                )
-
-                logger.info("Fetching user information from OIDC Provider")
-                userinfo = self.oidc_service.fetch_userinfo(access_token)
+            logger.info("Fetching user information from OIDC Provider")
+            userinfo = self.oidc_service.fetch_userinfo(access_token)
 
             selected_role_id = get_selected_roleid(id_token_claim_set)
             logger.info(f"Selected role ID: {selected_role_id}")

@@ -6,6 +6,7 @@ from urllib.parse import unquote
 
 from models.oidc_models import AccessToken, IdTokenClaimSet
 from services.base.ssm_service import SSMService
+from services.oidc_service import OidcService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import OidcApiException
 from utils.request_context import request_context
@@ -13,8 +14,9 @@ from utils.request_context import request_context
 logger = LoggingService(__name__)
 
 
-class MockOidcService:
+class MockOidcService(OidcService):
     def __init__(self):
+        super().__init__()
         self.ssm_prefix = getattr(request_context, "auth_ssm_prefix", "")
         self.ssm_service = SSMService()
 
