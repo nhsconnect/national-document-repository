@@ -9,6 +9,7 @@ class AttributeOperator(Enum):
     LESS_THAN = "lt"
     LESS_THAN_OR_EQUAL = "lte"
     IN = "is_in"
+    NOT_EXISTS = "not_exists"
 
 
 class ConditionOperator(Enum):

@@ -54,7 +54,7 @@ def validate_patient_id(lambda_func: Callable):
                 event["httpMethod"],
             ).create_api_gateway_response()
 
-        # Validation done. Return control flow to original lambda handler
+        # Validation done. Return control flow to the original lambda handler
         return lambda_func(event, context)
 
     return interceptor

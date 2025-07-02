@@ -9,14 +9,14 @@ logger = LoggingService(__name__)
 
 def stitch_pdf(filenames: list[str], temp_folder: str = "/tmp/") -> str:
     """
-    Given a list of local pdf files, stitch them into one file and return the local file path of resulting file.
+    Given a list of local PDF files, stitch them into one file and return the local file path of a resulting file.
 
-    example usage:
+    Example usage:
         filenames = ["file1.pdf", "file2.pdf", "file3.pdf"]
         tmp_folder = "/tmp/"
         stitch_pdf(filename, tmp_folder)
 
-    result:
+    Result:
         "/tmp/(filename_of_stitched_file).pdf"
     """
     merger = PdfWriter()
@@ -29,6 +29,6 @@ def stitch_pdf(filenames: list[str], temp_folder: str = "/tmp/") -> str:
 
 def count_page_number(filename: str) -> int:
     """
-    Return the total number of pages in a pdf file
+    Return the total number of pages in a PDF file
     """
     return len(PdfReader(filename).pages)

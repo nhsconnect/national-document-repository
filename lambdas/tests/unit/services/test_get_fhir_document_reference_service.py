@@ -1,6 +1,7 @@
 import base64
 import copy
 import json
+from io import BytesIO
 
 import pytest
 from enums.lambda_error import LambdaError
@@ -145,19 +146,20 @@ def patched_service(mocker, set_env, context):
 
 
 def test_get_document_reference_service(patched_service):
-    (patched_service.document_service.fetch_documents_from_table.return_value) = (
-        create_test_doc_store_refs()
-    )
+    documents = create_test_doc_store_refs()
+    patched_service.document_service.fetch_documents_from_table.return_value = documents
 
     actual = patched_service.get_document_references(
         "3d8683b9-1665-40d2-8499-6e8302d507ff", MOCK_LG_TABLE_NAME
     )
-    assert actual == create_test_doc_store_refs()[0]
+    assert actual == documents[0]
 
 
 def test_handle_get_document_reference_request(patched_service, mocker, set_env):
-    expected = create_test_doc_store_refs()[0]
-    mock_document_ref = create_test_doc_store_refs()[0]
+    documents = create_test_doc_store_refs()
+
+    expected = documents[0]
+    mock_document_ref = documents[0]
     mocker.patch.object(
         patched_service, "get_document_references", return_value=mock_document_ref
     )
@@ -227,6 +229,8 @@ def test_create_document_reference_fhir_response_with_presign_url_document_data(
     modified_doc = copy.deepcopy(test_doc)
     modified_doc.file_name = "different_file.pdf"
     modified_doc.created = "2023-05-15T10:30:00.000Z"
+    modified_doc.document_scan_creation = "2023-05-15"
+
     patched_service.s3_service.get_file_size.return_value = 8000000
     patched_service.get_presigned_url = mocker.MagicMock(
         return_value="https://new-test-url.com"
@@ -236,10 +240,7 @@ def test_create_document_reference_fhir_response_with_presign_url_document_data(
     result_json = json.loads(result)
     assert result_json["content"][0]["attachment"]["url"] == "https://new-test-url.com"
     assert result_json["content"][0]["attachment"]["title"] == "different_file.pdf"
-    assert (
-        result_json["content"][0]["attachment"]["creation"]
-        == "2023-05-15T10:30:00.000Z"
-    )
+    assert result_json["content"][0]["attachment"]["creation"] == "2023-05-15"
 
 
 def test_create_document_reference_fhir_response_with_binary_document_data(
@@ -251,17 +252,16 @@ def test_create_document_reference_fhir_response_with_binary_document_data(
     modified_doc = copy.deepcopy(test_doc)
     modified_doc.file_name = "different_file.pdf"
     modified_doc.created = "2023-05-15T10:30:00.000Z"
+    modified_doc.document_scan_creation = "2023-05-15"
+
     patched_service.s3_service.get_file_size.return_value = 7999999
-    mock_binary_file = b"binary data"
-    patched_service.s3_service.get_binary_file.return_value = mock_binary_file
+    mock_binary_file = BytesIO(b"binary data")
+    patched_service.s3_service.get_object_stream.return_value = mock_binary_file
 
     result = patched_service.create_document_reference_fhir_response(modified_doc)
     result_json = json.loads(result)
-    assert result_json["content"][0]["attachment"]["data"] == base64.b64encode(
-        mock_binary_file
-    ).decode("utf-8")
+    mock_binary_file.seek(0)
+    expected_encoded = base64.b64encode(mock_binary_file.read()).decode("utf-8")
+    assert result_json["content"][0]["attachment"]["data"] == expected_encoded
     assert result_json["content"][0]["attachment"]["title"] == "different_file.pdf"
-    assert (
-        result_json["content"][0]["attachment"]["creation"]
-        == "2023-05-15T10:30:00.000Z"
-    )
+    assert result_json["content"][0]["attachment"]["creation"] == "2023-05-15"

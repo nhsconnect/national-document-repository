@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import uuid
 from datetime import datetime, timezone
 from io import BytesIO
@@ -86,15 +87,15 @@ class PdfStitchingService:
             return
 
         try:
-            self.create_stitched_reference(
-                document_reference=self.multipart_references[0]
-            )
 
             sorted_multipart_keys = self.sort_multipart_object_keys()
             stitching_data_stream = self.process_stitching(
                 s3_object_keys=sorted_multipart_keys
             )
-
+            self.create_stitched_reference(
+                document_reference=self.multipart_references[0],
+                stitch_file_size=sys.getsizeof(stitching_data_stream),
+            )
             self.upload_stitched_file(stitching_data_stream=stitching_data_stream)
             self.migrate_multipart_references()
             self.write_stitching_reference()
@@ -105,24 +106,22 @@ class PdfStitchingService:
             self.rollback_stitching_process()
             raise e
 
-    def create_stitched_reference(self, document_reference: DocumentReference):
+    def create_stitched_reference(
+        self, document_reference: DocumentReference, stitch_file_size: int
+    ):
         date_now = datetime.now(timezone.utc)
         reference_id = create_reference_id()
         stripped_filename = re.sub(r"^\d+of\d+_", "", document_reference.file_name)
-
-        self.stitched_reference = DocumentReference(
-            id=reference_id,
-            content_type=document_reference.content_type,
-            created=date_now.strftime(DATE_FORMAT),
-            current_gp_ods=document_reference.current_gp_ods,
-            deleted="",
-            file_location=f"s3://{self.target_bucket}/{document_reference.nhs_number}/{reference_id}",
-            file_name=f"1of1_{stripped_filename}",
-            nhs_number=document_reference.nhs_number,
-            virus_scanner_result=document_reference.virus_scanner_result,
-            uploaded=document_reference.uploaded,
-            uploading=document_reference.uploading,
-            last_updated=int(date_now.timestamp()),
+        self.stitched_reference = document_reference.model_copy(
+            update={
+                "id": reference_id,
+                "created": date_now.strftime(DATE_FORMAT),
+                "file_location": f"s3://{self.target_bucket}/{document_reference.nhs_number}/{reference_id}",
+                "file_name": f"1of1_{stripped_filename}",
+                "file_size": stitch_file_size,
+                "last_updated": date_now.timestamp(),
+            },
+            deep=True,
         )
 
     def process_stitching(self, s3_object_keys: list[str]) -> BytesIO:
@@ -154,7 +153,7 @@ class PdfStitchingService:
             self.s3_service.client.upload_fileobj(
                 Fileobj=stitching_data_stream,
                 Bucket=self.target_bucket,
-                Key=self.stitched_reference.get_file_key(),
+                Key=self.stitched_reference.s3_file_key,
             )
         except ClientError as e:
             logger.error(f"Failed to upload stitched file to S3: {e}")
@@ -241,7 +240,7 @@ class PdfStitchingService:
             raise PdfStitchingException(400, LambdaError.MultipartError)
 
         file_keys = [
-            document_reference.get_file_key()
+            document_reference.s3_file_key
             for document_reference in self.multipart_references
         ]
 
@@ -272,7 +271,7 @@ class PdfStitchingService:
                 )
                 self.s3_service.delete_object(
                     s3_bucket_name=self.target_bucket,
-                    file_key=self.stitched_reference.get_file_key(),
+                    file_key=self.stitched_reference.s3_file_key,
                 )
                 logger.info("Successfully reverted stitched object and reference")
         except Exception as e:
