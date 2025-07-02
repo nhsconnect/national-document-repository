@@ -5,10 +5,8 @@ import requests
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.pds_ssm_parameters import SSMParameter
-from enums.supported_document_types import SupportedDocumentTypes
 from enums.virus_scan_result import VirusScanResult
 from requests.models import HTTPError
-from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import VirusScanResultException
@@ -23,36 +21,31 @@ TOKEN_ENDPOINT = "/api/Token"
 class VirusScanService:
     def __init__(self):
         self.staging_s3_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
-        self.lg_table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_table_name = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
         self.ssm_service = SSMService()
-        self.dynamo_service = DynamoDBService()
         self.username = ""
         self.password = ""
         self.base_url = ""
         self.access_token = ""
 
-    def scan_file(self, file_ref):
+    def scan_file(self, file_ref: str):
         try:
             if not self.base_url:
                 self.get_ssm_parameters_for_request_access_token()
 
             result = self.request_virus_scan(file_ref, retry_on_expired=True)
 
-            self.update_dynamo_table(file_ref, result)
-
             if result == VirusScanResult.CLEAN:
                 logger.info(
                     "Virus scan request succeeded",
                     {"Result": "Virus scan request succeeded"},
                 )
-                return
             else:
                 logger.info(
                     "File is not clean",
                     {"Result": FAIL_SCAN},
                 )
-                raise VirusScanResultException(400, LambdaError.VirusScanUnclean)
+            return result
         except ClientError as e:
             logger.error(
                 f"{LambdaError.VirusScanAWSFailure.to_str()}: {str(e)}",
@@ -139,26 +132,3 @@ class VirusScanService:
         self.password = ssm_response[password_key]
         self.base_url = ssm_response[url_key]
         self.access_token = ssm_response[access_token_key]
-
-    def update_dynamo_table(self, file_ref: str, scan_result: VirusScanResult):
-        table_name, key = self.get_dynamo_info(file_ref)
-        logger.info("Updating dynamo db table")
-        updated_fields: dict[str] = {"VirusScannerResult": scan_result}
-        if scan_result == VirusScanResult.INFECTED:
-            updated_fields["DocStatus"] = "cancelled"
-
-        self.dynamo_service.update_item(
-            table_name=table_name,
-            key_pair={"ID": key},
-            updated_fields=updated_fields,
-        )
-
-    def get_dynamo_info(self, file_ref: str):
-        doc_type = file_ref.split("/")[1].upper()
-        file_id = file_ref.split("/")[3]
-
-        match doc_type:
-            case SupportedDocumentTypes.ARF.value:
-                return self.arf_table_name, file_id
-            case SupportedDocumentTypes.LG.value:
-                return self.lg_table_name, file_id
