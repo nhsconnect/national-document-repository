@@ -104,10 +104,11 @@ class GetFhirDocumentReferenceService:
         )
         if file_size < FileSize.MAX_FILE_SIZE:
             logger.info("File size is smaller than 8MB. Returning binary file.")
-            binary_file = self.s3_service.get_binary_file(
-                s3_bucket_name=bucket_name,
-                file_key=file_location,
+            s3_stream = self.s3_service.get_object_stream(
+                bucket=bucket_name,
+                key=file_location,
             )
+            binary_file = s3_stream.read()
             base64_encoded_file = base64.b64encode(binary_file)
             document_details.data = base64_encoded_file
 
