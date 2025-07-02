@@ -27,6 +27,20 @@ from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DocumentServiceException
 
 MOCK_DOCUMENT = MOCK_SEARCH_RESPONSE["Items"][0]
+EXPECTED_REQUESTED_FIELDS = [
+    "ID",
+    "ContentType",
+    "Created",
+    "Deleted",
+    "FileName",
+    "FileLocation",
+    "NhsNumber",
+    "VirusScannerResult",
+    "CurrentGpOds",
+    "Uploaded",
+    "Uploading",
+    "LastUpdated",
+]
 
 
 @pytest.fixture
@@ -82,6 +96,7 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
         exclusive_start_key=None,
+        requested_fields=EXPECTED_REQUESTED_FIELDS,
     )
 
 
@@ -105,6 +120,7 @@ def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_ref
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
         exclusive_start_key=None,
+        requested_fields=EXPECTED_REQUESTED_FIELDS,
     )
 
 
@@ -124,6 +140,7 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
         exclusive_start_key=None,
+        requested_fields=EXPECTED_REQUESTED_FIELDS,
     )
 
 
@@ -138,6 +155,7 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
             search_condition=TEST_NHS_NUMBER,
             query_filter=mock_filter_expression,
             exclusive_start_key=None,
+            requested_fields=EXPECTED_REQUESTED_FIELDS,
         )
     ]
 
@@ -169,6 +187,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
             search_condition=TEST_NHS_NUMBER,
             query_filter=mock_filter_expression,
             exclusive_start_key=None,
+            requested_fields=EXPECTED_REQUESTED_FIELDS,
         )
     ]
     mock_dynamo_service.query_table_by_index.return_value = MOCK_EMPTY_RESPONSE
