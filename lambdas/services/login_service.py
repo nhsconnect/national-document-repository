@@ -54,10 +54,10 @@ class LoginService:
                 )
                 raise LoginException(500, LambdaError.LoginClient)
 
-        try:
             logger.info("Setting up oidc service")
             self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
+        try:
             logger.info("Fetching access token from OIDC Provider")
             access_token, id_token_claim_set = self.oidc_service.fetch_tokens(auth_code)
 
