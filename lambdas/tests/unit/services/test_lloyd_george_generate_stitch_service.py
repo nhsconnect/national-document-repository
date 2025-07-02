@@ -413,7 +413,7 @@ def test_get_total_file_size_in_bytes(stitch_service, mocker, single_mock_doc):
     stitch_service.get_total_file_size_in_bytes(document=mock_doc)
 
     mock_s3_service.get_file_size.assert_called_once_with(
-        mock_doc.get_file_bucket(), mock_doc.get_file_key()
+        mock_doc.s3_bucket_name, mock_doc.s3_file_key
     )
 
 

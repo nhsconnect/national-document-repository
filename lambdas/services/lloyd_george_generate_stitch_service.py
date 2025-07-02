@@ -178,8 +178,8 @@ class LloydGeorgeStitchService:
         return max(doc.created for doc in documents)
 
     def get_total_file_size_in_bytes(self, document: DocumentReference) -> int:
-        bucket = document.get_file_bucket()
-        key = document.get_file_key()
+        bucket = document.s3_bucket_name
+        key = document.s3_file_key
         return self.s3_service.get_file_size(bucket, key)
 
     def update_stitch_job_complete(self):
