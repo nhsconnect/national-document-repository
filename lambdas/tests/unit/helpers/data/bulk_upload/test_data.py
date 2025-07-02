@@ -3,7 +3,7 @@ import os
 from enums.snomed_codes import SnomedCodes
 from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
-from models.nhs_document_reference import NHSDocumentReference
+from models.document_reference import DocumentReference
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
@@ -234,13 +234,17 @@ def build_test_pdf_stitching_sqs_message(
 
 @freeze_time("2024-01-01 12:00:00")
 def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"):
-    doc_ref = NHSDocumentReference(
+    doc_ref = DocumentReference(
         nhs_number=nhs_number,
         content_type="application/pdf",
         file_name=file_name,
-        reference_id=TEST_UUID,
+        id=TEST_UUID,
         s3_bucket_name=MOCK_LG_BUCKET,
         current_gp_ods=TEST_CURRENT_GP_ODS,
+        author=TEST_CURRENT_GP_ODS,
+        custodian=TEST_CURRENT_GP_ODS,
+        doc_status="preliminary",
+        document_scan_creation="2022-09-03",
     )
     doc_ref.virus_scanner_result = VirusScanResult.CLEAN
     return doc_ref

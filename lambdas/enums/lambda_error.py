@@ -15,7 +15,9 @@ class LambdaError(Enum):
         if "%" in message and params:
             message = message % params
         interaction_id = getattr(request_context, "request_id", None)
-        error_response = ErrorResponse(err_code, message, interaction_id, **kwargs)
+        error_response = ErrorResponse(
+            err_code=err_code, message=message, interaction_id=interaction_id, **kwargs
+        )
         return error_response
 
     def to_str(self) -> str:

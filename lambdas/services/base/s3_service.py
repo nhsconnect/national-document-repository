@@ -1,3 +1,4 @@
+import io
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from typing import Any, Mapping
@@ -78,14 +79,6 @@ class S3Service:
 
     def download_file(self, s3_bucket_name: str, file_key: str, download_path: str):
         return self.client.download_file(s3_bucket_name, file_key, download_path)
-
-    def get_binary_file(self, s3_bucket_name: str, file_key: str):
-        response = self.client.get_object(
-            Bucket=s3_bucket_name,
-            Key=file_key,
-        )
-        file = response["Body"].read()
-        return file
 
     def upload_file(self, file_name: str, s3_bucket_name: str, file_key: str):
         return self.client.upload_file(file_name, s3_bucket_name, file_key)
@@ -172,21 +165,40 @@ class S3Service:
         response = self.client.head_object(Bucket=s3_bucket_name, Key=object_key)
         return response.get("ContentLength", 0)
 
-    def save_or_create_file(self, source_bucket: str, file_key: str, body: bytes):
-        return self.client.put_object(
-            Bucket=source_bucket, Key=file_key, Body=BytesIO(body)
-        )
-
     def get_object_stream(self, bucket: str, key: str):
         response = self.client.get_object(Bucket=bucket, Key=key)
         return response.get("Body")
 
-    def upload_file_obj(self, file_obj, s3_bucket_name: str, file_key: str):
+    def stream_s3_object_to_memory(self, bucket: str, key: str) -> BytesIO:
+        response = self.client.get_object(Bucket=bucket, Key=key)
+        buf = BytesIO()
+        for chunk in iter(lambda: response["Body"].read(64 * 1024), b""):
+            buf.write(chunk)
+        buf.seek(0)
+        return buf
+
+    def upload_file_obj(
+        self,
+        file_obj: io.BytesIO,
+        s3_bucket_name: str,
+        file_key: str,
+        extra_args: Mapping[str, Any] = None,
+    ):
         try:
-            self.client.upload_fileobj(file_obj, s3_bucket_name, file_key)
+            self.client.upload_fileobj(
+                Fileobj=file_obj,
+                Bucket=s3_bucket_name,
+                Key=file_key,
+                ExtraArgs=extra_args or {},
+            )
             logger.info(f"Uploaded file object to s3://{s3_bucket_name}/{file_key}")
         except ClientError as e:
             logger.error(
                 f"Failed to upload file object to s3://{s3_bucket_name}/{file_key} - {e}"
             )
             raise e
+
+    def save_or_create_file(self, source_bucket: str, file_key: str, body: bytes):
+        return self.client.put_object(
+            Bucket=source_bucket, Key=file_key, Body=BytesIO(body)
+        )
