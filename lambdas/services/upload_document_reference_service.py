@@ -7,9 +7,9 @@ from models.document_reference import DocumentReference
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
-from services.virus_scan_result_service import VirusScanService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import DocumentServiceException, FileProcessingException
+from utils.utilities import get_virus_scan_service
 
 logger = LoggingService(__name__)
 
@@ -21,7 +21,7 @@ class UploadDocumentReferenceService:
         self.lg_bucket_name = os.getenv("LLOYD_GEORGE_BUCKET_NAME")
         self.document_service = DocumentService()
         self.dynamo_service = DynamoDBService()
-        self.virus_scan_service = VirusScanService()
+        self.virus_scan_service = get_virus_scan_service()
         self.s3_service = S3Service()
 
     def handle_upload_document_reference_request(

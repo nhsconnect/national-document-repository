@@ -23,9 +23,11 @@ def mock_virus_scan_service(
     mocker,
     mock_upload_lambda_enabled,
 ):
-    mocked_class = mocker.patch("handlers.virus_scan_result_handler.VirusScanService")
-    mocked_service = mocked_class.return_value
-    yield mocked_service
+
+    mock = mocker.patch("handlers.virus_scan_result_handler.get_virus_scan_service")
+    mocked_class = mocker.MagicMock()
+    mock.return_value = mocked_class
+    yield mocked_class
 
 
 @pytest.fixture
