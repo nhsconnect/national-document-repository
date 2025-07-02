@@ -15,6 +15,11 @@ class MockError(Enum):
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
+    NoRoleError = {
+        "message": "Unable to remove used state value",
+        "err_code": "LIN_4006",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
 
 @pytest.fixture
@@ -69,6 +74,44 @@ def test_handler_passes_error_details_in_response(
     expected_status = 400
     expected_body = json.dumps(MockError.Error.value)
     exception = LoginException(status_code=expected_status, error=LambdaError.MockError)
+    mock_login_service.generate_session.side_effect = exception
+
+    auth_code = "auth_code"
+    state = "test_state"
+    test_event = {
+        "queryStringParameters": {"code": auth_code, "state": state},
+        "httpmethod": "GET",
+    }
+
+    expected = ApiGatewayResponse(
+        expected_status,
+        expected_body,
+        "GET",
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(test_event, context)
+
+    assert actual == expected
+
+    mock_login_service.generate_session.assert_called_with(state, auth_code)
+
+
+def test_handler_handles_401_correctly(
+    mock_configuration_service,
+    mock_login_service,
+    context,
+):
+    expected_roles = ["ROLE_1", "ROLE_2"]
+    mock_login_service.token_handler_ssm_service.get_smartcard_role_codes.return_value = (
+        expected_roles
+    )
+    expected_status = 401
+    expected_body = json.dumps(
+        {**MockError.NoRoleError.value, **{"roles": expected_roles}}
+    )
+    exception = LoginException(
+        status_code=expected_status, error=LambdaError.LoginNoRole
+    )
     mock_login_service.generate_session.side_effect = exception
 
     auth_code = "auth_code"

@@ -6,6 +6,10 @@ class InvalidResourceIdException(Exception):
     pass
 
 
+class InvalidNhsNumberException(Exception):
+    pass
+
+
 class OAuthErrorException(Exception):
     pass
 
@@ -141,4 +145,12 @@ class StatisticDataNotFoundException(Exception):
 
 
 class PdsResponseValidationException(Exception):
+    pass
+
+
+class InvalidFileNameException(Exception):
+    pass
+
+
+class MetadataPreprocessingException(Exception):
     pass

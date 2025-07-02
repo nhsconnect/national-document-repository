@@ -121,11 +121,11 @@ class TokenHandlerSSMService(SSMService):
         )
         raise LoginException(500, LambdaError.LoginPcseOdsCode)
 
-    def get_itoc_ods_codes(self) -> str:
+    def get_itoc_ods_codes(self) -> list[str]:
         logger.info("starting ssm request to retrieve ITOC ODS codes")
         response = self.get_ssm_parameter(ITOC_ODS_CODES)
         if response:
-            return response
+            return response.split(",")
 
         logger.error(
             LambdaError.LoginItocOdsCodes.to_str(),

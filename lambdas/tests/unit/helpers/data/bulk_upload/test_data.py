@@ -3,7 +3,7 @@ import os
 from enums.snomed_codes import SnomedCodes
 from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
-from models.nhs_document_reference import NHSDocumentReference
+from models.document_reference import DocumentReference
 from models.sqs.nrl_sqs_message import NrlSqsMessage
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
@@ -29,7 +29,9 @@ patient_1_file_2 = sample_metadata_model.model_copy(
     }
 )
 patient_1 = StagingMetadata(
-    nhs_number="1234567890", files=[patient_1_file_1, patient_1_file_2], retries=0
+    nhs_number="1234567890",
+    files=[patient_1_file_1, patient_1_file_2],
+    retries=0,
 )
 
 patient_2_file_1 = sample_metadata_model.model_copy(
@@ -48,19 +50,30 @@ patient_1_file_1_with_temp_nhs_number = patient_1_file_1.model_copy(
 patient_1_file_2_with_temp_nhs_number = patient_1_file_2.model_copy(
     update={"nhs_number": "1234567890"}
 )
+
+patient_1_file_1_with_temp_nhs_number_different_ods_code = patient_1_file_1.model_copy(
+    update={
+        "nhs_number": "1234567890",
+        "gp_practice_code": "Y6789",
+    }
+)
+patient_1_file_2_with_temp_nhs_number_different_ods_code = patient_1_file_2.model_copy(
+    update={
+        "nhs_number": "1234567890",
+        "gp_practice_code": "Y6789",
+    }
+)
 patient_2_file_1_with_short_nhs_number = patient_2_file_1.model_copy(
     update={"nhs_number": "123456789"}
 )
-patient_1_with_temp_nhs_number = StagingMetadata(
-    nhs_number="1234567890",
-    files=[
-        patient_1_file_1_with_temp_nhs_number,
-        patient_1_file_2_with_temp_nhs_number,
-    ],
+
+patient_2_file_1_with_short_nhs_number_different_ods_code = patient_2_file_1.model_copy(
+    update={
+        "nhs_number": "123456789",
+        "gp_practice_code": "Y6789",
+    }
 )
-patient_2_with_short_nhs_number = StagingMetadata(
-    nhs_number="123456789", files=[patient_2_file_1_with_short_nhs_number]
-)
+
 
 patient_3_with_missing_nhs_number_metadata_file = sample_metadata_model.model_copy(
     update={
@@ -69,14 +82,65 @@ patient_3_with_missing_nhs_number_metadata_file = sample_metadata_model.model_co
         "scan_date": "04/09/2022",
     }
 )
+
+patient_3_with_missing_nhs_number_metadata_file_different_ods_code = sample_metadata_model.model_copy(
+    update={
+        "nhs_number": "",
+        "file_path": "1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt",
+        "scan_date": "04/09/2022",
+        "gp_practice_code": "Y6789",
+    }
+)
+
+patient_1_with_temp_nhs_number = StagingMetadata(
+    nhs_number="1234567890",
+    files=[
+        patient_1_file_1_with_temp_nhs_number,
+        patient_1_file_2_with_temp_nhs_number,
+    ],
+)
+
+patient_1_with_temp_nhs_number_different_ods_code = StagingMetadata(
+    nhs_number="1234567890",
+    files=[
+        patient_1_file_1_with_temp_nhs_number_different_ods_code,
+        patient_1_file_2_with_temp_nhs_number_different_ods_code,
+    ],
+)
+
+patient_2_with_short_nhs_number = StagingMetadata(
+    nhs_number="123456789",
+    files=[patient_2_file_1_with_short_nhs_number],
+)
+
+patient_2_with_short_nhs_number_different_ods_code = StagingMetadata(
+    nhs_number="123456789",
+    files=[patient_2_file_1_with_short_nhs_number_different_ods_code],
+)
+
 patient_3_with_missing_nhs_number = StagingMetadata(
-    nhs_number="0000000000", files=[patient_3_with_missing_nhs_number_metadata_file]
+    nhs_number="0000000000",
+    files=[patient_3_with_missing_nhs_number_metadata_file],
+)
+
+patient_3_with_missing_nhs_number_different_ods_code = StagingMetadata(
+    nhs_number="0000000000",
+    files=[patient_3_with_missing_nhs_number_metadata_file_different_ods_code],
 )
 
 EXPECTED_PARSED_METADATA = [
     patient_1_with_temp_nhs_number,
     patient_2_with_short_nhs_number,
     patient_3_with_missing_nhs_number,
+]
+
+EXPECTED_PARSED_METADATA_2 = [
+    patient_1_with_temp_nhs_number,
+    patient_1_with_temp_nhs_number_different_ods_code,
+    patient_2_with_short_nhs_number,
+    patient_2_with_short_nhs_number_different_ods_code,
+    patient_3_with_missing_nhs_number,
+    patient_3_with_missing_nhs_number_different_ods_code,
 ]
 
 
@@ -170,13 +234,17 @@ def build_test_pdf_stitching_sqs_message(
 
 @freeze_time("2024-01-01 12:00:00")
 def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"):
-    doc_ref = NHSDocumentReference(
+    doc_ref = DocumentReference(
         nhs_number=nhs_number,
         content_type="application/pdf",
         file_name=file_name,
-        reference_id=TEST_UUID,
+        id=TEST_UUID,
         s3_bucket_name=MOCK_LG_BUCKET,
         current_gp_ods=TEST_CURRENT_GP_ODS,
+        author=TEST_CURRENT_GP_ODS,
+        custodian=TEST_CURRENT_GP_ODS,
+        doc_status="preliminary",
+        document_scan_creation="2022-09-03",
     )
     doc_ref.virus_scanner_result = VirusScanResult.CLEAN
     return doc_ref

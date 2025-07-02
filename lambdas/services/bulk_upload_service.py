@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from datetime import datetime
 
 import pydantic
 from botocore.exceptions import ClientError
@@ -8,7 +9,7 @@ from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.snomed_codes import SnomedCodes
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
-from models.nhs_document_reference import NHSDocumentReference
+from models.document_reference import DocumentReference
 from models.sqs.pdf_stitching_sqs_message import PdfStitchingSqsMessage
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
@@ -21,6 +22,7 @@ from utils.exceptions import (
     BulkUploadException,
     DocumentInfectedException,
     InvalidMessageException,
+    InvalidNhsNumberException,
     PatientRecordAlreadyExistException,
     PdsErrorException,
     PdsTooManyRequestsException,
@@ -42,20 +44,22 @@ from utils.unicode_utils import (
     convert_to_nfc_form,
     convert_to_nfd_form,
 )
+from utils.utilities import validate_nhs_number
 
 logger = LoggingService(__name__)
 
 
 class BulkUploadService:
-    def __init__(self, strict_mode):
+    def __init__(self, strict_mode, pds_fhir_always_true=False):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
-        self.s3_repository = BulkUploadS3Repository()
+        self.bulk_upload_s3_repository = BulkUploadS3Repository()
         self.strict_mode = strict_mode
         self.pdf_content_type = "application/pdf"
         self.unhandled_messages = []
         self.file_path_cache = {}
         self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
+        self.pds_fhir_always_true = pds_fhir_always_true
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -118,59 +122,62 @@ class BulkUploadService:
             raise InvalidMessageException(str(e))
 
         logger.info("SQS event is valid. Validating NHS number and file names")
+
         try:
             file_names = [
                 os.path.basename(metadata.file_path)
                 for metadata in staging_metadata.files
             ]
             request_context.patient_nhs_no = staging_metadata.nhs_number
+            validate_nhs_number(staging_metadata.nhs_number)
             validate_lg_file_names(file_names, staging_metadata.nhs_number)
-
             pds_patient_details = getting_patient_info_from_pds(
                 staging_metadata.nhs_number
             )
             patient_ods_code = (
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
-            if not self.strict_mode:
-                (
-                    name_validation_accepted_reason,
-                    is_name_validation_based_on_historic_name,
-                ) = validate_filename_with_patient_details_lenient(
-                    file_names, pds_patient_details
-                )
-                accepted_reason = self.concatenate_acceptance_reason(
-                    accepted_reason, name_validation_accepted_reason
-                )
-            else:
-                is_name_validation_based_on_historic_name = (
-                    validate_filename_with_patient_details_strict(
+            if not self.pds_fhir_always_true:
+                if not self.strict_mode:
+                    (
+                        name_validation_accepted_reason,
+                        is_name_validation_based_on_historic_name,
+                    ) = validate_filename_with_patient_details_lenient(
                         file_names, pds_patient_details
                     )
-                )
-            if is_name_validation_based_on_historic_name:
-                accepted_reason = self.concatenate_acceptance_reason(
-                    accepted_reason, "Patient matched on historical name"
-                )
+                    accepted_reason = self.concatenate_acceptance_reason(
+                        accepted_reason, name_validation_accepted_reason
+                    )
+                else:
+                    is_name_validation_based_on_historic_name = (
+                        validate_filename_with_patient_details_strict(
+                            file_names, pds_patient_details
+                        )
+                    )
+                if is_name_validation_based_on_historic_name:
+                    accepted_reason = self.concatenate_acceptance_reason(
+                        accepted_reason, "Patient matched on historical name"
+                    )
 
-            if not allowed_to_ingest_ods_code(patient_ods_code):
-                raise LGInvalidFilesException("Patient not registered at your practice")
-            patient_death_notification_status = (
-                pds_patient_details.get_death_notification_status()
-            )
-            if patient_death_notification_status:
-                deceased_accepted_reason = (
-                    f"Patient is deceased - {patient_death_notification_status.name}"
+                if not allowed_to_ingest_ods_code(patient_ods_code):
+                    raise LGInvalidFilesException(
+                        "Patient not registered at your practice"
+                    )
+                patient_death_notification_status = (
+                    pds_patient_details.get_death_notification_status()
                 )
-                accepted_reason = self.concatenate_acceptance_reason(
-                    accepted_reason, deceased_accepted_reason
-                )
-            if patient_ods_code is PatientOdsInactiveStatus.RESTRICTED:
-                accepted_reason = self.concatenate_acceptance_reason(
-                    accepted_reason, "PDS record is restricted"
-                )
+                if patient_death_notification_status:
+                    deceased_accepted_reason = f"Patient is deceased - {patient_death_notification_status.name}"
+                    accepted_reason = self.concatenate_acceptance_reason(
+                        accepted_reason, deceased_accepted_reason
+                    )
+                if patient_ods_code is PatientOdsInactiveStatus.RESTRICTED:
+                    accepted_reason = self.concatenate_acceptance_reason(
+                        accepted_reason, "PDS record is restricted"
+                    )
 
         except (
+            InvalidNhsNumberException,
             LGInvalidFilesException,
             PatientRecordAlreadyExistException,
         ) as error:
@@ -192,7 +199,7 @@ class BulkUploadService:
 
         try:
             self.resolve_source_file_path(staging_metadata)
-            self.s3_repository.check_virus_result(
+            self.bulk_upload_s3_repository.check_virus_result(
                 staging_metadata, self.file_path_cache
             )
         except VirusScanNoResultException as e:
@@ -241,7 +248,7 @@ class BulkUploadService:
 
         logger.info("Virus result validation complete. Initialising transaction")
 
-        self.s3_repository.init_transaction()
+        self.bulk_upload_s3_repository.init_transaction()
         self.dynamo_repository.init_transaction()
 
         logger.info(
@@ -273,7 +280,7 @@ class BulkUploadService:
         logger.info(
             "File transfer complete. Removing uploaded files from staging bucket"
         )
-        self.s3_repository.remove_ingested_file_from_source_bucket()
+        self.bulk_upload_s3_repository.remove_ingested_file_from_source_bucket()
 
         logger.info(
             f"Completed file ingestion for patient {staging_metadata.nhs_number}",
@@ -322,9 +329,11 @@ class BulkUploadService:
             file_path_in_nfc_form = convert_to_nfc_form(file_path_without_leading_slash)
             file_path_in_nfd_form = convert_to_nfd_form(file_path_without_leading_slash)
 
-            if self.s3_repository.file_exists_on_staging_bucket(file_path_in_nfc_form):
+            if self.bulk_upload_s3_repository.file_exists_on_staging_bucket(
+                file_path_in_nfc_form
+            ):
                 resolved_file_paths[file_path_in_metadata] = file_path_in_nfc_form
-            elif self.s3_repository.file_exists_on_staging_bucket(
+            elif self.bulk_upload_s3_repository.file_exists_on_staging_bucket(
                 file_path_in_nfd_form
             ):
                 resolved_file_paths[file_path_in_metadata] = file_path_in_nfd_form
@@ -351,15 +360,23 @@ class BulkUploadService:
             source_file_key = self.file_path_cache[file_metadata.file_path]
             dest_file_key = document_reference.s3_file_key
 
-            self.s3_repository.copy_to_lg_bucket(
+            self.bulk_upload_s3_repository.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
+            s3_bucket_name = self.bulk_upload_s3_repository.lg_bucket_name
+
+            document_reference.file_size = (
+                self.bulk_upload_s3_repository.s3_repository.get_file_size(
+                    s3_bucket_name=s3_bucket_name, object_key=dest_file_key
+                )
+            )
             document_reference.set_uploaded_to_true()
+            document_reference.doc_status = "final"
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
 
     def rollback_transaction(self):
         try:
-            self.s3_repository.rollback_transaction()
+            self.bulk_upload_s3_repository.rollback_transaction()
             self.dynamo_repository.rollback_transaction()
             logger.info("Rolled back an incomplete transaction")
         except ClientError as e:
@@ -369,16 +386,22 @@ class BulkUploadService:
 
     def convert_to_document_reference(
         self, file_metadata: MetadataFile, nhs_number: str, current_gp_ods: str
-    ) -> NHSDocumentReference:
-        s3_bucket_name = self.s3_repository.lg_bucket_name
+    ) -> DocumentReference:
+        s3_bucket_name = self.bulk_upload_s3_repository.lg_bucket_name
         file_name = os.path.basename(file_metadata.file_path)
-
-        document_reference = NHSDocumentReference(
-            reference_id=str(uuid.uuid4()),
+        scan_date_formatted = datetime.strptime(
+            file_metadata.scan_date, "%d/%m/%Y"
+        ).strftime("%Y-%m-%d")
+        document_reference = DocumentReference(
+            id=str(uuid.uuid4()),
             nhs_number=nhs_number,
             file_name=file_name,
             s3_bucket_name=s3_bucket_name,
             current_gp_ods=current_gp_ods,
+            custodian=current_gp_ods,
+            author=file_metadata.gp_practice_code,
+            document_scan_creation=scan_date_formatted,
+            doc_status="preliminary",
         )
         document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
 

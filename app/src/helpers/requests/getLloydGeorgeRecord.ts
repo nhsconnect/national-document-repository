@@ -6,7 +6,7 @@ import { JOB_STATUS } from '../../types/generic/downloadManifestJobStatus';
 import { isRunningInCypress } from '../utils/isLocal';
 import { StitchRecordError } from '../../types/generic/errors';
 
-export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 10;
+export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 3;
 
 type Args = {
     nhsNumber: string;
@@ -29,10 +29,11 @@ const UnexpectedResponseMessage =
 async function getLloydGeorgeRecord(args: Args): Promise<LloydGeorgeStitchResult> {
     const postResponse = await requestStitchJob(args);
     let pendingCount = 0;
-    while (pendingCount < 3) {
-        if (postResponse !== JOB_STATUS.COMPLETED) {
+    while (pendingCount < 10) {
+        if (postResponse !== JOB_STATUS.COMPLETED || pendingCount > 0) {
             await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
         }
+
         const pollingResponse = await pollForPresignedUrl(args);
 
         switch (pollingResponse?.jobStatus) {

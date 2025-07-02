@@ -5,6 +5,7 @@ from pydantic_core import PydanticCustomError
 
 METADATA_FILENAME = "metadata.csv"
 NHS_NUMBER_FIELD_NAME = "NHS-NO"
+ODS_CODE = "GP-PRACTICE-CODE"
 NHS_NUMBER_PLACEHOLDER = "0000000000"
 
 
@@ -14,7 +15,7 @@ def to_upper_case_with_hyphen(field_name: str) -> str:
 
 class MetadataFile(BaseModel):
     model_config = ConfigDict(
-        alias_generator=to_upper_case_with_hyphen, populate_by_name=True
+        alias_generator=to_upper_case_with_hyphen, validate_by_name=True
     )
 
     file_path: str = Field(alias="FILEPATH")
@@ -46,7 +47,7 @@ class MetadataFile(BaseModel):
 
 
 class StagingMetadata(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(validate_by_name=True)
 
     nhs_number: str = Field(default=NHS_NUMBER_PLACEHOLDER, alias=NHS_NUMBER_FIELD_NAME)
     files: list[MetadataFile]

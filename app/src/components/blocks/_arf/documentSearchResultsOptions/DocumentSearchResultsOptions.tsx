@@ -31,6 +31,22 @@ const DocumentSearchResultsOptions = (props: Props) => {
         filename: '',
     });
     const linkRef = useRef<HTMLAnchorElement | null>(null);
+    const [statusMessage, setStatusMessage] = useState('');
+    useEffect(() => {
+        switch (props.downloadState) {
+            case SUBMISSION_STATE.PENDING:
+                setStatusMessage('Download in progress.');
+                break;
+            case SUBMISSION_STATE.SUCCEEDED:
+                setStatusMessage('Download complete.');
+                break;
+            case SUBMISSION_STATE.FAILED:
+                setStatusMessage('Download failed.');
+                break;
+            default:
+                setStatusMessage('');
+        }
+    }, [props.downloadState]);
 
     useEffect(() => {
         if (linkRef.current && linkAttributes.url) {
@@ -70,6 +86,14 @@ const DocumentSearchResultsOptions = (props: Props) => {
 
     return (
         <>
+            <div
+                id="download-status"
+                aria-live="polite"
+                role="status"
+                className="nhsuk-u-visually-hidden"
+            >
+                {statusMessage}
+            </div>
             <div className="search-result-spinner-div">
                 {props.downloadState === SUBMISSION_STATE.PENDING ? (
                     <SpinnerButton

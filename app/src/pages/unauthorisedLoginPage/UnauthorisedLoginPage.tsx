@@ -1,13 +1,18 @@
 import { routes } from '../../types/generic/routes';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ButtonLink } from 'nhsuk-react-components';
-import React from 'react';
 import useTitle from '../../helpers/hooks/useTitle';
 
 const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();
     const pageHeader = 'Your account cannot access this service';
+    const location = useLocation();
+    const errorData = location.state?.errorData;
     useTitle({ pageTitle: 'Unauthorised account' });
+
+    const gpAdminRoles = errorData.roles[0].split(',').join(', ');
+    const gpClinicalRoles = errorData.roles[1].split(',').join(', ');
+
     return (
         <>
             <h1>{pageHeader}</h1>
@@ -27,8 +32,12 @@ const UnauthorisedLoginPage = () => {
                     have one of these roles on their smart cards:
                     <br />
                     <br />
-                    <p>GP Admin Role: R8010, R8013, R1790, R8008</p>
-                    <p>GP Clinical Role: R8000</p>
+                    <p>
+                        <strong>GP Admin Role:</strong> {gpAdminRoles}
+                    </p>
+                    <p>
+                        <strong>GP Clinical Role:</strong> {gpClinicalRoles}
+                    </p>
                 </li>
                 <li>PCSE staff where a patient does not have an active registration</li>
             </ul>

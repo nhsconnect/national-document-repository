@@ -80,7 +80,6 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
         index_name="NhsNumberIndex",
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
-        requested_fields=DocumentReferenceMetadataFields.list(),
         query_filter=mock_filter_expression,
     )
 
@@ -103,7 +102,6 @@ def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_ref
         index_name="NhsNumberIndex",
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
-        requested_fields=DocumentReferenceMetadataFields.list(),
         query_filter=mock_filter_expression,
     )
 
@@ -122,7 +120,6 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
         index_name="NhsNumberIndex",
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
-        requested_fields=DocumentReferenceMetadataFields.list(),
         query_filter=mock_filter_expression,
     )
 
@@ -136,7 +133,6 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
-            requested_fields=DocumentReferenceMetadataFields.list(),
             query_filter=mock_filter_expression,
         )
     ]
@@ -167,7 +163,6 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
-            requested_fields=DocumentReferenceMetadataFields.list(),
             query_filter=mock_filter_expression,
         )
     ]
@@ -198,6 +193,8 @@ def test_delete_documents_soft_delete(
     test_update_fields = {
         "Deleted": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "TTL": int(ttl_date.timestamp()),
+        "DocStatus": "deprecated",
+        "Status": "superseded",
     }
 
     mock_service.delete_document_references(
@@ -223,6 +220,8 @@ def test_delete_documents_death_delete(
     test_update_fields = {
         "Deleted": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "TTL": int(ttl_date.timestamp()),
+        "DocStatus": "deprecated",
+        "Status": "superseded",
     }
 
     mock_service.delete_document_references(
@@ -236,26 +235,20 @@ def test_delete_documents_death_delete(
     )
 
 
-def test_update_documents(mock_service, mock_dynamo_service):
+def test_update_document(mock_service, mock_dynamo_service):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
-    test_update_fields = {
-        "TestField": "test",
-    }
+    test_update_fields = {"doc_status"}
 
     update_item_call = call(
         table_name=MOCK_TABLE_NAME,
         key_pair={"ID": test_doc_ref.id},
-        updated_fields=test_update_fields,
+        updated_fields={"DocStatus": "final"},
     )
 
-    mock_service.update_documents(
-        MOCK_TABLE_NAME, [test_doc_ref, test_doc_ref], test_update_fields
-    )
+    mock_service.update_document(MOCK_TABLE_NAME, test_doc_ref, test_update_fields)
 
-    mock_dynamo_service.update_item.assert_has_calls(
-        [update_item_call, update_item_call]
-    )
+    mock_dynamo_service.update_item.assert_has_calls([update_item_call])
 
 
 def test_hard_delete_metadata_records(mock_service, mock_dynamo_service):
@@ -284,7 +277,12 @@ def test_check_existing_lloyd_george_records_return_true_if_upload_in_progress(
 ):
     two_minutes_ago = 1698661380  # 2023-10-30T10:23:00
     mock_records_upload_in_process = create_test_lloyd_george_doc_store_refs(
-        override={"uploaded": False, "uploading": True, "last_updated": two_minutes_ago}
+        override={
+            "uploaded": False,
+            "uploading": True,
+            "last_updated": two_minutes_ago,
+            "doc_status": "preliminary",
+        }
     )
 
     response = mock_service.is_upload_in_process(mock_records_upload_in_process)

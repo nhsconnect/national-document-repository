@@ -32,10 +32,10 @@ describe('Feedback Page', () => {
                 () => {
                     cy.login(role);
 
-                    cy.get('.govuk-phase-banner__text a')
+                    cy.get('.nhsuk-phase-banner__text a')
                         .should('exist')
                         .and('have.attr', { target: '_blank' });
-                    cy.get('.govuk-phase-banner__text a')
+                    cy.get('.nhsuk-phase-banner__text a')
                         // for test purpose, remove "target=_blank" as cypress not supporting multiple tabs
                         .invoke('removeAttr', 'target')
                         .click();
@@ -61,7 +61,7 @@ describe('Feedback Page', () => {
                 { tags: 'regression' },
                 () => {
                     cy.visit(startUrl);
-                    cy.get('.govuk-phase-banner__text a').should('not.exist');
+                    cy.get('.nhsuk-phase-banner__text a').should('not.exist');
 
                     cy.visit(feedbackUrl);
                     cy.url().should('eq', baseUrl + '/unauthorised');

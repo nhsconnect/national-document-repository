@@ -273,7 +273,7 @@ describe('LloydGeorgeUploadPage', () => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
             expect(vi.mocked(uploadDocuments)).toHaveBeenCalled();
-            await waitFor(() => {
+            await vi.waitFor(() => {
                 expect(vi.mocked(uploadDocumentToS3)).toHaveBeenCalled();
             });
             expect(vi.mocked(virusScan)).toHaveBeenCalled();

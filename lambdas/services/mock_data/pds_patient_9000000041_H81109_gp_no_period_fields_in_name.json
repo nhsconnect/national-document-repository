@@ -1,10 +1,10 @@
 {
   "resourceType": "Patient",
-  "id": "9000000105",
+  "id": "9000000041",
   "identifier": [
     {
       "system": "https://fhir.nhs.uk/Id/nhs-number",
-      "value": "9000000105",
+      "value": "9000000041",
       "extension": [
         {
           "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSNumberVerificationStatus",
@@ -36,11 +36,7 @@
     {
       "id": "123",
       "use": "usual",
-      "period": {
-        "start": "2020-01-01",
-        "end": "2025-12-31"
-      },
-      "given": ["Jane", "Bob"],
+      "given": ["Jane"],
       "family": "Smith",
       "prefix": ["Mrs"],
       "suffix": ["MBE"]
@@ -48,10 +44,7 @@
     {
       "id": "1234",
       "use": "other",
-      "period": {
-        "start": "2020-01-01",
-        "end": "2025-12-31"
-      },
+      "given": ["Jim"],
       "family": "Stevens",
       "prefix": ["Mr"],
       "suffix": ["MBE"]
@@ -66,7 +59,7 @@
       "type": "Organization",
       "identifier": {
         "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-        "value": "M85143",
+        "value": "H81109",
         "period": {
           "start": "2020-01-01",
           "end": "2025-12-31"
@@ -74,6 +67,17 @@
       }
     }
   ],
+  "managingOrganization": {
+    "type": "Organization",
+    "identifier": {
+      "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+      "value": "H81109",
+      "period": {
+        "start": "2020-01-01",
+        "end": "2025-12-31"
+      }
+    }
+  },
   "extension": [
     {
       "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NominatedPharmacy",

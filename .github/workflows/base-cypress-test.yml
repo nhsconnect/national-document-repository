@@ -33,6 +33,7 @@ jobs:
           echo Cypress Base Url: ${{ inputs.cypress_base_url }}
 
   cypress-run-job:
+    name: cypress run ${{inputs.cypress_browser}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

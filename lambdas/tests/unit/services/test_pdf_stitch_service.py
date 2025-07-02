@@ -1,7 +1,9 @@
 import os
 import tempfile
+from io import BytesIO
 
 import pytest
+from pypdf import PdfWriter
 from pypdf.errors import PyPdfError
 from services.pdf_stitch_service import count_page_number, stitch_pdf
 
@@ -52,3 +54,15 @@ def test_stitch_pdf_raise_error_when_input_file_not_found():
 
     with pytest.raises(FileNotFoundError):
         stitch_pdf([test_file])
+
+
+def create_in_memory_pdf(page_count: int = 1) -> BytesIO:
+    # Creates a PDF in memory with the received number of pages
+    writer = PdfWriter()
+    for _ in range(page_count):
+        writer.add_blank_page(width=72, height=72)
+
+    stream = BytesIO()
+    writer.write(stream)
+    stream.seek(0)
+    return stream

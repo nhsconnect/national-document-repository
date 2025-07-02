@@ -3,10 +3,9 @@ import useConfig from '../../../helpers/hooks/useConfig';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getLloydGeorgeRecord from '../../../helpers/requests/getLloydGeorgeRecord';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import RecordCard, { Props } from './RecordCard';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi, Mock, MockedFunction } from 'vitest';
 
