@@ -4,6 +4,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from models.document_reference import DocumentReference
+from services.mock_virus_scan_service import MockVirusScanService
 from services.upload_document_reference_service import UploadDocumentReferenceService
 from tests.unit.conftest import (
     MOCK_LG_BUCKET,
@@ -35,13 +36,10 @@ def mock_document_reference():
 def mock_virus_scan_service(
     mocker,
 ):
-
     mock = mocker.patch(
         "services.upload_document_reference_service.get_virus_scan_service"
     )
-    mocked_class = mocker.MagicMock()
-    mock.return_value = mocked_class
-    yield mocked_class
+    yield mock
 
 
 @pytest.fixture
@@ -55,7 +53,7 @@ def service(set_env, mock_virus_scan_service):
         service = UploadDocumentReferenceService()
         service.document_service = Mock()
         service.dynamo_service = Mock()
-        service.virus_scan_service = Mock()
+        service.virus_scan_service = MockVirusScanService()
         service.s3_service = Mock()
         return service
 
@@ -75,23 +73,25 @@ def test_handle_upload_document_reference_request_with_none_object_key(service):
 
 
 def test_handle_upload_document_reference_request_success(
-    service, mock_document_reference
+    service, mock_document_reference, mocker
 ):
     """Test successful handling of the upload document reference request"""
     object_key = "staging/test-doc-id"
-
+    object_size = 1111
     service.document_service.fetch_documents_from_table.return_value = [
         mock_document_reference
     ]
-    service.virus_scan_service.scan_file.return_value = VirusScanResult.CLEAN
+    service.virus_scan_service.scan_file = mocker.MagicMock(
+        return_value=VirusScanResult.CLEAN
+    )
 
-    service.handle_upload_document_reference_request(object_key)
+    service.handle_upload_document_reference_request(object_key, object_size)
 
     service.document_service.fetch_documents_from_table.assert_called_once()
     service.document_service.update_document.assert_called_once()
     service.s3_service.copy_across_bucket.assert_called_once()
     service.s3_service.delete_object.assert_called_once()
-    service.virus_scan_service.scan_file.assert_not_called()
+    service.virus_scan_service.scan_file.assert_called_once()
 
 
 def test_handle_upload_document_reference_request_with_exception(service):
@@ -193,8 +193,8 @@ def test_process_document_reference_infected_virus_scan(
 
 def test_perform_virus_scan_returns_clean_hardcoded(service, mock_document_reference):
     """Test virus scan returns hardcoded CLEAN result"""
-    result = service._perform_virus_scan(mock_document_reference)
 
+    result = service._perform_virus_scan(mock_document_reference)
     assert result == VirusScanResult.CLEAN
 
 
@@ -205,11 +205,9 @@ def test_perform_virus_scan_exception_returns_infected(
     mock_virus_service = mocker.patch.object(service, "virus_scan_service")
     mock_virus_service.scan_file.side_effect = Exception("Scan error")
 
-    # Since virus scanning is currently disabled, this test focuses on the exception handling pattern
     result = service._perform_virus_scan(mock_document_reference)
 
-    # Current implementation returns CLEAN due to hardcoded value
-    assert result == VirusScanResult.CLEAN
+    assert result == VirusScanResult.ERROR
 
 
 def test_process_clean_document_success(service, mock_document_reference, mocker):

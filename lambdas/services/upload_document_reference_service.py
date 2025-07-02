@@ -110,21 +110,13 @@ class UploadDocumentReferenceService:
     ) -> VirusScanResult:
         """Perform a virus scan on the document"""
         try:
-            # TODO: Uncomment when NDR-98 is complete
-            # return self.virus_scan_service.scan_file(document_reference.s3_file_key)
-
-            # Temporary hardcoded value - remove when virus scanning is implemented
-            logger.info(
-                "Using hardcoded CLEAN result - virus scanning disabled (NDR-98)"
-            )
-            return VirusScanResult.CLEAN
+            return self.virus_scan_service.scan_file(document_reference.s3_file_key)
 
         except Exception as e:
             logger.error(
                 f"Virus scan failed for document {document_reference.id}: {str(e)}"
             )
-            # Treat scan failures as potentially infected for safety
-            return VirusScanResult.INFECTED
+            return VirusScanResult.ERROR
 
     def _process_clean_document(
         self, document_reference: DocumentReference, object_key: str
@@ -191,7 +183,7 @@ class UploadDocumentReferenceService:
             logger.info("Updating dynamo db table")
 
             document.doc_status = (
-                "cancelled" if scan_result == VirusScanResult.INFECTED else "final"
+                "cancelled" if scan_result != VirusScanResult.CLEAN else "final"
             )
             update_fields = {
                 "virus_scanner_result",
