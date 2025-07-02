@@ -78,6 +78,7 @@ def lambda_handler(event, context):
     updated_fields = {"VirusScannerResult": scan_result}
     if scan_result == VirusScanResult.INFECTED:
         updated_fields["DocStatus"] = "cancelled"
+        logger.error("Document failed virus scan check")
     try:
         dynamo_service.update_item(
             table_name=lg_table_name,

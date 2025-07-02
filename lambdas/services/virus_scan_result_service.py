@@ -42,7 +42,7 @@ class VirusScanService:
                 )
             else:
                 logger.info(
-                    "File is not clean",
+                    "File scan result was not 'clean'",
                     {"Result": FAIL_SCAN},
                 )
             return result
