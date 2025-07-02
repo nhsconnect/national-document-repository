@@ -10,7 +10,6 @@ from enums.supported_document_types import SupportedDocumentTypes
 from enums.virus_scan_result import VirusScanResult
 from services.base.dynamo_service import DynamoDBService
 from services.feature_flags_service import FeatureFlagService
-from services.virus_scan_result_service import VirusScanService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -20,6 +19,7 @@ from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_exceptions import FeatureFlagsException, VirusScanResultException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.utilities import get_virus_scan_service
 
 logger = LoggingService(__name__)
 
@@ -34,6 +34,7 @@ logger = LoggingService(__name__)
         "DOCUMENT_STORE_DYNAMODB_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "STAGING_STORE_BUCKET_NAME",
+        "VIRUS_SCAN_STUB",
     ]
 )
 @override_error_check
@@ -68,7 +69,7 @@ def lambda_handler(event, context):
         raise VirusScanResultException(400, LambdaError.VirusScanNoDocumentType)
 
     lg_table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
-    virus_scan_service = VirusScanService()
+    virus_scan_service = get_virus_scan_service()
     scan_result = virus_scan_service.scan_file(document_reference)
 
     dynamo_service = DynamoDBService()

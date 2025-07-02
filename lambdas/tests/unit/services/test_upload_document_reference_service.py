@@ -32,12 +32,24 @@ def mock_document_reference():
 
 
 @pytest.fixture
-def service(set_env):
+def mock_virus_scan_service(
+    mocker,
+):
+
+    mock = mocker.patch(
+        "services.upload_document_reference_service.get_virus_scan_service"
+    )
+    mocked_class = mocker.MagicMock()
+    mock.return_value = mocked_class
+    yield mocked_class
+
+
+@pytest.fixture
+def service(set_env, mock_virus_scan_service):
     with patch.multiple(
         "services.upload_document_reference_service",
         DocumentService=Mock(),
         DynamoDBService=Mock(),
-        VirusScanService=Mock(),
         S3Service=Mock(),
     ):
         service = UploadDocumentReferenceService()

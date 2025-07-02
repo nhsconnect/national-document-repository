@@ -16,6 +16,7 @@ logger = LoggingService(__name__)
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "STAGING_STORE_BUCKET_NAME",
         "LLOYD_GEORGE_BUCKET_NAME",
+        "VIRUS_SCAN_STUB",
     ]
 )
 @handle_lambda_exceptions
