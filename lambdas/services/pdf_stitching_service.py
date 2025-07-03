@@ -5,6 +5,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from io import BytesIO
+from math import ceil
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -331,16 +332,24 @@ class PdfStitchingService:
             return
 
         sqs_service = SQSService()
+        total_batches = ceil(len(nhs_numbers) / batch_size)
+        logger.info(
+            f"total batches is {total_batches} batches for ODS code: {ods_code}"
+        )
 
         for batch_index, chunk in enumerate(batch(nhs_numbers, batch_size), start=1):
             messages = []
             for nhs_number in chunk:
+                logger.info(f"Preparing message for NHS number: {nhs_number}")
                 message = PdfStitchingSqsMessage(
                     nhs_number=nhs_number,
                     snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
                 ).model_dump_json()
                 messages.append(message)
             try:
+                logger.info(
+                    f"sending batch_index = {batch_index} containing the following nhs numbers: {', '.join(chunk)}"
+                )
                 response = sqs_service.send_message_batch_standard(
                     queue_url, messages, base_delay
                 )
