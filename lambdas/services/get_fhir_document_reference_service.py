@@ -93,18 +93,19 @@ class GetFhirDocumentReferenceService:
         logger.info("Creating FHIR DocumentReference response for document.")
         bucket_name = document_reference.s3_bucket_name
         file_location = document_reference.s3_file_key
-        file_size = document_reference.file_size or self.s3_service.get_file_size(
-            s3_bucket_name=bucket_name,
-            object_key=file_location,
-        )
+
         document_details = Attachment(
             title=document_reference.file_name,
             creation=document_reference.document_scan_creation
             or document_reference.created,
-            size=file_size,
             contentType=document_reference.content_type,
         )
         if document_reference.doc_status == "final":
+            file_size = document_reference.file_size or self.s3_service.get_file_size(
+                s3_bucket_name=bucket_name,
+                object_key=file_location,
+            )
+            document_details.size = file_size
             if file_size < FileSize.MAX_FILE_SIZE:
                 logger.info("File size is smaller than 8MB. Returning binary file.")
                 binary_file = self.s3_service.get_binary_file(

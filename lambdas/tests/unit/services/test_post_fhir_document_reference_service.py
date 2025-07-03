@@ -113,30 +113,21 @@ def valid_fhir_doc_with_binary(valid_fhir_doc_json):
 def test_process_fhir_document_reference_with_presigned_url(
     mock_service, valid_fhir_doc_json
 ):
-    mock_presigned_url_response = {
-        "url": "https://test-bucket.s3.amazonaws.com/",
-        "fields": {
-            "key": "test-file-key",
-            "x-amz-algorithm": "test-algorithm",
-        },
-    }
-    mock_service.s3_service.create_upload_presigned_url.return_value = (
+    mock_presigned_url_response = "https://test-bucket.s3.amazonaws.com/"
+
+    mock_service.s3_service.create_put_presigned_url.return_value = (
         mock_presigned_url_response
     )
 
     result = mock_service.process_fhir_document_reference(valid_fhir_doc_json)
-    expected_pre_sign_url = mock_presigned_url_response["url"]
-    expected_pre_sign_url += f"?key={mock_presigned_url_response['fields']['key']}"
-    expected_pre_sign_url += (
-        f"&x-amz-algorithm={mock_presigned_url_response['fields']['x-amz-algorithm']}"
-    )
+    expected_pre_sign_url = mock_presigned_url_response
 
     assert isinstance(result, str)
     result_json = json.loads(result)
     assert result_json["resourceType"] == "DocumentReference"
     assert result_json["content"][0]["attachment"]["url"] == expected_pre_sign_url
 
-    mock_service.s3_service.create_upload_presigned_url.assert_called_once()
+    mock_service.s3_service.create_put_presigned_url.assert_called_once()
     mock_service.dynamo_service.create_item.assert_called_once()
     mock_service.s3_service.upload_file_obj.assert_not_called()
 
@@ -290,7 +281,7 @@ def test_process_fhir_document_reference_with_pds_error(
 
 def test_s3_presigned_url_error(mock_service, valid_fhir_doc_json):
     """Test handling of S3 presigned URL error."""
-    mock_service.s3_service.create_upload_presigned_url.side_effect = ClientError(
+    mock_service.s3_service.create_put_presigned_url.side_effect = ClientError(
         {"Error": {"Code": "InternalServerError", "Message": "Test error"}},
         "CreatePresignedUrl",
     )

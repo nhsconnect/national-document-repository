@@ -2,7 +2,6 @@ import base64
 import binascii
 import io
 import os
-import urllib.parse
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -208,19 +207,13 @@ class PostFhirDocumentReferenceService:
     def _create_presigned_url(self, document_reference: DocumentReference) -> str:
         """Create a pre-signed URL for uploading a file"""
         try:
-            response = self.s3_service.create_upload_presigned_url(
+            response = self.s3_service.create_put_presigned_url(
                 document_reference.s3_bucket_name, document_reference.s3_file_key
             )
             logger.info(
                 f"Successfully created pre-signed URL for {document_reference.s3_file_key}"
             )
-            url = response["url"]
-            fields = response["fields"]
-            field_string = "&".join(
-                f"{key}={urllib.parse.quote(value)}" for key, value in fields.items()
-            )
-
-            return f"{url}?{field_string}"
+            return response
         except ClientError as e:
             logger.error(f"Failed to create pre-signed URL: {str(e)}")
             raise CreateDocumentRefException(500, LambdaError.CreateDocPresign)
