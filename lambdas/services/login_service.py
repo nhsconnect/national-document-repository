@@ -39,25 +39,24 @@ class LoginService:
     def generate_session(self, state, auth_code) -> dict:
         logger.info("Login process started")
 
-        if not self.mock_login_enabled:
-            try:
-                if not self.have_matching_state_value_in_record(state):
-                    logger.error(
-                        f"Mismatching state values. Cannot find state {state} in record",
-                        {"Result": "Unsuccessful login"},
-                    )
-                    raise LoginException(401, LambdaError.LoginBadState)
-            except ClientError as e:
+        try:
+            if not self.have_matching_state_value_in_record(state):
                 logger.error(
-                    f"{LambdaError.LoginClient.to_str()}: {str(e)}",
+                    f"Mismatching state values. Cannot find state {state} in record",
                     {"Result": "Unsuccessful login"},
                 )
-                raise LoginException(500, LambdaError.LoginClient)
+                raise LoginException(401, LambdaError.LoginBadState)
+        except ClientError as e:
+            logger.error(
+                f"{LambdaError.LoginClient.to_str()}: {str(e)}",
+                {"Result": "Unsuccessful login"},
+            )
+            raise LoginException(500, LambdaError.LoginClient)
 
+        try:
             logger.info("Setting up oidc service")
             self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
-        try:
             logger.info("Fetching access token from OIDC Provider")
             access_token, id_token_claim_set = self.oidc_service.fetch_tokens(auth_code)
 

@@ -1,4 +1,6 @@
+import random
 import re
+import string
 
 from enums.lambda_error import LambdaError
 from services.login_redirect_service import LoginRedirectService
@@ -15,16 +17,19 @@ class MockLoginRedirectService(LoginRedirectService):
             self.ssm_prefix + "MOCK_LOGIN_ROUTE"
         )
 
-        host = event.get["headers", {}].get("Host")
+        host = event.get("headers", {}).get("Host")
         if not host:
             logger.error(
                 "Host header not found in request",
                 {"Result": "Unsuccessful redirect"},
             )
             raise LoginRedirectException(500, LambdaError.RedirectClient)
+
+        state = "".join(random.choices(string.ascii_letters + string.digits, k=30))
+        self.save_state_in_dynamo_db(state)
+
         clean_url = re.sub(r"^api-", "", host)
-        url = f"https://{clean_url}{mock_login_route}"
-        logger.info(f"Mock login url: {url}")
+        url = f"https://{clean_url}{mock_login_route}?state={state}"
 
         location_header = {"Location": url}
         logger.info(

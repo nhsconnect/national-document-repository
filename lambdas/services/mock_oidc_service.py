@@ -80,3 +80,6 @@ class MockOidcService(OidcService):
         except KeyError as error:
             logger.error(f"Error while fetching userinfo: {error}")
             raise OidcApiException("Failed to retrieve userinfo")
+
+    def set_up_oidc_parameters(self, ssm_service_class, web_application_client_class):
+        pass
