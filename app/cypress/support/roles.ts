@@ -8,7 +8,6 @@ export enum Roles {
     'SMOKE_PCSE' = 'pcse',
 }
 
-// possible refactor from enum to exported consts - if we can't keep using the enum with 0 value when necess
 export const roleIds = Object.values(Roles) as Array<Roles>;
 export const roleList = Object.keys(Roles) as Array<string>;
 export const roleName = (role: Roles) =>
