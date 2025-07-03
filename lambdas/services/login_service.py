@@ -33,7 +33,6 @@ class LoginService:
         self.db_service = DynamoDBService()
         self.token_handler_ssm_service = TokenHandlerSSMService()
         self.ods_api_service = OdsApiService()
-        self.mock_login_enabled = mock_login_enabled
         self.oidc_service = MockOidcService() if mock_login_enabled else OidcService()
 
     def generate_session(self, state, auth_code) -> dict:
