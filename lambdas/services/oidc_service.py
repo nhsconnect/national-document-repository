@@ -206,7 +206,7 @@ class OidcService:
 
         if userinfo_response.status_code == 200:
             userinfo = userinfo_response.json()
-            logger.debug(f"User info response: {userinfo}")
+            logger.info(f"User info response: {userinfo}")
             return userinfo
         else:
             logger.error(

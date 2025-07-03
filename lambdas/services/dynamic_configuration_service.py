@@ -12,22 +12,18 @@ class DynamicConfigurationService:
         self.feature_flag_service = FeatureFlagService()
 
     def set_auth_ssm_prefix(self) -> None:
-        auth_flag_name = FeatureFlags.MOCK_LOGIN_ENABLED.value
+        prefix = "/auth/smartcard/"
 
         try:
-            use_mock_login_enabled_flag_object = (
-                self.feature_flag_service.get_feature_flags_by_flag(auth_flag_name)
-            )
+            auth_flag_name = FeatureFlags.MOCK_LOGIN_ENABLED.value
+            flags = self.feature_flag_service.get_feature_flags_by_flag(auth_flag_name)
+            if flags.get(auth_flag_name):
+                prefix = "/auth/mock/"
         except FeatureFlagsException:
-            logger.info("Setting auth ssm prefix to smartcard login")
-            request_context.auth_ssm_prefix = "/auth/smartcard/"
-            return
+            pass
 
-        if use_mock_login_enabled_flag_object[auth_flag_name]:
-            request_context.auth_ssm_prefix = "/auth/mock/"
-        else:
-            request_context.auth_ssm_prefix = "/auth/smartcard/"
-        logger.info("Setting auth ssm prefix to " + request_context.auth_ssm_prefix)
+        request_context.auth_ssm_prefix = prefix
+        logger.info(f"Setting auth ssm prefix to {prefix}")
 
     def is_auth_mocked(self) -> bool:
         return getattr(request_context, "auth_ssm_prefix", "") == "/auth/mock/"
