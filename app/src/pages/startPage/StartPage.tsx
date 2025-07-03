@@ -16,7 +16,6 @@ type Props = {};
 function StartPage(props: Props) {
     const navigate = useNavigate();
     const baseAPIUrl = useBaseAPIUrl();
-    const env = import.meta.env.MODE;
     const [isLoading, setIsLoading] = useState(false);
     const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         setIsLoading(true);
