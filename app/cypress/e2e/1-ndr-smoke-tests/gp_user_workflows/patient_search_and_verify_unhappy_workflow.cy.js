@@ -1,9 +1,7 @@
 import { Roles, roleName } from '../../../support/roles';
-import { routes } from '../../../support/routes';
 
 describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient on PDS', () => {
     // env vars
-    const baseUrl = Cypress.config('baseUrl');
     const gpRoles = [Roles.SMOKE_GP_ADMIN, Roles.SMOKE_GP_ADMIN];
 
     const workspace = Cypress.env('WORKSPACE');
