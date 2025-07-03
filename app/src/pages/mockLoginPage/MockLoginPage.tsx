@@ -1,6 +1,6 @@
 import { FormGroup, Form, Button } from 'nhsuk-react-components';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { routes } from '../../types/generic/routes';
 import { mock } from 'node:test';
 
@@ -15,6 +15,7 @@ const MockLoginPage = () => {
     const [odsCode, setOdsCode] = useState('');
     const [repositoryRole, setRepositoryRole] = useState('gp_admin');
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -23,11 +24,11 @@ const MockLoginPage = () => {
         const json = JSON.stringify(formData);
 
         const encodedData = encodeURIComponent(json);
-        const mockState = 'mock';
+        const state = searchParams.get('state') as string;
 
         const queryParams = new URLSearchParams();
         queryParams.append('code', encodedData);
-        queryParams.append('state', mockState);
+        queryParams.append('state', state);
 
         navigate(`${routes.AUTH_CALLBACK}?${queryParams.toString()}`);
     };
