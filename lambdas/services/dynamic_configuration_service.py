@@ -22,8 +22,8 @@ class DynamicConfigurationService:
         except FeatureFlagsException:
             pass
 
-        request_context.auth_ssm_prefix = prefix
         logger.info(f"Setting auth ssm prefix to {prefix}")
+        request_context.auth_ssm_prefix = prefix
 
     def is_auth_mocked(self) -> bool:
         return getattr(request_context, "auth_ssm_prefix", "") == "/auth/mock/"
