@@ -120,6 +120,7 @@ def test_nrl_pointer_created_single_document_uploads(
 ):
     mock_nrl_attachment = Attachment(
         url=f"{APIM_API_URL}/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~test_file_key",
+        title=None,
     )
     mock_nrl_message = NrlSqsMessage(
         nhs_number=TEST_STAGING_METADATA.nhs_number,
