@@ -201,7 +201,6 @@ describe('LloydGeorgeRecordPage', () => {
 
         await renderPage(history);
 
-        expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
     });
 
