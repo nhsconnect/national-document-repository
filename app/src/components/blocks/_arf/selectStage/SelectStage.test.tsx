@@ -59,26 +59,26 @@ describe('<SelectStage />', () => {
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
         });
 
-        // it.skip('does upload and then remove a file', async () => {
-        //     renderApp();
-        //     await userEvent.upload(screen.getByTestId('ARF-input'), [
-        //         documentOne,
-        //         documentTwo,
-        //         documentThree,
-        //     ]);
+        it.skip('does upload and then remove a file', async () => {
+            renderApp();
+            await userEvent.upload(screen.getByTestId('ARF-input'), [
+                documentOne,
+                documentTwo,
+                documentThree,
+            ]);
 
-        //     expect(screen.getByText(documentOne.name)).toBeInTheDocument();
+            expect(screen.getByText(documentOne.name)).toBeInTheDocument();
 
-        //     const removeFile = await screen.findByRole('button', {
-        //         name: `Remove ${documentOne.name} from selection`,
-        //     });
+            const removeFile = await screen.findByRole('button', {
+                name: `Remove ${documentOne.name} from selection`,
+            });
 
-        //     await userEvent.click(removeFile);
+            await userEvent.click(removeFile);
 
-        //     expect(screen.queryByText(documentOne.name)).not.toBeInTheDocument();
-        //     expect(screen.getByText(documentTwo.name)).toBeInTheDocument();
-        //     expect(screen.getByText(documentThree.name)).toBeInTheDocument();
-        // });
+            expect(screen.queryByText(documentOne.name)).not.toBeInTheDocument();
+            expect(screen.getByText(documentTwo.name)).toBeInTheDocument();
+            expect(screen.getByText(documentThree.name)).toBeInTheDocument();
+        });
 
         it('does not upload either forms if selected file is more than 5GB', async () => {
             renderApp();
