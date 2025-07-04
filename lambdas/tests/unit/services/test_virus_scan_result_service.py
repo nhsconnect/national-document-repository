@@ -6,7 +6,6 @@ from enums.pds_ssm_parameters import SSMParameter
 from enums.virus_scan_result import VirusScanResult
 from requests import Response
 from services.virus_scan_result_service import VirusScanService
-from tests.unit.conftest import MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME
 from tests.unit.helpers.data.virus_scanner.scan_results import (
     BAD_REQUEST_RESPONSE,
     CLEAN_FILE_RESPONSE,
@@ -23,13 +22,7 @@ MOCK_ARF_FILE_REF = "test_folder/ARF/111111111/test-id"
 def virus_scanner_service(set_env, mocker):
     service = VirusScanService()
     mocker.patch.object(service, "ssm_service")
-    mocker.patch.object(service, "dynamo_service")
     yield service
-
-
-@pytest.fixture
-def mock_update_dynamo_table(virus_scanner_service, mocker):
-    yield mocker.patch.object(virus_scanner_service, "update_dynamo_table")
 
 
 @pytest.fixture
@@ -320,7 +313,7 @@ def test_get_parameters_for_pds_api_request(virus_scanner_service):
 
 
 def test_scan_file_when_parameters_are_set(
-    mocker, virus_scanner_service, mock_update_dynamo_table, mock_request_virus_scan
+    mocker, virus_scanner_service, mock_request_virus_scan
 ):
     virus_scanner_service.get_ssm_parameters_for_request_access_token = (
         mocker.MagicMock()
@@ -332,47 +325,3 @@ def test_scan_file_when_parameters_are_set(
 
     virus_scanner_service.get_ssm_parameters_for_request_access_token.assert_not_called()
     mock_request_virus_scan.assert_called_once()
-    mock_update_dynamo_table.assert_called_once()
-
-
-def test_scan_file_when_update_dynamo_table_throws_client_error(
-    virus_scanner_service, mock_update_dynamo_table, mock_request_virus_scan
-):
-    virus_scanner_service.base_url = "test.endpoint"
-    mock_request_virus_scan.return_value = VirusScanResult.CLEAN
-    mock_update_dynamo_table.side_effect = ClientError(
-        {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
-    )
-
-    with pytest.raises(VirusScanResultException):
-        virus_scanner_service.scan_file(MOCK_LG_FILE_REF)
-
-
-def test_get_relevant_dynamo_table_arf(virus_scanner_service):
-    expected = MOCK_ARF_TABLE_NAME, "test-id"
-
-    actual = virus_scanner_service.get_dynamo_info(MOCK_ARF_FILE_REF)
-
-    assert actual == expected
-
-
-def test_get_relevant_dynamo_table_lg(virus_scanner_service):
-    expected = MOCK_LG_TABLE_NAME, "test-id"
-
-    actual = virus_scanner_service.get_dynamo_info(MOCK_LG_FILE_REF)
-
-    assert actual == expected
-
-
-def test_update_dynamo_table(mocker, virus_scanner_service):
-    mock_get_dynamo_info = mocker.patch.object(virus_scanner_service, "get_dynamo_info")
-    mock_get_dynamo_info.return_value = MOCK_LG_TABLE_NAME, "test-id"
-
-    virus_scanner_service.update_dynamo_table(MOCK_LG_FILE_REF, VirusScanResult.CLEAN)
-
-    virus_scanner_service.dynamo_service.update_item.assert_called_once_with(
-        table_name=MOCK_LG_TABLE_NAME,
-        key_pair={"ID": "test-id"},
-        updated_fields={"VirusScannerResult": VirusScanResult.CLEAN},
-    )
-    mock_get_dynamo_info.assert_called_once()
