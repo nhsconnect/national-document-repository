@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { act } from 'react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';

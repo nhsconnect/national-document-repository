@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { act } from 'react';
 import RemoveRecordStage from './RemoveRecordStage';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
