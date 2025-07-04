@@ -1,0 +1,44 @@
+{
+    "type": "message",
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "contentUrl": null,
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.4",
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "Medium",
+                        "weight": "Bolder",
+                        "text": "{{ alarm_entry.alarm_name_metric }} Alert: {{ alarm_entry.history[-1].value }}",
+                        "wrap": true
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Entry: {{ alarm_entry.alarm_name_metric }}:{{ alarm_entry.time_created }}"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "History: {{ alarm_history }}",
+                        "wrap": true
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Last state change: {{ formatted_time }}",
+                        "wrap": true
+                    }
+                ],
+                "actions": [
+                    {
+                        "type": "Action.OpenUrl",
+                        "title": "Find out what to do",
+                        "url": "{{ action_url }}"
+                    }
+                ]
+            }
+        }
+    ]
+}
