@@ -80,7 +80,7 @@ describe('LloydGeorgeUploadInfectedStage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to search for a patient page when button is clicked', () => {
+        it('navigates to search for a patient page when button is clicked', async () => {
             render(
                 <LloydGeorgeUploadInfectedStage
                     documents={[uploadDocument]}
@@ -91,12 +91,12 @@ describe('LloydGeorgeUploadInfectedStage', () => {
             expect(
                 screen.getByRole('button', { name: 'Search for a patient' }),
             ).toBeInTheDocument();
-            userEvent.click(screen.getByRole('button', { name: 'Search for a patient' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Search for a patient' }));
 
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
         });
 
-        it('restarts to beginning of upload journey when button is clicked', () => {
+        it('restarts to beginning of upload journey when button is clicked', async () => {
             render(
                 <LloydGeorgeUploadInfectedStage
                     documents={[uploadDocument]}
@@ -105,7 +105,7 @@ describe('LloydGeorgeUploadInfectedStage', () => {
             );
 
             expect(screen.getByRole('button', { name: 'Try upload again' })).toBeInTheDocument();
-            userEvent.click(screen.getByRole('button', { name: 'Try upload again' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Try upload again' }));
 
             expect(restartJourneyMock).toHaveBeenCalled();
         });

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import DeleteSubmitStage, { Props } from './DeleteSubmitStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
@@ -105,11 +105,9 @@ describe('DeleteSubmitStage', () => {
 
             expect(noButton).not.toBeChecked();
 
-            act(() => {
-                userEvent.click(noButton);
-                expect(noButton).toBeChecked();
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(noButton);
+            expect(noButton).toBeChecked();
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
             expect(screen.queryByTestId('delete-error-box')).not.toBeInTheDocument();
 
             await waitFor(() => {
@@ -122,10 +120,8 @@ describe('DeleteSubmitStage', () => {
 
             renderComponent(DOCUMENT_TYPE.ALL, history);
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'No' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'No' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_OVERVIEW);
@@ -137,10 +133,8 @@ describe('DeleteSubmitStage', () => {
 
             renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'No' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'No' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await waitFor(() => {
                 expect(mockSetStage).toHaveBeenCalledTimes(0);
@@ -157,10 +151,8 @@ describe('DeleteSubmitStage', () => {
             expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
@@ -179,10 +171,8 @@ describe('DeleteSubmitStage', () => {
             expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await waitFor(() => {
                 expect(mockResetDocState).toHaveBeenCalled();
@@ -199,10 +189,8 @@ describe('DeleteSubmitStage', () => {
             expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_DELETE_COMPLETE);
@@ -218,10 +206,8 @@ describe('DeleteSubmitStage', () => {
             expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await waitFor(() => {
                 expect(screen.queryByText('Deletion complete')).not.toBeInTheDocument();
@@ -242,10 +228,8 @@ describe('DeleteSubmitStage', () => {
             expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await waitFor(() => {
                 expect(
@@ -270,9 +254,7 @@ describe('DeleteSubmitStage', () => {
             expect(noButton).not.toBeChecked();
             expect(yesButton).not.toBeChecked();
 
-            act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
             expect(await screen.findByText('You must select an option')).toBeInTheDocument();
             expect(
                 screen.getByText(
@@ -287,10 +269,8 @@ describe('DeleteSubmitStage', () => {
 
             renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await waitFor(() => {
                 expect(screen.getByTestId('delete-submit-spinner-btn')).toBeInTheDocument();
@@ -319,10 +299,8 @@ describe('DeleteSubmitStage', () => {
             };
             mockedAxios.delete.mockRejectedValueOnce(errorResponse);
 
-            act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-            });
+            await userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
             await screen.findByText('Sorry, the service is currently unavailable.');
 
@@ -348,10 +326,8 @@ describe('Navigation', () => {
         expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 
-        act(() => {
-            userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-            userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-        });
+        await userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);

@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import { LinkProps } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';

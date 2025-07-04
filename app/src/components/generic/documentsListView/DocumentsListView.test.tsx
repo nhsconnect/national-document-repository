@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import DocumentsListView from './DocumentsListView';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -30,9 +30,7 @@ describe('DocumentsListView', () => {
     it('renders "View files" when files are not displayed', async () => {
         render(<DocumentsListView documentsList={mockDocuments} ariaLabel={'test'} />);
 
-        act(() => {
-            userEvent.click(screen.getByText('Hide files'));
-        });
+        await userEvent.click(screen.getByText('Hide files'));
 
         await waitFor(() => {
             expect(screen.getByText('View files')).toBeInTheDocument();

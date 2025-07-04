@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 describe('focusElement', () => {
-    it('set focus to the given element', () => {
+    it('set focus to the given element', async () => {
         renderTestApp();
 
         const h1 = screen.getByRole('heading', { name: 'Test heading' });
@@ -14,7 +14,7 @@ describe('focusElement', () => {
         expect(h1).toHaveFocus();
         expect(h1).toHaveAttribute('tabIndex', '-1');
 
-        userEvent.tab();
+        await userEvent.tab();
         expect(h1).not.toHaveFocus();
         expect(h1).not.toHaveAttribute('tabIndex');
     });

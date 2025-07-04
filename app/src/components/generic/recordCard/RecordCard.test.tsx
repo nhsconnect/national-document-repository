@@ -3,7 +3,7 @@ import useConfig from '../../../helpers/hooks/useConfig';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getLloydGeorgeRecord from '../../../helpers/requests/getLloydGeorgeRecord';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import RecordCard, { Props } from './RecordCard';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
@@ -76,9 +76,7 @@ describe('RecordCard Component', () => {
             await waitFor(() => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
             });
-            act(() => {
-                userEvent.click(screen.getByTestId('full-screen-btn'));
-            });
+            await userEvent.click(screen.getByTestId('full-screen-btn'));
             await waitFor(() => {
                 expect(mockFullScreenHandler).toHaveBeenCalled();
             });
@@ -152,7 +150,7 @@ describe('RecordCard Component', () => {
                 expect(screen.getByTestId('full-screen-btn')).toBeInTheDocument();
             });
 
-            userEvent.click(screen.getByTestId('full-screen-btn'));
+            await userEvent.click(screen.getByTestId('full-screen-btn'));
 
             expect(mockFullScreenHandler).toHaveBeenCalledWith(true);
         });

@@ -6,6 +6,7 @@ import { describe, expect, it, vi, Mocked } from 'vitest';
 
 vi.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
+(mockedAxios.post as any) = vi.fn();
 
 describe('postPatientAccessAudit', () => {
     const accessAuditData = {
@@ -40,7 +41,7 @@ describe('postPatientAccessAudit', () => {
     });
 
     it('should return an axios error when the request fails', async () => {
-        mockedAxios.post.mockImplementation(() => {
+        const postSpy = vi.spyOn(mockedAxios, 'post').mockImplementation(() => {
             throw { response: { status: 404 } };
         });
         const args = {
@@ -54,7 +55,6 @@ describe('postPatientAccessAudit', () => {
             nhsNumber: '1234567890',
         };
 
-        const getSpy = vi.spyOn(mockedAxios, 'post');
         let errorCode;
 
         try {
@@ -65,7 +65,7 @@ describe('postPatientAccessAudit', () => {
 
         expect(errorCode).not.toBeUndefined();
         expect(errorCode).toBe(404);
-        expect(getSpy).toHaveBeenCalledWith(args.baseUrl + '/AccessAudit', accessAuditData, {
+        expect(postSpy).toHaveBeenCalledWith(args.baseUrl + '/AccessAudit', accessAuditData, {
             headers: args.baseHeaders,
             params: {
                 accessAuditType: args.accessAuditType,

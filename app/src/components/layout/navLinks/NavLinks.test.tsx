@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import NavLinks from './NavLinks';
 import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
 import { buildUserAuth } from '../../../helpers/test/testBuilders';
@@ -12,14 +13,14 @@ vi.mock('react-router-dom', () => ({
 }));
 
 describe('NavLinks', () => {
-    const oldWindowLocation = window.location;
+    const oldWindowLocation = window.location.href;
     beforeEach(() => {
         sessionStorage.setItem('UserSession', '');
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
         vi.clearAllMocks();
-        window.location = oldWindowLocation;
+        window.location.href = oldWindowLocation;
     });
 
     describe('Rendering', () => {
