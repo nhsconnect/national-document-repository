@@ -8,6 +8,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import PreliminaryStatus
 from utils.exceptions import DocumentServiceException, FileProcessingException
 from utils.utilities import get_virus_scan_service
 
@@ -53,12 +54,13 @@ class UploadDocumentReferenceService:
     ) -> Optional[DocumentReference]:
         """Fetch document reference from the database"""
         try:
+
             documents = self.document_service.fetch_documents_from_table(
                 table=self.table_name,
                 search_condition=document_key,
                 search_key="ID",
+                query_filter=PreliminaryStatus,
             )
-
             if not documents:
                 logger.error(
                     f"No document with the following key found in {self.table_name} table: {document_key}"
