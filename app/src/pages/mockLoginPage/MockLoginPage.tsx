@@ -2,7 +2,6 @@ import { FormGroup, Form, Button } from 'nhsuk-react-components';
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { routes } from '../../types/generic/routes';
-import { mock } from 'node:test';
 
 type LoginFormData = {
     key: string;
