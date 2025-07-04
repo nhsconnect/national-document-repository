@@ -293,7 +293,7 @@ const createRoutesFromType = (routeType: ROUTE_TYPE) =>
             route.type === routeType
                 ? [...acc, <Route key={path} path={path} element={route.page} />]
                 : acc,
-        [] as Array<JSX.Element>,
+        [] as Array<React.JSX.Element>,
     );
 
 const AppRoutes = () => {
