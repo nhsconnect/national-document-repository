@@ -199,8 +199,8 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.get.mockResolvedValue({ data: lgResult });
 
-        await act(async () => {
-            await renderPage(history);
+        act(() => {
+            renderPage(history);
         });
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
