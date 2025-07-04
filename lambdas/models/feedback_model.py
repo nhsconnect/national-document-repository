@@ -5,7 +5,7 @@ from pydantic.alias_generators import to_camel
 
 
 class Feedback(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    model_config = ConfigDict(validate_by_name=True, alias_generator=to_camel)
 
     feedback_content: str
     experience: str = Field(alias="howSatisfied")

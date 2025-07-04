@@ -7,7 +7,7 @@ import requests
 from enums.pds_ssm_parameters import SSMParameter
 from enums.supported_document_types import SupportedDocumentTypes
 from enums.validation_score import ValidationResult, ValidationScore
-from models.nhs_document_reference import NHSDocumentReference
+from models.document_reference import DocumentReference
 from models.pds_models import Patient
 from requests import HTTPError
 from services.base.ssm_service import SSMService
@@ -84,9 +84,7 @@ def check_for_patient_already_exist_in_repo(nhs_number: str):
         )
 
 
-def validate_lg_files(
-    file_list: list[NHSDocumentReference], pds_patient_details: Patient
-):
+def validate_lg_files(file_list: list[DocumentReference], pds_patient_details: Patient):
     nhs_number = pds_patient_details.id
     files_name_list = []
 

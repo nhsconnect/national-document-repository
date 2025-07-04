@@ -1,5 +1,3 @@
-@import 'govuk-frontend/dist/govuk/components/phase-banner/phase-banner';
-@import 'govuk-frontend/dist/govuk/components/warning-text/warning-text';
 @import 'govuk-frontend/dist/govuk/components/notification-banner/notification-banner';
 
 @import 'nhsuk-frontend/packages/nhsuk';
@@ -860,24 +858,26 @@ $hunit: '%';
     margin-bottom: 48px;
 }
 
-.govuk-phase-banner {
+.nhsuk-phase-banner {
     background: #fff;
     border: none;
 }
 
-.govuk-phase-banner__content__tag {
-    padding-right: 10px;
+.nhsuk-phase-banner__content__tag {
+    margin-right: 5px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.govuk-warning-text__icon {
-    border: 3px solid $color_nhsuk-yellow;
-    background: $color_nhsuk-yellow;
-    color: $nhsuk-text-color;
-}
-
-.govuk-warning-text {
+.nhsuk-phase-banner__content {
     display: flex;
     align-items: center;
+}
+
+.nhsuk-phase-banner__text {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 7px;
 }
 
 .nhs-warning-color {
