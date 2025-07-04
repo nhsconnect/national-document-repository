@@ -1,7 +1,6 @@
 import base64
 import copy
 import json
-from io import BytesIO
 
 import pytest
 from enums.lambda_error import LambdaError
@@ -255,13 +254,13 @@ def test_create_document_reference_fhir_response_with_binary_document_data(
     modified_doc.document_scan_creation = "2023-05-15"
 
     patched_service.s3_service.get_file_size.return_value = 7999999
-    mock_binary_file = BytesIO(b"binary data")
-    patched_service.s3_service.get_object_stream.return_value = mock_binary_file
+    mock_binary_file = b"binary data"
+    patched_service.s3_service.get_binary_file.return_value = mock_binary_file
 
     result = patched_service.create_document_reference_fhir_response(modified_doc)
     result_json = json.loads(result)
-    mock_binary_file.seek(0)
-    expected_encoded = base64.b64encode(mock_binary_file.read()).decode("utf-8")
-    assert result_json["content"][0]["attachment"]["data"] == expected_encoded
+    assert result_json["content"][0]["attachment"]["data"] == base64.b64encode(
+        mock_binary_file
+    ).decode("utf-8")
     assert result_json["content"][0]["attachment"]["title"] == "different_file.pdf"
     assert result_json["content"][0]["attachment"]["creation"] == "2023-05-15"
