@@ -1,10 +1,11 @@
 import os
+from typing import Optional
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
-from models.document_reference import DocumentReference
-from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
+from models.document_reference import DocumentReference, UploadRequestDocument
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
@@ -48,9 +49,9 @@ class CreateDocumentReferenceService:
     def create_document_reference_request(
         self, nhs_number: str, documents_list: list[dict]
     ):
-        arf_documents: list[NHSDocumentReference] = []
+        arf_documents: list[DocumentReference] = []
         arf_documents_dict_format: list = []
-        lg_documents: list[NHSDocumentReference] = []
+        lg_documents: list[DocumentReference] = []
         lg_documents_dict_format: list = []
         url_responses = {}
 
@@ -63,26 +64,35 @@ class CreateDocumentReferenceService:
 
         try:
             validate_nhs_number(nhs_number)
-
+            snomed_code_type = None
             current_gp_ods = ""
             if has_lg_document:
                 pds_patient_details = getting_patient_info_from_pds(nhs_number)
                 current_gp_ods = (
                     pds_patient_details.get_ods_code_or_inactive_status_for_gp()
                 )
+                snomed_code_type = SnomedCodes.LLOYD_GEORGE.value.code
 
             for validated_doc in upload_request_documents:
-                document_reference = self.prepare_doc_object(
-                    nhs_number, current_gp_ods, validated_doc
+                document_reference = self.create_document_reference(
+                    nhs_number, current_gp_ods, validated_doc, snomed_code_type
                 )
 
                 match document_reference.doc_type:
-                    case SupportedDocumentTypes.ARF.value:
+                    case SupportedDocumentTypes.ARF:
                         arf_documents.append(document_reference)
-                        arf_documents_dict_format.append(document_reference.to_dict())
-                    case SupportedDocumentTypes.LG.value:
+                        arf_documents_dict_format.append(
+                            document_reference.model_dump(
+                                by_alias=True, exclude_none=True
+                            )
+                        )
+                    case SupportedDocumentTypes.LG:
                         lg_documents.append(document_reference)
-                        lg_documents_dict_format.append(document_reference.to_dict())
+                        lg_documents_dict_format.append(
+                            document_reference.model_dump(
+                                by_alias=True, exclude_none=True
+                            )
+                        )
                     case _:
                         logger.error(
                             f"{LambdaError.CreateDocInvalidType.to_str()}",
@@ -154,46 +164,39 @@ class CreateDocumentReferenceService:
 
         return upload_request_document_list
 
-    def prepare_doc_object(
-        self, nhs_number: str, current_gp_ods: str, validated_doc: UploadRequestDocument
-    ) -> NHSDocumentReference:
-
-        logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
-
-        document_reference = self.create_document_reference(
-            nhs_number,
-            current_gp_ods,
-            validated_doc,
-            s3_bucket_name=self.staging_bucket_name,
-            sub_folder=self.upload_sub_folder,
-        )
-
-        return document_reference
-
     def create_document_reference(
         self,
         nhs_number: str,
         current_gp_ods: str,
         validated_doc: UploadRequestDocument,
-        s3_bucket_name: str,
-        sub_folder="",
-    ) -> NHSDocumentReference:
+        snomed_code_type: Optional[str] = None,
+    ) -> DocumentReference:
+
+        s3_bucket_name = self.staging_bucket_name
+        sub_folder = self.upload_sub_folder
+
+        logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
+
         s3_object_key = create_reference_id()
 
-        document_reference = NHSDocumentReference(
+        document_reference = DocumentReference(
+            id=s3_object_key,
             nhs_number=nhs_number,
+            author=current_gp_ods,
             current_gp_ods=current_gp_ods,
-            s3_bucket_name=s3_bucket_name,
-            sub_folder=sub_folder,
-            reference_id=s3_object_key,
+            custodian=current_gp_ods,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
             doc_type=validated_doc.docType,
+            document_snomed_code_type=snomed_code_type,
+            s3_bucket_name=s3_bucket_name,
+            sub_folder=sub_folder,
             uploading=True,
+            doc_status="preliminary",
         )
         return document_reference
 
-    def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
+    def prepare_pre_signed_url(self, document_reference: DocumentReference):
         try:
             s3_response = self.s3_service.create_upload_presigned_url(
                 document_reference.s3_bucket_name, document_reference.s3_file_key
@@ -281,8 +284,8 @@ class CreateDocumentReferenceService:
 
         logger.info("Deleting files from s3...")
         for record in failed_upload_records:
-            s3_bucket_name = record.get_file_bucket()
-            file_key = record.get_file_key()
+            s3_bucket_name = record.s3_bucket_name
+            file_key = record.s3_file_key
             self.s3_service.delete_object(s3_bucket_name, file_key)
 
         logger.info("Deleting dynamodb record...")
