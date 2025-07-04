@@ -64,7 +64,7 @@ describe('PatientSearchPage', () => {
             async (role) => {
                 mockedUseRole.mockReturnValue(role);
 
-                mockedAxios.get.mockImplementation(() => waitForSeconds(0));
+                mockedAxios.get.mockImplementation(() => waitForSeconds(1));
 
                 renderPatientSearchPage();
 
