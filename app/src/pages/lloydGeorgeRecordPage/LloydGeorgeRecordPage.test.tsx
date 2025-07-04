@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import {
     buildPatientDetails,
@@ -65,7 +66,9 @@ describe('LloydGeorgeRecordPage', () => {
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
-        await renderPage(history);
+        await act(async () => {
+            await renderPage(history);
+        });
 
         await waitFor(async () => {
             expect(screen.getByText(patientName)).toBeInTheDocument();
@@ -75,7 +78,9 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('renders initial lg record view', async () => {
-        await renderPage(history);
+        await act(async () => {
+            await renderPage(history);
+        });
         await waitFor(async () => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
@@ -91,7 +96,9 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        await renderPage(history);
+        await act(async () => {
+            await renderPage(history);
+        });
 
         await waitFor(async () => {
             expect(
@@ -113,7 +120,9 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        await renderPage(history);
+        await act(async () => {
+            await renderPage(history);
+        });
 
         await waitFor(async () => {
             expect(
@@ -136,7 +145,9 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        await renderPage(history);
+        await act(async () => {
+            await renderPage(history);
+        });
 
         await waitFor(async () => {
             expect(
@@ -158,7 +169,9 @@ describe('LloydGeorgeRecordPage', () => {
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
         mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
-        await renderPage(history);
+        await act(async () => {
+            await renderPage(history);
+        });
 
         await waitFor(async () => {
             expect(
@@ -171,7 +184,9 @@ describe('LloydGeorgeRecordPage', () => {
     it('displays Loading... until the pdf is fetched', async () => {
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
-        renderPage(history);
+        act(() => {
+            renderPage(history);
+        });
 
         await waitFor(async () => {
             expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -184,7 +199,9 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.get.mockResolvedValue({ data: lgResult });
 
-        await renderPage(history);
+        await act(async () => {
+            await renderPage(history);
+        });
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
@@ -197,7 +214,9 @@ describe('LloydGeorgeRecordPage', () => {
 
             mockAxios.get.mockResolvedValue({ data: lgResult });
 
-            await renderPage(history);
+            await act(async () => {
+                await renderPage(history);
+            });
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
