@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -78,10 +79,8 @@ describe('<FeedbackPage />', () => {
 
             renderComponent();
 
-            act(() => {
-                fillInForm(mockInputData);
-                clickSubmitButton();
-            });
+            await fillInForm(mockInputData);
+            clickSubmitButton();
 
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(baseURL + '/Feedback', mockInputData, {
@@ -102,10 +101,8 @@ describe('<FeedbackPage />', () => {
 
             renderComponent();
 
-            act(() => {
-                fillInForm(mockInputData);
-                clickSubmitButton();
-            });
+            fillInForm(mockInputData);
+            clickSubmitButton();
 
             await waitFor(() => {
                 expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
@@ -123,10 +120,8 @@ describe('<FeedbackPage />', () => {
 
             renderComponent();
 
-            act(() => {
-                fillInForm(mockInputData);
-                clickSubmitButton();
-            });
+            fillInForm(mockInputData);
+            clickSubmitButton();
 
             await waitFor(() => {
                 expect(screen.getByText('Please select an option')).toBeInTheDocument();
@@ -145,10 +140,8 @@ describe('<FeedbackPage />', () => {
 
             renderComponent();
 
-            act(() => {
-                fillInForm(mockInputData);
-                clickSubmitButton();
-            });
+            await fillInForm(mockInputData);
+            clickSubmitButton();
 
             await waitFor(() => {
                 expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
@@ -173,10 +166,8 @@ describe('<FeedbackPage />', () => {
 
             renderComponent();
 
-            act(() => {
-                fillInForm(mockInputData);
-                clickSubmitButton();
-            });
+            await fillInForm(mockInputData);
+            clickSubmitButton();
 
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(
@@ -211,10 +202,8 @@ describe('<FeedbackPage />', () => {
 
             renderComponent();
 
-            act(() => {
-                fillInForm(mockInputData);
-                clickSubmitButton();
-            });
+            await fillInForm(mockInputData);
+            clickSubmitButton();
 
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(baseURL + '/Feedback', mockInputData, {
@@ -245,10 +234,8 @@ describe('<FeedbackPage />', () => {
 
             renderComponent();
 
-            act(() => {
-                fillInForm(mockInputData);
-                clickSubmitButton();
-            });
+            await fillInForm(mockInputData);
+            clickSubmitButton();
 
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(baseURL + '/Feedback', mockInputData, {
@@ -275,10 +262,8 @@ describe('<FeedbackPage />', () => {
 
             renderComponent();
 
-            act(() => {
-                fillInForm(mockInputData);
-                clickSubmitButton();
-            });
+            await fillInForm(mockInputData);
+            clickSubmitButton();
 
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(

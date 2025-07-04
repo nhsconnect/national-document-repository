@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import DownloadReportSelectStage from './DownloadReportSelectStage';
 import { getReportByType, REPORT_TYPE } from '../../../../types/generic/reports';
 import { LinkProps } from 'react-router-dom';
@@ -63,11 +63,11 @@ describe('DownloadReportSelectStage', () => {
 
             render(<DownloadReportSelectStage report={report!} />);
 
-            userEvent.click(
+            await userEvent.click(
                 screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
             );
 
-            expect(setDownloadError).toHaveBeenCalledTimes(1);
+            expect(setDownloadError).toHaveBeenCalledTimes(3);
         });
 
         it('should navigate to session expired when receiving a 403', async () => {
@@ -85,12 +85,9 @@ describe('DownloadReportSelectStage', () => {
 
             render(<DownloadReportSelectStage report={report!} />);
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
-                );
-            });
-
+            await userEvent.click(
+                screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
+            );
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });

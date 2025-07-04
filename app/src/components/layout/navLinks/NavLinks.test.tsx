@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import NavLinks from './NavLinks';
 import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
 import { buildUserAuth } from '../../../helpers/test/testBuilders';

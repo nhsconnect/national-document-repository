@@ -6,6 +6,7 @@ import { describe, expect, it, vi, Mocked } from 'vitest';
 
 vi.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
+(mockedAxios.get as any) = vi.fn();
 
 const mockResponse = vi.fn();
 Object.defineProperty(window, 'location', {
@@ -49,7 +50,7 @@ describe('downloadReport', () => {
     });
 
     it('should throw an axios error when the request fails', async () => {
-        mockedAxios.get.mockImplementation(() => {
+        const getSpy = vi.spyOn(mockedAxios, 'get').mockImplementation(() => {
             throw { response: { status: 404 } };
         });
         const args = {
@@ -62,7 +63,6 @@ describe('downloadReport', () => {
             } as AuthHeaders,
         };
 
-        const getSpy = vi.spyOn(mockedAxios, 'get');
         let errorCode;
 
         try {

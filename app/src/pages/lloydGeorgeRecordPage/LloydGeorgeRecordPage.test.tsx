@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import {
     buildPatientDetails,
@@ -205,15 +205,13 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     const renderPage = async (history: History) => {
-        return await act(() => {
-            return render(
-                <SessionProvider sessionOverride={{ isLoggedIn: true }}>
-                    <ReactRouter.Router navigator={history} location={history.location}>
-                        <LloydGeorgeRecordPage />
-                    </ReactRouter.Router>
-                    ,
-                </SessionProvider>,
-            );
-        });
+        return render(
+            <SessionProvider sessionOverride={{ isLoggedIn: true }}>
+                <ReactRouter.Router navigator={history} location={history.location}>
+                    <LloydGeorgeRecordPage />
+                </ReactRouter.Router>
+                ,
+            </SessionProvider>,
+        );
     };
 });

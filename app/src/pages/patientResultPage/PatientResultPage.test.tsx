@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import PatientResultPage from './PatientResultPage';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';

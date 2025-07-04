@@ -1,5 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
-import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
@@ -93,9 +93,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             });
             expect(checkbox).not.toBeChecked();
 
-            act(() => {
-                userEvent.click(checkbox);
-            });
+            await userEvent.click(checkbox);
             expect(mockSetSelectedDocuments).toBeCalledWith(expectedSelectedDocument);
         });
 
@@ -110,9 +108,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             });
             expect(checkbox).toBeChecked();
 
-            act(() => {
-                userEvent.click(checkbox);
-            });
+            await userEvent.click(checkbox);
             expect(mockSetSelectedDocuments).toBeCalledWith(expectedSelectedDocument);
         });
 
@@ -137,9 +133,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
                 const checkboxes = screen.getAllByRole('checkbox');
 
-                act(() => {
-                    userEvent.click(toggleSelectAllBtn);
-                });
+                await userEvent.click(toggleSelectAllBtn);
 
                 expect(mockSetSelectedDocuments).toBeCalledWith(mockAllSelectedDocuments);
 
@@ -160,7 +154,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 expect(toggleSelectAllBtn).toHaveTextContent('All files are selected');
             });
 
-            it('check all checkboxes unchecked, when select all files button clicked, all files previously checked', () => {
+            it('check all checkboxes unchecked, when select all files button clicked, all files previously checked', async () => {
                 let selectedDocuments = mockAllSelectedDocuments;
                 mockSetSelectedDocuments.mockImplementation(
                     (documents) => (selectedDocuments = documents),
@@ -179,9 +173,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 expect(toggleSelectAllBtn).toHaveTextContent('Deselect all files');
                 expect(toggleSelectAllBtn).toHaveTextContent('All files are selected');
 
-                act(() => {
-                    userEvent.click(toggleSelectAllBtn);
-                });
+                await userEvent.click(toggleSelectAllBtn);
 
                 expect(mockSetSelectedDocuments).toBeCalledWith([]);
 
@@ -201,7 +193,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 expect(toggleSelectAllBtn).toHaveTextContent('All files are deselected');
             });
 
-            it('check all checkboxes unchecked, when select all files button clicked twice, no files previously checked', () => {
+            it('check all checkboxes unchecked, when select all files button clicked twice, no files previously checked', async () => {
                 const props: Props = {
                     searchResults: searchResults,
                     setSubmissionSearchState: mockSetSubmissionSearchState,
@@ -216,15 +208,11 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
                 const checkboxes = screen.getAllByRole('checkbox');
 
-                act(() => {
-                    userEvent.click(toggleSelectAllBtn);
-                });
+                await userEvent.click(toggleSelectAllBtn);
 
                 rerender(<LloydGeorgeSelectSearchResults {...props} />);
 
-                act(() => {
-                    userEvent.click(toggleSelectAllBtn);
-                });
+                await userEvent.click(toggleSelectAllBtn);
 
                 expect(mockSetSelectedDocuments).toBeCalledWith([]);
 
@@ -268,7 +256,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 expect(checkbox).toHaveAttribute('aria-checked');
             });
         });
-        it('checkbox has aria-checked attribute reflecting the checkbox status', () => {
+        it('checkbox has aria-checked attribute reflecting the checkbox status', async () => {
             const props: Props = {
                 searchResults: searchResults,
                 setSubmissionSearchState: mockSetSubmissionSearchState,
@@ -284,17 +272,13 @@ describe('LloydGeorgeSelectSearchResults', () => {
 
             expect(firstCheckBox).toHaveAttribute('aria-checked', 'false');
 
-            act(() => {
-                userEvent.click(firstCheckBox);
-            });
+            await userEvent.click(firstCheckBox);
 
             rerender(<LloydGeorgeSelectSearchResults {...props} />);
 
             expect(firstCheckBox).toHaveAttribute('aria-checked', 'true');
 
-            act(() => {
-                userEvent.click(firstCheckBox);
-            });
+            await userEvent.click(firstCheckBox);
 
             rerender(<LloydGeorgeSelectSearchResults {...props} />);
 
@@ -310,24 +294,20 @@ describe('LloydGeorgeSelectSearchResults', () => {
     });
 
     describe('Navigation', () => {
-        it('sets submission state when download selected files button is clicked and not all files selected', () => {
+        it('sets submission state when download selected files button is clicked and not all files selected', async () => {
             renderComponent();
 
-            act(() => {
-                userEvent.click(screen.getByTestId('download-selected-files-btn'));
-            });
+            await userEvent.click(screen.getByTestId('download-selected-files-btn'));
 
             expect(mockSetSubmissionSearchState).toHaveBeenCalledWith(
                 SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED,
             );
         });
 
-        it('sets submission state and empties selected docs array when download selected files button is clicked but all files selected', () => {
+        it('sets submission state and empties selected docs array when download selected files button is clicked but all files selected', async () => {
             renderComponent({ selectedDocuments: ['test-id-1', 'test-id-2', 'test-id-3'] });
 
-            act(() => {
-                userEvent.click(screen.getByTestId('download-selected-files-btn'));
-            });
+            await userEvent.click(screen.getByTestId('download-selected-files-btn'));
 
             expect(mockSetSelectedDocuments).toHaveBeenCalledWith([]);
             expect(mockSetSubmissionSearchState).toHaveBeenCalledWith(
