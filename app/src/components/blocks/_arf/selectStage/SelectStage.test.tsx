@@ -96,42 +96,40 @@ describe('<SelectStage />', () => {
             ).toBeInTheDocument();
         });
 
-        // it.skip('shows a duplicate file warning if two or more files match name/size for ARF input only', async () => {
-        //     const duplicateFileWarning = 'There are two or more documents with the same name.';
-        //     renderApp();
+        it.skip('shows a duplicate file warning if two or more files match name/size for ARF input only', async () => {
+            const duplicateFileWarning = 'There are two or more documents with the same name.';
+            renderApp();
 
-        //     await userEvent.upload(screen.getByTestId('ARF-input'), [documentOne, documentOne]);
+            await userEvent.upload(screen.getByTestId('ARF-input'), [documentOne, documentOne]);
 
-        //     await screen.findByText(duplicateFileWarning);
+            await screen.findByText(duplicateFileWarning);
 
-        //     const removeButtons = await screen.findAllByRole('button', {
-        //         name: `Remove ${documentOne.name} from selection`,
-        //     });
+            const removeButtons = await screen.findAllByRole('button', {
+                name: `Remove ${documentOne.name} from selection`,
+            });
 
-        //     userEvent.click(removeButtons[1]);
+            userEvent.click(removeButtons[1]);
 
-        //     await waitFor(() => {
-        //         expect(screen.queryByText(duplicateFileWarning)).not.toBeInTheDocument();
-        //     });
-        // });
+            await waitFor(() => {
+                expect(screen.queryByText(duplicateFileWarning)).not.toBeInTheDocument();
+            });
+        });
 
-        // it("does allow the user to add the same file again if they remove for '%s' input", async () => {
-        //     renderApp();
-        //     const selectFilesLabel = screen.getByTestId('ARF-input');
+        it.skip("does allow the user to add the same file again if they remove for '%s' input", async () => {
+            renderApp();
+            const selectFilesLabel = screen.getByTestId('ARF-input');
 
-        //     act(() => {
-        //         userEvent.upload(selectFilesLabel, documentOne);
-        //     });
+            await userEvent.upload(selectFilesLabel, documentOne);
 
-        //     const removeFile = await screen.findByRole('button', {
-        //         name: `Remove ${documentOne.name} from selection`,
-        //     });
+            const removeFile = await screen.findByRole('button', {
+                name: `Remove ${documentOne.name} from selection`,
+            });
 
-        //     await userEvent.click(removeFile);
-        //     await userEvent.upload(selectFilesLabel, documentOne);
+            await userEvent.click(removeFile);
+            await userEvent.upload(selectFilesLabel, documentOne);
 
-        //     expect(await screen.findByText(documentOne.name)).toBeInTheDocument();
-        // });
+            expect(await screen.findByText(documentOne.name)).toBeInTheDocument();
+        });
 
         it('show an alert message when user try to upload with no files selected', async () => {
             renderApp();

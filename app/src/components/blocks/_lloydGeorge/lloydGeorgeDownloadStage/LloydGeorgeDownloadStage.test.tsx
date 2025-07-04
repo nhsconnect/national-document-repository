@@ -92,7 +92,9 @@ describe('LloydGeorgeDownloadStage', () => {
 
         renderComponent(history);
 
-        vi.advanceTimersByTime(1500);
+        await act(async () => {
+            vi.advanceTimersByTime(1500);
+        });
 
         expect(getPresignedUrlForZip).toHaveBeenCalled();
 
@@ -100,8 +102,9 @@ describe('LloydGeorgeDownloadStage', () => {
             await userEvent.click(screen.getByText('Download Lloyd George Documents URL'));
         });
 
-        vi.advanceTimersByTime(4000);
-
+        await act(async () => {
+            vi.advanceTimersByTime(1500);
+        });
         expect(mockedUseNavigate).toHaveBeenCalledWith(
             routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE,
         );
@@ -125,7 +128,9 @@ describe('LloydGeorgeDownloadStage', () => {
 
         renderComponent(history);
 
-        vi.advanceTimersByTime(2000);
+        await act(async () => {
+            vi.advanceTimersByTime(2000);
+        });
 
         await vi.waitFor(() => {
             expect(vi.mocked(getPresignedUrlForZip)).toHaveBeenCalled();
@@ -142,7 +147,9 @@ describe('LloydGeorgeDownloadStage', () => {
 
         renderComponent(history);
 
-        vi.advanceTimersByTime(2000);
+        await act(async () => {
+            vi.advanceTimersByTime(2000);
+        });
 
         await vi.waitFor(() => {
             expect(vi.mocked(getPresignedUrlForZip)).toHaveBeenCalled();
@@ -164,7 +171,9 @@ describe('LloydGeorgeDownloadStage', () => {
 
         renderComponent(history);
 
-        vi.advanceTimersByTime(2000);
+        await act(async () => {
+            vi.advanceTimersByTime(2000);
+        });
 
         await vi.waitFor(() => {
             expect(vi.mocked(getPresignedUrlForZip)).toHaveBeenCalled();
