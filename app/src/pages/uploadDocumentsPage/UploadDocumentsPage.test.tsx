@@ -292,9 +292,9 @@ describe('UploadDocumentsPage', () => {
                     );
                 }
 
-                it.skip('calls updateDocumentState every 2 minutes during upload (%i times)', async (numberOfTimes) => {
+                it.skip('calls updateDocumentState every 2 minutes during upload (%i times)', async () => {
                     const interval = FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD;
-                    const uploadDuration = interval * numberOfTimes + 100;
+                    const uploadDuration = interval * 1 + 100;
 
                     mockSlowS3Upload(uploadDuration);
 
@@ -310,7 +310,7 @@ describe('UploadDocumentsPage', () => {
                         vi.advanceTimersByTime(uploadDuration + 1000);
                     });
 
-                    expect(mockUpdateDocumentState).toHaveBeenCalledTimes(numberOfTimes);
+                    expect(mockUpdateDocumentState).toHaveBeenCalledTimes(1);
 
                     mockUpdateDocumentState.mock.calls.forEach(([args]) => {
                         expect(args.uploadingState).toBe(true);

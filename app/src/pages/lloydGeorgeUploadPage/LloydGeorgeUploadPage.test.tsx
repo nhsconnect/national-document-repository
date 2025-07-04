@@ -148,8 +148,7 @@ describe('LloydGeorgeUploadPage', () => {
         it.skip('renders uploading stage and make call to update state endpoint when submit documents is uploading for more than 2 min', async () => {
             vi.useFakeTimers();
 
-            const expectedTimeTaken =
-                (FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD + 1) * numberOfTimes;
+            const expectedTimeTaken = FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD + 1;
 
             const mockAxiosResponse = (): Promise<AxiosResponse> => {
                 vi.advanceTimersByTime(expectedTimeTaken + 100);
@@ -184,7 +183,7 @@ describe('LloydGeorgeUploadPage', () => {
                 expect(waitForSeconds).toHaveBeenCalled();
             });
 
-            expect(vi.mocked(updateDocumentState)).toHaveBeenCalledTimes(numberOfTimes);
+            expect(vi.mocked(updateDocumentState)).toHaveBeenCalledTimes(1);
             const updateDocumentStateArguments = vi.mocked(updateDocumentState).mock.calls[0][0];
             updateDocumentStateArguments.documents.forEach((doc: UploadDocument) => {
                 expect(doc).toMatchObject({
