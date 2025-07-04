@@ -40,6 +40,10 @@ const errorCodes: { [key: string]: string } = {
     SP_4002: 'The NHS number entered could not be found in the Personal Demographics Service',
     SP_4003:
         "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+    SP_4006:
+        "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+    SP_4007:
+        "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
 };
 
 export default errorCodes;

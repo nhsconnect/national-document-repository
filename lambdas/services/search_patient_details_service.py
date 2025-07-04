@@ -3,11 +3,15 @@ from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
+from services.document_service import DocumentService
 from services.feature_flags_service import FeatureFlagService
 from services.manage_user_session_access import ManageUserSessionAccess
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
+    DocumentAvailableNoAccessException,
+    FileUploadInProgress,
     InvalidResourceIdException,
+    NoAvailableDocument,
     PatientNotFoundException,
     PdsErrorException,
     UserNotAuthorisedException,
@@ -25,6 +29,7 @@ class SearchPatientDetailsService:
         self.user_ods_code = user_ods_code
         self.manage_user_session_service = ManageUserSessionAccess()
         self.feature_flag_service = FeatureFlagService()
+        self.document_service = DocumentService()
 
     def handle_search_patient_request(self, nhs_number, update_session=True):
         """
@@ -71,6 +76,24 @@ class SearchPatientDetailsService:
             )
             return None
 
+        except NoAvailableDocument as e:
+            self._handle_error(
+                e,
+                LambdaError.SearchPatientNoAuthWithoutDoc,
+                404,
+                "Patient found with no document available, User not authorised to view patient",
+            )
+            return None
+
+        except DocumentAvailableNoAccessException as e:
+            self._handle_error(
+                e,
+                LambdaError.SearchPatientNoAuthWithDoc,
+                404,
+                "Patient found with document available, User not authorised to view patient",
+            )
+            return None
+
         except (InvalidResourceIdException, PdsErrorException) as e:
             self._handle_error(
                 e, LambdaError.SearchPatientNoId, 400, "Patient not found"
@@ -104,13 +127,26 @@ class SearchPatientDetailsService:
         match self.user_role:
             case RepositoryRole.GP_ADMIN.value:
                 if patient_is_active and gp_ods_for_patient != self.user_ods_code:
-                    raise UserNotAuthorisedException
+                    try:
+                        self.document_service.get_available_lloyd_george_record_for_patient()
+                        raise DocumentAvailableNoAccessException
+                    except NoAvailableDocument as ex:
+                        raise ex
+                    except FileUploadInProgress:
+                        raise DocumentAvailableNoAccessException
+
                 elif not patient_is_active and not is_arf_journey_on:
                     raise UserNotAuthorisedException
 
             case RepositoryRole.GP_CLINICAL.value:
                 if not patient_is_active or gp_ods_for_patient != self.user_ods_code:
-                    raise UserNotAuthorisedException
+                    try:
+                        self.document_service.get_available_lloyd_george_record_for_patient()
+                        raise DocumentAvailableNoAccessException
+                    except NoAvailableDocument as ex:
+                        raise ex
+                    except FileUploadInProgress:
+                        raise DocumentAvailableNoAccessException
 
             case RepositoryRole.PCSE.value:
                 if patient_is_active:

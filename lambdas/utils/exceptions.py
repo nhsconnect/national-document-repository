@@ -136,6 +136,10 @@ class NoAvailableDocument(Exception):
     pass
 
 
+class DocumentAvailableNoAccessException(Exception):
+    pass
+
+
 class LogsQueryException(Exception):
     pass
 

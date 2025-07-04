@@ -55,6 +55,16 @@ class LambdaError(Enum):
         "message": "Failed to parse PDS data",
         "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
+    SearchPatientNoAuthWithDoc = {
+        "err_code": "SP_4006",
+        "message": "You do not have access to this patient's record, we do not hold a document for them",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
+    }
+    SearchPatientNoAuthWithoutDoc = {
+        "err_code": "SP_4007",
+        "message": "You do not have access to this patient's record, we do hold a document for them",
+        "fhir_coding": FhirIssueCoding.FORBIDDEN,
+    }
 
     """
        Errors for CreateDocumentRefException
