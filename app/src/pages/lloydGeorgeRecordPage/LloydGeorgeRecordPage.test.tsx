@@ -199,9 +199,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.get.mockResolvedValue({ data: lgResult });
 
-        act(() => {
-            renderPage(history);
-        });
+        await renderPage(history);
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
@@ -214,9 +212,7 @@ describe('LloydGeorgeRecordPage', () => {
 
             mockAxios.get.mockResolvedValue({ data: lgResult });
 
-            await act(async () => {
-                await renderPage(history);
-            });
+            await renderPage(history);
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
