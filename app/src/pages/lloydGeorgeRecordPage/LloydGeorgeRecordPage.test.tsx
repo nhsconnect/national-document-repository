@@ -224,13 +224,15 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     const renderPage = async (history: History) => {
-        return render(
-            <SessionProvider sessionOverride={{ isLoggedIn: true }}>
-                <ReactRouter.Router navigator={history} location={history.location}>
-                    <LloydGeorgeRecordPage />
-                </ReactRouter.Router>
-                ,
-            </SessionProvider>,
-        );
+        await act(async () => {
+            return render(
+                <SessionProvider sessionOverride={{ isLoggedIn: true }}>
+                    <ReactRouter.Router navigator={history} location={history.location}>
+                        <LloydGeorgeRecordPage />
+                    </ReactRouter.Router>
+                    ,
+                </SessionProvider>,
+            );
+        });
     };
 });
