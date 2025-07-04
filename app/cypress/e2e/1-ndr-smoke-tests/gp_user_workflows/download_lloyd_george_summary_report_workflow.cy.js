@@ -21,7 +21,7 @@ describe('GP Workflow: Download Lloyd George summary report', () => {
             '[Smoke] Authenticated user can download the Lloyd George summary',
             { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
-                cy.smokeLogin(Roles.GP_ADMIN);
+                cy.smokeLogin(Roles.SMOKE_GP_ADMIN);
 
                 cy.navigateToDownloadReportPage();
 
