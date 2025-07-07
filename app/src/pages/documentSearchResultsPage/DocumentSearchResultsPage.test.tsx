@@ -120,9 +120,7 @@ describe('<DocumentSearchResultsPage />', () => {
             await waitFor(() => {
                 screen.getByRole('button', { name: 'Download all documents' });
             });
-            act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
-            });
+            await userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
 
             expect(
                 await screen.findByText('An error has occurred while preparing your download'),
@@ -152,9 +150,7 @@ describe('<DocumentSearchResultsPage />', () => {
             await waitFor(() => {
                 screen.getByRole('button', { name: 'Download all documents' });
             });
-            act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
-            });
+            await userEvent.click(screen.getByRole('button', { name: 'Download all documents' }));
             expect(
                 await screen.findByText('An error has occurred while preparing your download'),
             ).toBeInTheDocument();
@@ -221,9 +217,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 name: 'Download all documents',
             });
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
-            act(() => {
-                userEvent.click(downloadButton);
-            });
+            await userEvent.click(downloadButton);
 
             expect(
                 await screen.findByText('Sorry, the service is currently unavailable.'),

@@ -66,11 +66,9 @@ describe('LloydGeorgeRecordPage', () => {
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
-        await act(async () => {
-            await renderPage(history);
-        });
+        await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(screen.getByText(patientName)).toBeInTheDocument();
         });
         expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
@@ -78,10 +76,8 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('renders initial lg record view', async () => {
-        await act(async () => {
-            await renderPage(history);
-        });
-        await waitFor(async () => {
+        await renderPage(history);
+        await waitFor(() => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
     });
@@ -96,11 +92,9 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        await act(async () => {
-            await renderPage(history);
-        });
+        await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(
                 screen.getByText(
                     'This patient does not have a Lloyd George record stored in this service.',
@@ -120,11 +114,9 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        await act(async () => {
-            await renderPage(history);
-        });
+        await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(
                 screen.getByText(
                     'This patient does not have a Lloyd George record stored in this service.',
@@ -145,11 +137,9 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
 
-        await act(async () => {
-            await renderPage(history);
-        });
+        await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(
                 screen.getByText(
                     'You can view this record once it’s finished uploading. This may take a few minutes.',
@@ -169,11 +159,9 @@ describe('LloydGeorgeRecordPage', () => {
         mockAxios.post.mockImplementation(() => Promise.reject(errorResponse));
         mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
-        await act(async () => {
-            await renderPage(history);
-        });
+        await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(
                 screen.getByText(/The Lloyd George document is too large to view in a browser/i),
             ).toBeInTheDocument();
@@ -182,11 +170,11 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('displays Loading... until the pdf is fetched', async () => {
-        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
+        const lgResult = buildLgSearchResult();
+        mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Pending' } });
 
-        act(() => {
-            renderPage(history);
-        });
+        mockAxios.get.mockResolvedValue({ data: lgResult });
+        await renderPage(history);
 
         await waitFor(async () => {
             expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -212,6 +200,10 @@ describe('LloydGeorgeRecordPage', () => {
             mockAxios.get.mockResolvedValue({ data: lgResult });
 
             await renderPage(history);
+            await waitFor(() => {
+                // Pick a stable part of the final UI — loading gone, known element, etc.
+                expect(screen.getByText(/Available records/i)).toBeInTheDocument();
+            });
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();

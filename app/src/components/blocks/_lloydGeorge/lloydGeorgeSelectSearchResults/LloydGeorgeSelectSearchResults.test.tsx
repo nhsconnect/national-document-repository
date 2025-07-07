@@ -238,9 +238,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
         it.skip('pass accessibility checks when error box shows up', async () => {
             renderComponent({ selectedDocuments: [] });
 
-            act(() => {
-                userEvent.click(screen.getByTestId('download-selected-files-btn'));
-            });
+            await userEvent.click(screen.getByTestId('download-selected-files-btn'));
 
             await waitFor(expect(screen.getByRole('alert')).toBeInTheDocument);
 
