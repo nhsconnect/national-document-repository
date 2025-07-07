@@ -97,7 +97,10 @@ const renderTestApp = (initialUrl: string = '/testPage1', isLoggedIn: boolean = 
     };
     render(
         <SessionProvider sessionOverride={isLoggedIn ? auth : undefined}>
-            <MemoryRouter initialEntries={[initialUrl]}>
+            <MemoryRouter
+                initialEntries={[initialUrl]}
+                future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+            >
                 <Layout>
                     <Routes>
                         <Route path="/" element={<></>}></Route>
