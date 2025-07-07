@@ -312,7 +312,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     )
 
     expected_fhir_response = {
-        "id": "Y05868-1634567890",
+        "id": "16521000000101~Y05868-1634567890",
         "resourceType": "DocumentReference",
         "status": "current",
         "docStatus": "final",
@@ -390,7 +390,7 @@ def test_create_document_reference_fhir_response_integration(
     mock_document_reference.document_snomed_code_type = "16521000000101"
 
     expected_fhir_response = {
-        "id": "Y05868-1634567890",
+        "id": "16521000000101~Y05868-1634567890",
         "resourceType": "DocumentReference",
         "status": "current",
         "docStatus": "final",

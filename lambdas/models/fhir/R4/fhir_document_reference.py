@@ -227,7 +227,7 @@ class DocumentReferenceInfo(BaseModel):
 
         return DocumentReference(
             resourceType="DocumentReference",
-            id=document.id,
+            id=f"{self.snomed_code_doc_type.code}~{document.id}",
             docStatus=document.doc_status,
             type=CodeableConcept(
                 coding=self._create_snomed_coding(self.snomed_code_doc_type)
