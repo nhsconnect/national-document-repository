@@ -11,6 +11,7 @@ from tests.unit.conftest import (
     MOCK_LG_TABLE_NAME,
     MOCK_STAGING_STORE_BUCKET,
 )
+from utils.common_query_filters import PreliminaryStatus
 from utils.exceptions import DocumentServiceException, FileProcessingException
 
 
@@ -116,7 +117,10 @@ def test_fetch_document_reference_success(service, mock_document_reference):
 
     assert result == mock_document_reference
     service.document_service.fetch_documents_from_table.assert_called_once_with(
-        table=MOCK_LG_TABLE_NAME, search_condition=document_key, search_key="ID"
+        table=MOCK_LG_TABLE_NAME,
+        search_condition=document_key,
+        search_key="ID",
+        query_filter=PreliminaryStatus,
     )
 
 
@@ -399,4 +403,5 @@ def test_document_key_extraction_from_object_key(
         table=MOCK_LG_TABLE_NAME,
         search_condition=expected_document_key,
         search_key="ID",
+        query_filter=PreliminaryStatus,
     )
