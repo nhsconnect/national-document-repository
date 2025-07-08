@@ -1,5 +1,7 @@
 # National Document Repository: Lambdas
 
+[<< Back To README.md](../README.md)
+
 This part of the repository contains all our Lambda functions, currently these include...
 
 - create_document_reference_handler
@@ -107,127 +109,6 @@ If successful, the lambda will return status code 200 with patient details as th
 ```
 
 ### document_reference_search_handler
-
-This lambda is used to search DynamoDB for the documents uploaded against a patient's NHS number.
-
-It only returns what is required to display on the frontend page, notably any file names, times the files were
-originally uploaded and the result of the virus scan.
-
-#### Example inputs
-
-Testing in AWS on the lambda directly:
-
-```json
-{
-  "queryStringParameters": {
-    "patientId": "9449305552"
-  }
-}
-```
-
-Testing through API Gateway:
-
-```
-patientId=9449305552
-```
-
-Hitting URL directly:
-
-```
-https://{url}/SearchDocumentReferences?patientId=9449305552
-```
-
-#### Possible outputs
-
-Success:
-
-```json
-{
-  "isBase64Encoded": false,
-  "statusCode": 200,
-  "headers": {
-    "Content-Type": "application/fhir+json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET"
-  },
-  "body": "[{\"FileName\": \"nhs1-3669038588 (1).png\", \"Created\": \"2023-09-05T08:34:15.662364Z\"}, {\"FileName\": \"nhs1-test-lloyd-george (1).png\", \"Created\": \"2023-09-05T08:34:15.662364Z\", \"VirusScannerResult\": \"Clean\", \"CurrentGpOds\": \"Y12345\"}]"
-}
-```
-
-If there is no data for a given NHS number:
-
-```json
-{
-  "isBase64Encoded": false,
-  "statusCode": 204,
-  "headers": {
-    "Content-Type": "application/fhir+json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET"
-  },
-  "body": ""
-}
-```
-
-If the NHS number is not valid:
-
-```json
-{
-  "isBase64Encoded": false,
-  "statusCode": 400,
-  "headers": {
-    "Content-Type": "application/fhir+json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET"
-  },
-  "body": "Invalid NHS number"
-}
-```
-
-If an NHS number was not supplied correctly to the funtion:
-
-```json
-{
-  "isBase64Encoded": false,
-  "statusCode": 400,
-  "headers": {
-    "Content-Type": "application/fhir+json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET"
-  },
-  "body": "Please supply an NHS number"
-}
-```
-
-If an error occurred when querying DynamoDB:
-
-```json
-{
-  "isBase64Encoded": false,
-  "statusCode": 500,
-  "headers": {
-    "Content-Type": "application/fhir+json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET"
-  },
-  "body": "Unrecognised response when searching for available documents"
-}
-```
-
-or...
-
-```json
-{
-  "isBase64Encoded": false,
-  "statusCode": 500,
-  "headers": {
-    "Content-Type": "application/fhir+json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET"
-  },
-  "body": "An error occurred searching for available documents"
-}
-```
 
 ### document_manifest_by_nhs_number_handler
 

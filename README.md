@@ -22,6 +22,13 @@ Our React User Interface readme can be found [here](app/README.md)
 
 _Note: It is recommended to use [Homebrew](https://brew.sh/) to install most of these._
 
+## Documentation
+
+API spec can be found: [Api Spec](./docs/national-document-repository-api-spec.md)
+
+autentication document upload and document stitching process <br>
+can be found here: [Process Flow](./docs/document-upload-authorization-process-flow.md)
+
 ## Monitoring
 
 We have configured AWS CloudWatch to provide alarm notifications whenever one of a number of metrics exceeds its normal
