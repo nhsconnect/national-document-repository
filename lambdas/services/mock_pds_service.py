@@ -27,8 +27,8 @@ class MockPdsApiService(PatientSearch):
 
         try:
             for file in all_mock_files:
-                with open(file) as f:
-                    mock_pds_results.append(json.load(f))
+                with open(file) as mock_file:
+                    mock_pds_results.append(json.load(mock_file))
 
         except FileNotFoundError:
             raise PdsErrorException("Error when requesting patient from PDS")
@@ -36,10 +36,18 @@ class MockPdsApiService(PatientSearch):
         pds_patient: dict = {}
         response = Response()
         if self.always_pass_mock:
-            pds_patient_index = 3
-            pds_patient = mock_pds_results[pds_patient_index]
+            mock_file_name = "pds_patient_9000000068_M85143_gp.json"
+            file_path = os.path.join(
+                parent_dir_of_this_file, "services", "mock_data", mock_file_name
+            )
+            try:
+                with open(file_path) as open_file:
+                    pds_patient = json.load(open_file)
+            except FileNotFoundError:
+                raise PdsErrorException(f"Mock file '{mock_file_name}' not found")
             pds_patient["id"] = nhs_number
             pds_patient["identifier"][0]["value"] = nhs_number
+            print(f"pds_patient={pds_patient}")
         else:
             for result in mock_pds_results:
                 mock_patient_nhs_number = result.get("id")

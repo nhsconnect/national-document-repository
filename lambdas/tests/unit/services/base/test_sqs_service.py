@@ -63,3 +63,19 @@ def test_send_message_fifo(set_env, mocked_sqs_client, service):
         MessageBody=test_message_body,
         MessageGroupId="test_group_id",
     )
+
+
+def test_send_message_batch_standard_success(set_env, mocked_sqs_client, service):
+    queue_url = MOCK_LG_METADATA_SQS_QUEUE
+    messages = ["msg1", "msg2"]
+
+    mocked_sqs_client.send_message_batch.return_value = {
+        "Successful": [{"Id": "1"}, {"Id": "2"}],
+        "Failed": [],
+    }
+
+    service.send_message_batch_standard(queue_url, messages)
+
+    args = mocked_sqs_client.send_message_batch.call_args[1]
+    assert args["QueueUrl"] == queue_url
+    assert len(args["Entries"]) == 2

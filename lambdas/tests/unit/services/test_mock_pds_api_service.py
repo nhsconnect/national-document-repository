@@ -6,7 +6,6 @@ from utils.exceptions import PatientNotFoundException
 
 def test_fetch_patient_details_valid_returns_PatientDetails():
     nhs_number = "9000000017"
-
     pds_service = MockPdsApiService()
     actual = pds_service.fetch_patient_details(nhs_number)
 
