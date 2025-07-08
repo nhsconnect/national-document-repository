@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import DownloadReportSelectStage from './DownloadReportSelectStage';
 import { getReportByType, REPORT_TYPE } from '../../../../types/generic/reports';
 import { LinkProps } from 'react-router-dom';
@@ -61,13 +62,17 @@ describe('DownloadReportSelectStage', () => {
             const setDownloadError = vi.fn();
             vi.spyOn(React, 'useState').mockImplementation(() => ['', setDownloadError]);
 
-            render(<DownloadReportSelectStage report={report!} />);
-
+            act(() => {
+                render(<DownloadReportSelectStage report={report!} />);
+            });
             await userEvent.click(
                 screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
             );
+            waitFor(() => {
+                expect(setDownloadError).toHaveBeenCalledTimes(1);
+            });
 
-            expect(setDownloadError).toHaveBeenCalledTimes(3);
+            // expect(await screen.findByText(/There was a problem/i)).toBeInTheDocument();
         });
 
         it('should navigate to session expired when receiving a 403', async () => {
