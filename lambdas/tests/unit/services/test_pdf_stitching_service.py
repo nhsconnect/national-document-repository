@@ -258,6 +258,8 @@ def test_create_stitched_reference(mock_service, mock_uuid, document_reference):
     assert actual.uploading is False
     assert actual.last_updated == 1735732800
     assert actual.file_size == file_size
+    assert actual.s3_file_key == f"{TEST_NHS_NUMBER}/{TEST_UUID}"
+    assert actual.s3_bucket_name == MOCK_LG_BUCKET
 
 
 def test_process_stitching(mock_service, mock_download_fileobj):
