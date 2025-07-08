@@ -56,7 +56,6 @@ class PostFhirDocumentReferenceService:
 
             # Extract NHS number from the FHIR document
             nhs_number = self._extract_nhs_number_from_fhir(validated_fhir_doc)
-            validate_nhs_number(nhs_number)
             patient_details = self._check_nhs_number_with_pds(nhs_number)
 
             # Extract document type
@@ -261,6 +260,7 @@ class PostFhirDocumentReferenceService:
 
     def _check_nhs_number_with_pds(self, nhs_number: str) -> PatientDetails:
         try:
+            validate_nhs_number(nhs_number)
             pds_service = get_pds_service()
             return pds_service.fetch_patient_details(nhs_number)
         except (
