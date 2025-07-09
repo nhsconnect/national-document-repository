@@ -8,6 +8,7 @@ TEST_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_test.txt
 CORE_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_core_lambda_layer.txt
 DATA_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_data_lambda_layer.txt
 REPORTS_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_reports_lambda_layer.txt
+ALERTING_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_alerting_lambda_layer.txt
 EDGE_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_edge_lambda.txt
 LAMBDAS_BUILD_PATH=build/lambdas
 LAMBDA_LAYERS_BUILD_PATH=build/lambda_layers
@@ -48,6 +49,7 @@ sort-requirements:
 	sort -o $(CORE_REQUIREMENTS) $(CORE_REQUIREMENTS)
 	sort -o $(DATA_REQUIREMENTS) $(DATA_REQUIREMENTS)
 	sort -o $(REPORTS_REQUIREMENTS) $(REPORTS_REQUIREMENTS)
+	sort -o $(ALERTING_REQUIREMENTS) $(ALERTING_REQUIREMENTS)
 
 
 check-packages:
@@ -55,6 +57,7 @@ check-packages:
 	./lambdas/venv/bin/pip-audit -r $(CORE_REQUIREMENTS)
 	./lambdas/venv/bin/pip-audit -r $(DATA_REQUIREMENTS)
 	./lambdas/venv/bin/pip-audit -r $(REPORTS_REQUIREMENTS)
+	./lambdas/venv/bin/pip-audit -r $(ALERTING_REQUIREMENTS)
 
 
 test-unit:
@@ -77,6 +80,7 @@ env:
 	./lambdas/venv/bin/pip3 install -r $(CORE_REQUIREMENTS) --no-cache-dir
 	./lambdas/venv/bin/pip3 install -r $(DATA_REQUIREMENTS) --no-cache-dir
 	./lambdas/venv/bin/pip3 install -r $(REPORTS_REQUIREMENTS) --no-cache-dir
+	./lambdas/venv/bin/pip3 install -r $(ALERTING_REQUIREMENTS) --no-cache-dir
 
 
 github_env:
