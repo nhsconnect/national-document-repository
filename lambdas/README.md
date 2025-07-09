@@ -43,7 +43,7 @@ as `lambdas/package/lambdas.zip` and ready to deploy to AWS either manually or t
 
 ## Repository best practices
 
-Best practises guide can be found here: [docs/repository-best-practices.md](docs/repository-best-practices.md)
+Best practises guide can be found here: [docs/repository-best-practices.md](../docs/repository-best-practices.md)
 
 ## About Lambda functions
 
