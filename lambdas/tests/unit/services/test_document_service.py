@@ -309,7 +309,7 @@ def test_check_existing_lloyd_george_records_return_true_if_upload_in_progress(
         }
     )
 
-    response = mock_service.is_upload_in_process(mock_records_upload_in_process)
+    response = mock_service.is_upload_in_process(mock_records_upload_in_process[0])
 
     assert response
 

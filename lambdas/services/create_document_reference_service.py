@@ -250,7 +250,10 @@ class CreateDocumentReferenceService:
         self.remove_records_of_failed_upload(self.lg_dynamo_table, previous_records)
 
     def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
-        if self.document_service.is_upload_in_process(previous_records):
+        if any(
+            self.document_service.is_upload_in_process(document)
+            for document in previous_records
+        ):
             logger.error(
                 "Records are in the process of being uploaded. Will not process the new upload.",
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
