@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import RemoveRecordStage from './RemoveRecordStage';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
@@ -55,12 +55,8 @@ describe('RemoveRecordStage', () => {
     describe('Render', () => {
         it('renders the component', () => {
             mockedAxios.get.mockImplementation(() => waitForSeconds(0));
-
             const recordType = 'Test Record';
-
-            act(() => {
-                renderComponent(history, numberOfFiles, recordType);
-            });
+            renderComponent(history, numberOfFiles, recordType);
             expect(
                 screen.getByRole('heading', { name: 'Remove this ' + recordType + ' record' }),
             ).toBeInTheDocument();
@@ -74,12 +70,8 @@ describe('RemoveRecordStage', () => {
 
         it('show progress bar when file search pending', () => {
             mockedAxios.get.mockImplementation(() => waitForSeconds(0));
-
             const recordType = 'Test Record';
-
-            act(() => {
-                renderComponent(history, numberOfFiles, recordType);
-            });
+            renderComponent(history, numberOfFiles, recordType);
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
         });
 
@@ -92,17 +84,13 @@ describe('RemoveRecordStage', () => {
                 },
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
-
-            act(() => {
-                renderComponent(history, numberOfFiles, recordType);
-            });
+            renderComponent(history, numberOfFiles, recordType);
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
                 expect(
                     screen.getByText(/Sorry, the service is currently unavailable/i),
                 ).toBeInTheDocument();
             });
-
             expect(
                 screen.queryByRole('button', { name: 'Remove all files' }),
             ).not.toBeInTheDocument();
@@ -110,12 +98,8 @@ describe('RemoveRecordStage', () => {
 
         it('show results when when file search succeeded', async () => {
             const recordType = 'Test Record';
-
             mockedAxios.get.mockImplementation(() => Promise.resolve({ data: searchResults }));
-
-            act(() => {
-                renderComponent(history, numberOfFiles, recordType);
-            });
+            renderComponent(history, numberOfFiles, recordType);
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
                 expect(
@@ -138,10 +122,7 @@ describe('RemoveRecordStage', () => {
                 },
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
-
-            act(() => {
-                renderComponent(history, numberOfFiles, recordType);
-            });
+            renderComponent(history, numberOfFiles, recordType);
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             const mockedShortcode = '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd';
             await waitFor(() => {
@@ -158,10 +139,7 @@ describe('RemoveRecordStage', () => {
                 },
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
-
-            act(() => {
-                renderComponent(history, numberOfFiles, recordType);
-            });
+            renderComponent(history, numberOfFiles, recordType);
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
                 expect(mockUseNavigate).toBeCalledWith(routes.SESSION_EXPIRED);

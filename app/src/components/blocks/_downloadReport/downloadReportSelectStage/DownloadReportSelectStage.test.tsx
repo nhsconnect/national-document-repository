@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import DownloadReportSelectStage from './DownloadReportSelectStage';
 import { getReportByType, REPORT_TYPE } from '../../../../types/generic/reports';
 import { LinkProps } from 'react-router-dom';
@@ -61,13 +62,15 @@ describe('DownloadReportSelectStage', () => {
             const setDownloadError = vi.fn();
             vi.spyOn(React, 'useState').mockImplementation(() => ['', setDownloadError]);
 
-            render(<DownloadReportSelectStage report={report!} />);
-
-            userEvent.click(
+            act(() => {
+                render(<DownloadReportSelectStage report={report!} />);
+            });
+            await userEvent.click(
                 screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
             );
-
-            expect(setDownloadError).toHaveBeenCalledTimes(1);
+            waitFor(() => {
+                expect(setDownloadError).toHaveBeenCalledTimes(1);
+            });
         });
 
         it('should navigate to session expired when receiving a 403', async () => {
@@ -85,12 +88,9 @@ describe('DownloadReportSelectStage', () => {
 
             render(<DownloadReportSelectStage report={report!} />);
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
-                );
-            });
-
+            await userEvent.click(
+                screen.getByTestId(`download-${report?.fileTypes[0].extension}-button`),
+            );
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });

@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import SessionProvider, { useSessionContext } from './SessionProvider';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
@@ -24,9 +24,7 @@ describe('SessionProvider', () => {
         renderSessionProvider();
         expect(screen.getByText('isLoggedIn - false')).toBeInTheDocument();
         expect(screen.getByText('authCode - undefined')).toBeInTheDocument();
-        act(() => {
-            userEvent.click(screen.getByText('Log in'));
-        });
+        await userEvent.click(screen.getByText('Log in'));
 
         expect(screen.getByText('isLoggedIn - true')).toBeInTheDocument();
 
@@ -37,18 +35,14 @@ describe('SessionProvider', () => {
 
     it('is able to delete auth data when user has logged out', async () => {
         renderSessionProvider();
-        act(() => {
-            userEvent.click(screen.getByText('Log in'));
-        });
+        await userEvent.click(screen.getByText('Log in'));
         expect(screen.getByText('isLoggedIn - true')).toBeInTheDocument();
 
         expect(
             screen.getByText(`authCode - ${loggedIn.auth.authorisation_token}`),
         ).toBeInTheDocument();
 
-        act(() => {
-            userEvent.click(screen.getByText('Log out'));
-        });
+        await userEvent.click(screen.getByText('Log out'));
         expect(screen.getByText('isLoggedIn - false')).toBeInTheDocument();
 
         expect(screen.getByText('authCode - undefined')).toBeInTheDocument();

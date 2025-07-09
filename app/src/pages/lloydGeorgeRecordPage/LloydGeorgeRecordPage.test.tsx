@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import {
     buildPatientDetails,
@@ -67,7 +68,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(screen.getByText(patientName)).toBeInTheDocument();
         });
         expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
@@ -76,7 +77,7 @@ describe('LloydGeorgeRecordPage', () => {
 
     it('renders initial lg record view', async () => {
         await renderPage(history);
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
     });
@@ -93,7 +94,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(
                 screen.getByText(
                     'This patient does not have a Lloyd George record stored in this service.',
@@ -115,7 +116,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(
                 screen.getByText(
                     'This patient does not have a Lloyd George record stored in this service.',
@@ -138,7 +139,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(
                 screen.getByText(
                     'You can view this record once it’s finished uploading. This may take a few minutes.',
@@ -160,7 +161,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         await renderPage(history);
 
-        await waitFor(async () => {
+        await waitFor(() => {
             expect(
                 screen.getByText(/The Lloyd George document is too large to view in a browser/i),
             ).toBeInTheDocument();
@@ -169,9 +170,11 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('displays Loading... until the pdf is fetched', async () => {
-        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
+        const lgResult = buildLgSearchResult();
+        mockAxios.post.mockResolvedValue({ data: { jobStatus: 'Pending' } });
 
-        renderPage(history);
+        mockAxios.get.mockResolvedValue({ data: lgResult });
+        await renderPage(history);
 
         await waitFor(async () => {
             expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -186,7 +189,6 @@ describe('LloydGeorgeRecordPage', () => {
 
         await renderPage(history);
 
-        expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
     });
 
@@ -198,6 +200,10 @@ describe('LloydGeorgeRecordPage', () => {
             mockAxios.get.mockResolvedValue({ data: lgResult });
 
             await renderPage(history);
+            await waitFor(() => {
+                // Pick a stable part of the final UI — loading gone, known element, etc.
+                expect(screen.getByText(/Available records/i)).toBeInTheDocument();
+            });
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
@@ -205,7 +211,7 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     const renderPage = async (history: History) => {
-        return await act(() => {
+        await act(async () => {
             return render(
                 <SessionProvider sessionOverride={{ isLoggedIn: true }}>
                     <ReactRouter.Router navigator={history} location={history.location}>

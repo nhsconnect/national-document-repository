@@ -11,7 +11,7 @@ export default defineConfig({
         coverage: {
             reporter: ['text', 'json', 'html'], // Optional: Add coverage reports
         },
-        setupFiles: ['src/setupTests.ts'],
+        setupFiles: ['./src/setupTests.ts'],
         clearMocks: true,
         restoreMocks: true,
         env: loadEnv('', process.cwd(), ''),

@@ -12,7 +12,7 @@ export type FileTypeData = {
 
 export type ReportData = {
     title: string;
-    description: () => JSX.Element;
+    description: () => React.JSX.Element;
     fileTypes: FileTypeData[];
     reportType: REPORT_TYPE;
     endpoint: string;

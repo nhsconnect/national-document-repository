@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import RecordMenuCard from './RecordMenuCard';
 import useRole from '../../../helpers/hooks/useRole';
 import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
@@ -114,7 +114,7 @@ describe('RecordMenuCard', () => {
             expect(container).toBeEmptyDOMElement();
         });
 
-        it('render menu item as a <button> if link item does not have stage or href', () => {
+        it('render menu item as a <button> if link item does not have stage or href', async () => {
             render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} showMenu={true} />,
             );
@@ -122,9 +122,9 @@ describe('RecordMenuCard', () => {
                 screen.getByRole('button', { name: 'Download and remove files' }),
             ).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Download and remove files' }));
-            });
+            await userEvent.click(
+                screen.getByRole('button', { name: 'Download and remove files' }),
+            );
 
             expect(mockShowDownloadAndRemoveConfirmation).toBeCalledTimes(1);
         });
@@ -138,26 +138,22 @@ describe('RecordMenuCard', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to href when clicked', () => {
+        it('navigates to href when clicked', async () => {
             render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} showMenu={true} />,
             );
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
-            act(() => {
-                userEvent.click(screen.getByRole('link', { name: 'Upload files' }));
-            });
+            await userEvent.click(screen.getByRole('link', { name: 'Upload files' }));
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
         });
 
-        it('change stage when clicked', () => {
+        it('change stage when clicked', async () => {
             render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} showMenu={true} />,
             );
             expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(screen.getByRole('link', { name: 'Remove files' }));
-            });
+            await userEvent.click(screen.getByRole('link', { name: 'Remove files' }));
             expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.DELETE_ALL);
         });
     });

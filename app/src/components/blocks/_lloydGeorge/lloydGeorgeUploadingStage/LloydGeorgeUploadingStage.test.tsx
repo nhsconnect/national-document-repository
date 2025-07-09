@@ -1,4 +1,5 @@
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
+import { act } from 'react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -167,7 +168,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             expect(getProgressText(uploadDocument)).toContain('Upload succeeded');
         });
 
-        it('renders a retry upload button when first attempt fails that reuploads document', () => {
+        it('renders a retry upload button when first attempt fails that reuploads document', async () => {
             const uploadDocument = {
                 file: buildTextFile('one', 100),
                 state: DOCUMENT_UPLOAD_STATE.FAILED,
@@ -191,11 +192,11 @@ describe('<LloydGeorgeUploadingStage />', () => {
             expect(getProgressText(uploadDocument)).toContain('Upload failed');
             expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
 
-            userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
             expect(mockUploadAndScan).toHaveBeenCalled();
         });
 
-        it('renders a warning callout to retry failed document uploads', () => {
+        it('renders a warning callout to retry failed document uploads', async () => {
             const uploadDocument = {
                 file: buildTextFile('one', 100),
                 state: DOCUMENT_UPLOAD_STATE.FAILED,
@@ -226,7 +227,9 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 const st = new RegExp(s, 'i');
                 expect(screen.getByText(st)).toBeInTheDocument();
             });
-            userEvent.click(screen.getByRole('link', { name: 'Retry uploading all failed files' }));
+            await userEvent.click(
+                screen.getByRole('link', { name: 'Retry uploading all failed files' }),
+            );
             expect(mockUploadAndScan).toHaveBeenCalled();
         });
     });

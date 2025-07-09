@@ -1,6 +1,7 @@
 import { LinkProps } from 'react-router-dom';
 import useRole from '../../helpers/hooks/useRole';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import PrivacyPage from './PrivacyPage';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import userEvent from '@testing-library/user-event';

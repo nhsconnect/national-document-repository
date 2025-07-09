@@ -27,7 +27,7 @@ describe('BackButton', () => {
         mockPathname = { pathname: testUrl };
 
         render(<BackButton />);
-        userEvent.click(screen.getByText('Go back'));
+        await userEvent.click(screen.getByText('Go back'));
 
         await waitFor(() => {
             expect(mockUseNavigate).toHaveBeenCalledWith(-1);
@@ -36,7 +36,7 @@ describe('BackButton', () => {
 
     it('navigates to specified location when the "toLocation" property is defined', async () => {
         render(<BackButton toLocation="/specified-location" />);
-        userEvent.click(screen.getByText('Go back'));
+        await screen.getByText('Go back').click();
 
         await waitFor(() => {
             expect(mockUseNavigate).toHaveBeenCalledWith('/specified-location');

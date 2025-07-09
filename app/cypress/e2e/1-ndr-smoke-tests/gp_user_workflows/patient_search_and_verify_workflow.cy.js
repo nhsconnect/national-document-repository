@@ -1,6 +1,5 @@
 import { pdsPatients, stubPatients } from '../../../support/patients';
 import { Roles, roleName } from '../../../support/roles';
-import { routes } from '../../../support/routes';
 
 describe('GP Workflow: Patient search and verify', () => {
     // env vars

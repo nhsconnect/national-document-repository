@@ -63,7 +63,7 @@ describe('<CompleteStage />', () => {
                 await screen.findByRole('heading', { name: 'Upload Summary' }),
             ).toBeInTheDocument();
 
-            userEvent.click(screen.getByLabelText('View successfully uploaded documents'));
+            await userEvent.click(screen.getByLabelText('View successfully uploaded documents'));
 
             expect(screen.getByText(documentTwo.file.name)).toBeInTheDocument();
             expect(screen.getByText(documentThree.file.name)).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe('<CompleteStage />', () => {
                 screen.getByText("If you want to upload another patient's health record"),
             ).toBeInTheDocument();
 
-            userEvent.click(screen.getByRole('button', { name: 'Start Again' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Start Again' }));
 
             expect(navigateMock).toHaveBeenCalledWith('/');
         });
