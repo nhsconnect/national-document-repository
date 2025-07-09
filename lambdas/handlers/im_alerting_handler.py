@@ -3,11 +3,13 @@ import json
 from services.im_alerting_service import IMAlertingService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 
 
+@handle_lambda_exceptions
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[

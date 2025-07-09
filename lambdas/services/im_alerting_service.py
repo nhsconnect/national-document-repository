@@ -27,7 +27,7 @@ class IMAlertingService:
     ALARM_TTL_TIME_SECONDS = 300
     SLACK_POST_CHAT_API = "https://slack.com/api/chat.postMessage"
     SLACK_UPDATE_CHAT_API = "https://slack.com/api/chat.update"
-    SLACK_REACTIONS_API = "https://slack.com/api/reactions."
+    SLACK_REACTIONS_API_PREFIX = "https://slack.com/api/reactions."
 
     def __init__(self, message):
         self.dynamo_service = DynamoDBService()
@@ -544,7 +544,7 @@ class IMAlertingService:
 
         try:
             change_response = requests.post(
-                url=self.SLACK_REACTIONS_API + action,
+                url=self.SLACK_REACTIONS_API_PREFIX + action,
                 json=change_message,
                 headers=self.slack_headers,
             )
