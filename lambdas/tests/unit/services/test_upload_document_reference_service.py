@@ -333,6 +333,7 @@ def test_update_dynamo_table_clean_scan_result(service, mock_document_reference)
             "doc_status",
             "file_location",
             "file_size",
+            "uploaded",
         },
     )
 
