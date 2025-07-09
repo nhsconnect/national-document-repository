@@ -215,7 +215,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                 <Table caption="Chosen file(s)" id="selected-documents-table">
                     <Table.Head>
                         <Table.Row>
-                            <Table.Cell table-cell-lg-input-cell-border>
+                            <Table.Cell className="table-cell-lg-input-cell-border">
                                 <div className="div-lg-input-cell">
                                     <strong>
                                         {`${documents.length}`} file

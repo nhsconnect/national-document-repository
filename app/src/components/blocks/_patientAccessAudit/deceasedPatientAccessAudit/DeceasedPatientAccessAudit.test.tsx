@@ -168,7 +168,7 @@ const renderDeceasedPatientAccessAudit = () => {
         <ConfigProvider>
             <PatientDetailsProvider>
                 <PatientAccessAuditProvider patientAccessAudit={patientAccessAudit}>
-                    <MemoryRouter>
+                    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                         <DeceasedPatientAccessAudit />
                     </MemoryRouter>
                 </PatientAccessAuditProvider>
