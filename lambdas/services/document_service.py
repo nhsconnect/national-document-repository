@@ -172,13 +172,12 @@ class DocumentService:
             self.dynamo_service.delete_item(table_name, deletion_key)
 
     @staticmethod
-    def is_upload_in_process(records: list[DocumentReference]):
-        return any(
+    def is_upload_in_process(record: DocumentReference):
+        return (
             not record.uploaded
             and record.uploading
             and record.last_updated_within_three_minutes()
             and record.doc_status != "final"
-            for record in records
         )
 
     def get_available_lloyd_george_record_for_patient(
