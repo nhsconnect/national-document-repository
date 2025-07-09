@@ -85,7 +85,7 @@ describe('LloydGeorgeDownloadStage', () => {
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
     });
 
-    it.skip('navigates to download complete after auto-clicking link', async () => {
+    it('navigates to download complete after auto-clicking link', async () => {
         vi.useFakeTimers();
 
         vi.mocked(getPresignedUrlForZip).mockResolvedValue(mockPdf.presignedUrl);
