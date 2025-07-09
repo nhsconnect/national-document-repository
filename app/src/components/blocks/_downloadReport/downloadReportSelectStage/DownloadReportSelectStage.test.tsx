@@ -71,8 +71,6 @@ describe('DownloadReportSelectStage', () => {
             waitFor(() => {
                 expect(setDownloadError).toHaveBeenCalledTimes(1);
             });
-
-            // expect(await screen.findByText(/There was a problem/i)).toBeInTheDocument();
         });
 
         it('should navigate to session expired when receiving a 403', async () => {
