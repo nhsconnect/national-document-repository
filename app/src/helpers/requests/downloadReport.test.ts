@@ -49,7 +49,7 @@ describe('downloadReport', () => {
     });
 
     it('should throw an axios error when the request fails', async () => {
-        mockedAxios.get.mockImplementation(() => {
+        const getSpy = vi.spyOn(mockedAxios, 'get').mockImplementation(() => {
             throw { response: { status: 404 } };
         });
         const args = {
@@ -62,7 +62,6 @@ describe('downloadReport', () => {
             } as AuthHeaders,
         };
 
-        const getSpy = vi.spyOn(mockedAxios, 'get');
         let errorCode;
 
         try {
