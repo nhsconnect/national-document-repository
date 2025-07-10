@@ -12,14 +12,14 @@ vi.mock('react-router-dom', () => ({
 }));
 
 describe('NavLinks', () => {
-    const oldWindowLocation = window.location;
+    const oldWindowLocation = window.location.href;
     beforeEach(() => {
         sessionStorage.setItem('UserSession', '');
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
         vi.clearAllMocks();
-        window.location = oldWindowLocation;
+        window.location.href = oldWindowLocation;
     });
 
     describe('Rendering', () => {
