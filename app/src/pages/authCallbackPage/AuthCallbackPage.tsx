@@ -14,9 +14,7 @@ import { useConfigContext } from '../../providers/configProvider/ConfigProvider'
 import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
 import { FeatureFlags, defaultFeatureFlags } from '../../types/generic/featureFlags';
 
-type Props = {};
-
-const AuthCallbackPage = (props: Props) => {
+const AuthCallbackPage = () => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
     const [{ mockLocal }, setConfig] = useConfigContext();

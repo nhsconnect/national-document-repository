@@ -1,11 +1,10 @@
 import { pdsPatients, stubPatients } from '../../../support/patients';
 import { Roles, roleName } from '../../../support/roles';
-import { routes } from '../../../support/routes';
 
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
-    const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
+    const gpRoles = [Roles.SMOKE_GP_ADMIN, Roles.SMOKE_GP_CLINICAL];
 
     const workspace = Cypress.env('WORKSPACE');
     const activePatient =
