@@ -10,7 +10,9 @@ on:
       ]
     types:
       - completed
-    workflow_dispatch:
+  push:
+    branches:
+      - "NDR-154"
 
 permissions:
   pull-requests: write
