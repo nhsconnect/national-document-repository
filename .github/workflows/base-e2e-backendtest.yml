@@ -61,8 +61,8 @@ jobs:
       - name: Get AWS API Gateway Key
         run: |
           API_KEY_ID=$(aws apigateway get-api-keys --name-query "${ENVIRONMENT}_apim" --query "items[0].id")
-          echo "::add-mask::Found API Key ID: $API_KEY_ID"
-          echo "::add-mask::API_KEY_ID=$API_KEY_ID" >> $GITHUB_ENV
+          echo "::add-mask::$API_KEY_ID"
+          echo "API_KEY_ID=$API_KEY_ID" >> $GITHUB_ENV
   #     - name: Cypress install
   #       run: |
   #         npm install --legacy-peer-deps
