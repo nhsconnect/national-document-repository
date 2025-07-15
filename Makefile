@@ -56,18 +56,20 @@ check-packages:
 	./lambdas/venv/bin/pip-audit -r $(DATA_REQUIREMENTS)
 	./lambdas/venv/bin/pip-audit -r $(REPORTS_REQUIREMENTS)
 
+test-lambda-e2e:
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e
 
 test-unit:
-	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit
 
 test-unit-coverage:
-	cd ./lambdas && ./venv/bin/python3 -m pytest --cov=. --cov-report xml:coverage.xml
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit --cov=. --cov-report xml:coverage.xml
 
 test-unit-coverage-html:
 	cd ./lambdas && coverage run --source=. --omit="tests/*" -m pytest -v tests && coverage report && coverage html
 
 test-unit-collect:
-	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --collect-only
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit --collect-only
 
 env:
 	rm -rf lambdas/venv || true
@@ -161,3 +163,4 @@ cypress-run:
 
 cypress-report:
 	TZ=GMT npm --prefix ./app run cypress-report
+
