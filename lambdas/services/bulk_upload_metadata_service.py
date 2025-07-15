@@ -104,7 +104,7 @@ class BulkUploadMetadataService:
     def send_metadata_to_fifo_sqs(
         self, staging_metadata_list: list[StagingMetadata]
     ) -> None:
-        sqs_group_id = f"bulk_upload_{uuid.uuid4()}"
+        sqs_group_id = f"bulk_upload_{uuid.uuid4()}_"
 
         for staging_metadata in staging_metadata_list:
             nhs_number = staging_metadata.nhs_number
@@ -114,7 +114,7 @@ class BulkUploadMetadataService:
                 queue_url=self.metadata_queue_url,
                 message_body=staging_metadata.model_dump_json(by_alias=True),
                 nhs_number=nhs_number,
-                group_id=sqs_group_id,
+                group_id=sqs_group_id + nhs_number,
             )
 
     def copy_metadata_to_dated_folder(self, metadata_filename: str):
