@@ -74,7 +74,7 @@ class IMAlertingService:
                     tags=alarm_tags,
                 )
 
-        if alarm_state == AlarmState.ALARM:
+        elif alarm_state == AlarmState.ALARM:
             logger.info(
                 f"All alarm entries for {alarm_name} have expired, creating a new one"
             )
