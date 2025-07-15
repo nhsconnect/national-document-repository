@@ -73,7 +73,8 @@ class IMAlertingService:
                     alarm_state=alarm_state,
                     tags=alarm_tags,
                 )
-        else:
+
+        if alarm_state == AlarmState.ALARM:
             logger.info(
                 f"All alarm entries for {alarm_name} have expired, creating a new one"
             )
@@ -81,6 +82,13 @@ class IMAlertingService:
                 alarm_name=alarm_name,
                 alarm_time=alarm_time,
                 tags=alarm_tags,
+            )
+
+        else:
+            logger.info(
+                f"All alarm entries for {alarm_name} have expired,"
+                f" lambda was triggered by non-{AlarmState.ALARM} state change,"
+                "This trigger can safely be ignored."
             )
 
     def find_active_alarm_entries(self, alarm_history):
@@ -137,7 +145,7 @@ class IMAlertingService:
         match alarm_state:
             case AlarmState.ALARM:
                 logger.info(
-                    f"Handling Alarm action for {alarm_entry.alarm_name_metric}"
+                    f"Handling {tags.get('severity', '')} severity alarm action for {alarm_entry.alarm_name_metric}"
                 )
 
                 self.update_alarm_state_history(tags=tags, alarm_entry=alarm_entry)
@@ -481,7 +489,6 @@ class IMAlertingService:
 
             self.update_alarm_history_table(alarm_entry)
 
-            self.change_reaction(alarm_entry, "add")
         except HTTPError as e:
             logger.error(
                 f"Initial Slack alert returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
@@ -509,8 +516,6 @@ class IMAlertingService:
                 headers=self.slack_headers,
                 timeout=self.REQUEST_TIMEOUT_SECONDS,
             )
-            self.change_reaction(alarm_entry, "remove")
-            self.change_reaction(alarm_entry, "add")
         except HTTPError as e:
             logger.error(
                 f"Sending Slack response returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
@@ -518,46 +523,6 @@ class IMAlertingService:
         except Exception as e:
             logger.error(
                 f"Unexpected error sending Slack response for alarm {alarm_entry.alarm_name_metric}: {e}"
-            )
-
-    def change_reaction(self, alarm_entry: AlarmEntry, action: str):
-        logger.info(
-            f"Changing slack reaction for alarm: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
-        )
-
-        severity = (
-            alarm_entry.history[-2]
-            if action == "remove" and len(alarm_entry.history) > 1
-            else alarm_entry.history[-1]
-        )
-        emoji = severity.additional_value
-
-        change_message = {
-            "name": emoji,
-            "channel": alarm_entry.channel_id,
-            "timestamp": alarm_entry.slack_timestamp,
-        }
-
-        logger.info(
-            f"Changing Slack reaction {action} {emoji} reaction, change message sent to API is {change_message}"
-        )
-
-        try:
-            change_response = requests.post(
-                url=self.SLACK_REACTIONS_API_PREFIX + action,
-                json=change_message,
-                headers=self.slack_headers,
-            )
-            logger.info(
-                f"{action} {emoji} reaction response: {str(change_response.content)}"
-            )
-        except HTTPError as e:
-            logger.error(
-                f"Changing Slack reaction returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
-            )
-        except Exception as e:
-            logger.error(
-                f"Unexpected error changing slack reaction for alarm {alarm_entry.alarm_name_metric}: {e}"
             )
 
     def update_original_slack_message(self, alarm_entry: AlarmEntry):
