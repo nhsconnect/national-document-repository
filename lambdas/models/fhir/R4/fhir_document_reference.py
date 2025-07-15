@@ -44,7 +44,7 @@ class Attachment(BaseModel):
     url: Optional[str] = None
     size: Optional[int] = None
     hash: Optional[str] = None
-    title: Optional[str]
+    title: Optional[str] = None
     creation: Optional[str] = None
     data: Optional[bytes] = None
 
