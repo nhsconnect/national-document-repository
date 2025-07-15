@@ -54,6 +54,8 @@ function PatientSearchPage() {
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
         navigate(routes.VERIFY_PATIENT);
     };
+    const uploadEnabled =
+        featureFlags.uploadLambdaEnabled && featureFlags.uploadLloydGeorgeWorkflowEnabled;
     const pageTitle = 'Search for a patient';
     useTitle({ pageTitle: pageTitle });
 
@@ -148,7 +150,11 @@ function PatientSearchPage() {
                     id="nhs-number-input"
                     data-testid="nhs-number-input"
                     className="nhsuk-input--width-10"
-                    label="Enter an NHS number to view or upload a record"
+                    label={
+                        uploadEnabled
+                            ? 'Enter an NHS number to view or upload a record'
+                            : 'Enter NHS number'
+                    }
                     hint="A 10-digit number, for example, 485 777 3456"
                     type="text"
                     {...searchProps}

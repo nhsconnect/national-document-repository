@@ -3,11 +3,16 @@ import { routes } from '../../types/generic/routes';
 import useTitle from '../../helpers/hooks/useTitle';
 import { REPORT_TYPE } from '../../types/generic/reports';
 import { ReactComponent as RightCircleIcon } from '../../styles/right-chevron-circle.svg';
+import useConfig from '../../helpers/hooks/useConfig';
 
 type Props = {};
 
 const HomePage = (props: Props) => {
     useTitle({ pageTitle: 'Access and store digital patient documents' });
+    const config = useConfig();
+    const uploadEnabled =
+        config.featureFlags.uploadLambdaEnabled &&
+        config.featureFlags.uploadLloydGeorgeWorkflowEnabled;
 
     return (
         <>
@@ -17,18 +22,37 @@ const HomePage = (props: Props) => {
                 <Card.GroupItem width="one-half">
                     <Card clickable cardType="primary">
                         <Card.Content className="home-action-card-content">
-                            <Card.Heading className="nhsuk-heading-m">
-                                <Card.Link
-                                    data-testid="search-patient-btn"
-                                    href={routes.SEARCH_PATIENT}
-                                >
-                                    View or upload a patient record
-                                </Card.Link>
-                            </Card.Heading>
-                            <Card.Description>
-                                View or upload a Lloyd George record for a patient using their NHS
-                                number.
-                            </Card.Description>
+                            {uploadEnabled ? (
+                                <>
+                                    <Card.Heading className="nhsuk-heading-m">
+                                        <Card.Link
+                                            data-testid="search-patient-btn"
+                                            href={routes.SEARCH_PATIENT}
+                                        >
+                                            View or upload a patient record
+                                        </Card.Link>
+                                    </Card.Heading>
+                                    <Card.Description>
+                                        View or upload a Lloyd George record for a patient using
+                                        their NHS number.
+                                    </Card.Description>
+                                </>
+                            ) : (
+                                <>
+                                    <Card.Heading className="nhsuk-heading-m">
+                                        <Card.Link
+                                            data-testid="search-patient-btn"
+                                            href={routes.SEARCH_PATIENT}
+                                        >
+                                            Search for a patient
+                                        </Card.Link>
+                                    </Card.Heading>
+                                    <Card.Description>
+                                        Find a Lloyd George record for a patient using their NHS
+                                        number.
+                                    </Card.Description>
+                                </>
+                            )}
                             <RightCircleIcon />
                         </Card.Content>
                     </Card>

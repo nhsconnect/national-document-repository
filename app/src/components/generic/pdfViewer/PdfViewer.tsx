@@ -7,20 +7,23 @@ type Props = {
 };
 
 const PdfViewer = ({ fileUrl, customClasses, onLoaded }: Props) => {
-    let loaded = false;
+    const loadedRef = useRef(false);
 
     useEffect(() => {
         const test = async () => {
             while (!document.querySelector('pdfjs-viewer-element')) {}
 
-            if (onLoaded && !loaded) {
-                loaded = true;
-                onLoaded();
+            if (!loadedRef.current) {
+                loadedRef.current = true;
+
+                if (onLoaded) {
+                    onLoaded();
+                }
             }
         };
 
         test();
-    }, []);
+    });
 
     return (
         <pdfjs-viewer-element
