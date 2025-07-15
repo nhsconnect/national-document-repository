@@ -64,9 +64,9 @@ function StartPage(props: Props) {
                 <ServiceDeskLink />
                 {' if there is an issue with this service or call 0300 303 5035.'}
             </p>
-            {/* {(import.meta.env.VITE_ENVIRONMENT === 'local' ||
+            {(import.meta.env.VITE_ENVIRONMENT === 'local' ||
                 import.meta.env.VITE_ENVIRONMENT === 'development' ||
-                import.meta.env.VITE_ENVIRONMENT === 'test') && <TestPanel />} */}
+                import.meta.env.VITE_ENVIRONMENT === 'test') && <TestPanel />}
         </>
     ) : (
         <Spinner status="Signing in..." />
