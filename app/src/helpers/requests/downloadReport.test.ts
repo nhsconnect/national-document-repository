@@ -2,33 +2,42 @@ import axios, { AxiosError } from 'axios';
 import downloadReport from './downloadReport';
 import { ReportData } from '../../types/generic/reports';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
-import { describe, expect, it, vi, Mocked } from 'vitest';
+import { describe, expect, it, vi, Mocked, beforeEach, afterEach } from 'vitest';
 
 vi.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
 (mockedAxios.get as any) = vi.fn();
-
-const mockResponse = vi.fn();
-Object.defineProperty(window, 'location', {
-    value: {
-        hash: {
-            endsWith: mockResponse,
-            includes: mockResponse,
-        },
-        assign: mockResponse,
-    },
-    writable: true,
-});
 
 describe('downloadReport', () => {
     const report = {
         endpoint: '/download',
     } as ReportData;
 
-    it('should fetch the report url from the API', async () => {
-        mockedAxios.get.mockImplementation(() =>
-            Promise.resolve({ status: 200, data: { url: 'downloadFile' } }),
-        );
+    let clickSpy: ReturnType<typeof vi.fn>;
+    let mockAnchor: Partial<HTMLAnchorElement>;
+
+    beforeEach(() => {
+        clickSpy = vi.fn();
+        mockAnchor = {
+            setAttribute: vi.fn(),
+            click: clickSpy,
+        };
+
+        vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+            if (tagName === 'a') {
+                return mockAnchor as HTMLAnchorElement;
+            }
+            return document.createElement(tagName);
+        });
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('should fetch the report url from the API and trigger link click', async () => {
+        mockedAxios.get.mockResolvedValue({ status: 200, data: { url: 'downloadFile' } });
+
         const args = {
             report,
             fileType: 'csv',
@@ -47,12 +56,17 @@ describe('downloadReport', () => {
             headers: args.baseHeaders,
             params: { outputFileFormat: args.fileType },
         });
+
+        expect(mockAnchor.setAttribute).toHaveBeenCalledWith('download', '');
+        expect(mockAnchor.href).toBe('downloadFile');
+        expect(clickSpy).toHaveBeenCalled();
     });
 
     it('should throw an axios error when the request fails', async () => {
         const getSpy = vi.spyOn(mockedAxios, 'get').mockImplementation(() => {
             throw { response: { status: 404 } };
         });
+
         const args = {
             report,
             fileType: 'csv',
