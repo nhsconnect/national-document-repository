@@ -32,6 +32,7 @@ import JSZip from 'jszip';
 import { v4 as uuidv4 } from 'uuid';
 import DocumentUploadCompleteStage from '../../components/blocks/_documentUpload/documentUploadCompleteStage/DocumentUploadCompleteStage';
 import DocumentUploadRemoveFilesStage from '../../components/blocks/_documentUpload/documentUploadRemoveFilesStage/DocumentUploadRemoveFilesStage';
+import useConfig from '../../helpers/hooks/useConfig';
 
 function DocumentUploadPage() {
     const patientDetails = usePatient();
@@ -46,6 +47,7 @@ function DocumentUploadPage() {
     const navigate = useNavigate();
     const [intervalTimer, setIntervalTimer] = useState(0);
     const [mergedPdfBlob, setMergedPdfBlob] = useState<Blob>();
+    const config = useConfig();
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
@@ -187,43 +189,9 @@ function DocumentUploadPage() {
         return session;
     };
 
-    const zipLloydGeorgeFiles = async (): Promise<Blob> => {
-        const zipper = new JSZip();
-        documents.forEach((doc) => {
-            if (doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
-                zipper.file(doc.file.name, doc.file);
-            }
-        });
-        return await zipper.generateAsync({
-            type: 'blob',
-            compression: 'DEFLATE',
-            compressionOptions: { level: 6 },
-        });
-    };
-
     const submitDocuments = async () => {
         try {
             let reducedDocuments = documents;
-            // if (reducedDocuments.some((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE)) {
-            //     const lloydGeorgeZip = await zipLloydGeorgeFiles();
-            //     const lloydGeorgeZipFile = new File(
-            //         [lloydGeorgeZip],
-            //         `Compressed Lloyd George.zip`,
-            //     );
-
-            //     reducedDocuments = reducedDocuments.filter(
-            //         (doc) => doc.docType !== DOCUMENT_TYPE.LLOYD_GEORGE,
-            //     );
-            //     reducedDocuments.push({
-            //         id: uuidv4(),
-            //         file: lloydGeorgeZipFile,
-            //         state: DOCUMENT_UPLOAD_STATE.SELECTED,
-            //         progress: 0,
-            //         docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-            //         attempts: 0,
-            //     });
-            //     setDocuments(reducedDocuments);
-            // }
 
             if (
                 reducedDocuments.some((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE) &&
@@ -320,6 +288,14 @@ function DocumentUploadPage() {
             }
         }, FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD);
     };
+
+    if (
+        !config.featureFlags.uploadLambdaEnabled ||
+        !config.featureFlags.uploadLloydGeorgeWorkflowEnabled
+    ) {
+        navigate(routes.HOME);
+        return <></>;
+    }
 
     return (
         <>
