@@ -15,6 +15,7 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
+import React from 'react';
 
 type Props = {
     documents: UploadDocument[];
@@ -58,7 +59,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
     const DocumentPositionDropdown = (
         documentId: string,
         currentPosition: number | undefined,
-    ): JSX.Element => {
+    ): React.JSX.Element => {
         const key = documentPositionKey(documentId);
 
         const { ref: dropdownInputRef, ...dropdownProps } = register(key, {
