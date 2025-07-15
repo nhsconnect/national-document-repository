@@ -66,7 +66,7 @@ test-unit-coverage:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit --cov=. --cov-report xml:coverage.xml
 
 test-unit-coverage-html:
-	cd ./lambdas && coverage run --source=. --omit="tests/*" -m pytest -v tests && coverage report && coverage html
+	cd ./lambdas && coverage run --source=. --omit="tests/*" -m pytest -v tests/unit && coverage report && coverage html
 
 test-unit-collect:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit --collect-only
