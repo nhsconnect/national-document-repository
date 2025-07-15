@@ -81,6 +81,7 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
+        exclusive_start_key=None,
     )
 
 
@@ -103,6 +104,7 @@ def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_ref
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
+        exclusive_start_key=None,
     )
 
 
@@ -121,6 +123,7 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
+        exclusive_start_key=None,
     )
 
 
@@ -134,6 +137,7 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             query_filter=mock_filter_expression,
+            exclusive_start_key=None,
         )
     ]
 
@@ -164,6 +168,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             query_filter=mock_filter_expression,
+            exclusive_start_key=None,
         )
     ]
     mock_dynamo_service.query_table_by_index.return_value = MOCK_EMPTY_RESPONSE
