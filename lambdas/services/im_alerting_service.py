@@ -565,3 +565,44 @@ class IMAlertingService:
 
         rendered_json = template.render(context)
         return json.loads(rendered_json)
+
+    # To be used when implementing adding reaction to slack message on dynamo entry deletion
+    def change_reaction(self, alarm_entry: AlarmEntry, action: str):
+        logger.info(
+            f"Changing slack reaction for alarm: {alarm_entry.alarm_name_metric}:{alarm_entry.time_created}"
+        )
+
+        severity = (
+            alarm_entry.history[-2]
+            if action == "remove" and len(alarm_entry.history) > 1
+            else alarm_entry.history[-1]
+        )
+        emoji = severity.additional_value
+
+        change_message = {
+            "name": emoji,
+            "channel": alarm_entry.channel_id,
+            "timestamp": alarm_entry.slack_timestamp,
+        }
+
+        logger.info(
+            f"Changing Slack reaction {action} {emoji} reaction, change message sent to API is {change_message}"
+        )
+
+        try:
+            change_response = requests.post(
+                url=self.SLACK_REACTIONS_API_PREFIX + action,
+                json=change_message,
+                headers=self.slack_headers,
+            )
+            logger.info(
+                f"{action} {emoji} reaction response: {str(change_response.content)}"
+            )
+        except HTTPError as e:
+            logger.error(
+                f"Changing Slack reaction returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error changing slack reaction for alarm {alarm_entry.alarm_name_metric}: {e}"
+            )
