@@ -6,6 +6,7 @@ import { describe, expect, it, vi, Mocked, beforeEach, afterEach } from 'vitest'
 
 vi.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
+(mockedAxios.get as any) = vi.fn();
 
 describe('downloadReport', () => {
     const report = {
