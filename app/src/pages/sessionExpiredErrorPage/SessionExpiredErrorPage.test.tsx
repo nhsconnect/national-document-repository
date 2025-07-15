@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import SessionExpiredErrorPage from './SessionExpiredErrorPage';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { endpoints } from '../../types/generic/endpoints';

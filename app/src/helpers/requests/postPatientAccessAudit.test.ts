@@ -6,6 +6,7 @@ import { describe, expect, it, vi, Mocked } from 'vitest';
 
 vi.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
+(mockedAxios.post as any) = vi.fn();
 
 describe('postPatientAccessAudit', () => {
     const accessAuditData = {

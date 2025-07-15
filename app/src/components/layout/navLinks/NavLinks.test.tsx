@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import NavLinks from './NavLinks';
 import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
 import { buildUserAuth } from '../../../helpers/test/testBuilders';
@@ -76,9 +76,7 @@ describe('NavLinks', () => {
             const homeLink = screen.getByRole('link', { name: 'Home' });
             expect(homeLink).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(homeLink);
-            });
+            await userEvent.click(homeLink);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
@@ -92,9 +90,7 @@ describe('NavLinks', () => {
             const searchLink = screen.getByRole('link', { name: 'Search for a patient' });
             expect(searchLink).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(searchLink);
-            });
+            await userEvent.click(searchLink);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
@@ -108,9 +104,7 @@ describe('NavLinks', () => {
             const logoutLink = screen.getByRole('link', { name: 'Sign out' });
             expect(logoutLink).toBeInTheDocument();
 
-            act(() => {
-                userEvent.click(logoutLink);
-            });
+            await userEvent.click(logoutLink);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.LOGOUT);

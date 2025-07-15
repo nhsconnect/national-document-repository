@@ -1,5 +1,5 @@
 import DeceasedPatientAccessAudit from './DeceasedPatientAccessAudit';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { LinkProps, MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
@@ -67,9 +67,7 @@ describe('DeceasedPatientAccessAudit', () => {
         it('should render error notification when no reason is selected', async () => {
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 const errorBox = screen.getByTestId('access-reason-error-box');
@@ -82,14 +80,10 @@ describe('DeceasedPatientAccessAudit', () => {
         it('should render error notification when another reason is selected and no reason is entered', async () => {
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`,
-                    ),
-                );
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`),
+            );
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 const errorBox = screen.getByTestId('access-reason-error-box');
@@ -102,19 +96,13 @@ describe('DeceasedPatientAccessAudit', () => {
         it('should render error notification when a reason and another reason is selected and no reason is entered', async () => {
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.familyRequest}`,
-                    ),
-                );
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`,
-                    ),
-                );
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.familyRequest}`),
+            );
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`),
+            );
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 const errorBox = screen.getByTestId('access-reason-error-box');
@@ -143,14 +131,10 @@ describe('DeceasedPatientAccessAudit', () => {
 
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.familyRequest}`,
-                    ),
-                );
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.familyRequest}`),
+            );
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
@@ -164,15 +148,11 @@ describe('DeceasedPatientAccessAudit', () => {
 
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`,
-                    ),
-                );
-                userEvent.type(screen.getByTestId('otherReasonText'), 'reason');
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`),
+            );
+            await userEvent.type(screen.getByTestId('otherReasonText'), 'reason');
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
@@ -188,7 +168,7 @@ const renderDeceasedPatientAccessAudit = () => {
         <ConfigProvider>
             <PatientDetailsProvider>
                 <PatientAccessAuditProvider patientAccessAudit={patientAccessAudit}>
-                    <MemoryRouter>
+                    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                         <DeceasedPatientAccessAudit />
                     </MemoryRouter>
                 </PatientAccessAuditProvider>

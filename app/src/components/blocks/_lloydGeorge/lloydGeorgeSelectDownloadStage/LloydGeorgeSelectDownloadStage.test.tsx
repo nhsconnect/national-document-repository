@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import LloydGeorgeSelectDownloadStage from './LloydGeorgeSelectDownloadStage';
@@ -116,9 +117,7 @@ describe('LloydGeorgeSelectDownloadStage', () => {
         };
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-        act(() => {
-            renderComponent(history);
-        });
+        renderComponent(history);
 
         await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalledWith(

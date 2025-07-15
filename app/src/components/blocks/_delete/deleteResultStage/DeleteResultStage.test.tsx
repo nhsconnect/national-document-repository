@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import DeleteResultStage from './DeleteResultStage';
 import userEvent from '@testing-library/user-event';
@@ -228,13 +228,11 @@ describe('DeleteResultStage', () => {
                     ).toBeInTheDocument();
                 });
 
-                act(() => {
-                    userEvent.click(
-                        screen.getByRole('button', {
-                            name: "Return to patient's Lloyd George record page",
-                        }),
-                    );
-                });
+                await userEvent.click(
+                    screen.getByRole('button', {
+                        name: "Return to patient's Lloyd George record page",
+                    }),
+                );
 
                 await waitFor(() => {
                     expect(mockNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
@@ -260,9 +258,7 @@ describe('DeleteResultStage', () => {
                 ).toBeInTheDocument();
             });
 
-            act(() => {
-                userEvent.click(screen.getByTestId('start-again-link'));
-            });
+            await userEvent.click(screen.getByTestId('start-again-link'));
 
             await waitFor(() => {
                 expect(mockNavigate).toHaveBeenCalledWith(routes.START);
