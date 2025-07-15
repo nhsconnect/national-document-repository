@@ -1,0 +1,182 @@
+# .github/workflows/terraform-dev
+name: "Z-BASE E2e Test: E2e shared actions for running tests on the NDR Backend"
+
+on:
+  workflow_call:
+    inputs:
+      build_branch:
+        description: "Branch with e2e tests."
+        required: true
+        type: "string"
+      environment:
+        description: "Which Environment type are we using"
+        required: true
+        type: "string"
+      sandbox:
+        description: "Sandbox to run the smoke tests on."
+        required: true
+        type: "string"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: "nhsconnect/national-document-repository"
+          ref: ${{ inputs.build_branch}}
+
+      - name: AWS Role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          mask-aws-account-id: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Set up Python ${{ inputs.python_version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Start virtual environment
+        run: |
+          source ./lambdas/venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Get AWS API Gateway Key
+        run: |
+          API_KEY_ID=$(aws apigateway get-api-keys --name-query "${ENVIRONMENT}_apim" --query "items[0].id")
+          echo "::add-mask::Found API Key ID: $API_KEY_ID"
+          echo "::add-mask::API_KEY_ID=$API_KEY_ID" >> $GITHUB_ENV
+  #     - name: Cypress install
+  #       run: |
+  #         npm install --legacy-peer-deps
+  #       working-directory: ./app
+  #
+  #     - name: Cypress run
+  #       uses: cypress-io/github-action@v6
+  #       with:
+  #         install: false
+  #         browser: chrome
+  #         working-directory: ./app
+  #         spec: |
+  #           cypress/e2e/1-ndr-smoke-tests/*.cy.js
+  #           cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
+  #       env:
+  #         CYPRESS_BASE_URL: "https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk"
+  #         CYPRESS_grepTags: "smoke"
+  #         CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
+  #         CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
+  #         CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+  #         CYPRESS_OUTPUT_VIDEO: true
+  #
+  #     - uses: actions/upload-artifact@v4
+  #       if: failure()
+  #       with:
+  #         name: cypress-screenshots
+  #         path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
+  #         if-no-files-found: ignore
+  #     - uses: actions/upload-artifact@v4
+  #       if: failure()
+  #       with:
+  #         name: cypress-videos
+  #         path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
+  #         if-no-files-found: ignore
+  #
+  # cypress-run-firefox:
+  #   needs: ["cypress-run-chrome"]
+  #   runs-on: ubuntu-latest
+  #   environment: ${{ inputs.environment }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: "nhsconnect/national-document-repository"
+  #         ref: ${{ inputs.build_branch}}
+  #
+  #     - name: AWS Role
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+  #         role-skip-session-tagging: true
+  #         mask-aws-account-id: true
+  #         aws-region: ${{ vars.AWS_REGION }}
+  #
+  #     - name: Cypress install
+  #       run: |
+  #         npm install --legacy-peer-deps
+  #       working-directory: ./app
+  #
+  #     - name: Cypress run
+  #       uses: cypress-io/github-action@v6
+  #       with:
+  #         install: false
+  #         browser: firefox
+  #         working-directory: ./app
+  #         spec: |
+  #           cypress/e2e/1-ndr-smoke-tests/*.cy.js
+  #           cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
+  #
+  #       env:
+  #         CYPRESS_BASE_URL: "https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk"
+  #         CYPRESS_grepTags: "smoke"
+  #         CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
+  #         CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
+  #         CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+  #         CYPRESS_OUTPUT_VIDEO: false
+  #
+  # cypress-run-edge:
+  #   needs: ["cypress-run-firefox"]
+  #   runs-on: ubuntu-latest
+  #   environment: ${{ inputs.environment }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: "nhsconnect/national-document-repository"
+  #         ref: ${{ inputs.build_branch}}
+  #
+  #     - name: AWS Role
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+  #         role-skip-session-tagging: true
+  #         aws-region: ${{ vars.AWS_REGION }}
+  #         mask-aws-account-id: true
+  #
+  #     - name: Cypress install
+  #       run: |
+  #         npm install --legacy-peer-deps
+  #       working-directory: ./app
+  #
+  #     - name: Cypress run
+  #       uses: cypress-io/github-action@v6
+  #       with:
+  #         install: false
+  #         browser: edge
+  #         working-directory: ./app
+  #         spec: |
+  #           cypress/e2e/1-ndr-smoke-tests/*.cy.js
+  #           cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
+  #       env:
+  #         CYPRESS_BASE_URL: "https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk"
+  #         CYPRESS_grepTags: "smoke"
+  #         CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
+  #         CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
+  #         CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+  #         CYPRESS_OUTPUT_VIDEO: false

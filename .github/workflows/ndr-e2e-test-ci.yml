@@ -1,15 +1,16 @@
 # .github/workflows/terraform-dev
-name: 'Cypress Smoketest CI to Main: Smoketest shared actions checking CI deployments'
+name: "Merge to main: E2e Tests UI and Backend"
 
 on:
   workflow_run:
     workflows:
       [
-        'CI UI - Development CI Feature Branch to Main',
-        'CI Lambdas - CI Feature to Main'
+        "CI UI - Development CI Feature Branch to Main",
+        "CI Lambdas - CI Feature to Main",
       ]
     types:
       - completed
+    workflow_dispatch:
 
 permissions:
   pull-requests: write
@@ -17,7 +18,7 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  smoketest:
+  ui-e2etest:
     uses: ./.github/workflows/base-cypress-smoketest.yml
     with:
       build_branch: main
@@ -27,3 +28,11 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
       CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
       CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+  services-e2etest:
+    uses: ./.github/workflows/base-e2e-backendtest.yml
+    with:
+      build_branch: main
+      environment: development
+      sandbox: ndr-dev
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
