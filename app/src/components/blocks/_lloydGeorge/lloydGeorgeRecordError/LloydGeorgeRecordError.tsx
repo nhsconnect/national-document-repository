@@ -52,7 +52,9 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
     } else if (renderUploadPath) {
         return (
             <span>
-                <p>This patient does not have a Lloyd George record stored in this service.</p>
+                <p data-testid="no-records-title">
+                    This patient does not have a Lloyd George record stored in this service.
+                </p>
 
                 <div className="lloydgeorge_record-stage_pdf-content-no_record">
                     <ButtonLink
@@ -72,7 +74,11 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
             </span>
         );
     } else if (renderNoRecords) {
-        return <p>This patient does not have a Lloyd George record stored in this service.</p>;
+        return (
+            <p data-testid="no-records-title">
+                This patient does not have a Lloyd George record stored in this service.
+            </p>
+        );
     } else if (renderUploadInProgress) {
         return (
             <p>

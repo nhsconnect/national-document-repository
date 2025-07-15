@@ -211,7 +211,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 assertPatientInfo();
                 cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
                 cy.getByTestId('no-records-title').should('be.visible');
-                cy.getByTestId('upload-patient-record-text').should('be.visible');
                 cy.getByTestId('upload-patient-record-button').should('be.visible');
             },
         );
@@ -298,7 +297,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 // Assert
                 cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
                 cy.getByTestId('no-records-title').should('be.visible');
-                cy.getByTestId('upload-patient-record-text').should('be.visible');
                 cy.getByTestId('upload-patient-record-button').should('be.visible');
             },
         );

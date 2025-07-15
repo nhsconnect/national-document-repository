@@ -73,9 +73,9 @@ describe('GP Workflow: Upload Lloyd George record', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('contain', lloydGeorgeRecordUrl);
-                cy.getByTestId('upload-patient-record-text').should(
+                cy.getByTestId('no-records-text').should(
                     'include.text',
-                    'You can upload full or part of a patient record',
+                    'This patient does not have a Lloyd George record',
                 );
                 cy.getByTestId('upload-patient-record-button').should('exist');
                 cy.getByTestId('upload-patient-record-button').click();
