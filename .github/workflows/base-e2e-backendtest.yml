@@ -81,4 +81,5 @@ jobs:
 
       - name: Run E2e Tests
         run: |
+          pwd
           make test-api-e2e
