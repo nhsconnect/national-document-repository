@@ -49,21 +49,21 @@ describe('LloydGeorgeUploadFailedStage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to file input stage when try again is clicked', () => {
+        it('navigates to file input stage when try again is clicked', async () => {
             render(<LloydGeorgeRetryUploadStage restartUpload={mockRestart} />);
 
             expect(screen.getByRole('button', { name: 'Try upload again' })).toBeInTheDocument();
-            userEvent.click(screen.getByRole('button', { name: 'Try upload again' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Try upload again' }));
             expect(mockRestart).toHaveBeenCalled();
         });
 
-        it('navigates to patient search when search patient is clicked', () => {
+        it('navigates to patient search when search patient is clicked', async () => {
             render(<LloydGeorgeRetryUploadStage restartUpload={mockRestart} />);
 
             expect(
                 screen.getByRole('button', { name: 'Search for a patient' }),
             ).toBeInTheDocument();
-            userEvent.click(screen.getByRole('button', { name: 'Search for a patient' }));
+            await userEvent.click(screen.getByRole('button', { name: 'Search for a patient' }));
             expect(mockUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
         });
     });

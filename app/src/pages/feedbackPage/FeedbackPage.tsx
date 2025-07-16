@@ -141,12 +141,12 @@ function FeedbackPage() {
                         <h3>Leave your details (optional)</h3>
                     </Fieldset.Legend>
 
-                    <p>
-                        <HintText>
+                    <HintText>
+                        <p>
                             If you’re happy to speak to us about your feedback, leave your details
                             below:
-                        </HintText>
-                    </p>
+                        </p>
+                    </HintText>
 
                     <TextInput
                         label="Your name"

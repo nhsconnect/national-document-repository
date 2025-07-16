@@ -67,7 +67,6 @@ class DocumentService:
                 index_name=index_name,
                 search_key=search_key,
                 search_condition=search_condition,
-                requested_fields=DocumentReferenceMetadataFields.list(),
                 query_filter=query_filter,
                 exclusive_start_key=exclusive_start_key,
             )

@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ConfigProvider, { GlobalConfig, useConfigContext } from './ConfigProvider';
 import { defaultFeatureFlags } from '../../types/generic/featureFlags';
@@ -15,9 +15,7 @@ describe('SessionProvider', () => {
     it('is able to set and retrieve auth data when user has logged in', async () => {
         renderFeatureFlagsProvider();
         expect(screen.getByText('testFeature - false')).toBeInTheDocument();
-        act(() => {
-            userEvent.click(screen.getByText('Flag On'));
-        });
+        await userEvent.click(screen.getByText('Flag On'));
 
         expect(screen.getByText('testFeature - true')).toBeInTheDocument();
     });
@@ -25,9 +23,7 @@ describe('SessionProvider', () => {
     it('is able to delete auth data when user has logged out', async () => {
         renderFeatureFlagsProvider();
         expect(screen.getByText('testFeature - true')).toBeInTheDocument();
-        act(() => {
-            userEvent.click(screen.getByText('Flag Off'));
-        });
+        await userEvent.click(screen.getByText('Flag Off'));
 
         expect(screen.getByText('testFeature - false')).toBeInTheDocument();
     });
