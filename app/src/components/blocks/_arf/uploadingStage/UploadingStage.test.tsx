@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -17,10 +17,8 @@ describe('<UploadDocumentsPage />', () => {
             state: DOCUMENT_UPLOAD_STATE,
             progress?: number,
         ) => {
-            act(() => {
-                document.state = state;
-                document.progress = progress;
-            });
+            document.state = state;
+            document.progress = progress;
         };
 
         it('uploads documents and displays the progress', async () => {
