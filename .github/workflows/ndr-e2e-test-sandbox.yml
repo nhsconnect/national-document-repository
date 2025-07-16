@@ -2,14 +2,19 @@
 name: "Merge to main: E2e Tests UI and Backend"
 
 on:
-  workflow_run:
-    workflows:
-      [
-        "CI UI - Development CI Feature Branch to Main",
-        "CI Lambdas - CI Feature to Main",
-      ]
-    types:
-      - completed
+  push:
+    branches:
+      - NDR-154
+  # workflow_dispatch:
+  #   inputs:
+  #     build_branch:
+  #       description: "Branch to build"
+  #       required: true
+  #       default: "main"
+  #     sandbox:
+  #       description: "Sandbox environment"
+  #       required: true
+  #       default: "default"
 
 permissions:
   pull-requests: write
@@ -30,8 +35,8 @@ jobs:
   services-e2etest:
     uses: ./.github/workflows/base-e2e-backendtest.yml
     with:
-      build_branch: main
+      build_branch: ${{ inputs.build_branch }}
       environment: development
-      sandbox: ndr-dev
+      sandbox: ${{ inputs.sandbox }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
