@@ -74,7 +74,8 @@
         "no-console": "warn",
         "extensions": "off",
         "prettier/prettier": "warn",
-        "unused-imports/no-unused-imports": "warn"
+        "unused-imports/no-unused-imports": "warn",
+        "react-hooks/exhaustive-deps": "off"
     },
     "overrides": [
         {
