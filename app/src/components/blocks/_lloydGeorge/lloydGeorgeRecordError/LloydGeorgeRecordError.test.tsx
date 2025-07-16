@@ -249,7 +249,7 @@ describe('LloydGeorgeRecordError', () => {
                 uploadButton.click();
             });
 
-            expect(mockNavigate).toBeCalledWith(routes.LLOYD_GEORGE_UPLOAD);
+            expect(mockNavigate).toBeCalledWith(routes.DOCUMENT_UPLOAD);
         });
     });
 });
