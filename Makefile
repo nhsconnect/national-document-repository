@@ -56,7 +56,7 @@ check-packages:
 	./lambdas/venv/bin/pip-audit -r $(DATA_REQUIREMENTS)
 	./lambdas/venv/bin/pip-audit -r $(REPORTS_REQUIREMENTS)
 
-test-lambda-e2e:
+test-api-e2e:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e
 
 test-unit:
