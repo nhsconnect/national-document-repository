@@ -2,19 +2,16 @@
 name: "Sandbox: E2e Tests UI and Backend"
 
 on:
-  push:
-    branches:
-      - NDR-154
-  # workflow_dispatch:
-  #   inputs:
-  #     build_branch:
-  #       description: "Branch to build"
-  #       required: true
-  #       default: "main"
-  #     sandbox:
-  #       description: "Sandbox environment"
-  #       required: true
-  #       default: "default"
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "Branch to build"
+        required: true
+        default: "main"
+      sandbox:
+        description: "Sandbox environment"
+        required: true
+        default: "ndr"
 
 permissions:
   pull-requests: write
