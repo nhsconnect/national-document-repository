@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: "Merge to main: E2e Tests UI and Backend"
+name: "Sandbox: E2e Tests UI and Backend"
 
 on:
   push:
