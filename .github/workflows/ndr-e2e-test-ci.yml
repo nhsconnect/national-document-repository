@@ -2,14 +2,9 @@
 name: "Merge to main: E2e Tests UI and Backend"
 
 on:
-  workflow_run:
-    workflows:
-      [
-        "CI UI - Development CI Feature Branch to Main",
-        "CI Lambdas - CI Feature to Main",
-      ]
-    types:
-      - completed
+  push:
+    branches:
+      - main
 
 permissions:
   pull-requests: write
