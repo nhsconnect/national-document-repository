@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       build_branch:
-        description: "Branch with smoke tests."
+        description: "Branch with e2e tests."
         required: true
         type: "string"
       environment:
@@ -13,7 +13,7 @@ on:
         required: true
         type: "string"
       sandbox:
-        description: "Sandbox to run the smoke tests on."
+        description: "Sandbox to run the e2e tests on."
         required: true
         type: "string"
     secrets:
