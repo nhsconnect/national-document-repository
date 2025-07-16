@@ -1,8 +1,7 @@
 import PDFMerger from 'pdf-merger-js/browser';
 import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import PdfViewer from '../../../generic/pdfViewer/PdfViewer';
-import moment from 'moment';
 import Spinner from '../../../generic/spinner/Spinner';
 
 type Props = {
@@ -20,18 +19,15 @@ const DocumentUploadLloydGeorgePreview = ({
 }: Props) => {
     const [mergedPdfUrl, setMergedPdfUrl] = useState('');
 
-    let running = false;
-    let start = moment().unix();
+    const runningRef = useRef(false);
     useEffect(() => {
-        if (!documents || running) {
+        if (!documents || runningRef.current) {
             return;
         }
 
-        running = true;
+        runningRef.current = true;
 
         const render = async () => {
-            start = moment().unix();
-            console.log(`start merge @ ${start}`);
             const merger = new PDFMerger();
 
             for (const doc of documents) {
@@ -61,7 +57,7 @@ const DocumentUploadLloydGeorgePreview = ({
 
             const url = URL.createObjectURL(blob);
 
-            running = false;
+            runningRef.current = false;
             setPreviewLoading(false);
             return setMergedPdfUrl(url);
         };
@@ -69,16 +65,12 @@ const DocumentUploadLloydGeorgePreview = ({
         setPreviewLoading(true);
         render().catch((err) => {
             setPreviewLoading(false);
-            running = false;
+            runningRef.current = false;
             throw err;
         });
     }, [JSON.stringify(documents)]);
 
-    const loaded = () => {
-        const end = moment().unix();
-        console.log(`end merge @ ${end}`);
-        console.log(`merge duration: ${end - start} seconds`);
-    };
+    const loaded = () => {};
 
     return (
         <>
