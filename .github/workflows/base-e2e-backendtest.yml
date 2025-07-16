@@ -81,7 +81,4 @@ jobs:
 
       - name: Run E2e Tests
         run: |
-          pwd
-          ls
-          cat Makefile
           make test-api-e2e
