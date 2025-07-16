@@ -1,21 +1,21 @@
 # .github/workflows/terraform-dev
-name: 'Z-BASE Cypress Smoketest: Smoketest shared actions for running'
+name: "Z-BASE Cypress e2e test: e2e test shared actions for running"
 
 on:
   workflow_call:
     inputs:
       build_branch:
-        description: 'Branch with smoke tests.'
+        description: "Branch with smoke tests."
         required: true
-        type: 'string'
+        type: "string"
       environment:
-        description: 'Which Environment type are we using'
+        description: "Which Environment type are we using"
         required: true
-        type: 'string'
+        type: "string"
       sandbox:
-        description: 'Sandbox to run the smoke tests on.'
+        description: "Sandbox to run the smoke tests on."
         required: true
-        type: 'string'
+        type: "string"
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          repository: 'nhsconnect/national-document-repository'
+          repository: "nhsconnect/national-document-repository"
           ref: ${{ inputs.build_branch}}
 
       - name: AWS Role
@@ -59,12 +59,12 @@ jobs:
           install: false
           browser: chrome
           working-directory: ./app
-          spec: | 
+          spec: |
             cypress/e2e/1-ndr-smoke-tests/*.cy.js
             cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
         env:
-          CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          CYPRESS_grepTags: 'smoke'
+          CYPRESS_BASE_URL: "https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk"
+          CYPRESS_grepTags: "smoke"
           CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
@@ -84,14 +84,14 @@ jobs:
           if-no-files-found: ignore
 
   cypress-run-firefox:
-    needs: ['cypress-run-chrome']
+    needs: ["cypress-run-chrome"]
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          repository: 'nhsconnect/national-document-repository'
+          repository: "nhsconnect/national-document-repository"
           ref: ${{ inputs.build_branch}}
 
       - name: AWS Role
@@ -113,27 +113,27 @@ jobs:
           install: false
           browser: firefox
           working-directory: ./app
-          spec: | 
+          spec: |
             cypress/e2e/1-ndr-smoke-tests/*.cy.js
             cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
 
         env:
-          CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          CYPRESS_grepTags: 'smoke'
+          CYPRESS_BASE_URL: "https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk"
+          CYPRESS_grepTags: "smoke"
           CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
           CYPRESS_OUTPUT_VIDEO: false
 
   cypress-run-edge:
-    needs: ['cypress-run-firefox']
+    needs: ["cypress-run-firefox"]
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          repository: 'nhsconnect/national-document-repository'
+          repository: "nhsconnect/national-document-repository"
           ref: ${{ inputs.build_branch}}
 
       - name: AWS Role
@@ -155,12 +155,12 @@ jobs:
           install: false
           browser: edge
           working-directory: ./app
-          spec: | 
+          spec: |
             cypress/e2e/1-ndr-smoke-tests/*.cy.js
             cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
         env:
-          CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          CYPRESS_grepTags: 'smoke'
+          CYPRESS_BASE_URL: "https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk"
+          CYPRESS_grepTags: "smoke"
           CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}

@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   ui-e2etest:
-    uses: ./.github/workflows/base-cypress-smoketest.yml
+    uses: ./.github/workflows/base-cypress-e2e.yml
     with:
       build_branch: main
       environment: development
