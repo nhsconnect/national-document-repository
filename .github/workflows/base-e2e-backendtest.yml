@@ -58,16 +58,26 @@ jobs:
           source ./lambdas/venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
-      - name: Get AWS API Gateway Key
+      - name: Get APIM API Gateway Key
         run: |
           API_KEY_ID=$(aws apigateway get-api-keys --name-query "${SANDBOX}_apim" --query "items[0].id" --output text)
           echo "::add-mask::$API_KEY_ID"
           API_KEY=$(aws apigateway get-api-key --api-key $API_KEY_ID --include-value --query 'value' --output text)
           echo "::add-mask::$API_KEY"
-          echo "API_KEY=$API_KEY" >> $GITHUB_ENV
+          echo "NDR_API_KEY=$API_KEY" >> $GITHUB_ENV
         env:
           SANDBOX: ${{ inputs.sandbox }}
 
+      - name: Get API Gateway Variables
+        run: |
+          DYNAMO_DB_TABLE="${SANDBOX}_LloydGeorgeReferenceMetadata"
+          S3_BUCKET_NAME="${SANDBOX}-lloyd-george-store"
+          API_URL="api-${SANDBOX}.access-request-fulfilment.patient-deductions.nhs.uk"
+          echo "NDR_DYNAMO_STORE=$DYNAMO_DB_TABLE" >> $GITHUB_ENV
+          echo "NDR_S3_BUCKET=$S3_BUCKET_NAME" >> $GITHUB_ENV
+          echo "NDR_API_ENDPOINT=$API_URL" >> $GITHUB_ENV
+        env:
+          SANDBOX: ${{ inputs.sandbox }}
   #     - name: Cypress install
   #       run: |
   #         npm install --legacy-peer-deps
