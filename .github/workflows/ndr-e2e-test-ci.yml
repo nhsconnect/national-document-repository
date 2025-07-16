@@ -33,7 +33,7 @@ jobs:
   services-e2etest:
     uses: ./.github/workflows/base-e2e-backendtest.yml
     with:
-      build_branch: main
+      build_branch: NDR-154
       environment: development
       sandbox: ndr-dev
     secrets:
