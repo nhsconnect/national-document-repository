@@ -159,7 +159,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
             navigate(routes.DOCUMENT_UPLOAD);
             return;
         }
-    }, [navigate]);
+    }, [navigate, documents.length]);
 
     return (
         <>
