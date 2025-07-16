@@ -68,7 +68,7 @@ jobs:
         env:
           SANDBOX: ${{ inputs.sandbox }}
 
-      - name: Get API Gateway Variables
+      - name: Get E2e Test Variables
         run: |
           DYNAMO_DB_TABLE="${SANDBOX}_LloydGeorgeReferenceMetadata"
           S3_BUCKET_NAME="${SANDBOX}-lloyd-george-store"
