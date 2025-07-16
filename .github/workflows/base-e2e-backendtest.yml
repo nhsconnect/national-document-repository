@@ -64,6 +64,8 @@ jobs:
           echo "::add-mask::$API_KEY_ID"
           API_KEY=$(aws apigateway get-api-key --api-key $API_KEY_ID --include-value --query 'value' | tr -d '"')
           echo "::add-mask::$API_KEY"
+        env:
+          SANDBOX: ${{ inputs.sandbox }}
 
   #     - name: Cypress install
   #       run: |
