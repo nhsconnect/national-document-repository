@@ -9,7 +9,7 @@ import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientS
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { FieldValues, useForm } from 'react-hook-form';
 import { SelectRef } from '../../../../types/generic/selectRef';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../generic/backButton/BackButton';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
