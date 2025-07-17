@@ -41,7 +41,9 @@ def lambda_handler(event, context):
             logger.info(
                 f"Processing SQS message for nhs number: {nrl_message.nhs_number}"
             )
-            nrl_verified_message = nrl_message.model_dump(exclude_none=True)
+            nrl_verified_message = nrl_message.model_dump(
+                by_alias=True, exclude_none=True
+            )
             match nrl_message.action:
                 case NrlActionTypes.CREATE:
                     document = DocumentReferenceInfo(

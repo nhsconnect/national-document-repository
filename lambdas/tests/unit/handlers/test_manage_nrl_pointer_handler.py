@@ -15,7 +15,9 @@ def mock_service(mocker):
 
 
 def build_test_sqs_message(action="create"):
-    doc_details = Attachment(url="https://example.org/my-doc.pdf", title="lg_record")
+    doc_details = Attachment(
+        url="https://example.org/my-doc.pdf",
+    )
     sqs_message = NrlSqsMessage(
         nhs_number="123456789",
         action=action,

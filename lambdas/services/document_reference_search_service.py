@@ -173,7 +173,7 @@ class DocumentReferenceSearchService(DocumentService):
         )
         fhir_document_reference = (
             DocumentReferenceInfo(
-                nhs_number=document_reference.nhs_number,
+                nhsNumber=document_reference.nhs_number,
                 attachment=document_details,
                 custodian=document_reference.current_gp_ods,
                 snomed_code_doc_type=SnomedCodes.find_by_code(
