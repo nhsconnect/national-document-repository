@@ -66,7 +66,7 @@ export enum ROUTE_TYPE {
 }
 
 export type route = {
-    page: JSX.Element;
+    page: React.JSX.Element;
     type: ROUTE_TYPE;
     unauthorized?: Array<REPOSITORY_ROLE>;
     children?: React.ReactNode;

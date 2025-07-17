@@ -426,6 +426,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin and pati
                 cy.wait('@s3_retry_upload');
 
                 cy.get('#upload-retry-button').should('exist');
+                // eslint-disable-next-line cypress/no-unnecessary-waiting
                 cy.wait(1000);
                 cy.get('#upload-retry-button').click();
 

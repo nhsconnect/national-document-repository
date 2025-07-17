@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { act } from 'react';
 import LloydGeorgeRecordError from './LloydGeorgeRecordError';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { LinkProps } from 'react-router-dom';
