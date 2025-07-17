@@ -8,7 +8,7 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routeChildren } from '../../../../types/generic/routes';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import useTitle from '../../../../helpers/hooks/useTitle';

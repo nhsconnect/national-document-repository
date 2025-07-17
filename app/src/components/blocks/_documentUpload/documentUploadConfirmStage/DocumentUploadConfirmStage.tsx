@@ -3,7 +3,7 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import BackButton from '../../../generic/backButton/BackButton';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import { useState } from 'react';
 import Pagination from '../../../generic/pagination/Pagination';

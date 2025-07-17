@@ -1,6 +1,6 @@
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import { routes } from '../../../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import usePatient from '../../../../helpers/hooks/usePatient';
 
