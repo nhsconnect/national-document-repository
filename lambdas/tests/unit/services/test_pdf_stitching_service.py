@@ -470,7 +470,6 @@ def test_publish_nrl_message(mock_service, mock_uuid):
     expected_apim_attachment = Attachment(
         url=f"https://apim.api.service.uk/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_service.stitched_reference.id}",
         contentType="application/pdf",
-        title=None,
     )
 
     expected_nrl_message = NrlSqsMessage(
