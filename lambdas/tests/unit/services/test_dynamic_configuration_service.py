@@ -1,6 +1,8 @@
 import pytest
 from enums.feature_flags import FeatureFlags
+from enums.lambda_error import LambdaError
 from services.dynamic_configuration_service import DynamicConfigurationService
+from utils.lambda_exceptions import FeatureFlagsException
 from utils.request_context import request_context
 
 
@@ -11,20 +13,32 @@ def configuration_service(mocker):
     yield configuration_service
 
 
-def test_set_auth_ssm_prefix_to_password_when_flag_is_disabled(configuration_service):
+def test_set_auth_ssm_prefix_to_smartcard_when_flag_is_disabled(configuration_service):
     configuration_service.feature_flag_service.get_feature_flags_by_flag.return_value = {
-        FeatureFlags.USE_SMARTCARD_AUTH.value: False
+        FeatureFlags.MOCK_LOGIN_ENABLED.value: False
     }
 
     configuration_service.set_auth_ssm_prefix()
 
-    assert request_context.auth_ssm_prefix == "/auth/password/"
+    assert request_context.auth_ssm_prefix == "/auth/smartcard/"
 
 
-def test_set_auth_ssm_prefix_to_smartcard_when_flag_is_enable(configuration_service):
+def test_set_auth_ssm_prefix_to_mock_when_flag_is_enable(configuration_service):
     configuration_service.feature_flag_service.get_feature_flags_by_flag.return_value = {
-        FeatureFlags.USE_SMARTCARD_AUTH.value: True
+        FeatureFlags.MOCK_LOGIN_ENABLED.value: True
     }
+
+    configuration_service.set_auth_ssm_prefix()
+
+    assert request_context.auth_ssm_prefix == "/auth/mock/"
+
+
+def test_set_auth_ssm_prefix_to_smartcard_when_flag_does_not_exist(
+    configuration_service,
+):
+    configuration_service.feature_flag_service.get_feature_flags_by_flag.side_effect = (
+        FeatureFlagsException(error=LambdaError.FeatureFlagParseError, status_code=500)
+    )
 
     configuration_service.set_auth_ssm_prefix()
 

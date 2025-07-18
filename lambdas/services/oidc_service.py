@@ -113,7 +113,7 @@ class OidcService:
         Returns the selected role data or None if not found.
         """
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
-        logger.debug(f"nrbac_roles: {nrbac_roles}")
+        logger.info(f"nrbac_roles: {nrbac_roles}")
 
         for role in nrbac_roles:
             if role["person_roleid"] == selected_role_id:
@@ -206,7 +206,7 @@ class OidcService:
 
         if userinfo_response.status_code == 200:
             userinfo = userinfo_response.json()
-            logger.debug(f"User info response: {userinfo}")
+            logger.info(f"User info response: {userinfo}")
             return userinfo
         else:
             logger.error(
