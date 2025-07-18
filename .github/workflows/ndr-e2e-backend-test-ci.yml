@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: "Merge to main: E2e Tests UI and Backend"
+name: "Merge to main: E2e Tests Backend"
 
 on:
   workflow_run:
