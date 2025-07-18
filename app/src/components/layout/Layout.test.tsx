@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 describe('Layout', () => {
     beforeEach(() => {
         window.sessionStorage.clear();
+        document.documentElement.scrollTo = vi.fn();
     });
     describe('Accessibility', () => {
         it('pass accessibility checks when not logged in', async () => {

@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect, useRef } from 'react';
+import { MouseEvent, useEffect, useLayoutEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import Header from './header/Header';
 import PhaseBanner from './phaseBanner/PhaseBanner';
@@ -26,6 +26,10 @@ function Layout({ children }: Props) {
 
         layoutRef?.current?.focus();
     }, [location]);
+
+    useLayoutEffect(() => {
+        document.documentElement.scrollTo(0, 0);
+    }, [location.pathname]);
 
     const focusMainContent = (e: MouseEvent<HTMLAnchorElement>) => {
         /**
