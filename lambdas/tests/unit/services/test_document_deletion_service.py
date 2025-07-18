@@ -20,6 +20,7 @@ from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
 )
+from utils.common_query_filters import NotDeleted
 from utils.exceptions import DocumentServiceException
 from utils.lambda_exceptions import DocumentDeletionServiceException
 
@@ -320,7 +321,9 @@ def test_delete_unstitched_document_reference_updates_correct_dynamo_table(
 
     mock_deletion_service.delete_unstitched_document_reference(TEST_NHS_NUMBER)
     mock_deletion_service.document_service.fetch_documents_from_table_with_nhs_number.assert_called_once_with(
-        nhs_number=TEST_NHS_NUMBER, table="test_unstitched_lg_table"
+        nhs_number=TEST_NHS_NUMBER,
+        table="test_unstitched_lg_table",
+        query_filter=NotDeleted,
     )
 
     mock_deletion_service.document_service.delete_document_references.assert_called_with(
