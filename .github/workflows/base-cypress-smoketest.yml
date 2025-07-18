@@ -1,11 +1,11 @@
 # .github/workflows/terraform-dev
-name: "Z-BASE Cypress e2e test: e2e test shared actions for running"
+name: "Z-BASE Cypress Smoketest: Smoketest test shared actions for running"
 
 on:
   workflow_call:
     inputs:
       build_branch:
-        description: "Branch with e2e tests."
+        description: "Branch with smoke tests."
         required: true
         type: "string"
       environment:
@@ -13,7 +13,7 @@ on:
         required: true
         type: "string"
       sandbox:
-        description: "Sandbox to run the e2e tests on."
+        description: "Sandbox to run the smoke tests on."
         required: true
         type: "string"
     secrets:

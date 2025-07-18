@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: "Merge to main: E2e Tests UI and Backend"
+name: "Cypress Smoketest CI to Main: Smoketest shared actions checking CI deployments"
 
 on:
   workflow_run:
@@ -17,8 +17,8 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  ui-e2etest:
-    uses: ./.github/workflows/base-cypress-e2e.yml
+  smoketest:
+    uses: ./.github/workflows/base-cypress-smoketest.yml
     with:
       build_branch: main
       environment: development

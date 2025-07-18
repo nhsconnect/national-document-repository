@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: 'SANDBOX - Smoke Test'
+name: 'SANDBOX - UI Smoke Test'
 
 on:
   workflow_dispatch:
