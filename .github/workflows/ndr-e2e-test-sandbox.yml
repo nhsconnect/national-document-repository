@@ -1,0 +1,29 @@
+# .github/workflows/terraform-dev
+name: "SANDBOX: E2e Tests Backend"
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "Branch to build"
+        required: true
+        default: "main"
+      sandbox:
+        description: "Sandbox environment"
+        required: true
+        default: "ndr"
+
+permissions:
+  pull-requests: write
+  id-token: write
+  contents: read
+
+jobs:
+  services-e2etest:
+    uses: ./.github/workflows/base-e2e-backendtest.yml
+    with:
+      build_branch: ${{ inputs.build_branch }}
+      environment: development
+      sandbox: ${{ inputs.sandbox }}
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
