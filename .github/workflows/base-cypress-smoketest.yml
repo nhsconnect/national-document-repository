@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: "Z-BASE Cypress Smoketest: Smoketest test shared actions for running"
+name: "Z-BASE Cypress Smoketest: Smoketest shared actions for running"
 
 on:
   workflow_call:
