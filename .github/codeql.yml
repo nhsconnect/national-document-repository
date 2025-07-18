@@ -53,5 +53,4 @@ jobs:
         category: "/language:${{matrix.language}}"
         config: |
           paths-ignore:
-            - app/node_modules
             - app/public
