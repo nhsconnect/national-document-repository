@@ -1,6 +1,6 @@
-import { render, waitFor, screen } from "@testing-library/react";
-import { UploadDocument } from "../../../../types/pages/UploadDocumentsPage/types";
-import DocumentUploadingStage from "./DocumentUploadingStage";
+import { render, waitFor, screen } from '@testing-library/react';
+import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
+import DocumentUploadingStage from './DocumentUploadingStage';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -26,7 +26,7 @@ describe('DocumentUploadCompleteStage', () => {
 
             await waitFor(async () => {
                 expect(
-                    screen.queryAllByText('Your documents are uploading')[0]
+                    screen.queryAllByText('Your documents are uploading')[0],
                 ).toBeInTheDocument();
             });
         });

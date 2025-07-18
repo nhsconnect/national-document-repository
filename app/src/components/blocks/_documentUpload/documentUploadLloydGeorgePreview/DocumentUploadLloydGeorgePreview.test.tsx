@@ -1,6 +1,6 @@
-import { render, waitFor, screen } from "@testing-library/react";
-import { UploadDocument } from "../../../../types/pages/UploadDocumentsPage/types";
-import DocumentUploadLloydGeorgePreview from "./DocumentUploadLloydGeorgePreview";
+import { render, waitFor, screen } from '@testing-library/react';
+import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
+import DocumentUploadLloydGeorgePreview from './DocumentUploadLloydGeorgePreview';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -22,11 +22,16 @@ describe('DocumentUploadCompleteStage', () => {
 
     describe('Rendering', () => {
         it('renders', async () => {
-            render(<DocumentUploadLloydGeorgePreview documents={documents} previewLoading={true} setMergedPdfBlob={() => {}} setPreviewLoading={() => {}} />);
+            render(<DocumentUploadLloydGeorgePreview 
+                documents={documents} 
+                previewLoading={true} 
+                setMergedPdfBlob={() => {}} 
+                setPreviewLoading={() => {}} />
+            );
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Loading preview...')
+                    screen.getByText('Loading preview...'),
                 ).toBeInTheDocument();
             });
         });

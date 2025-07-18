@@ -1,6 +1,6 @@
-import { render, waitFor, screen } from "@testing-library/react";
-import { DOCUMENT_TYPE, UploadDocument } from "../../../../types/pages/UploadDocumentsPage/types";
-import DocumentUploadRemoveFilesStage from "./DocumentUploadRemoveFilesStage";
+import { render, waitFor, screen } from '@testing-library/react';
+import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
+import DocumentUploadRemoveFilesStage from './DocumentUploadRemoveFilesStage';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -22,11 +22,15 @@ describe('DocumentUploadCompleteStage', () => {
 
     describe('Rendering', () => {
         it('renders', async () => {
-            render(<DocumentUploadRemoveFilesStage documents={documents} setDocuments={() => {}} documentType={DOCUMENT_TYPE.LLOYD_GEORGE} />);
+            render(<DocumentUploadRemoveFilesStage 
+                documents={documents} 
+                setDocuments={() => {}} 
+                documentType={DOCUMENT_TYPE.LLOYD_GEORGE} />
+            );
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Are you sure you want to remove all selected files?')
+                    screen.getByText('Are you sure you want to remove all selected files?'),
                 ).toBeInTheDocument();
             });
         });
