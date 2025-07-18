@@ -155,7 +155,6 @@ class IMAlertingService:
                 self.update_alarm_history_table(alarm_entry)
             case AlarmState.OK:
                 self.handle_ok_action_trigger(tags=tags, alarm_entry=alarm_entry)
-            # TODO Add the ability to handle AlarmState.INSUFFICIENT_DATA
 
     def create_alarm_entry(self, alarm_entry: AlarmEntry):
         dynamodb_item = alarm_entry.to_dynamo()
