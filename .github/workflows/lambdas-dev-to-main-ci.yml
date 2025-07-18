@@ -11,6 +11,8 @@ on:
       - main
     paths:
       - 'lambdas/**'
+      - '*'
+      - '.github/**'
   workflow_call:
     secrets:
       AWS_ASSUME_ROLE:
