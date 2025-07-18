@@ -4,7 +4,8 @@ import {
     buildPatientDetails,
     buildTextFile,
 } from '../../../../helpers/test/testBuilders';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import LloydGeorgeUploadComplete from './LloydGeorgeUploadCompleteStage';
 import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../../types/pages/UploadDocumentsPage/types';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';

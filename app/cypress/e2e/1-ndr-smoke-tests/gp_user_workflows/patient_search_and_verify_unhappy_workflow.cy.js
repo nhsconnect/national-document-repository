@@ -1,5 +1,4 @@
 import { Roles, roleName } from '../../../support/roles';
-import { routes } from '../../../support/routes';
 
 describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient on PDS', () => {
     // env vars
