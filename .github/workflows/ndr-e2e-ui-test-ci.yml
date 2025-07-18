@@ -2,9 +2,14 @@
 name: "Merge to main: E2e Tests UI and Backend"
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows:
+      [
+        'CI UI - Development CI Feature Branch to Main',
+        'CI Lambdas - CI Feature to Main'
+      ]
+    types:
+      - completed
 
 permissions:
   pull-requests: write
@@ -22,11 +27,3 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
       CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
       CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
-  services-e2etest:
-    uses: ./.github/workflows/base-e2e-backendtest.yml
-    with:
-      build_branch: main
-      environment: development
-      sandbox: ndr-dev
-    secrets:
-      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
