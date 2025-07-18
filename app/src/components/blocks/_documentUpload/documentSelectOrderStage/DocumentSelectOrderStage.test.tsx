@@ -1,6 +1,6 @@
-import { render, waitFor, screen } from "@testing-library/react";
-import DocumentSelectOrderStage from "./DocumentSelectOrderStage";
-import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE, UploadDocument } from "../../../../types/pages/UploadDocumentsPage/types";
+import { render, waitFor, screen } from '@testing-library/react';
+import DocumentSelectOrderStage from './DocumentSelectOrderStage';
+import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -28,11 +28,15 @@ describe('DocumentSelectOrderStage', () => {
 
     describe('Rendering', () => {
         it('renders', async () => {
-            render(<DocumentSelectOrderStage documents={documents} setDocuments={() => {}} setMergedPdfBlob={() => {}} />);
+            render(<DocumentSelectOrderStage 
+                documents={documents} 
+                setDocuments={() => {}} 
+                setMergedPdfBlob={() => {}} />
+            );
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Your files are not currently in order:')
+                    screen.getByText('Your files are not currently in order:'),
                 ).toBeInTheDocument();
             });
         });

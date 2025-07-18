@@ -1,5 +1,5 @@
-import { render, waitFor, screen } from "@testing-library/react";
-import DocumentUploadCompleteStage from "./DocumentUploadCompleteStage";
+import { render, waitFor, screen } from '@testing-library/react';
+import DocumentUploadCompleteStage from './DocumentUploadCompleteStage';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -23,7 +23,7 @@ describe('DocumentUploadCompleteStage', () => {
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('You have successfully uploaded a digital Lloyd George record for:')
+                    screen.getByText('You have successfully uploaded a digital Lloyd George record for:'),
                 ).toBeInTheDocument();
             });
         });

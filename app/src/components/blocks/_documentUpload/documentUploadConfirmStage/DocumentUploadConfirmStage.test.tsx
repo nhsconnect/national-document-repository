@@ -1,6 +1,6 @@
-import { render, waitFor, screen } from "@testing-library/react";
-import DocumentUploadConfirmStage from "./DocumentUploadConfirmStage";
-import { UploadDocument } from "../../../../types/pages/UploadDocumentsPage/types";
+import { render, waitFor, screen } from '@testing-library/react';
+import DocumentUploadConfirmStage from './DocumentUploadConfirmStage';
+import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -22,11 +22,14 @@ describe('DocumentUploadCompleteStage', () => {
 
     describe('Rendering', () => {
         it('renders', async () => {
-            render(<DocumentUploadConfirmStage documents={documents} startUpload={() => Promise.resolve()} />);
+            render(<DocumentUploadConfirmStage 
+                documents={documents} 
+                startUpload={() => Promise.resolve()} />
+            );
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Check your files before uploading')
+                    screen.getByText('Check your files before uploading'),
                 ).toBeInTheDocument();
             });
         });

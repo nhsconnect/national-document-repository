@@ -22,10 +22,10 @@ $sunit: 'px';
     $i: 0;
     $x: 0;
     @while $i <= $smax {
+        $x: $x + 1;
         #{$className + $x} {
             #{$styleName}: #{$i + $sunit};
         }
-        $x: $x + 1;
         $i: $i + $soffset;
     }
 }
