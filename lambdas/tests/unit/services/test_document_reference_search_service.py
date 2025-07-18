@@ -98,7 +98,10 @@ def test_get_document_references_raise_dynamodb_error(mock_document_service):
     )
     with pytest.raises(DynamoServiceException):
         mock_document_service._search_tables_for_documents(
-            "1234567890", ["table1", "table2"], return_fhir=True
+            "1234567890",
+            ["table1", "table2"],
+            return_fhir=True,
+            check_upload_completed=False,
         )
 
 
@@ -178,7 +181,7 @@ def test_get_document_references_success(mock_document_service, mocker):
     assert result == [{"id": "123"}]
     mock_get_table_names.assert_called_once()
     mock_search_document.assert_called_once_with(
-        "1234567890", ["table1", "table2"], False, None
+        "1234567890", ["table1", "table2"], False, None, True
     )
 
 
@@ -205,7 +208,10 @@ def test_search_tables_for_documents_non_fhir(mock_document_service, mocker):
 
     mock_document_service._process_documents = mock_process_document_non_fhir
     result_non_fhir = mock_document_service._search_tables_for_documents(
-        "1234567890", ["table1", "table2"], return_fhir=False
+        "1234567890",
+        ["table1", "table2"],
+        return_fhir=False,
+        check_upload_completed=True,
     )
 
     assert result_non_fhir == [mock_document_id, mock_document_id]
@@ -237,7 +243,10 @@ def test_search_tables_for_documents_fhir(mock_document_service, mocker):
 
     mock_document_service._process_documents = mock_process_document_fhir
     result_fhir = mock_document_service._search_tables_for_documents(
-        "1234567890", ["table1", "table2"], return_fhir=True
+        "1234567890",
+        ["table1", "table2"],
+        return_fhir=True,
+        check_upload_completed=True,
     )
 
     assert result_fhir["resourceType"] == "Bundle"
@@ -445,10 +454,8 @@ def test_create_document_reference_fhir_response_integration(
 
 def test_build_filter_expression_custodian(mock_document_service):
     filter_values = {"custodian": "12345"}
-    expected_filter = (
-        Attr("CurrentGpOds").eq("12345")
-        & Attr("Uploaded").eq(True)
-        & (Attr("Deleted").eq("") | Attr("Deleted").not_exists())
+    expected_filter = Attr("CurrentGpOds").eq("12345") & (
+        Attr("Deleted").eq("") | Attr("Deleted").not_exists()
     )
 
     actual_filter = mock_document_service._build_filter_expression(filter_values)
@@ -472,24 +479,8 @@ def test_build_filter_expression_custodian_mocked(
 
 def test_build_filter_expression_defaults(mock_document_service):
     filter_values = {}
-    expected_filter = Attr("Uploaded").eq(True) & (
-        Attr("Deleted").eq("") | Attr("Deleted").not_exists()
-    )
+    expected_filter = Attr("Deleted").eq("") | Attr("Deleted").not_exists()
 
     actual_filter = mock_document_service._build_filter_expression(filter_values)
 
     assert actual_filter == expected_filter
-
-
-def test_build_filter_expression_defaults_mocked(
-    mock_document_service, mock_filter_builder
-):
-    filter_values = {}
-
-    mock_document_service._build_filter_expression(filter_values)
-
-    mock_filter_builder.add_condition.assert_any_call(
-        attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
-        attr_operator=AttributeOperator.EQUAL,
-        filter_value=True,
-    )
