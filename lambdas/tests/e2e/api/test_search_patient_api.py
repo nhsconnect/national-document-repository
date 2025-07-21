@@ -24,7 +24,7 @@ def cleanup_dynamo():
     dynamo_service.delete_item(table_name=dynamo_table, key={"ID": random_guid})
 
 
-def test_search_patient_details(cleanup_dynamo):
+def test_search_patient_details(cleanup_dynamo, snapshot):
     nhs_number = "9449305943"
 
     file_content = io.BytesIO(b"Sample PDF Content")
@@ -61,46 +61,14 @@ def test_search_patient_details(cleanup_dynamo):
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
-    # Check that a bundle of documents is returned (Patient may have multiple)
-    assert bundle["resourceType"] == "Bundle"
-    assert bundle["type"] == "searchset"
-    assert bundle["total"] == 1
-    assert "entry" in bundle and len(bundle["entry"]) > 0
-
-    # Check the first resource, our controlled test should only have one
-    doc = bundle["entry"][0]["resource"]
-
-    # Check document metadata
-    assert doc["resourceType"] == "DocumentReference"
-    assert doc["status"] == "current"
-    assert doc["docStatus"] == "final"
-
-    # Check coding
-    coding = doc["type"]["coding"][0]
-    assert coding["code"] == "16521000000101"
-    assert coding["display"] == "Lloyd George record folder"
-
-    # Check patient NHS number
-    subject_id = doc["subject"]["identifier"]
-    assert subject_id["system"] == "https://fhir.nhs.uk/Id/nhs-number"
-    assert subject_id["value"] == "9449305943"
-
-    # Check author and custodian
-    author_id = doc["author"][0]["identifier"]
-    custodian_id = doc["custodian"]["identifier"]
-    assert author_id["value"] == "H81109"
-    assert custodian_id["value"] == "H81109"
-
-    # Check content metadata
-    attachment = doc["content"][0]["attachment"]
-    assert attachment["contentType"] == "application/pdf"
-    assert attachment["language"] == "en-GB"
+    del bundle["entry"][0]["resource"]["id"]
+    del bundle["entry"][0]["resource"]["date"]
+    del bundle["timestamp"]
+    attachment_url = bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
     assert (
-        attachment["title"]
-        == f"1of1_Lloyd_George_Record_[Holly Lorna MAGAN]_[{nhs_number}]_[29-05-2006].pdf"
+        "https://internal-dev.api.service.nhs.uk/national-document-repository/DocumentReference/16521000000101~"
+        in attachment_url
     )
-    assert (
-        attachment["url"]
-        == f"https://internal-dev.api.service.nhs.uk/national-document-repository/DocumentReference/16521000000101~{random_guid}"
-    )
-    assert attachment["creation"] == "2023-01-01"
+    del bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
+
+    assert bundle == snapshot
