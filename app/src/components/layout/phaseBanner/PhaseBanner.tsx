@@ -1,4 +1,3 @@
-import React from 'react';
 import { routes } from '../../../types/generic/routes';
 import { useSessionContext } from '../../../providers/sessionProvider/SessionProvider';
 import { Link } from 'react-router-dom';

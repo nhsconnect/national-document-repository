@@ -34,7 +34,7 @@ describe('Feature flags - Lloyd George Workflow', () => {
 
                 cy.get('#verify-submit').click();
 
-                cy.getByTestId('upload-patient-record-text').should('exist');
+                cy.getByTestId('no-records-title').should('exist');
                 cy.getByTestId('upload-patient-record-button').should('exist');
                 cy.title().should(
                     'eq',
@@ -44,7 +44,7 @@ describe('Feature flags - Lloyd George Workflow', () => {
         );
 
         it(
-            'does not display upload text and button when neither upload feature flags are enabled',
+            'does not display upload button when neither upload feature flags are enabled',
             { tags: 'regression' },
             () => {
                 const featureFlags = {
@@ -57,13 +57,12 @@ describe('Feature flags - Lloyd George Workflow', () => {
                 });
                 cy.get('#verify-submit').click();
 
-                cy.getByTestId('upload-patient-record-text').should('not.exist');
                 cy.getByTestId('upload-patient-record-button').should('not.exist');
             },
         );
 
         it(
-            'does not display upload text and button when upload lambda feature flag is not enabled',
+            'does not display upload button when upload lambda feature flag is not enabled',
             { tags: 'regression' },
             () => {
                 const featureFlags = {
@@ -76,13 +75,12 @@ describe('Feature flags - Lloyd George Workflow', () => {
                 });
                 cy.get('#verify-submit').click();
 
-                cy.getByTestId('upload-patient-record-text').should('not.exist');
                 cy.getByTestId('upload-patient-record-button').should('not.exist');
             },
         );
 
         it(
-            'does not display upload text and button when upload Lloyd George feature flag is not enabled',
+            'does not display upload button when upload Lloyd George feature flag is not enabled',
             { tags: 'regression' },
             () => {
                 const featureFlags = {
@@ -95,7 +93,6 @@ describe('Feature flags - Lloyd George Workflow', () => {
                 });
                 cy.get('#verify-submit').click();
 
-                cy.getByTestId('upload-patient-record-text').should('not.exist');
                 cy.getByTestId('upload-patient-record-button').should('not.exist');
             },
         );
