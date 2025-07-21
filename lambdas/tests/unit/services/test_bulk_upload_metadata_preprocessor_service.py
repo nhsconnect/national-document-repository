@@ -283,7 +283,7 @@ def test_extract_document_number_from_bulk_upload_file_name_with_no_document_num
             ("Lloyd_George_Record", "_lloyd_george_12342"),
         ),
         (
-            "]{\lloyd george?record///person_name",
+            r"]{\lloyd george?record///person_name",
             ("Lloyd_George_Record", "///person_name"),
         ),
         ("_Lloyd_George-Record_person_name", ("Lloyd_George_Record", "_person_name")),
