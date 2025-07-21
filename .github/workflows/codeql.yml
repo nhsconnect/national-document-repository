@@ -46,11 +46,12 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
+        config: |
+          paths-ignore:
+            - app/public
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
-        config: |
-          paths-ignore:
-            - app/public
+        
