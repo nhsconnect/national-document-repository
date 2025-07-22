@@ -69,14 +69,17 @@ class LambdaError(Enum):
     CreateDocNoParse = {
         "err_code": "CDR_4005",
         "message": "Failed to parse document upload request data",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     CreateDocNoType = {
         "err_code": "CDR_4006",
-        "message": "Failed to parse document upload request data",
+        "message": "Failed to parse document upload request data due to missing document type",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     CreateDocInvalidType = {
         "err_code": "CDR_4007",
-        "message": "Failed to parse document upload request data",
+        "message": "Failed to parse document upload request data due to invalid document type",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     CreateDocRecordAlreadyInPlace = {
         "err_code": "CDR_4008",
@@ -89,6 +92,11 @@ class LambdaError(Enum):
     CreateDocUpload = {
         "err_code": "CDR_5002",
         "message": "An error occurred when creating pre-signed url for document reference",
+    }
+    CreatePatientSearchInvalid = {
+        "err_code": "CDR_5003",
+        "message": "Failed to validate patient",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
 
     """
