@@ -7,10 +7,12 @@ on:
     paths:
       - "lambdas/**"
       - "Makefile"
+      - ".github/**"
   pull_request:
     branches:
       - main
     paths:
+      - ".github/**"
       - "lambdas/**"
       - "Makefile"
   workflow_call:

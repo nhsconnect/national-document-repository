@@ -6,12 +6,14 @@ on:
     branches:
       - main
     paths:
+      - ".github/**"
       - "app/**"
       - "Makefile"
   pull_request:
     branches:
       - main
     paths:
+      - ".github/**"
       - "app/**"
       - "Makefile"
   workflow_call:
