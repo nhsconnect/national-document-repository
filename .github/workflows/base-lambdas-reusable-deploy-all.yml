@@ -147,8 +147,8 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_token_request_lambda:
-    if: ${{ inputs.mock_login_enabled }} == false
     name: Deploy TokenRequestHandler
+    if: ${{ !inputs.mock_login_enabled }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -162,8 +162,8 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_mock_token_request_lambda:
-    if: ${{ inputs.mock_login_enabled }} == false && ${{ inputs.environment }} != 'prod'
     name: Deploy Mock TokenRequestHandler
+    if: ${{ inputs.mock_login_enabled && (inputs.environment != 'prod') }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -178,8 +178,8 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_login_redirect_lambda:
-    if: ${{inputs.mock_login_enabled}} == false
     name: Deploy LoginRedirectHandler
+    if: ${{ !inputs.mock_login_enabled }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -193,8 +193,8 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_mock_login_redirect_lambda:
-    if: ${{inputs.mock_login_enabled}} == true && ${{inputs.environment}} != 'prod'
     name: Deploy Mock LoginRedirectHandler
+    if: ${{ inputs.mock_login_enabled && (inputs.environment  != 'prod') }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
