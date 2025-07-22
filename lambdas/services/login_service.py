@@ -28,7 +28,7 @@ logger = LoggingService(__name__)
 
 
 class LoginService:
-    def __init__(self, oidc_service: OidcService = False):
+    def __init__(self, oidc_service: OidcService):
         self.db_service = DynamoDBService()
         self.token_handler_ssm_service = TokenHandlerSSMService()
         self.ods_api_service = OdsApiService()
