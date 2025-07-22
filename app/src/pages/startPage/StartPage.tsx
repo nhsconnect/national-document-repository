@@ -42,13 +42,19 @@ function StartPage(props: Props) {
                 <li>download a patient record</li>
                 <li>remove a patient record</li>
                 <li>download a report on the records held within this service</li>
+                <li>upload a patient record</li>
             </ul>
             <p>If you are managing records on behalf of NHS England, you can:</p>
             <ul>
                 <li>download a patient record</li>
                 <li>download a report on the records held within this service</li>
+                <li>upload a patient record</li>
             </ul>
             <p>Not every patient will have a digital record available.</p>
+            <p>
+                You can upload files for patients who do not currently have 
+                a Lloyd George record stored in this service.
+            </p>
             <h2>Before you start</h2>
             <p>You’ll be asked for:</p>
             <ul>
