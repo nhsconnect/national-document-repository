@@ -11,7 +11,7 @@ on:
       - main
     paths:
       - "lambdas/**"
-      - "/*"
+      - "Makefile"
   workflow_call:
     secrets:
       AWS_ASSUME_ROLE:

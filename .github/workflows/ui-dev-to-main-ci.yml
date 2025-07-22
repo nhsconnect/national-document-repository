@@ -1,19 +1,18 @@
 # .github/workflows/terraform-dev
-name: 'CI UI - Development CI Feature Branch to Main'
+name: "CI UI - Development CI Feature Branch to Main"
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'app/**'
+      - "app/**"
   pull_request:
     branches:
       - main
     paths:
-      - 'app/**'
-      - '/*'
-      - '.github/**'
+      - "app/**"
+      - "Makefile"
   workflow_call:
     secrets:
       AWS_ASSUME_ROLE:
@@ -48,7 +47,7 @@ jobs:
   deploy_ui:
     name: Deploy UI
     if: github.ref == 'refs/heads/main'
-    needs: ['react_testing_job', 'cypress_test_job']
+    needs: ["react_testing_job", "cypress_test_job"]
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
       build_branch: ${{github.event.pull_request.head.ref}}
