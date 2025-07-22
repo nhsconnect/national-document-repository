@@ -60,6 +60,7 @@ function StartPage(props: Props) {
             <ul>
                 <li>your NHS smartcard</li>
                 <li>patient details including their name, date of birth and NHS number</li>
+                <li>test commit from cli</li>
             </ul>
             <ButtonLink data-testid="start-btn" onClick={handleLogin} href="#">
                 Start now
