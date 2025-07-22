@@ -70,7 +70,7 @@ describe('UploadSummary', () => {
         expect(screen.getByText('Before you close this page')).toBeInTheDocument();
     });
 
-    it('displays a collapsible list of successfully uploaded docs', () => {
+    it('displays a collapsible list of successfully uploaded docs', async () => {
         const files = [buildTextFile('test1'), buildTextFile('test2')];
         const documents = files.map((file) => buildDocument(file, documentUploadStates.SUCCEEDED));
 
@@ -80,13 +80,13 @@ describe('UploadSummary', () => {
             screen.queryByRole('table', { name: 'Successfully uploaded documents' }),
         ).not.toBeVisible();
 
-        userEvent.click(screen.getByText('View successfully uploaded documents'));
+        await userEvent.click(screen.getByText('View successfully uploaded documents'));
 
         expect(
             screen.getByRole('table', { name: 'Successfully uploaded documents' }),
         ).toBeVisible();
 
-        userEvent.click(screen.getByText('View successfully uploaded documents'));
+        await userEvent.click(screen.getByText('View successfully uploaded documents'));
 
         expect(
             screen.queryByRole('table', { name: 'Successfully uploaded documents' }),

@@ -27,6 +27,7 @@ import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/Feedback
 import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
 import NonAuthGuard from './guards/notAuthGuard/NonAuthGuard';
 import PatientAccessAuditPage from '../pages/patientAccessAuditPage/PatientAccessAuditPage';
+import DocumentUploadPage from '../pages/documentUploadPage/DocumentUploadPage';
 
 const {
     START,
@@ -56,6 +57,8 @@ const {
     REPORT_DOWNLOAD_WILDCARD,
     PATIENT_ACCESS_AUDIT,
     PATIENT_ACCESS_AUDIT_WILDCARD,
+    DOCUMENT_UPLOAD,
+    DOCUMENT_UPLOAD_WILDCARD,
 } = routes;
 
 type Routes = {
@@ -154,6 +157,26 @@ export const childRoutes = [
     {
         route: routeChildren.PATIENT_ACCESS_AUDIT_DECEASED,
         parent: PATIENT_ACCESS_AUDIT,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_CONFIRMATION,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_UPLOADING,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_COMPLETED,
+        parent: DOCUMENT_UPLOAD,
     },
 ];
 
@@ -285,6 +308,15 @@ export const routeMap: Routes = {
         page: <PatientAccessAuditPage />,
         type: ROUTE_TYPE.PATIENT,
     },
+
+    [DOCUMENT_UPLOAD]: {
+        page: <DocumentUploadPage />,
+        type: ROUTE_TYPE.PATIENT,
+    },
+    [DOCUMENT_UPLOAD_WILDCARD]: {
+        page: <DocumentUploadPage />,
+        type: ROUTE_TYPE.PATIENT,
+    },
 };
 
 const createRoutesFromType = (routeType: ROUTE_TYPE) =>
@@ -293,7 +325,7 @@ const createRoutesFromType = (routeType: ROUTE_TYPE) =>
             route.type === routeType
                 ? [...acc, <Route key={path} path={path} element={route.page} />]
                 : acc,
-        [] as Array<JSX.Element>,
+        [] as Array<React.JSX.Element>,
     );
 
 const AppRoutes = () => {

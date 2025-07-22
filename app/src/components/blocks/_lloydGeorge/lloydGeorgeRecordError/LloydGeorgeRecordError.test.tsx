@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { act } from 'react';
 import LloydGeorgeRecordError from './LloydGeorgeRecordError';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { LinkProps } from 'react-router-dom';
@@ -66,7 +67,7 @@ describe('LloydGeorgeRecordError', () => {
                 ),
             ).toBeInTheDocument();
             expect(
-                screen.queryByRole('button', { name: 'Upload patient record' }),
+                screen.queryByRole('button', { name: 'Upload files for this patient' }),
             ).not.toBeInTheDocument();
         });
 
@@ -85,9 +86,13 @@ describe('LloydGeorgeRecordError', () => {
 
             render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
 
-            expect(screen.getByText(/No records available for this patient/i)).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Upload patient record' }),
+                screen.getByText(
+                    /This patient does not have a Lloyd George record stored in this service/i,
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Upload files for this patient' }),
             ).toBeInTheDocument();
         });
 
@@ -104,7 +109,7 @@ describe('LloydGeorgeRecordError', () => {
                 ),
             ).toBeInTheDocument();
             expect(
-                screen.queryByRole('button', { name: 'Upload patient record' }),
+                screen.queryByRole('button', { name: 'Upload files for this patient' }),
             ).not.toBeInTheDocument();
         });
     });
@@ -136,8 +141,6 @@ describe('LloydGeorgeRecordError', () => {
                 ),
             );
             render(<LloydGeorgeRecordError downloadStage={DOWNLOAD_STAGE.NO_RECORDS} />);
-
-            await screen.findByText(/You can upload full or part of a patient record./);
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
@@ -232,15 +235,21 @@ describe('LloydGeorgeRecordError', () => {
 
             render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
 
-            const uploadButton = screen.getByRole('button', { name: 'Upload patient record' });
-            expect(screen.getByText(/No records available for this patient/i)).toBeInTheDocument();
+            const uploadButton = screen.getByRole('button', {
+                name: 'Upload files for this patient',
+            });
+            expect(
+                screen.getByText(
+                    /This patient does not have a Lloyd George record stored in this service/i,
+                ),
+            ).toBeInTheDocument();
             expect(uploadButton).toBeInTheDocument();
 
             act(() => {
                 uploadButton.click();
             });
 
-            expect(mockNavigate).toBeCalledWith(routes.LLOYD_GEORGE_UPLOAD);
+            expect(mockNavigate).toBeCalledWith(routes.DOCUMENT_UPLOAD);
         });
     });
 });

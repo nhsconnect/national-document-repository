@@ -1,4 +1,3 @@
-import datetime
 from typing import Any, Dict, List, Literal, Optional
 
 from enums.snomed_codes import SnomedCode, SnomedCodes
@@ -7,11 +6,11 @@ from models.fhir.R4.base_models import (
     CodeableConcept,
     Coding,
     Extension,
+    Meta,
     Period,
     Reference,
 )
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel
+from pydantic import BaseModel, Field
 
 # Constants
 FHIR_BASE_URL = "https://fhir.nhs.uk/Id"
@@ -99,7 +98,7 @@ class DocumentReference(BaseModel):
     """FHIR DocumentReference resource."""
 
     id: Optional[str] = None
-    resourceType: Literal["DocumentReference"] = "DocumentReference"
+    resourceType: Literal["DocumentReference"]
     docStatus: Literal[
         "registered",
         "partial",
@@ -113,22 +112,21 @@ class DocumentReference(BaseModel):
         "deprecated",
         "unknown",
     ] = "final"
-    status: Literal["current"] = "current"
-    type: Optional[CodeableConcept] = None
+    status: Literal["current", "superseded", "entered-in-error"] = "current"
+    type: Optional[CodeableConcept]
     category: Optional[List[CodeableConcept]] = None
-    subject: Optional[Reference] = None
+    subject: Optional[Reference]
     date: Optional[str] = None
-    author: Optional[List[Reference]] = None
+    author: Optional[List[Reference]]
     authenticator: Optional[Reference] = None
     custodian: Optional[Reference] = None
     content: List[DocumentReferenceContent]
     context: Optional[DocumentReferenceContext] = None
+    meta: Optional[Meta] = None
 
 
 class DocumentReferenceInfo(BaseModel):
     """Information needed to create a DocumentReference resource."""
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     nhs_number: str
     custodian: Optional[str] = None
@@ -186,6 +184,7 @@ class DocumentReferenceInfo(BaseModel):
         nrl_content_stability_extension = [ContentStabilityExtension()]
 
         fhir_document_ref = DocumentReference(
+            resourceType="DocumentReference",
             subject=Reference(**self._create_identifier("nhs-number", self.nhs_number)),
             content=[DocumentReferenceContent(attachment=self.attachment)],
             custodian=Reference(
@@ -227,19 +226,25 @@ class DocumentReferenceInfo(BaseModel):
         """
 
         return DocumentReference(
-            id=document.id,
+            resourceType="DocumentReference",
+            id=f"{self.snomed_code_doc_type.code}~{document.id}",
+            docStatus=document.doc_status,
             type=CodeableConcept(
                 coding=self._create_snomed_coding(self.snomed_code_doc_type)
             ),
             subject=Reference(**self._create_identifier("nhs-number", self.nhs_number)),
             content=[DocumentReferenceContent(attachment=self.attachment)],
-            date=datetime.datetime.now().isoformat(),
+            date=document.created,
             author=[
                 Reference(
-                    **self._create_identifier("ods-organization-code", self.custodian)
+                    **self._create_identifier(
+                        "ods-organization-code", document.author or self.custodian
+                    )
                 )
             ],
             custodian=Reference(
-                **self._create_identifier("ods-organization-code", self.custodian)
+                **self._create_identifier(
+                    "ods-organization-code", document.custodian or self.custodian
+                )
             ),
         )

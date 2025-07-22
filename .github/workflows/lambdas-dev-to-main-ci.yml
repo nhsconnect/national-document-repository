@@ -1,16 +1,20 @@
-name: 'CI Lambdas - CI Feature to Main'
+name: "CI Lambdas - CI Feature to Main"
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'lambdas/**'
+      - "lambdas/**"
+      - "Makefile"
+      - ".github/**"
   pull_request:
     branches:
       - main
     paths:
-      - 'lambdas/**'
+      - ".github/**"
+      - "lambdas/**"
+      - "Makefile"
   workflow_call:
     secrets:
       AWS_ASSUME_ROLE:
@@ -37,13 +41,13 @@ jobs:
 
   publish_all_lambda_layers:
     name: Publish all Lambda Layers
-    needs: [ "run_tests" ]
+    needs: ["run_tests"]
     uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
     if: |
       (github.ref == 'refs/heads/main')
     with:
       environment: development
-      python_version: '3.11'
+      python_version: "3.11"
       build_branch: ${{github.event.pull_request.head.ref}}
       sandbox: ndr-dev
     secrets:
@@ -56,7 +60,7 @@ jobs:
       (github.ref == 'refs/heads/main')
     with:
       environment: development
-      python_version: '3.11'
+      python_version: "3.11"
       build_branch: ${{github.event.pull_request.head.ref}}
       sandbox: ndr-dev
       mock_login_enabled: true
@@ -65,7 +69,7 @@ jobs:
 
   deploy_data_collection:
     name: Deploy ODS Data Collection
-    needs: [ "run_tests" ]
+    needs: ["run_tests"]
     uses: ./.github/workflows/base-data-collection.yml
     if: github.ref == 'refs/heads/main'
     with:

@@ -1,8 +1,11 @@
 import os
 import re
+import sys
+import time
 import uuid
 from datetime import datetime, timezone
 from io import BytesIO
+from math import ceil
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -22,7 +25,9 @@ from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
+from utils.exceptions import InvalidMessageException
 from utils.lambda_exceptions import PdfStitchingException
+from utils.sqs_utils import batch
 from utils.utilities import DATE_FORMAT, create_reference_id
 
 logger = LoggingService(__name__)
@@ -86,15 +91,15 @@ class PdfStitchingService:
             return
 
         try:
-            self.create_stitched_reference(
-                document_reference=self.multipart_references[0]
-            )
 
             sorted_multipart_keys = self.sort_multipart_object_keys()
             stitching_data_stream = self.process_stitching(
                 s3_object_keys=sorted_multipart_keys
             )
-
+            self.create_stitched_reference(
+                document_reference=self.multipart_references[0],
+                stitch_file_size=sys.getsizeof(stitching_data_stream),
+            )
             self.upload_stitched_file(stitching_data_stream=stitching_data_stream)
             self.migrate_multipart_references()
             self.write_stitching_reference()
@@ -105,24 +110,23 @@ class PdfStitchingService:
             self.rollback_stitching_process()
             raise e
 
-    def create_stitched_reference(self, document_reference: DocumentReference):
+    def create_stitched_reference(
+        self, document_reference: DocumentReference, stitch_file_size: int
+    ):
         date_now = datetime.now(timezone.utc)
         reference_id = create_reference_id()
         stripped_filename = re.sub(r"^\d+of\d+_", "", document_reference.file_name)
-
-        self.stitched_reference = DocumentReference(
-            id=reference_id,
-            content_type=document_reference.content_type,
-            created=date_now.strftime(DATE_FORMAT),
-            current_gp_ods=document_reference.current_gp_ods,
-            deleted="",
-            file_location=f"s3://{self.target_bucket}/{document_reference.nhs_number}/{reference_id}",
-            file_name=f"1of1_{stripped_filename}",
-            nhs_number=document_reference.nhs_number,
-            virus_scanner_result=document_reference.virus_scanner_result,
-            uploaded=document_reference.uploaded,
-            uploading=document_reference.uploading,
-            last_updated=int(date_now.timestamp()),
+        self.stitched_reference = document_reference.model_copy(
+            update={
+                "id": reference_id,
+                "created": date_now.strftime(DATE_FORMAT),
+                "file_location": f"s3://{self.target_bucket}/{document_reference.nhs_number}/{reference_id}",
+                "file_name": f"1of1_{stripped_filename}",
+                "file_size": stitch_file_size,
+                "last_updated": int(datetime.now(timezone.utc).timestamp()),
+                "s3_file_key": f"{document_reference.nhs_number}/{reference_id}",
+            },
+            deep=True,
         )
 
     def process_stitching(self, s3_object_keys: list[str]) -> BytesIO:
@@ -154,7 +158,7 @@ class PdfStitchingService:
             self.s3_service.client.upload_fileobj(
                 Fileobj=stitching_data_stream,
                 Bucket=self.target_bucket,
-                Key=self.stitched_reference.get_file_key(),
+                Key=self.stitched_reference.s3_file_key,
             )
         except ClientError as e:
             logger.error(f"Failed to upload stitched file to S3: {e}")
@@ -241,7 +245,7 @@ class PdfStitchingService:
             raise PdfStitchingException(400, LambdaError.MultipartError)
 
         file_keys = [
-            document_reference.get_file_key()
+            document_reference.s3_file_key
             for document_reference in self.multipart_references
         ]
 
@@ -272,7 +276,7 @@ class PdfStitchingService:
                 )
                 self.s3_service.delete_object(
                     s3_bucket_name=self.target_bucket,
-                    file_key=self.stitched_reference.get_file_key(),
+                    file_key=self.stitched_reference.s3_file_key,
                 )
                 logger.info("Successfully reverted stitched object and reference")
         except Exception as e:
@@ -318,6 +322,8 @@ class PdfStitchingService:
             raise PdfStitchingException(500, LambdaError.StitchRollbackError)
 
     def process_manual_trigger(self, ods_code: str, queue_url):
+        batch_size = 10
+        base_delay = 150
         nhs_numbers = self.document_service.get_nhs_numbers_based_on_ods_code(
             ods_code=ods_code
         )
@@ -325,16 +331,45 @@ class PdfStitchingService:
         if not nhs_numbers:
             logger.info(f"No NHS numbers found under ODS code: {ods_code}")
             return
-        logger.info(f"{len(nhs_numbers)} found under ODS code: {ods_code}")
 
         sqs_service = SQSService()
-        for nhs_number in nhs_numbers:
-            pdf_stitching_sqs_message = PdfStitchingSqsMessage(
-                nhs_number=nhs_number,
-                snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
-            )
-            logger.info(f"Processing manual trigger for nhs number {nhs_number}")
-            sqs_service.send_message_standard(
-                queue_url=queue_url,
-                message_body=pdf_stitching_sqs_message.model_dump_json(),
-            )
+        total_batches = ceil(len(nhs_numbers) / batch_size)
+        logger.info(
+            f"total batches is {total_batches} batches for ODS code: {ods_code}"
+        )
+
+        for batch_index, chunk in enumerate(batch(nhs_numbers, batch_size), start=1):
+            messages = []
+            for nhs_number in chunk:
+                logger.info(f"Preparing message for NHS number: {nhs_number}")
+                message = PdfStitchingSqsMessage(
+                    nhs_number=nhs_number,
+                    snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+                ).model_dump_json()
+                messages.append(message)
+            try:
+                logger.info(
+                    f"sending batch_index = {batch_index} containing the following nhs numbers: {', '.join(chunk)}"
+                )
+                response = sqs_service.send_message_batch_standard(
+                    queue_url, messages, base_delay
+                )
+                if response.get("Failed"):
+                    failed_ids = [f["Id"] for f in response["Failed"]]
+                    failed_messages = [
+                        entry["MessageBody"]
+                        for entry in messages
+                        if any(entry in m for m in failed_ids)
+                    ]
+                    error_msg = (
+                        f"Some messages failed to send. Failed IDs: {failed_ids}. "
+                        f"Failed message bodies: {failed_messages}"
+                    )
+                    logger.error(error_msg)
+                    raise InvalidMessageException(error_msg)
+            except (InvalidMessageException, Exception) as e:
+                logger.error(f"Error sending batch to SQS: {str(e)}")
+            # 1 batch is 10 messages
+            # we can send up to 300 messages a second
+            # a 0.1s delay means 10 batches, so 100 messages
+            time.sleep(0.1)

@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -16,3 +17,19 @@ class SnomedCodes(Enum):
     GENERAL_MEDICAL_PRACTICE = SnomedCode(
         code="1060971000000108", display_name="General practice service"
     )
+
+    @classmethod
+    def find_by_code(cls, code: str) -> Optional["SnomedCode"]:
+        """
+        Find a SnomedCodes enum value by its code string.
+
+        Args:
+            code: The SNOMED code string to search for (e.g. "16521000000101")
+
+        Returns:
+            The matching SnomedCodes enum value or None if not found
+        """
+        for snomed_enum in cls:
+            if snomed_enum.value.code == code:
+                return snomed_enum.value
+        return None

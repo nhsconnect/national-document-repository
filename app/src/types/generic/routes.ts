@@ -28,6 +28,9 @@ export enum routes {
     REPORT_DOWNLOAD_WILDCARD = '/create-report/*',
     PATIENT_ACCESS_AUDIT = '/patient/access-audit',
     PATIENT_ACCESS_AUDIT_WILDCARD = '/patient/access-audit/*',
+
+    DOCUMENT_UPLOAD = '/patient/document-upload',
+    DOCUMENT_UPLOAD_WILDCARD = '/patient/document-upload/*',
 }
 
 export enum routeChildren {
@@ -54,6 +57,12 @@ export enum routeChildren {
     ARF_UPLOAD_CONFIRMATION_FAILED = '/patient/arf/upload/confirmation-failed',
     REPORT_DOWNLOAD_COMPLETE = '/create-report/complete',
     PATIENT_ACCESS_AUDIT_DECEASED = '/patient/access-audit/deceased',
+
+    DOCUMENT_UPLOAD_SELECT_ORDER = '/patient/document-upload/select-order',
+    DOCUMENT_UPLOAD_REMOVE_ALL = '/patient/document-upload/remove-all',
+    DOCUMENT_UPLOAD_CONFIRMATION = '/patient/document-upload/confirmation',
+    DOCUMENT_UPLOAD_UPLOADING = '/patient/document-upload/in-progress',
+    DOCUMENT_UPLOAD_COMPLETED = '/patient/document-upload/completed',
 }
 
 export enum ROUTE_TYPE {
@@ -66,7 +75,7 @@ export enum ROUTE_TYPE {
 }
 
 export type route = {
-    page: JSX.Element;
+    page: React.JSX.Element;
     type: ROUTE_TYPE;
     unauthorized?: Array<REPOSITORY_ROLE>;
     children?: React.ReactNode;

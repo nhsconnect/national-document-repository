@@ -12,7 +12,7 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadReport(BaseModel):
-    model_config = ConfigDict(alias_generator=to_pascal, populate_by_name=True)
+    model_config = ConfigDict(alias_generator=to_pascal, validate_by_name=True)
     id: str = Field(alias=MetadataReport.ID, default_factory=create_reference_id)
     nhs_number: str = Field(alias=MetadataReport.NhsNumber)
     upload_status: str = Field(alias=MetadataReport.UploadStatus)

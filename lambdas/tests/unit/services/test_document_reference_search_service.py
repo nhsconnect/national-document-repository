@@ -13,6 +13,7 @@ from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_reference_search_service import DocumentReferenceSearchService
+from tests.unit.conftest import APIM_API_URL
 from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
 from utils.common_query_filters import NotDeleted, UploadCompleted
 from utils.exceptions import DynamoServiceException
@@ -289,6 +290,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_document_reference.nhs_number = "9000000009"
     mock_document_reference.file_name = "test_document.pdf"
     mock_document_reference.created = "2023-05-01T12:00:00Z"
+    mock_document_reference.document_scan_creation = "2023-05-01"
     mock_document_reference.id = "Y05868-1634567890"
     mock_document_reference.current_gp_ods = "Y12345"
 
@@ -310,7 +312,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     )
 
     expected_fhir_response = {
-        "id": "Y05868-1634567890",
+        "id": "16521000000101~Y05868-1634567890",
         "resourceType": "DocumentReference",
         "status": "current",
         "docStatus": "final",
@@ -326,8 +328,8 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
                     "contentType": "application/pdf",
                     "language": "en-GB",
                     "title": "test_document.pdf",
-                    "creation": "2023-05-01T12:00:00Z",
-                    "url": "https://api.gov.uk/DocumentReference/123",
+                    "creation": "2023-05-01",
+                    "url": f"{APIM_API_URL}/DocumentReference/123",
                 }
             }
         ],
@@ -354,14 +356,15 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
 
     mock_attachment.assert_called_once_with(
         title=mock_document_reference.file_name,
-        creation=mock_document_reference.created,
-        url=f"https://api.gov.uk/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_document_reference.id}",
+        creation=mock_document_reference.document_scan_creation,
+        url=f"{APIM_API_URL}/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_document_reference.id}",
     )
 
     mock_doc_ref_info.assert_called_once_with(
-        nhsNumber=mock_document_reference.nhs_number,
+        nhs_number=mock_document_reference.nhs_number,
         attachment=mock_attachment_instance,
         custodian=mock_document_reference.current_gp_ods,
+        snomed_code_doc_type=None,
     )
 
     mock_doc_ref_info_instance.create_fhir_document_reference_object.assert_called_once()
@@ -378,11 +381,16 @@ def test_create_document_reference_fhir_response_integration(
     mock_document_reference.nhs_number = "9000000009"
     mock_document_reference.file_name = "test_document.pdf"
     mock_document_reference.created = "2023-05-01T12:00:00"
+    mock_document_reference.document_scan_creation = "2023-05-01"
     mock_document_reference.id = "Y05868-1634567890"
     mock_document_reference.current_gp_ods = "Y12345"
+    mock_document_reference.author = "Y12345"
+    mock_document_reference.doc_status = "final"
+    mock_document_reference.custodian = "Y12345"
+    mock_document_reference.document_snomed_code_type = "16521000000101"
 
     expected_fhir_response = {
-        "id": "Y05868-1634567890",
+        "id": "16521000000101~Y05868-1634567890",
         "resourceType": "DocumentReference",
         "status": "current",
         "docStatus": "final",
@@ -399,8 +407,8 @@ def test_create_document_reference_fhir_response_integration(
                     "contentType": "application/pdf",
                     "language": "en-GB",
                     "title": "test_document.pdf",
-                    "creation": "2023-05-01T12:00:00",
-                    "url": "https://api.gov.uk/DocumentReference/16521000000101~Y05868-1634567890",
+                    "creation": "2023-05-01",
+                    "url": f"{APIM_API_URL}/DocumentReference/16521000000101~Y05868-1634567890",
                 }
             }
         ],
@@ -441,8 +449,8 @@ def test_build_filter_expression_custodian(mock_document_service):
     filter_values = {"custodian": "12345"}
     expected_filter = (
         Attr("CurrentGpOds").eq("12345")
-        & Attr("Deleted").eq("")
         & Attr("Uploaded").eq(True)
+        & (Attr("Deleted").eq("") | Attr("Deleted").not_exists())
     )
 
     actual_filter = mock_document_service._build_filter_expression(filter_values)
@@ -466,7 +474,9 @@ def test_build_filter_expression_custodian_mocked(
 
 def test_build_filter_expression_defaults(mock_document_service):
     filter_values = {}
-    expected_filter = Attr("Deleted").eq("") & Attr("Uploaded").eq(True)
+    expected_filter = Attr("Uploaded").eq(True) & (
+        Attr("Deleted").eq("") | Attr("Deleted").not_exists()
+    )
 
     actual_filter = mock_document_service._build_filter_expression(filter_values)
 
@@ -480,11 +490,6 @@ def test_build_filter_expression_defaults_mocked(
 
     mock_document_service._build_filter_expression(filter_values)
 
-    mock_filter_builder.add_condition.assert_any_call(
-        attribute=str(DocumentReferenceMetadataFields.DELETED.value),
-        attr_operator=AttributeOperator.EQUAL,
-        filter_value="",
-    )
     mock_filter_builder.add_condition.assert_any_call(
         attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
         attr_operator=AttributeOperator.EQUAL,

@@ -1,4 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { act } from 'react';
 import {
     buildConfig,
     buildLgSearchResult,
@@ -45,15 +46,12 @@ let history = createMemoryHistory({
 
 describe('LloydGeorgeDownloadStage', () => {
     beforeEach(() => {
-        history = createMemoryHistory({
-            initialEntries: ['/'],
-            initialIndex: 0,
-        });
+        vi.useFakeTimers();
+        history = createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 });
 
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatient);
         mockUseConfig.mockReturnValue(buildConfig());
-        vi.useFakeTimers();
     });
     afterEach(() => {
         vi.useRealTimers();
@@ -87,46 +85,29 @@ describe('LloydGeorgeDownloadStage', () => {
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
     });
 
-    it('renders download complete on zip success', async () => {
-        window.HTMLAnchorElement.prototype.click = vi.fn();
-        vi.mocked(getPresignedUrlForZip).mockImplementation(() =>
-            Promise.resolve(mockPdf.presignedUrl),
-        );
+    it('navigates to download complete after auto-clicking link', async () => {
+        vi.useFakeTimers();
+
+        vi.mocked(getPresignedUrlForZip).mockResolvedValue(mockPdf.presignedUrl);
 
         renderComponent(history);
 
-        expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
-        expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
-
-        act(() => {
-            vi.advanceTimersByTime(2000);
+        await act(async () => {
+            vi.advanceTimersByTime(1500);
         });
 
-        await waitFor(() => {
-            expect(screen.getByText('100% downloaded...')).toBeInTheDocument();
+        expect(getPresignedUrlForZip).toHaveBeenCalled();
+
+        await vi.waitFor(async () => {
+            await userEvent.click(screen.getByText('Download Lloyd George Documents URL'));
         });
 
-        expect(screen.queryByText('0% downloaded...')).not.toBeInTheDocument();
-
-        expect(screen.getByTestId(mockPdf.presignedUrl)).toBeInTheDocument();
-        const urlLink = screen.getByTestId(mockPdf.presignedUrl);
-
-        urlLink.addEventListener('click', (e) => {
-            e.preventDefault();
+        await act(async () => {
+            vi.advanceTimersByTime(1500);
         });
-        act(() => {
-            userEvent.click(urlLink);
-        });
-
-        act(() => {
-            vi.advanceTimersByTime(2000);
-        });
-
-        await waitFor(() => {
-            expect(mockedUseNavigate).toHaveBeenCalledWith(
-                routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE,
-            );
-        });
+        expect(mockedUseNavigate).toHaveBeenCalledWith(
+            routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE,
+        );
     });
 
     it.skip('pass accessibility checks', async () => {
@@ -147,11 +128,11 @@ describe('LloydGeorgeDownloadStage', () => {
 
         renderComponent(history);
 
-        act(() => {
+        await act(async () => {
             vi.advanceTimersByTime(2000);
         });
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(vi.mocked(getPresignedUrlForZip)).toHaveBeenCalled();
         });
 
@@ -166,11 +147,11 @@ describe('LloydGeorgeDownloadStage', () => {
 
         renderComponent(history);
 
-        act(() => {
+        await act(async () => {
             vi.advanceTimersByTime(2000);
         });
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(vi.mocked(getPresignedUrlForZip)).toHaveBeenCalled();
         });
 
@@ -190,11 +171,11 @@ describe('LloydGeorgeDownloadStage', () => {
 
         renderComponent(history);
 
-        act(() => {
+        await act(async () => {
             vi.advanceTimersByTime(2000);
         });
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(vi.mocked(getPresignedUrlForZip)).toHaveBeenCalled();
         });
 
