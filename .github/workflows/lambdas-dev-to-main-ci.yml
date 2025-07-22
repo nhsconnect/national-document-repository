@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "lambdas/**"
+      - "Makefile"
   pull_request:
     branches:
       - main
