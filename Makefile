@@ -96,7 +96,7 @@ zip:
 	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
 	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name) || true
 	mkdir -p $(ZIP_BASE_PATH)/handlers
-	cp lambdas/handlers/$(lambda_name).py $(ZIP_BASE_PATH)/handlers
+	cp lambdas/handlers/${lambda_path}/$(lambda_name).py $(ZIP_BASE_PATH)/handlers
 	cp -r $(ZIP_COMMON_FILES) $(ZIP_BASE_PATH)
 	cd $(ZIP_BASE_PATH) ; zip -r ../$(lambda_name).zip .
 	rm -rf $(ZIP_BASE_PATH)

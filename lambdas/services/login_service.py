@@ -10,7 +10,6 @@ from models.oidc_models import IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
-from services.mock_oidc_service import MockOidcService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService, get_selected_roleid
 from services.token_handler_ssm_service import TokenHandlerSSMService
@@ -29,11 +28,11 @@ logger = LoggingService(__name__)
 
 
 class LoginService:
-    def __init__(self, mock_login_enabled: bool = False):
+    def __init__(self, oidc_service: OidcService = False):
         self.db_service = DynamoDBService()
         self.token_handler_ssm_service = TokenHandlerSSMService()
         self.ods_api_service = OdsApiService()
-        self.oidc_service = MockOidcService() if mock_login_enabled else OidcService()
+        self.oidc_service = oidc_service
 
     def generate_session(self, state, auth_code) -> dict:
         logger.info("Login process started")

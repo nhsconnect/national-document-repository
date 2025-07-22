@@ -22,6 +22,11 @@ on:
         required: false
         default: false
         type: boolean
+      mock_login_enabled:
+        description: "Do you want to deploy with mock login enabled?"
+        required: false
+        type: boolean
+        default: false
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -142,6 +147,7 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_token_request_lambda:
+    if: ${{ inputs.mock_login_enabled }} == false
     name: Deploy TokenRequestHandler
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
@@ -155,7 +161,24 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
+  deploy_mock_token_request_lambda:
+    if: ${{ inputs.mock_login_enabled }} == false && ${{ inputs.environment }} != 'prod'
+    name: Deploy Mock TokenRequestHandler
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: token_handler
+      lambda_handler_path: mocks
+      lambda_aws_name: TokenRequestHandler
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_login_redirect_lambda:
+    if: ${{inputs.mock_login_enabled}} == false
     name: Deploy LoginRedirectHandler
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
@@ -164,6 +187,22 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: login_redirect_handler
+      lambda_aws_name: LoginRedirectHandler
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_mock_login_redirect_lambda:
+    if: ${{inputs.mock_login_enabled}} == true && ${{inputs.environment}} != 'prod'
+    name: Deploy Mock LoginRedirectHandler
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: login_redirect_handler
+      lambda_handler_path: mocks
       lambda_aws_name: LoginRedirectHandler
       lambda_layer_names: 'core_lambda_layer'
     secrets:
