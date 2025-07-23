@@ -23,7 +23,7 @@ import { TextAreaRef } from '../../../../types/generic/textareaRef';
 import { usePatientAccessAuditContext } from '../../../../providers/patientAccessAuditProvider/PatientAccessAuditProvider';
 import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
 import postPatientAccessAudit from '../../../../helpers/requests/postPatientAccessAudit';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 enum FORM_FIELDS {
     Reasons = 'reasons',
@@ -238,7 +238,11 @@ const DeceasedPatientAccessAudit = () => {
 
             <h1 data-testid="title">{pageTitle}</h1>
 
-            <PatientSimpleSummary />
+            <PatientSummary>
+                <PatientSummary.PatientFullName />
+                <PatientSummary.PatientNhsNumber />
+                <PatientSummary.PatientDob />
+            </PatientSummary>
 
             <h2>Why do you need to access this record?</h2>
             <p>Select all options that are relevant.</p>

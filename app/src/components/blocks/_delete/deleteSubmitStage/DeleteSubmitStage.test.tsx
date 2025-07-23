@@ -14,6 +14,7 @@ import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router-dom';
 import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock, Mocked } from 'vitest';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 
 vi.mock('../../../../helpers/hooks/useConfig');
 vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -52,7 +53,6 @@ describe('DeleteSubmitStage', () => {
             initialEntries: ['/'],
             initialIndex: 0,
         });
-
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
     });
@@ -65,7 +65,7 @@ describe('DeleteSubmitStage', () => {
         it.each(authorisedRoles)(
             "renders the page with patient details when user role is '%s'",
             async (role) => {
-                const patientName = `${mockPatientDetails.givenName}, ${mockPatientDetails.familyName}`;
+                const patientName = `${mockPatientDetails.familyName}, ${mockPatientDetails.givenName}`;
                 const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
                 mockedUseRole.mockReturnValue(role);
 
@@ -80,7 +80,7 @@ describe('DeleteSubmitStage', () => {
                 });
 
                 expect(screen.getByText(patientName)).toBeInTheDocument();
-                expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
+                expect(screen.getByText(dob)).toBeInTheDocument();
                 expect(screen.getByText(/NHS number/)).toBeInTheDocument();
                 const yesButton = screen.getByRole('radio', { name: 'Yes' });
                 expect(yesButton).toBeInTheDocument();
@@ -275,6 +275,22 @@ describe('DeleteSubmitStage', () => {
             await waitFor(() => {
                 expect(screen.getByTestId('delete-submit-spinner-btn')).toBeInTheDocument();
             });
+        });
+
+        it('renders patient summary fields', async () => {
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
+
+            const expectedFullName = `${mockPatientDetails.familyName}, ${mockPatientDetails.givenName}`;
+            expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
+            expect(screen.getByText(expectedFullName)).toBeInTheDocument();
+
+            expect(screen.getByText(/NHS number/i)).toBeInTheDocument();
+            const expectedNhsNumber = formatNhsNumber(mockPatientDetails.nhsNumber);
+            expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
+
+            expect(screen.getByText(/Date of birth/i)).toBeInTheDocument();
+            const expectedDob = getFormattedDate(new Date(mockPatientDetails.birthDate));
+            expect(screen.getByText(expectedDob)).toBeInTheDocument();
         });
     });
 
