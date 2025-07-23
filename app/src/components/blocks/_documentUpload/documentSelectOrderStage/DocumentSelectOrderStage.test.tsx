@@ -5,7 +5,6 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import DocumentSelectStage from '../documentSelectStage/DocumentSelectStage';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
@@ -78,10 +77,10 @@ describe('DocumentSelectOrderStage', () => {
 
 function renderSut(documents: UploadDocument[]) {
     render(
-        <DocumentSelectStage
+        <DocumentSelectOrderStage
             documents={documents}
             setDocuments={() => {}}
-            documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
+            setMergedPdfBlob={() => {}}
         />,
     );
 }
