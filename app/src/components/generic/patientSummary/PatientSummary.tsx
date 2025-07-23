@@ -82,7 +82,7 @@ const PatientNhsNumber = () => {
     return (
         <SummaryList.Row>
             <SummaryList.Key>NHS number</SummaryList.Key>
-            <SummaryList.Value id="patient-summary-nhs-number">
+            <SummaryList.Value data-testid="patient-summary-nhs-number" id="patient-summary-nhs-number">
                 {formatNhsNumber(patientDetails?.nhsNumber ?? '')}
             </SummaryList.Value>
         </SummaryList.Row>
@@ -95,7 +95,7 @@ const PatientFullName = () => {
     return (
         <SummaryList.Row>
             <SummaryList.Key>Patient name</SummaryList.Key>
-            <SummaryList.Value id="patient-summary-full-name">
+            <SummaryList.Value data-testid="patient-summary-full-name" id="patient-summary-full-name">
                 {`${patientDetails?.familyName}, ${patientDetails?.givenName?.join(' ')}`}
             </SummaryList.Value>
         </SummaryList.Row>
@@ -107,7 +107,7 @@ const PatientGivenName = () => {
     return (
         <SummaryList.Row>
             <SummaryList.Key>First name</SummaryList.Key>
-            <SummaryList.Value id="patient-summary-given-name">
+            <SummaryList.Value data-testid="patient-summary-given-name" id="patient-summary-given-name">
                 {patientDetails?.givenName?.join(' ')}
             </SummaryList.Value>
         </SummaryList.Row>
@@ -119,7 +119,7 @@ const PatientFamilyName = () => {
     return (
         <SummaryList.Row>
             <SummaryList.Key>Surname</SummaryList.Key>
-            <SummaryList.Value id="patient-summary-family-name">
+            <SummaryList.Value data-testid="patient-summary-family-name" id="patient-summary-family-name">
                 {patientDetails?.familyName}
             </SummaryList.Value>
         </SummaryList.Row>
@@ -131,7 +131,7 @@ const PatientDob = () => {
     return (
         <SummaryList.Row>
             <SummaryList.Key>Date of birth</SummaryList.Key>
-            <SummaryList.Value id="patient-summary-date-of-birth">
+            <SummaryList.Value data-testid="patient-summary-date-of-birth" id="patient-summary-date-of-birth">
                 {patientDetails?.birthDate
                     ? getFormattedDate(new Date(patientDetails.birthDate))
                     : ''}
@@ -145,7 +145,7 @@ const PatientPostcode = () => {
     return (
         <SummaryList.Row>
             <SummaryList.Key>Postcode</SummaryList.Key>
-            <SummaryList.Value id="patient-summary-postcode">
+            <SummaryList.Value data-testid="patient-summary-postcode" id="patient-summary-postcode">
                 {patientDetails?.postalCode}
             </SummaryList.Value>
         </SummaryList.Row>
