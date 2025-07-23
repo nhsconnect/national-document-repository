@@ -31,6 +31,7 @@ describe('StartPage', () => {
             'remove a patient record',
             'If you are managing records on behalf of NHS England, you can:',
             'Not every patient will have a digital record available.',
+            'You can upload files for patients who do not currently have a Lloyd George record stored in this service.',
             'Before you start',
             'You’ll be asked for:',
             'your NHS smartcard',
@@ -48,6 +49,11 @@ describe('StartPage', () => {
 
         const downloadOdsReport = screen.getAllByText(
             'download a report on the records held within this service',
+        );
+        expect(downloadOdsReport).toHaveLength(2);
+
+        const uploadPatientRecord = screen.getAllByText(
+            'upload a patient record',
         );
         expect(downloadOdsReport).toHaveLength(2);
 
