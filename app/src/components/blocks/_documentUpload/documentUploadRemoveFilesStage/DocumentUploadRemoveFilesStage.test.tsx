@@ -22,7 +22,8 @@ describe('DocumentUploadCompleteStage', () => {
 
     describe('Rendering', () => {
         it('renders', async () => {
-            render(<DocumentUploadRemoveFilesStage 
+            render(
+                <DocumentUploadRemoveFilesStage
                     documents={documents}
                     setDocuments={() => {}}
                     documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
