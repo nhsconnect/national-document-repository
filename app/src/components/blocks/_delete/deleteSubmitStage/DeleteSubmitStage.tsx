@@ -144,7 +144,7 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
             <form onSubmit={handleSubmit(submit)}>
                 <Fieldset id="radio-selection">
                     <Fieldset.Legend isPageHeading>{pageTitle}:</Fieldset.Legend>
-                    <PatientSummary>
+                    <PatientSummary showDeceasedTag>
                         <PatientSummary.PatientFullName />
                         <PatientSummary.PatientNhsNumber />
                         <PatientSummary.PatientDob />
