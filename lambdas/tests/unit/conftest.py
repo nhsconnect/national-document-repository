@@ -197,6 +197,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv(
         "DOCUMENT_RETRIEVE_ENDPOINT_APIM", f"{APIM_API_URL}/DocumentReference"
     )
+    monkeypatch.setenv("VIRUS_SCAN_STUB", "True")
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
