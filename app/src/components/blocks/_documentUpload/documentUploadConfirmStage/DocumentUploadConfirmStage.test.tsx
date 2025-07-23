@@ -1,9 +1,8 @@
 import { render, waitFor, screen } from '@testing-library/react';
 import DocumentUploadConfirmStage from './DocumentUploadConfirmStage';
-import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
+import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import DocumentSelectStage from '../documentSelectStage/DocumentSelectStage';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 
