@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: 'Cypress Smoketest CI to Main: Smoketest shared actions checking CI deployments'
+name: "Cypress Smoketest CI to Main: Smoketest shared actions checking CI deployments"
 
 on:
   workflow_run:
@@ -10,6 +10,8 @@ on:
       ]
     types:
       - completed
+    branches:
+      - main
 
 permissions:
   pull-requests: write
