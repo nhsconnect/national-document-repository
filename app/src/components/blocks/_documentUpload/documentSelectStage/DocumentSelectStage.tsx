@@ -10,13 +10,13 @@ import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router-dom';
 import { routeChildren } from '../../../../types/generic/routes';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
 import { ReactComponent as FileSVG } from '../../../../styles/file-input.svg';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { getDocument } from 'pdfjs-dist';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 type Props = {
     setDocuments: SetUploadDocuments;
@@ -169,8 +169,16 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                     You can upload files for patients that do not currently have a Lloyd George
                     record stored in this service.
                 </p>
-                <p>Make sure that all files uploaded are for this patient only.</p>
-                <PatientSimpleSummary />
+
+                <div className="nhsuk-inset-text">
+                    <p>Make sure that all files uploaded are for this patient only:</p>
+                    <PatientSummary>
+                        <PatientSummary.PatientFullName />
+                        <PatientSummary.PatientNhsNumber />
+                        <PatientSummary.PatientDob />
+                    </PatientSummary>
+                </div>
+
                 <p>You can only upload PDF files.</p>
             </div>
             <Fieldset.Legend id="upload-fieldset-legend" size="m">

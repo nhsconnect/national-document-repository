@@ -62,7 +62,7 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('renders patient details', async () => {
-        const patientName = `${mockPatientDetails.givenName}, ${mockPatientDetails.familyName}`;
+        const patientName = `${mockPatientDetails.familyName}, ${mockPatientDetails.givenName}`;
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
@@ -71,7 +71,7 @@ describe('LloydGeorgeRecordPage', () => {
         await waitFor(() => {
             expect(screen.getByText(patientName)).toBeInTheDocument();
         });
-        expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
+        expect(screen.getByText(`${dob}`)).toBeInTheDocument();
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 

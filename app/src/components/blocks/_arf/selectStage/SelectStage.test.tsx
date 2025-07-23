@@ -8,6 +8,7 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { useState } from 'react';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
@@ -53,7 +54,8 @@ describe('<SelectStage />', () => {
             renderApp();
 
             expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
-            expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
+            const expectedNhsNumber = formatNhsNumber(mockPatientDetails.nhsNumber);
+            expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
             expect(screen.getByText('Select file(s)')).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
