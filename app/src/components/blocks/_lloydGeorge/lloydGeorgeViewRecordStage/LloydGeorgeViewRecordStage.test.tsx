@@ -140,6 +140,13 @@ describe('<LloydGeorgeViewRecordStage />', () => {
             expect(screen.getByText(/NHS number/)).toBeInTheDocument();
         });
 
+        it('shows deceased tag for deceased patients', async () => {
+            mockedUsePatient.mockReturnValue(buildPatientDetails({ deceased: true }));
+            renderComponent();
+
+            expect(screen.getByTestId('deceased-patient-tag')).toBeInTheDocument();
+        });
+
         it('returns to regular view when exiting full screen', async () => {
             renderComponent();
 

@@ -134,7 +134,7 @@ function LloydGeorgeViewRecordStage({
                         </>
                     )}
 
-                    <PatientSummary>
+                    <PatientSummary showDeceasedTag>
                         <PatientSummary.PatientFullName />
                         <PatientSummary.PatientNhsNumber />
                         <PatientSummary.PatientDob />

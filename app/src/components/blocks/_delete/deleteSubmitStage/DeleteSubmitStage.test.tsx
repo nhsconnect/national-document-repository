@@ -292,6 +292,13 @@ describe('DeleteSubmitStage', () => {
             const expectedDob = getFormattedDate(new Date(mockPatientDetails.birthDate));
             expect(screen.getByText(expectedDob)).toBeInTheDocument();
         });
+
+        it('shows deceased tag for deceased patients', async () => {
+            mockedUsePatient.mockReturnValue(buildPatientDetails({ deceased: true }));
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
+
+            expect(screen.getByTestId('deceased-patient-tag')).toBeInTheDocument();
+        });
     });
 
     describe('Accessibility', () => {
