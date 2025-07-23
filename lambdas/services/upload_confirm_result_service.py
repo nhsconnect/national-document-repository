@@ -194,9 +194,7 @@ class UploadConfirmResultService:
             + "~"
             + document_reference
         )
-        doc_details = Attachment(
-            url=document_api_endpoint,
-        )
+        doc_details = Attachment(url=document_api_endpoint, title=None)
         nrl_sqs_message = NrlSqsMessage(
             nhs_number=self.nhs_number,
             action=NrlActionTypes.CREATE,
