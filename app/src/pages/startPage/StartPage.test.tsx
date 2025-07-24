@@ -55,7 +55,7 @@ describe('StartPage', () => {
         const uploadPatientRecord = screen.getAllByText(
             'upload a patient record',
         );
-        expect(downloadOdsReport).toHaveLength(2);
+        expect(uploadPatientRecord).toHaveLength(2);
 
         expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
         expect(
