@@ -8,7 +8,6 @@ import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 // Context for sharing patient data and configuration
 type PatientSummaryContextType = {
     patientDetails: PatientDetails | null;
-    joinNames?: boolean;
 };
 
 const PatientSummaryContext = createContext<PatientSummaryContextType | null>(null);
@@ -24,7 +23,6 @@ const usePatientSummaryContext = () => {
 // Main PatientSummary component
 type PatientSummaryProps = {
     showDeceasedTag?: boolean;
-    joinNames?: boolean;
     children?: ReactNode;
     // Legacy props for backward compatibility
     detailsToDisplay?: Array<
