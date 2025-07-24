@@ -52,9 +52,7 @@ describe('StartPage', () => {
         );
         expect(downloadOdsReport).toHaveLength(2);
 
-        const uploadPatientRecord = screen.getAllByText(
-            'upload a patient record',
-        );
+        const uploadPatientRecord = screen.getAllByText('upload a patient record');
         expect(uploadPatientRecord).toHaveLength(2);
 
         expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
