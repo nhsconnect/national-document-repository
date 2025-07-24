@@ -1,7 +1,7 @@
 import json
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import pydantic
 from botocore.exceptions import ClientError
@@ -17,6 +17,7 @@ from repositories.bulk_upload.bulk_upload_dynamo_repository import (
 )
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
+from services.base.cloudwatch_service import CloudwatchService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     BulkUploadException,
@@ -60,12 +61,67 @@ class BulkUploadService:
         self.file_path_cache = {}
         self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
         self.pds_fhir_always_true = pds_fhir_always_true
+        self.cloudwatch_service = CloudwatchService()
+
+    def log_custom_metrics(self):
+        namespace = "Custom_metrics/BulkUpload"
+        metric_sent = "MessagesSent"
+        metric_processed = "MessagesProcessed"
+        ods_dimension_name = "ODSCode"
+
+        now = datetime.now(timezone.utc)
+        start_time = now - timedelta(days=14)
+        end_time = now
+
+        ods_codes = self.cloudwatch_service.list_dimension_values(
+            metric_processed, namespace, ods_dimension_name
+        )
+
+        for ods_code in ods_codes:
+            dimension = {"Name": ods_dimension_name, "Value": ods_code}
+
+            # Get metric data
+            sent_data = self.cloudwatch_service.get_metric_data_by_dimension(
+                metric_name=metric_sent,
+                namespace=namespace,
+                dimension=dimension,
+                start_time=start_time,
+                end_time=end_time,
+            )
+            processed_data = self.cloudwatch_service.get_metric_data_by_dimension(
+                metric_name=metric_processed,
+                namespace=namespace,
+                dimension=dimension,
+                start_time=start_time,
+                end_time=end_time,
+            )
+
+            # Group processed by day
+            processed_by_day = {}
+            for dp in processed_data:
+                day = dp["Timestamp"].date().isoformat()
+                processed_by_day[day] = processed_by_day.get(day, 0) + dp["Value"]
+
+            total_sent = sum(dp["Value"] for dp in sent_data)
+            total_processed = sum(dp["Value"] for dp in processed_data)
+
+            logger.info(
+                f"ODSCode {ods_code} - processed {int(total_processed)} out of {int(total_sent)} messages in the last 14 days"
+            )
+
+            # Sort and log per-day processing
+            for day in sorted(processed_by_day.keys()):
+                daily_processed = processed_by_day[day]
+                logger.info(
+                    f"{day}: {int(daily_processed)} processed out of {int(total_sent)} sent"
+                )
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
             try:
                 logger.info(f"Processing message {index} of {len(records)}")
                 self.handle_sqs_message(message)
+                self.log_custom_metrics()
             except (PdsTooManyRequestsException, PdsErrorException) as error:
                 logger.error(error)
 
@@ -106,6 +162,14 @@ class BulkUploadService:
                     "NHS-NO", "no number found"
                 )
                 logger.info(message_body)
+
+    def publish_ods_code_processed_metric(self, ods_code: str) -> None:
+        self.cloudwatch_service.publish_metric(
+            metric_name="MessagesProcessed",
+            value=1,
+            dimensions=[{"Name": "ODSCode", "Value": ods_code}],
+            namespace="Custom_metrics/BulkUpload",
+        )
 
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
@@ -293,6 +357,7 @@ class BulkUploadService:
             accepted_reason,
             patient_ods_code,
         )
+        self.publish_ods_code_processed_metric(patient_ods_code)
 
         pdf_stitching_sqs_message = PdfStitchingSqsMessage(
             nhs_number=staging_metadata.nhs_number,

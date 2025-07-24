@@ -14,6 +14,7 @@ from models.staging_metadata import (
     MetadataFile,
     StagingMetadata,
 )
+from services.base.cloudwatch_service import CloudwatchService
 from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
@@ -27,6 +28,7 @@ class BulkUploadMetadataService:
     def __init__(self):
         self.s3_service = S3Service()
         self.sqs_service = SQSService()
+        self.cloudwatch_service = CloudwatchService()
 
         self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
         self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
@@ -101,6 +103,21 @@ class BulkUploadMetadataService:
             for (nhs_number, ods_code) in patients
         ]
 
+    def publish_ods_code_queued_metrics(
+        self, staging_metadata: StagingMetadata
+    ) -> None:
+        ods_code = (
+            staging_metadata.files[0].gp_practice_code
+            if staging_metadata.files
+            else "UNKNOWN"
+        )
+        self.cloudwatch_service.publish_metric(
+            metric_name="MessagesSent",
+            value=1,
+            dimensions=[{"Name": "ODSCode", "Value": ods_code}],
+            namespace="Custom_metrics/BulkUpload",
+        )
+
     def send_metadata_to_fifo_sqs(
         self, staging_metadata_list: list[StagingMetadata]
     ) -> None:
@@ -108,6 +125,8 @@ class BulkUploadMetadataService:
 
         for staging_metadata in staging_metadata_list:
             nhs_number = staging_metadata.nhs_number
+            self.publish_ods_code_queued_metrics(staging_metadata)
+
             logger.info(f"Sending metadata for patientId: {nhs_number}")
 
             self.sqs_service.send_message_with_nhs_number_attr_fifo(
