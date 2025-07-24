@@ -24,8 +24,8 @@ describe('StartPage', () => {
 
     it('renders start page content', () => {
         const contentStrings = [
-            'This service gives you access to Lloyd George digital health records. ' +
-                'You may have received a note within a patient record, stating that the paper record has been digitised.',
+            'This service gives you access to digital Lloyd George records. ' +
+                'You may have received a note within a patient record, stating that the record has been digitised.',
             'If you are part of a GP practice, you can use this service to:',
             'view a patient record',
             'remove a patient record',
