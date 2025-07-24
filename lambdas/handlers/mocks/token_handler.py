@@ -2,9 +2,9 @@ import json
 
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
-from lambdas.services.mock_oidc_service import MockOidcService
 from services.dynamic_configuration_service import DynamicConfigurationService
 from services.login_service import LoginService
+from services.mock_oidc_service import MockOidcService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -35,9 +35,7 @@ def lambda_handler(event, context):
 
         configuration_service = DynamicConfigurationService()
         configuration_service.set_auth_ssm_prefix()
-        login_service = LoginService(
-            oidc_service=MockOidcService()
-        )
+        login_service = LoginService(oidc_service=MockOidcService())
 
         response = login_service.generate_session(state, auth_code)
         logger.audit_splunk_info(
