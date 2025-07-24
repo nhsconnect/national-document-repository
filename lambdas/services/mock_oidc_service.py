@@ -25,7 +25,7 @@ class MockOidcService(OidcService):
         deserialised_auth_code = json.loads(decoded_auth_code)
 
         key = deserialised_auth_code["key"]
-        ssm_key = self.ssm_service.get_ssm_parameter(self.ssm_prefix + "KEY")
+        ssm_key = self.ssm_service.get_ssm_parameter(self.ssm_prefix + "MOCK_KEY")
 
         if key == ssm_key:
             expiry_time = int(
