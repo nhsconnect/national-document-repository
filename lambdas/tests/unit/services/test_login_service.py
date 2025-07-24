@@ -10,6 +10,7 @@ from services.ods_api_service import OdsApiService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.exceptions import AuthorisationException
 from utils.lambda_exceptions import LoginException
+from utils.request_context import request_context
 
 
 @pytest.fixture
@@ -41,7 +42,6 @@ def mock_aws_infras(mocker, set_env):
 @pytest.fixture
 def mock_oidc_service(mocker, mock_userinfo):
     mock_service = mocker.MagicMock()
-    mocker.patch("services.login_service.OidcService", return_value=mock_service)
 
     mocked_tokens = [
         "fake_access_token",
@@ -57,12 +57,7 @@ def mock_oidc_service(mocker, mock_userinfo):
     mock_service.fetch_user_info.return_value = mock_userinfo
     mock_service.fetch_user_role_code.return_value = ("R8008", "500000000000")
 
-    yield {
-        "fetch_token": mock_service.fetch_tokens,
-        "fetch_user_org_codes": mock_service.fetch_user_org_code,
-        "fetch_user_role_code": mock_service.fetch_user_info,
-        "fetch_user_info": mock_service.fetch_user_role_code,
-    }
+    return mock_service
 
 
 @pytest.fixture
@@ -83,6 +78,13 @@ def mock_ods_api_service(mocker):
 @pytest.fixture
 def mock_jwt_encode(mocker):
     yield mocker.patch("jwt.encode", return_value="test_ndr_auth_token")
+
+
+@pytest.fixture(autouse=True)
+def set_auth_ssm_prefix():
+    setattr(request_context, "auth_ssm_prefix", "/auth/smartcard/")
+    yield
+    delattr(request_context, "auth_ssm_prefix")
 
 
 def test_exchange_token_respond_with_auth_token_and_repo_role(
@@ -123,13 +125,13 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
         "authorisation_token": expected_jwt,
     }
 
-    login_service = LoginService()
+    login_service = LoginService(mock_oidc_service)
 
     actual = login_service.generate_session(state, auth_code)
 
     assert actual == expected
 
-    mock_oidc_service["fetch_token"].assert_called_with(auth_code)
+    mock_oidc_service.fetch_tokens.assert_called_with(auth_code)
 
 
 def test_exchange_token_raises_exception_when_token_exchange_with_oidc_provider_throws_error(
@@ -141,18 +143,19 @@ def test_exchange_token_raises_exception_when_token_exchange_with_oidc_provider_
     mocker,
     context,
 ):
-    mock_oidc_service["fetch_token"].side_effect = AuthorisationException(
+    mock_oidc_service.fetch_tokens.side_effect = AuthorisationException(
         "Failed to retrieve access token from ID Provider"
     )
-    login_service = LoginService()
+
+    login_service = LoginService(mock_oidc_service)
     mocker.patch.object(
         LoginService, "have_matching_state_value_in_record", return_value=True
     )
 
     with pytest.raises(LoginException):
-        login_service.generate_session("auth_code", "state")
+        login_service.generate_session("state", "auth_code")
 
-    mock_oidc_service["fetch_user_org_codes"].assert_not_called()
+    mock_oidc_service.fetch_user_org_codes.assert_not_called()
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
@@ -163,15 +166,15 @@ def test_exchange_token_raises_login_error_when_given_state_is_not_in_state_tabl
         DynamoDBService, "query_all_fields", return_value={"Count": 0, "Items": []}
     )
 
-    login_service = LoginService()
+    login_service = LoginService(mock_oidc_service)
 
     with pytest.raises(LoginException) as actual:
-        login_service.generate_session("auth_code", "state")
+        login_service.generate_session("state", "auth_code")
 
     assert actual.value.status_code == 401
 
-    mock_oidc_service["fetch_token"].assert_not_called()
-    mock_oidc_service["fetch_user_org_codes"].assert_not_called()
+    mock_oidc_service.fetch_tokens.assert_not_called()
+    mock_oidc_service.fetch_user_org_codes.assert_not_called()
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
@@ -196,10 +199,10 @@ def test_exchange_token_raises_login_error_when_user_doesnt_have_a_valid_role_to
         "services.ods_api_service.OdsApiService.fetch_organisation_with_permitted_role"
     ).return_value = PermittedOrgs()
 
-    login_service = LoginService()
+    login_service = LoginService(mock_oidc_service)
 
     with pytest.raises(LoginException) as actual:
-        login_service.generate_session("auth_code", "state")
+        login_service.generate_session("state", "auth_code")
 
     assert actual.value.status_code == 401
     mock_aws_infras["session_table"].post.assert_not_called()
@@ -215,9 +218,9 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
             {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
         ),
     )
-    mocker.patch("services.login_service.OidcService")
-    mock_oidc = mocker.patch("services.oidc_service.OidcService.fetch_oidc_parameters")
-    mock_oidc.return_value = {
+
+    mock_service = mocker.MagicMock()
+    mock_service.fetch_oidc_parameters.return_value = {
         "OIDC_CLIENT_ID": "client-id",
         "OIDC_CLIENT_SECRET": "client-secret",
         "OIDC_ISSUER_URL": "https://issuer-url.com",
@@ -226,11 +229,11 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
         "OIDC_JWKS_URL": "https://jwks-url.com",
         "OIDC_CALLBACK_URL": "https://callback-url.com",
     }
-
-    login_service = LoginService()
+   
+    login_service = LoginService(mock_service)
 
     with pytest.raises(LoginException) as actual:
-        login_service.generate_session("auth_code", "state")
+        login_service.generate_session("state", "auth_code")
 
     assert actual.value.status_code == 500
 
@@ -253,7 +256,8 @@ def test_generate_repository_role_gp_admin(set_env, mocker):
         return_value=[user_role_code],
     )
 
-    login_service = LoginService()
+    mock_service = mocker.MagicMock()
+    login_service = LoginService(mock_service)
 
     expected = RepositoryRole.GP_ADMIN
     actual = login_service.generate_repository_role(org, user_role_code)
@@ -282,7 +286,8 @@ def test_generate_repository_role_gp_clinical(set_env, mocker):
         return_value=[user_role_code],
     )
 
-    login_service = LoginService()
+    mock_service = mocker.MagicMock()
+    login_service = LoginService(mock_service)
 
     expected = RepositoryRole.GP_CLINICAL
     actual = login_service.generate_repository_role(org, user_role_code)
@@ -303,7 +308,8 @@ def test_generate_repository_role_pcse(set_env, mocker):
         TokenHandlerSSMService, "get_pcse_ods_code", return_value=ods_code
     )
 
-    login_service = LoginService()
+    mock_service = mocker.MagicMock()
+    login_service = LoginService(mock_service)
 
     expected = RepositoryRole.PCSE
     actual = login_service.generate_repository_role(org, user_role_code)
@@ -327,7 +333,8 @@ def test_generate_repository_role_pcse_itoc(set_env, mocker):
         TokenHandlerSSMService, "get_itoc_ods_codes", return_value=ods_code
     )
 
-    login_service = LoginService()
+    mock_service = mocker.MagicMock()
+    login_service = LoginService(mock_service)
 
     expected = RepositoryRole.PCSE
     actual = login_service.generate_repository_role(org, user_role_code)
@@ -355,7 +362,8 @@ def test_generate_repository_role_no_role_raises_auth_error(set_env, mocker):
         return_value=["wrong_role_code"],
     )
 
-    login_service = LoginService()
+    mock_service = mocker.MagicMock()
+    login_service = LoginService(mock_service)
 
     with pytest.raises(LoginException) as actual:
         login_service.generate_repository_role(org, user_role_code)

@@ -18,6 +18,11 @@ on:
         required: true
         type: "string"
         default: "development"
+      mock_login_enabled:
+        description: "Do you want to deploy with mock login enabled?"
+        required: true
+        type: boolean
+        default: true
   workflow_call:
     inputs:
       build_branch:
@@ -35,6 +40,11 @@ on:
         required: true
         type: "string"
         default: "development"
+      mock_login_enabled:
+        description: "Do you want to deploy with mock login enabled?"
+        required: true
+        type: boolean
+        default: true
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -73,6 +83,7 @@ jobs:
       build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       is_sandbox: true
+      mock_login_enabled: ${{ inputs.mock_login_enabled }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 

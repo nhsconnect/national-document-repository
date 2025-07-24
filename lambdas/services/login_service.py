@@ -28,11 +28,11 @@ logger = LoggingService(__name__)
 
 
 class LoginService:
-    def __init__(self):
+    def __init__(self, oidc_service: OidcService):
         self.db_service = DynamoDBService()
         self.token_handler_ssm_service = TokenHandlerSSMService()
-        self.oidc_service = OidcService()
         self.ods_api_service = OdsApiService()
+        self.oidc_service = oidc_service
 
     def generate_session(self, state, auth_code) -> dict:
         logger.info("Login process started")
@@ -51,19 +51,18 @@ class LoginService:
             )
             raise LoginException(500, LambdaError.LoginClient)
 
-        logger.info("Setting up oidc service")
-
-        self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
-
-        logger.info("Fetching access token from OIDC Provider")
         try:
+            logger.info("Setting up oidc service")
+            self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
+
+            logger.info("Fetching access token from OIDC Provider")
             access_token, id_token_claim_set = self.oidc_service.fetch_tokens(auth_code)
 
             logger.info("Fetching user information from OIDC Provider")
             userinfo = self.oidc_service.fetch_userinfo(access_token)
-            selected_role_id = get_selected_roleid(id_token_claim_set)
-            logger.debug(f"Selected role ID: {selected_role_id}")
 
+            selected_role_id = get_selected_roleid(id_token_claim_set)
+            logger.info(f"Selected role ID: {selected_role_id}")
             logger.info("Extracting user's organisation and smartcard codes")
             org_ods_codes = self.oidc_service.fetch_user_org_code(
                 userinfo, selected_role_id
