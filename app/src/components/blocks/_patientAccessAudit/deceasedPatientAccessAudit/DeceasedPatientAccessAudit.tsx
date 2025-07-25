@@ -23,7 +23,7 @@ import { TextAreaRef } from '../../../../types/generic/textareaRef';
 import { usePatientAccessAuditContext } from '../../../../providers/patientAccessAuditProvider/PatientAccessAuditProvider';
 import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
 import postPatientAccessAudit from '../../../../helpers/requests/postPatientAccessAudit';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 enum FORM_FIELDS {
     Reasons = 'reasons',
@@ -239,9 +239,9 @@ const DeceasedPatientAccessAudit = () => {
             <h1 data-testid="title">{pageTitle}</h1>
 
             <PatientSummary>
-                <PatientSummary.PatientFullName />
-                <PatientSummary.PatientNhsNumber />
-                <PatientSummary.PatientDob />
+                <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
             </PatientSummary>
 
             <h2>Why do you need to access this record?</h2>

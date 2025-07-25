@@ -15,7 +15,7 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
 import React from 'react';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 type Props = {
     documents: UploadDocument[];
@@ -169,9 +169,9 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
             <div className="nhsuk-inset-text">
                 <p>Make sure that all files uploaded are for this patient only:</p>
                 <PatientSummary>
-                    <PatientSummary.PatientFullName />
-                    <PatientSummary.PatientNhsNumber />
-                    <PatientSummary.PatientDob />
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
                 </PatientSummary>
             </div>
 

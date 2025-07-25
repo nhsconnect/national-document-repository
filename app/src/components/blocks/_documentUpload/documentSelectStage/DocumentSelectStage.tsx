@@ -15,7 +15,7 @@ import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { getDocument } from 'pdfjs-dist';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 export type Props = {
     setDocuments: SetUploadDocuments;
@@ -177,9 +177,9 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                 <div className="nhsuk-inset-text">
                     <p>Make sure that all files uploaded are for this patient only:</p>
                     <PatientSummary>
-                        <PatientSummary.PatientFullName />
-                        <PatientSummary.PatientNhsNumber />
-                        <PatientSummary.PatientDob />
+                        <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                        <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                        <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
                     </PatientSummary>
                 </div>
 

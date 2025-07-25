@@ -25,7 +25,7 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 import BackButton from '../../../generic/backButton/BackButton';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -145,9 +145,9 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
                 <Fieldset id="radio-selection">
                     <Fieldset.Legend isPageHeading>{pageTitle}:</Fieldset.Legend>
                     <PatientSummary showDeceasedTag>
-                        <PatientSummary.PatientFullName />
-                        <PatientSummary.PatientNhsNumber />
-                        <PatientSummary.PatientDob />
+                        <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                        <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                        <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
                     </PatientSummary>
 
                     {!userIsGP && (
