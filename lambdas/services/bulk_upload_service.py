@@ -76,7 +76,7 @@ class BulkUploadService:
         ods_codes = self.cloudwatch_service.list_dimension_values(
             metric_processed, namespace, ods_dimension_name
         )
-
+        logger.info("Preparing to log custom metrics:")
         for ods_code in ods_codes:
             dimension = {"Name": ods_dimension_name, "Value": ods_code}
 
@@ -88,6 +88,8 @@ class BulkUploadService:
                 start_time=start_time,
                 end_time=end_time,
             )
+            logger.info("just got sent data")
+            logger.info(f"sent data is : {sent_data}")
             processed_data = self.cloudwatch_service.get_metric_data_by_dimension(
                 metric_name=metric_processed,
                 namespace=namespace,
@@ -95,7 +97,8 @@ class BulkUploadService:
                 start_time=start_time,
                 end_time=end_time,
             )
-
+            logger.info("just got processed_data")
+            logger.info(f"processed_data is : {processed_data}")
             # Group processed by day
             processed_by_day = {}
             for dp in processed_data:

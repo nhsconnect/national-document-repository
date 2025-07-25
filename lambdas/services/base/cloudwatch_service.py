@@ -73,11 +73,13 @@ class CloudwatchService:
                         "Value": value,
                         "Unit": unit,
                         "Timestamp": datetime.fromtimestamp(timestamp, tz=timezone.utc),
+                        "StorageResolution": 1,
                     }
                 ],
             )
             logger.info(
-                f"Published custom CloudWatch metric '{metric_name}' with value {value}, Dimensions: {dimensions}"
+                f"[METRIC] Published '{metric_name}' = {value} | ODSCode = {dimensions} "
+                f"| Time = {datetime.fromtimestamp(timestamp).isoformat()}"
             )
         except Exception as e:
             logger.error(f"Failed to publish metric {metric_name}: {e}")
