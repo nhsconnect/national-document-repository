@@ -394,7 +394,7 @@ class BulkUploadService:
                 file_metadata.scan_date, "%d/%m/%Y"
             ).strftime("%Y-%m-%d")
         else:
-            scan_date_formatted = datetime.now().strftime("%Y-%m-%d")
+            scan_date_formatted = None
         document_reference = DocumentReference(
             id=str(uuid.uuid4()),
             nhs_number=nhs_number,

@@ -894,8 +894,9 @@ def test_convert_to_document_reference_missing_scan_date(
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.bulk_upload_s3_repository.lg_bucket_name = "test_lg_s3_bucket"
     expected = TEST_DOCUMENT_REFERENCE
-    expected.document_scan_creation = "2024-01-01"
-    TEST_FILE_METADATA.scan_date = None
+    expected.document_scan_creation = None
+    TEST_FILE_METADATA.scan_date = ""
+
     actual = repo_under_test.convert_to_document_reference(
         file_metadata=TEST_FILE_METADATA,
         nhs_number=TEST_STAGING_METADATA.nhs_number,
@@ -903,7 +904,9 @@ def test_convert_to_document_reference_missing_scan_date(
     )
 
     assert actual == expected
+
     TEST_FILE_METADATA.scan_date = "03/09/2022"
+    TEST_DOCUMENT_REFERENCE.document_scan_creation = "2022-09-03"
 
 
 def test_raise_client_error_from_ssm_with_pds_service(
