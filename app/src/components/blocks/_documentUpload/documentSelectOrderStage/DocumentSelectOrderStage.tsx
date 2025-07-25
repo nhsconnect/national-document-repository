@@ -5,7 +5,6 @@ import {
     SetUploadDocuments,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { FieldValues, useForm } from 'react-hook-form';
 import { SelectRef } from '../../../../types/generic/selectRef';
@@ -16,6 +15,7 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
 import React from 'react';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 type Props = {
     documents: UploadDocument[];
@@ -165,7 +165,15 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         <>
             <BackButton />
             <h1>{pageTitle}</h1>
-            <PatientSimpleSummary />
+
+            <div className="nhsuk-inset-text">
+                <p>Make sure that all files uploaded are for this patient only:</p>
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                </PatientSummary>
+            </div>
 
             {errorMessage && (
                 <ErrorBox

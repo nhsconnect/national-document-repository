@@ -10,12 +10,12 @@ import { getUserRecordActionLinks } from '../../../../types/blocks/lloydGeorgeAc
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routes, routeChildren } from '../../../../types/generic/routes';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { useSessionContext } from '../../../../providers/sessionProvider/SessionProvider';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -134,7 +134,11 @@ function LloydGeorgeViewRecordStage({
                         </>
                     )}
 
-                    <PatientSimpleSummary showDeceasedTag />
+                    <PatientSummary showDeceasedTag>
+                        <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                        <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                        <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                    </PatientSummary>
 
                     {session.isFullscreen && (
                         <RecordMenuCard

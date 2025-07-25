@@ -23,7 +23,9 @@ describe('DocumentUploadCompleteStage', () => {
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('You have successfully uploaded a digital Lloyd George record for:'),
+                    screen.getByText(
+                        'You have successfully uploaded a digital Lloyd George record for:',
+                    ),
                 ).toBeInTheDocument();
             });
         });
