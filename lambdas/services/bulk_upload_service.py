@@ -389,9 +389,12 @@ class BulkUploadService:
     ) -> DocumentReference:
         s3_bucket_name = self.bulk_upload_s3_repository.lg_bucket_name
         file_name = os.path.basename(file_metadata.file_path)
-        scan_date_formatted = datetime.strptime(
-            file_metadata.scan_date, "%d/%m/%Y"
-        ).strftime("%Y-%m-%d")
+        if file_metadata.scan_date:
+            scan_date_formatted = datetime.strptime(
+                file_metadata.scan_date, "%d/%m/%Y"
+            ).strftime("%Y-%m-%d")
+        else:
+            scan_date_formatted = datetime.now().strftime("%Y-%m-%d")
         document_reference = DocumentReference(
             id=str(uuid.uuid4()),
             nhs_number=nhs_number,
