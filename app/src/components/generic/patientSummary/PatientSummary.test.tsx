@@ -1,7 +1,7 @@
 import usePatient from '../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
-import PatientSummary from './PatientSummary';
+import PatientSummary, { PatientInfo } from './PatientSummary';
 import { render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
@@ -28,6 +28,39 @@ describe('PatientSummary', () => {
 
         expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
         expect(screen.getByText(mockDetails.familyName)).toBeInTheDocument();
+    });
+
+    it('renders postal code correct', () => {
+        const mockDetails = buildPatientDetails({
+            postalCode: 'SW1A 1AA',
+        });
+        mockedUsePatient.mockReturnValue(mockDetails);
+        render(<PatientSummary />);
+        expect(screen.getByTestId('patient-summary-postal-code')).toBeInTheDocument();
+        expect(screen.getByText('SW1A 1AA')).toBeInTheDocument();
+        expect(screen.getByText('Postcode')).toBeInTheDocument();
+    });
+
+    it('renders family name correct', () => {
+        const mockDetails = buildPatientDetails({
+            familyName: 'Smith',
+        });
+        mockedUsePatient.mockReturnValue(mockDetails);
+        render(<PatientSummary />);
+        expect(screen.getByTestId('patient-summary-family-name')).toBeInTheDocument();
+        expect(screen.getByText('Smith')).toBeInTheDocument();
+        expect(screen.getByText('Surname')).toBeInTheDocument();
+    });
+
+    it('renders given name correct', () => {
+        const mockDetails = buildPatientDetails({
+            givenName: ['John', 'Michael'],
+        });
+        mockedUsePatient.mockReturnValue(mockDetails);
+        render(<PatientSummary />);
+        expect(screen.getByText('John Michael')).toBeInTheDocument();
+        expect(screen.getByTestId('patient-summary-given-name')).toBeInTheDocument();
+        expect(screen.getByText('First name')).toBeInTheDocument();
     });
 
     it('renders multiple given names with correct spacing', () => {
@@ -88,14 +121,32 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientNhsNumber />
-                    <PatientSummary.PatientFamilyName />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.FAMILY_NAME} />
                 </PatientSummary>,
             );
 
             expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
             expect(screen.getByText('123 456 7890')).toBeInTheDocument();
             expect(screen.getByText('Smith')).toBeInTheDocument();
+        });
+
+        it('renders PatientSummary with info given name correctly', () => {
+            const mockDetails = buildPatientDetails({
+                familyName: 'Smith',
+                givenName: ['John', 'Michael'],
+            });
+
+            mockedUsePatient.mockReturnValue(mockDetails);
+            render(
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.GIVEN_NAME} />
+                </PatientSummary>,
+            );
+
+            expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
+            expect(screen.getByTestId('patient-summary-given-name')).toBeInTheDocument();
+            expect(screen.getByText('John Michael')).toBeInTheDocument();
         });
 
         it('renders deceased tag with children when showDeceasedTag is true and patient is deceased', () => {
@@ -106,7 +157,7 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary showDeceasedTag>
-                    <PatientSummary.PatientNhsNumber />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
                 </PatientSummary>,
             );
 
@@ -122,7 +173,7 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientNhsNumber />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
                 </PatientSummary>,
             );
 
@@ -141,16 +192,68 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientFullName />
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
                 </PatientSummary>,
             );
 
             expect(screen.getByText('Smith, John Michael')).toBeInTheDocument();
         });
 
+        it('renders postal code correct', () => {
+            const mockDetails = buildPatientDetails({
+                postalCode: 'SW1A 1AA',
+            });
+            mockedUsePatient.mockReturnValue(mockDetails);
+            render(
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.POSTAL_CODE} />
+                </PatientSummary>,
+            );
+            expect(screen.getByTestId('patient-summary-postal-code')).toBeInTheDocument();
+            expect(screen.getByText('SW1A 1AA')).toBeInTheDocument();
+            expect(screen.getByText('Postcode')).toBeInTheDocument();
+        });
+
+        it('renders family name correct', () => {
+            const mockDetails = buildPatientDetails({
+                familyName: 'Smith',
+            });
+            mockedUsePatient.mockReturnValue(mockDetails);
+            render(
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.FAMILY_NAME} />
+                </PatientSummary>,
+            );
+            expect(screen.getByTestId('patient-summary-family-name')).toBeInTheDocument();
+            expect(screen.getByText('Smith')).toBeInTheDocument();
+            expect(screen.getByText('Surname')).toBeInTheDocument();
+        });
+
+        it('renders given name correct', () => {
+            const mockDetails = buildPatientDetails({
+                givenName: ['John', 'Michael'],
+            });
+            mockedUsePatient.mockReturnValue(mockDetails);
+            render(
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.GIVEN_NAME} />
+                </PatientSummary>,
+            );
+            expect(screen.getByText('John Michael')).toBeInTheDocument();
+            expect(screen.getByTestId('patient-summary-given-name')).toBeInTheDocument();
+            expect(screen.getByText('First name')).toBeInTheDocument();
+        });
+
         it('handles null patient details gracefully', () => {
             mockedUsePatient.mockReturnValue(null);
-            render(<PatientSummary />);
+            render(
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.FAMILY_NAME} />
+                    <PatientSummary.Child item={PatientInfo.GIVEN_NAME} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                    <PatientSummary.Child item={PatientInfo.POSTAL_CODE} />
+                </PatientSummary>,
+            );
 
             expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
             // Components should render but with empty/default values
@@ -164,7 +267,7 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientNhsNumber />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
                 </PatientSummary>,
             );
 
@@ -179,8 +282,8 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientGivenName />
-                    <PatientSummary.PatientFullName />
+                    <PatientSummary.Child item={PatientInfo.GIVEN_NAME} />
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
                 </PatientSummary>,
             );
 
@@ -195,7 +298,7 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientGivenName />
+                    <PatientSummary.Child item={PatientInfo.GIVEN_NAME} />
                 </PatientSummary>,
             );
 
@@ -210,7 +313,7 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientDob />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
                 </PatientSummary>,
             );
 
@@ -228,7 +331,7 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientPostcode />
+                    <PatientSummary.Child item={PatientInfo.POSTAL_CODE} />
                 </PatientSummary>,
             );
 
@@ -243,11 +346,12 @@ describe('PatientSummary', () => {
             mockedUsePatient.mockReturnValue(mockDetails);
             render(
                 <PatientSummary>
-                    <PatientSummary.PatientFamilyName />
+                    <PatientSummary.Child item={PatientInfo.FAMILY_NAME} />
                 </PatientSummary>,
             );
 
             expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
+            expect(screen.getByTestId('patient-summary-family-name')).toBeInTheDocument();
         });
     });
 
@@ -257,7 +361,7 @@ describe('PatientSummary', () => {
             const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
             expect(() => {
-                render(<PatientSummary.PatientNhsNumber />);
+                render(<PatientSummary.Child item={PatientInfo.NHS_NUMBER} />);
             }).toThrow('PatientSummary subcomponents must be used within PatientSummary');
 
             spy.mockRestore();

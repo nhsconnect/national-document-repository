@@ -5,6 +5,17 @@ import { SummaryList, Tag } from 'nhsuk-react-components';
 import type { PatientDetails } from '../../../types/generic/patientDetails';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 
+/**
+ * Props for the PatientSummary component.
+ *
+ * @property {boolean} [showDeceasedTag] - Optional flag to display a deceased tag for the patient.
+ * @property {ReactNode} [children] - Optional React children to be rendered within the component.
+ */
+type PatientSummaryProps = {
+    showDeceasedTag?: boolean;
+    children?: ReactNode;
+};
+
 // Context for sharing patient data and configuration
 type PatientSummaryContextType = {
     patientDetails: PatientDetails | null;
@@ -20,19 +31,97 @@ const usePatientSummaryContext = () => {
     return context;
 };
 
-// Main PatientSummary component
-type PatientSummaryProps = {
-    showDeceasedTag?: boolean;
-    children?: ReactNode;
-    // Legacy props for backward compatibility
-    detailsToDisplay?: Array<
-        keyof Pick<
-            PatientDetails,
-            'nhsNumber' | 'familyName' | 'givenName' | 'birthDate' | 'postalCode'
-        >
-    >;
+/**
+ * Enum representing the keys for patient summary items.
+ *
+ * @remarks
+ * Used to identify and access specific patient information fields.
+ *
+ * @enum {string}
+ * @property {string} NHS_NUMBER - Patient's NHS number.
+ * @property {string} FAMILY_NAME - Patient's family name.
+ * @property {string} GIVEN_NAME - Patient's given name.
+ * @property {string} BIRTH_DATE - Patient's date of birth.
+ * @property {string} POSTAL_CODE - Patient's postal code.
+ * @property {string} FULL_NAME - Patient's full name, combining family and given names.
+ */
+export enum PatientInfo {
+    NHS_NUMBER,
+    FAMILY_NAME,
+    GIVEN_NAME,
+    BIRTH_DATE,
+    POSTAL_CODE,
+    FULL_NAME,
+}
+
+const summaryRow = (key: string, elementId: string, value: ReactNode) => {
+    return (
+        <SummaryList.Row>
+            <SummaryList.Key>{key}</SummaryList.Key>
+            <SummaryList.Value data-testid={elementId} id={elementId}>
+                {value}
+            </SummaryList.Value>
+        </SummaryList.Row>
+    );
 };
 
+/**
+ * Sub-component of PatientSummary that renders a summary row for a specific patient detail.
+ *
+ * @param item - The type of patient information to display, as defined by the PatientInfo enum.
+ * @returns A React element representing a summary row for the specified patient detail.
+ */
+const Details: React.FC<{ item: PatientInfo }> = ({ item }) => {
+    const { patientDetails } = usePatientSummaryContext();
+    let key, elementId, value;
+
+    switch (item) {
+        case PatientInfo.FULL_NAME:
+            key = 'Patient name';
+            elementId = 'patient-summary-full-name';
+            value = `${patientDetails?.familyName}, ${patientDetails?.givenName?.join(' ')}`;
+            break;
+        case PatientInfo.NHS_NUMBER:
+            key = 'NHS number';
+            elementId = 'patient-summary-nhs-number';
+            value = formatNhsNumber(patientDetails?.nhsNumber ?? '');
+            break;
+        case PatientInfo.FAMILY_NAME:
+            key = 'Surname';
+            elementId = 'patient-summary-family-name';
+            value = patientDetails?.familyName ?? '';
+            break;
+        case PatientInfo.GIVEN_NAME:
+            key = 'First name';
+            elementId = 'patient-summary-given-name';
+            value = patientDetails?.givenName?.join(' ') ?? '';
+            break;
+        case PatientInfo.BIRTH_DATE:
+            key = 'Date of birth';
+            elementId = 'patient-summary-date-of-birth';
+            value = patientDetails?.birthDate
+                ? getFormattedDate(new Date(patientDetails.birthDate))
+                : '';
+            break;
+        case PatientInfo.POSTAL_CODE:
+            key = 'Postcode';
+            elementId = 'patient-summary-postal-code';
+            value = patientDetails?.postalCode ?? '';
+            break;
+        default:
+            return <></>;
+    }
+
+    return summaryRow(key, elementId, value);
+};
+
+/**
+ * Patient summary component that displays key information about a patient.
+ *
+ * @param showDeceasedTag - Optional flag to display a tag for deceased patients.
+ * @param children - Optional child components to be rendered inside the summary.
+ * @returns A React element representing the patient summary.
+ */
 const PatientSummary = ({ showDeceasedTag = false, children }: PatientSummaryProps) => {
     const patientDetails = usePatient();
 
@@ -63,114 +152,23 @@ const PatientSummary = ({ showDeceasedTag = false, children }: PatientSummaryPro
             )}
             <PatientSummaryContext.Provider value={{ patientDetails }}>
                 <SummaryList id="patient-summary" data-testid="patient-summary">
-                    <PatientNhsNumber />
-                    <PatientFamilyName />
-                    <PatientGivenName />
-                    <PatientDob />
-                    <PatientPostcode />
+                    <Details item={PatientInfo.NHS_NUMBER} />
+                    <Details item={PatientInfo.FAMILY_NAME} />
+                    <Details item={PatientInfo.GIVEN_NAME} />
+                    <Details item={PatientInfo.BIRTH_DATE} />
+                    <Details item={PatientInfo.POSTAL_CODE} />
                 </SummaryList>
             </PatientSummaryContext.Provider>
         </>
     );
 };
 
-// Subcomponents
-const PatientNhsNumber = () => {
-    const { patientDetails } = usePatientSummaryContext();
-    return (
-        <SummaryList.Row>
-            <SummaryList.Key>NHS number</SummaryList.Key>
-            <SummaryList.Value
-                data-testid="patient-summary-nhs-number"
-                id="patient-summary-nhs-number"
-            >
-                {formatNhsNumber(patientDetails?.nhsNumber ?? '')}
-            </SummaryList.Value>
-        </SummaryList.Row>
-    );
-};
-
-const PatientFullName = () => {
-    const { patientDetails } = usePatientSummaryContext();
-
-    return (
-        <SummaryList.Row>
-            <SummaryList.Key>Patient name</SummaryList.Key>
-            <SummaryList.Value
-                data-testid="patient-summary-full-name"
-                id="patient-summary-full-name"
-            >
-                {`${patientDetails?.familyName}, ${patientDetails?.givenName?.join(' ')}`}
-            </SummaryList.Value>
-        </SummaryList.Row>
-    );
-};
-
-const PatientGivenName = () => {
-    const { patientDetails } = usePatientSummaryContext();
-    return (
-        <SummaryList.Row>
-            <SummaryList.Key>First name</SummaryList.Key>
-            <SummaryList.Value
-                data-testid="patient-summary-given-name"
-                id="patient-summary-given-name"
-            >
-                {patientDetails?.givenName?.join(' ')}
-            </SummaryList.Value>
-        </SummaryList.Row>
-    );
-};
-
-const PatientFamilyName = () => {
-    const { patientDetails } = usePatientSummaryContext();
-    return (
-        <SummaryList.Row>
-            <SummaryList.Key>Surname</SummaryList.Key>
-            <SummaryList.Value
-                data-testid="patient-summary-family-name"
-                id="patient-summary-family-name"
-            >
-                {patientDetails?.familyName}
-            </SummaryList.Value>
-        </SummaryList.Row>
-    );
-};
-
-const PatientDob = () => {
-    const { patientDetails } = usePatientSummaryContext();
-    return (
-        <SummaryList.Row>
-            <SummaryList.Key>Date of birth</SummaryList.Key>
-            <SummaryList.Value
-                data-testid="patient-summary-date-of-birth"
-                id="patient-summary-date-of-birth"
-            >
-                {patientDetails?.birthDate
-                    ? getFormattedDate(new Date(patientDetails.birthDate))
-                    : ''}
-            </SummaryList.Value>
-        </SummaryList.Row>
-    );
-};
-
-const PatientPostcode = () => {
-    const { patientDetails } = usePatientSummaryContext();
-    return (
-        <SummaryList.Row>
-            <SummaryList.Key>Postcode</SummaryList.Key>
-            <SummaryList.Value data-testid="patient-summary-postcode" id="patient-summary-postcode">
-                {patientDetails?.postalCode}
-            </SummaryList.Value>
-        </SummaryList.Row>
-    );
-};
-
-// Attach subcomponents to PatientSummary
-PatientSummary.PatientNhsNumber = PatientNhsNumber;
-PatientSummary.PatientFullName = PatientFullName;
-PatientSummary.PatientGivenName = PatientGivenName;
-PatientSummary.PatientFamilyName = PatientFamilyName;
-PatientSummary.PatientDob = PatientDob;
-PatientSummary.PatientPostcode = PatientPostcode;
+/**
+ * Sub-component of PatientSummary that renders a summary row for a specific patient detail.
+ *
+ * @param item - The type of patient information to display, as defined by the PatientInfo enum.
+ * @returns A React element representing a summary row for the specified patient detail.
+ */
+PatientSummary.Child = Details;
 
 export default PatientSummary;

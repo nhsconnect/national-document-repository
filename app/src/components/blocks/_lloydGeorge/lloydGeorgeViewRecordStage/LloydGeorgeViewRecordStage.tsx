@@ -15,7 +15,7 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { useSessionContext } from '../../../../providers/sessionProvider/SessionProvider';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -135,9 +135,9 @@ function LloydGeorgeViewRecordStage({
                     )}
 
                     <PatientSummary showDeceasedTag>
-                        <PatientSummary.PatientFullName />
-                        <PatientSummary.PatientNhsNumber />
-                        <PatientSummary.PatientDob />
+                        <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                        <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                        <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
                     </PatientSummary>
 
                     {session.isFullscreen && (

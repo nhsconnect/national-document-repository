@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import { useState } from 'react';
 import Pagination from '../../../generic/pagination/Pagination';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 type Props = {
     documents: UploadDocument[];
@@ -41,9 +41,9 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
             <div className="nhsuk-inset-text">
                 <p>Make sure that all files uploaded are for this patient only:</p>
                 <PatientSummary>
-                    <PatientSummary.PatientFullName />
-                    <PatientSummary.PatientNhsNumber />
-                    <PatientSummary.PatientDob />
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
                 </PatientSummary>
             </div>
             <div style={{ borderBottom: '1px solid black' }}>
