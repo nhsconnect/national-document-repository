@@ -122,7 +122,7 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   e2e_tests:
-    name: "Executed E2e Tests"
+    name: "Execute E2e Tests"
     if: ${{ inputs.e2e_tests }}
     uses: "./.github/workflows/base-e2e-backendtest.yml"
     needs: ["deploy_all_lambdas"]
