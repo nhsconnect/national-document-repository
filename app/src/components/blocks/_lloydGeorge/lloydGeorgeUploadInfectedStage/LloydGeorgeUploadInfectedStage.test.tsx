@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import LloydGeorgeUploadInfectedStage from './LloydGeorgeUploadInfectedStage';
-import { buildLgFile } from '../../../../helpers/test/testBuilders';
+import { buildLgFileOld } from '../../../../helpers/test/testBuilders';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -16,7 +16,7 @@ vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 const uploadDocument = {
-    file: buildLgFile(1, 1, 'John Doe'),
+    file: buildLgFileOld(1, 1, 'John Doe'),
     state: DOCUMENT_UPLOAD_STATE.INFECTED,
     id: '1',
     progress: 0,

@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import {
     buildDocument,
-    buildLgFile,
+    buildLgFileOld,
     buildTextFile,
     buildUploadSession,
 } from '../test/testBuilders';
@@ -47,7 +47,7 @@ describe('[POST] updateDocumentState', () => {
 });
 
 describe('uploadDocumentToS3', () => {
-    const testFile = buildLgFile(1, 3, 'John Doe');
+    const testFile = buildLgFileOld(1, 3, 'John Doe');
     const testDocument = buildDocument(
         testFile,
         DOCUMENT_UPLOAD_STATE.SELECTED,
