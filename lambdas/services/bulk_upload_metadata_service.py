@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Iterable
 
 import pydantic
+from aws_embedded_metrics.metric_scope import metric_scope
 from botocore.exceptions import ClientError
 from models.staging_metadata import (
     NHS_NUMBER_FIELD_NAME,
@@ -104,17 +105,19 @@ class BulkUploadMetadataService:
             for (nhs_number, ods_code) in patients
         ]
 
+    @metric_scope
     def publish_ods_code_queued_metrics(
-        self, staging_metadata: StagingMetadata
+        self, metrics, staging_metadata: StagingMetadata
     ) -> None:
         ods_code = (
             staging_metadata.files[0].gp_practice_code
             if staging_metadata.files
             else "UNKNOWN"
         )
-        self.metrics.set_namespace("Custom_metrics/BulkUpload")
-        self.metrics.put_dimension("ODSCode", ods_code)
-        self.metrics.put_metric("MessagesSent", 1, "Count")
+        logger.info(f"Publishing metric for ODSCode: {ods_code}")
+        metrics.set_namespace("Custom_metrics/BulkUpload")
+        metrics.put_dimension("ODSCode", ods_code)
+        metrics.put_metric("MessagesSent", 1, "Count")
 
     def send_metadata_to_fifo_sqs(
         self, staging_metadata_list: list[StagingMetadata]
