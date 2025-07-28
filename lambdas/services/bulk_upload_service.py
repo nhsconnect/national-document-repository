@@ -76,8 +76,10 @@ class BulkUploadService:
         ods_codes = self.cloudwatch_service.list_dimension_values(
             metric_processed, namespace, ods_dimension_name
         )
-        logger.info("Preparing to log custom metrics:")
+        logger.info("Preparing to log custom metrics")
+        logger.info(f"ODS codes found: {ods_codes}")
         for ods_code in ods_codes:
+            logger.info(f"logging ods_code: {ods_code}")
             dimension = {"Name": ods_dimension_name, "Value": ods_code}
 
             # Get metric data
