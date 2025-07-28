@@ -99,6 +99,71 @@ $hunit: '%';
     display: flex;
 }
 
+// Drag and Drop Styles
+.drag-table-row {
+    cursor: grab;
+    transition: all 0.2s ease;
+    
+    &:hover {
+        background-color: #f0f4f8;
+    }
+    
+    &.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+    }
+    
+    &.drag-over {
+        background-color: #005eb8;
+        color: white;
+        
+        * {
+            color: white !important;
+        }
+    }
+    
+    &.drag-disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+}
+
+.drag-handle {
+    cursor: grab;
+    padding: 8px;
+    // display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #626a6e;
+    
+    &:hover {
+        background-color: #e8edee;
+        color: #005eb8;
+    }
+    
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.drag-instructions {
+    font-size: 14px;
+    color: #626a6e;
+    margin-bottom: 16px;
+    
+    strong {
+        color: #212b32;
+    }
+}
+
+.position-indicator {
+    font-weight: bold;
+    color: #005eb8;
+    font-size: 16px;
+}
+
 .flex-center {
     height: 100%;
     display: flex;

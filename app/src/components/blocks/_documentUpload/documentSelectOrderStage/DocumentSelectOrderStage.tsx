@@ -1,4 +1,4 @@
-import { Button, Select, Table } from 'nhsuk-react-components';
+import { Button, Table } from 'nhsuk-react-components';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     DOCUMENT_TYPE,
@@ -7,8 +7,6 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import LinkButton from '../../../generic/linkButton/LinkButton';
-import { FieldValues, useForm } from 'react-hook-form';
-import { SelectRef } from '../../../../types/generic/selectRef';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../generic/backButton/BackButton';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
@@ -22,136 +20,209 @@ type Props = {
     setDocuments: SetUploadDocuments;
     setMergedPdfBlob: Dispatch<SetStateAction<Blob | undefined>>;
 };
-type FormData = {
-    [key: string]: number | null;
-};
 
 const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props) => {
     const navigate = useNavigate();
     const [errorMessage, setError] = useState('');
     const [previewLoading, setPreviewLoading] = useState(false);
 
-    const documentPositionKey = (documentId: string): string => {
-        return `document-${documentId}-position`;
-    };
-
-    const getDefaultValues = () => {
-        let defaults: FormData = {};
-
-        documents.forEach((doc) => {
-            defaults[documentPositionKey(doc.id)] = doc.position!;
-        });
-
-        return defaults;
-    };
-
-    const { handleSubmit, getValues, register, unregister, formState } = useForm<FormData>({
-        reValidateMode: 'onChange',
-        shouldFocusError: true,
-        defaultValues: getDefaultValues(),
-    });
+    // Drag and Drop state
+    const [draggedItem, setDraggedItem] = useState<string | null>(null);
+    const [dragOverItem, setDragOverItem] = useState<string | null>(null);
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
     const pageTitle = 'What order do you want these files in?';
     useTitle({ pageTitle });
 
-    const DocumentPositionDropdown = (
-        documentId: string,
-        currentPosition: number | undefined,
-    ): React.JSX.Element => {
-        const key = documentPositionKey(documentId);
-
-        const { ref: dropdownInputRef, ...dropdownProps } = register(key, {
-            validate: () => {
-                const fieldValues = getValues();
-
-                const values = Object.values(fieldValues).map((v) => +v!);
-
-                if (values.some((v) => v === 0)) {
-                    setError('Please select a position for every document');
-                    scrollToRef.current?.scrollIntoView();
-                    return false;
-                }
-
-                if (new Set(values).size !== values.length) {
-                    setError('Please ensure all documents have a unique position selected');
-                    scrollToRef.current?.scrollIntoView();
-                    return false;
-                }
-
-                return !!fieldValues[key];
-            },
-            onChange: updateDocumentPositions,
+    const formatLastModified = (lastModified: number): string => {
+        const date = new Date(lastModified);
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
         });
+    };
 
-        return (
-            <Select
-                style={{ minWidth: '25%' }}
-                key={key}
-                data-testid={key}
-                selectRef={dropdownInputRef as SelectRef}
-                {...dropdownProps}
-                defaultValue={currentPosition}
-            >
-                <option key={`${documentId}_position_blank`} value=""></option>
-                {documents.map((_, index) => {
-                    const position = index + 1;
-                    return (
-                        <option key={`${documentId}_position_${position}`} value={position}>
-                            {position}
-                        </option>
-                    );
-                })}
-            </Select>
+    const handleDragStart = (e: React.DragEvent<HTMLTableRowElement>, documentId: string) => {
+        setDraggedItem(documentId);
+
+        // Set drag effect and data
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', documentId);
+
+        // Add visual feedback
+        e.currentTarget.style.opacity = '0.5';
+    };
+
+    const handleDragEnd = (e: React.DragEvent<HTMLTableRowElement>) => {
+        setDraggedItem(null);
+        setDragOverItem(null);
+
+        // Reset visual feedback
+        e.currentTarget.style.opacity = '1';
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLTableRowElement>) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDragEnter = (e: React.DragEvent<HTMLTableRowElement>, documentId: string) => {
+        e.preventDefault();
+        if (draggedItem !== documentId) {
+            setDragOverItem(documentId);
+        }
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLTableRowElement>) => {
+        e.preventDefault();
+        setDragOverItem(null);
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLTableRowElement>, targetDocumentId: string) => {
+        e.preventDefault();
+
+        if (!draggedItem || draggedItem === targetDocumentId) {
+            return;
+        }
+
+        const reorderedDocuments = reorderDocuments(draggedItem, targetDocumentId);
+        setDocuments(reorderedDocuments);
+        updateFormWithNewPositions(reorderedDocuments);
+
+        setDraggedItem(null);
+        setDragOverItem(null);
+    };
+
+    const reorderDocuments = (draggedId: string, targetId: string): UploadDocument[] => {
+        const draggedIndex = documents.findIndex((doc) => doc.id === draggedId);
+        const targetIndex = documents.findIndex((doc) => doc.id === targetId);
+
+        if (draggedIndex === -1 || targetIndex === -1) {
+            return documents;
+        }
+
+        const reordered = [...documents];
+        const [draggedDoc] = reordered.splice(draggedIndex, 1);
+        reordered.splice(targetIndex, 0, draggedDoc);
+
+        // Update positions to be sequential
+        return reordered.map((doc, index) => ({
+            ...doc,
+            position: index + 1,
+        }));
+    };
+
+    const updateFormWithNewPositions = (reorderedDocs: UploadDocument[]) => {
+        // Since we're not using React Hook Form anymore, we just need to clear errors
+        setError(''); // Clear any existing errors
+    };
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>, index: number) => {
+        if (!e.ctrlKey && !e.metaKey) return;
+
+        switch (e.key) {
+            case 'ArrowUp':
+                e.preventDefault();
+                moveDocument(index, index - 1);
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                moveDocument(index, index + 1);
+                break;
+        }
+    };
+
+    const moveDocument = (fromIndex: number, toIndex: number) => {
+        if (toIndex < 0 || toIndex >= documents.length) return;
+
+        const reordered = [...documents];
+        const [movedDoc] = reordered.splice(fromIndex, 1);
+        reordered.splice(toIndex, 0, movedDoc);
+
+        const updatedDocs = reordered.map((doc, index) => ({
+            ...doc,
+            position: index + 1,
+        }));
+
+        setDocuments(updatedDocs);
+        updateFormWithNewPositions(updatedDocs);
+    };
+
+    const orderAlphabetically = () => {
+        const sortedDocuments = [...documents].sort((a, b) =>
+            a.file.name.localeCompare(b.file.name, 'en', { sensitivity: 'base' }),
         );
+
+        const updatedDocs = sortedDocuments.map((doc, index) => ({
+            ...doc,
+            position: index + 1,
+        }));
+
+        setDocuments(updatedDocs);
+        updateFormWithNewPositions(updatedDocs);
+    };
+
+    const orderByLastModified = () => {
+        const sortedDocuments = [...documents].sort(
+            (a, b) => b.file.lastModified - a.file.lastModified,
+        );
+
+        const updatedDocs = sortedDocuments.map((doc, index) => ({
+            ...doc,
+            position: index + 1,
+        }));
+
+        setDocuments(updatedDocs);
+        updateFormWithNewPositions(updatedDocs);
+    };
+
+    const reverseOrder = () => {
+        const reversedDocuments = [...documents].reverse();
+
+        const updatedDocs = reversedDocuments.map((doc, index) => ({
+            ...doc,
+            position: index + 1,
+        }));
+
+        setDocuments(updatedDocs);
+        updateFormWithNewPositions(updatedDocs);
     };
 
     const onRemove = (index: number) => {
         let updatedDocList: UploadDocument[] = [];
-        const key = documentPositionKey(documents[index].id);
-        unregister(key);
 
         if (index >= 0) {
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
-        setDocuments(updatedDocList);
 
-        if (updatedDocList.length === 0) {
+        const updatedDocListWithPositions = updatedDocList.map((doc, newIndex) => ({
+            ...doc,
+            position: newIndex + 1,
+        }));
+
+        setDocuments(updatedDocListWithPositions);
+
+        if (updatedDocListWithPositions.length === 0) {
             navigate(routes.DOCUMENT_UPLOAD);
         }
     };
 
-    const updateDocumentPositions = () => {
-        const fieldValues = getValues();
-
-        const updatedDocuments = documents.map((doc) => ({
-            ...doc,
-            position: fieldValues[documentPositionKey(doc.id)]!,
-        }));
-
-        setError('');
-        setDocuments(updatedDocuments);
-    };
-
     const submitDocuments = () => {
-        updateDocumentPositions();
+        // Ensure all documents have valid positions
+        const hasValidPositions = documents.every((doc) => doc.position && doc.position > 0);
+
+        if (!hasValidPositions) {
+            setError('Please ensure all documents have valid positions');
+            scrollToRef.current?.scrollIntoView();
+            return;
+        }
+
         if (!errorMessage) {
             navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
         }
-    };
-
-    const handleErrors = (fields: FieldValues) => {
-        const errorMessages = Object.entries(fields).map(
-            ([k, v]: [string, { message: string; ref: Element }]) => {
-                return {
-                    message: v.message,
-                    id: v.ref.id,
-                };
-            },
-        );
-        setError(errorMessages[0].message);
-        scrollToRef.current?.scrollIntoView();
     };
 
     useEffect(() => {
@@ -182,14 +253,58 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
             <p>Your files are not currently in order:</p>
             <ul>
                 <li>
-                    put your files in the order you need them to appear in the final document by
-                    changing the position number
+                    drag and drop rows to reorder your files, or use Ctrl+Arrow keys when focused on
+                    a row
                 </li>
                 <li>the file marked '1' will be at the start of the final document</li>
             </ul>
 
+            {documents && documents.length > 0 && (
+                <div className="drag-instructions">
+                    <p>
+                        <strong>Tip:</strong> You can drag and drop rows to reorder your files, or
+                        use Ctrl+Arrow keys when focused on a row.
+                    </p>
+                    {/* <p> */}
+                    <strong>Ordering:</strong> These will order the entire list.
+                    {/* </p> */}
+                    <div className="d-flex">
+                        <button
+                            type="button"
+                            onClick={orderAlphabetically}
+                            disabled={previewLoading}
+                            className="link-button ml-2"
+                            style={{ fontSize: '14px', padding: '8px 16px' }}
+                        >
+                            A-Z
+                        </button>
+                        <button
+                            type="button"
+                            onClick={orderByLastModified}
+                            disabled={previewLoading}
+                            className="link-button"
+                            style={{ fontSize: '14px', padding: '8px 16px' }}
+                        >
+                            Last Modified
+                        </button>
+                        <button
+                            type="button"
+                            onClick={reverseOrder}
+                            disabled={previewLoading}
+                            className="link-button"
+                            style={{ fontSize: '14px', padding: '8px 16px' }}
+                        >
+                            Reverse Order
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <form
-                onSubmit={handleSubmit(submitDocuments, handleErrors)}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    submitDocuments();
+                }}
                 noValidate
                 data-testid="upload-document-form"
             >
@@ -198,14 +313,11 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                         <Table id="selected-documents-table" className="mb-5">
                             <Table.Head>
                                 <Table.Row>
-                                    <Table.Cell width="45%">Filename</Table.Cell>
+                                    <Table.Cell width="5%">#</Table.Cell>
+                                    <Table.Cell width="30%">Filename</Table.Cell>
                                     <Table.Cell>Pages</Table.Cell>
-                                    {/* <Table.Cell>Has pages without OCR</Table.Cell> */}
-                                    <Table.Cell
-                                        style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
-                                    >
-                                        Position
-                                    </Table.Cell>
+                                    <Table.Cell>Position</Table.Cell>
+                                    <Table.Cell>Last Modified</Table.Cell>
                                     <Table.Cell
                                         style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
                                     >
@@ -221,20 +333,46 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
 
                             <Table.Body>
                                 {documents.map((document: UploadDocument, index: number) => {
+                                    const isDraggedItem = draggedItem === document.id;
+                                    const isDragOver = dragOverItem === document.id;
+
                                     return (
-                                        <Table.Row key={document.id} id={document.file.name}>
+                                        <Table.Row
+                                            key={document.id}
+                                            id={document.file.name}
+                                            className={`drag-table-row ${isDraggedItem ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`}
+                                            draggable={!previewLoading}
+                                            onDragStart={(e) => handleDragStart(e, document.id)}
+                                            onDragEnd={handleDragEnd}
+                                            onDragOver={handleDragOver}
+                                            onDragEnter={(e) => handleDragEnter(e, document.id)}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={(e) => handleDrop(e, document.id)}
+                                            onKeyDown={(e) => handleKeyDown(e, index)}
+                                            aria-grabbed={isDraggedItem ? 'true' : 'false'}
+                                            aria-dropeffect={isDragOver ? 'move' : 'none'}
+                                            aria-label={`Document row for ${document.file.name}`}
+                                            role="row"
+                                            tabIndex={0}
+                                        >
+                                            <Table.Cell className="drag-handle">
+                                                <div
+                                                    aria-label={`Drag to reorder ${document.file.name}`}
+                                                >
+                                                    ⋮⋮
+                                                </div>
+                                            </Table.Cell>
                                             <Table.Cell>
                                                 <div>{document.file.name}</div>
                                             </Table.Cell>
                                             <Table.Cell>{document.numPages}</Table.Cell>
-                                            {/* <Table.Cell>
-                                                {(document.pageInfo?.filter(p => !p).length ?? 0) > 0 ? 'Yes' : 'No'}
-                                            </Table.Cell> */}
                                             <Table.Cell>
-                                                {DocumentPositionDropdown(
-                                                    document.id,
-                                                    document.position ?? index + 1,
-                                                )}
+                                                <span className="position-indicator">
+                                                    {document.position ?? index + 1}
+                                                </span>
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                {formatLastModified(document.file.lastModified)}
                                             </Table.Cell>
                                             <Table.Cell>
                                                 <a
@@ -279,14 +417,18 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                             </div>
                         )}
 
+                        {/* Preview Section */}
                         {documents.some((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE) &&
-                            !errorMessage &&
-                            formState.isValid && (
+                            !errorMessage && (
                                 <>
                                     <h2>Preview this Lloyd George record</h2>
                                     <p>
                                         This shows how the final record will look when combined into
                                         a single document.
+                                    </p>
+                                    <p>
+                                        Preview may take longer to load if there are many files or
+                                        if individual files are large. a single document.
                                     </p>
                                     <DocumentUploadLloydGeorgePreview
                                         documents={documents
@@ -309,7 +451,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                     className="mt-4"
                     disabled={previewLoading}
                 >
-                    Confirm the file order and continue
+                    Continue
                 </Button>
             </form>
         </>
