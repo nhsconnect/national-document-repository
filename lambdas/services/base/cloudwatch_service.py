@@ -1,6 +1,7 @@
 import os
 import time
-from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timedelta, timezone
 
 import boto3
 from utils.audit_logging_setup import LoggingService
@@ -145,51 +146,79 @@ class CloudwatchService:
         dimension: dict = None,
         start_time: datetime = None,
         end_time: datetime = None,
+        max_threads: int = 10,
     ) -> list[dict]:
-        single_day_time = 86400  # 1 day in seconds
-
+        period_seconds = 60  # 1-minute granularity (no trailing comma!)
+        max_datapoints_per_request = 500
         if not end_time:
             end_time = datetime.now(timezone.utc)
         if not start_time:
-            # default to 14 days ago
-            start_time = datetime.fromtimestamp(
-                end_time.timestamp() - 14 * single_day_time, tz=timezone.utc
-            )
+            start_time = end_time - timedelta(days=1)
 
         dimensions = [dimension] if dimension else []
 
-        paginator = self.cloudwatch_client.get_paginator("get_metric_data")
-        response_iterator = paginator.paginate(
-            MetricDataQueries=[
-                {
-                    "Id": "metricdata",
-                    "MetricStat": {
-                        "Metric": {
-                            "Namespace": namespace,
-                            "MetricName": metric_name,
-                            "Dimensions": dimensions,
-                        },
-                        "Period": single_day_time,
-                        "Stat": "Sum",
-                    },
-                    "ReturnData": True,
-                }
-            ],
-            StartTime=start_time,
-            EndTime=end_time,
-        )
+        seconds_per_chunk = period_seconds * max_datapoints_per_request
 
-        results = []
-        for response in response_iterator:
-            for result in response.get("MetricDataResults", []):
-                for timestamp, value in zip(result["Timestamps"], result["Values"]):
-                    results.append(
+        # Split into time chunks
+        time_chunks = []
+        current_start = start_time
+        while current_start < end_time:
+            current_end = min(
+                current_start + timedelta(seconds=seconds_per_chunk), end_time
+            )
+            time_chunks.append((current_start, current_end))
+            current_start = current_end
+
+        # Helper function to fetch one chunk (defined as an inner method so it can use self)
+        def fetch_chunk(chunk_start, chunk_end):
+            try:
+                response = self.cloudwatch_client.get_metric_data(
+                    MetricDataQueries=[
                         {
-                            "Timestamp": timestamp,
-                            "Value": value,
+                            "Id": "metricdata",
+                            "MetricStat": {
+                                "Metric": {
+                                    "Namespace": namespace,
+                                    "MetricName": metric_name,
+                                    "Dimensions": dimensions,
+                                },
+                                "Period": period_seconds,
+                                "Stat": "Sum",
+                            },
+                            "ReturnData": True,
                         }
-                    )
+                    ],
+                    StartTime=chunk_start,
+                    EndTime=chunk_end,
+                )
+                result_points = []
+                for result in response.get("MetricDataResults", []):
+                    for ts, val in zip(
+                        result.get("Timestamps", []), result.get("Values", [])
+                    ):
+                        result_points.append({"Timestamp": ts, "Value": val})
+                return result_points
+            except Exception as e:
+                logger.error(f"Error fetching metric data chunk: {e}")
+                return []
 
+        # Concurrent execution with ThreadPoolExecutor
+        results = []
+        with ThreadPoolExecutor(max_workers=max_threads) as executor:
+            futures = {
+                executor.submit(fetch_chunk, chunk_start, chunk_end): (
+                    chunk_start,
+                    chunk_end,
+                )
+                for chunk_start, chunk_end in time_chunks
+            }
+
+            for future in as_completed(futures):
+                chunk_data = future.result()
+                results.extend(chunk_data)
+
+        # Sort results by timestamp before returning
+        results.sort(key=lambda r: r["Timestamp"])
         return results
 
     @staticmethod
