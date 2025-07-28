@@ -18,4 +18,4 @@ six==1.16.0
 types-PyYAML==6.0.12.11
 regex==2023.12.25
 pikepdf==8.4.0
-aws-embedded-metrics==1.8.0
+aws-embedded-metrics==3.3.0
