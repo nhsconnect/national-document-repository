@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, MouseEvent } from 'react';
 
-type Props = {
+export type Props = {
     totalPages: number;
     currentPage: number;
     setCurrentPage: Dispatch<SetStateAction<number>>;
@@ -16,10 +16,20 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
         setCurrentPage(page);
     };
 
-    const pageNumber = (page: number | null) => {
+    const pageNumber = (page: number | null, index: number) => {
         if (page === null) {
-            return <li className="govuk-pagination__item govuk-pagination__item--ellipses">...</li>;
+            return (
+                <li
+                    key={`separator-${index}`}
+                    data-testid="page-separator"
+                    className="govuk-pagination__item govuk-pagination__item--ellipses"
+                >
+                    ...
+                </li>
+            );
         }
+
+        const displayPage = `${page + 1}`;
 
         return (
             <li
@@ -30,9 +40,10 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
                 <button
                     className="govuk-link govuk-pagination__link"
                     onClick={(e) => updateCurrentPage(e, page)}
-                    aria-label={`Page ${page + 1}`}
+                    aria-label={`Page ${displayPage}`}
+                    data-testid={`page-${displayPage}-button`}
                 >
-                    {page + 1}
+                    {displayPage}
                 </button>
             </li>
         );
@@ -91,6 +102,7 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
                 <div className="govuk-pagination__prev">
                     <button
                         className="govuk-link govuk-pagination__link"
+                        data-testid="previous-page-button"
                         rel="prev"
                         onClick={(e) => updateCurrentPage(e, currentPage - 1)}
                     >
@@ -116,6 +128,7 @@ const Pagination = ({ totalPages, currentPage, setCurrentPage }: Props) => {
                 <div className="govuk-pagination__next">
                     <button
                         className="govuk-link govuk-pagination__link"
+                        data-testid="next-page-button"
                         rel="next"
                         onClick={(e) => updateCurrentPage(e, currentPage + 1)}
                     >
