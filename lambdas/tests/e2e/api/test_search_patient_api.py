@@ -1,5 +1,5 @@
-import datetime
 import io
+import logging
 import os
 import uuid
 
@@ -7,59 +7,41 @@ import pytest
 import requests
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
+from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 
 s3_service = S3Service()
 dynamo_service = DynamoDBService()
+data_helper = LloydGeorgeDataHelper()
 
 api_endpoint = os.environ.get("NDR_API_ENDPOINT")
 api_key = os.environ.get("NDR_API_KEY")
-s3_bucket = os.environ.get("NDR_S3_BUCKET") or ""
 dynamo_table = os.environ.get("NDR_DYNAMO_STORE") or ""
-random_guid = str(uuid.uuid4())
 
 
 @pytest.fixture
-def cleanup_dynamo():
-    yield
-    dynamo_service.delete_item(table_name=dynamo_table, key={"ID": random_guid})
+def test_data():
+    test_records = []
+    yield test_records
+    for record in test_records:
+        data_helper.tidyup(record)
 
 
-def test_search_patient_details(cleanup_dynamo, snapshot):
-    nhs_number = "9449305943"
+def test_search_patient_details(test_data, snapshot):
+    lloyd_george_record = {}
+    test_data.append(lloyd_george_record)
 
-    file_content = io.BytesIO(b"Sample PDF Content")
-    s3_service.upload_file_obj(
-        file_obj=file_content,
-        s3_bucket_name=s3_bucket,
-        file_key=f"{nhs_number}/{random_guid}",
-    )
+    lloyd_george_record["id"] = str(uuid.uuid4())
+    lloyd_george_record["nhs_number"] = "9449305943"
+    lloyd_george_record["data"] = io.BytesIO(b"Sample PDF Content")
 
-    dynamo_item = {
-        "ID": random_guid,
-        "ContentType": "application/pdf",
-        "Created": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "CurrentGpOds": "H81109",
-        "Custodian": "H81109",
-        "DocStatus": "final",
-        "DocumentScanCreation": "2023-01-01",
-        "FileLocation": f"s3://{s3_bucket}/{nhs_number}/{random_guid}",
-        "FileName": f"1of1_Lloyd_George_Record_[Holly Lorna MAGAN]_[{nhs_number}]_[29-05-2006].pdf",
-        "FileSize": "128670",
-        "LastUpdated": 1743177202,
-        "NhsNumber": nhs_number,
-        "Status": "current",
-        "DocumentSnomedCode": "16521000000101",
-        "Uploaded": True,
-        "Uploading": False,
-        "Version": "1",
-        "VirusScannerResult": "Clean",
-    }
+    data_helper.create_metadata(lloyd_george_record)
+    data_helper.create_resource(lloyd_george_record)
 
-    dynamo_service.create_item(dynamo_table, dynamo_item)
-    url = f"https://{api_endpoint}/DocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{nhs_number}"
+    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
     headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
+    logging.info(bundle)
 
     del bundle["entry"][0]["resource"]["id"]
     del bundle["entry"][0]["resource"]["date"]
@@ -70,5 +52,66 @@ def test_search_patient_details(cleanup_dynamo, snapshot):
         in attachment_url
     )
     del bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
+
+    assert bundle == snapshot
+
+
+def test_multiple_search_patient_details(test_data, snapshot):
+    lloyd_george_record = {}
+    test_data.append(lloyd_george_record)
+
+    lloyd_george_record["id"] = str(uuid.uuid4())
+    lloyd_george_record["nhs_number"] = "9449305943"
+    lloyd_george_record["data"] = io.BytesIO(b"Sample PDF Content")
+
+    data_helper.create_metadata(lloyd_george_record)
+    data_helper.create_resource(lloyd_george_record)
+
+    second_lloyd_george_record = {}
+    test_data.append(second_lloyd_george_record)
+
+    second_lloyd_george_record["id"] = str(uuid.uuid4())
+    second_lloyd_george_record["nhs_number"] = "9449305943"
+    second_lloyd_george_record["data"] = io.BytesIO(b"Sample PDF Content")
+
+    data_helper.create_metadata(second_lloyd_george_record)
+    data_helper.create_resource(second_lloyd_george_record)
+
+    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    response = requests.request("GET", url, headers=headers)
+    bundle = response.json()
+
+    del bundle["timestamp"]
+    del bundle["entry"][0]["resource"]["id"]
+    del bundle["entry"][0]["resource"]["date"]
+    del bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
+    del bundle["entry"][1]["resource"]["id"]
+    del bundle["entry"][1]["resource"]["date"]
+    del bundle["entry"][1]["resource"]["content"][0]["attachment"]["url"]
+
+    assert bundle == snapshot
+
+
+def test_no_records(snapshot):
+    lloyd_george_record = {}  # Initialize the dictionary
+    lloyd_george_record["nhs_number"] = "9449305943"
+
+    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    response = requests.request("GET", url, headers=headers)
+    bundle = response.json()
+
+    assert bundle == snapshot
+
+
+def test_invalid_patient(snapshot):
+    lloyd_george_record = {}
+    lloyd_george_record["nhs_number"] = "9999999993"
+
+    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    response = requests.request("GET", url, headers=headers)
+    bundle = response.json()
 
     assert bundle == snapshot
