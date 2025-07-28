@@ -15,6 +15,10 @@ class DocumentReferenceMetadataFields(Enum):
     UPLOADED = "Uploaded"
     UPLOADING = "Uploading"
     LAST_UPDATED = "LastUpdated"
+    FILE_SIZE = "FileSize"
+    DOC_STATUS = "DocStatus"
+    CUSTODIAN = "Custodian"
+    DOCUMENT_SCAN_CREATION = "DocumentScanCreation"
 
     @staticmethod
     def list() -> list[str]:

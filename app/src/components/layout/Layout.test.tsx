@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import Layout from './Layout';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 describe('Layout', () => {
     beforeEach(() => {
         window.sessionStorage.clear();
+        document.documentElement.scrollTo = vi.fn();
     });
     describe('Accessibility', () => {
         it('pass accessibility checks when not logged in', async () => {
@@ -34,29 +35,29 @@ describe('Layout', () => {
             expect(screen.getByRole('link', { name: 'Skip to main content' })).toBeInTheDocument();
         });
 
-        it('focus on the first h1 element when triggered', () => {
+        it('focus on the first h1 element when triggered', async () => {
             renderTestApp();
 
             const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
             const firstH1Heading = screen.getByRole('heading', { name: 'Test heading 1' });
 
-            userEvent.tab();
+            await userEvent.tab();
             expect(skipLink).toHaveFocus();
 
-            userEvent.keyboard('[Enter]');
+            await userEvent.keyboard('[Enter]');
             expect(firstH1Heading).toHaveFocus();
         });
 
-        it('focus on the main element if there is no h1 heading in the page', () => {
+        it('focus on the main element if there is no h1 heading in the page', async () => {
             renderTestApp('/withoutSizeOneHeading');
 
             const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
             const mainContent = screen.getByRole('main');
 
-            userEvent.tab();
+            await userEvent.tab();
             expect(skipLink).toHaveFocus();
 
-            userEvent.keyboard('[Enter]');
+            await userEvent.keyboard('[Enter]');
             expect(mainContent).toHaveFocus();
         });
 
@@ -65,14 +66,12 @@ describe('Layout', () => {
 
             const link = screen.getByRole('link', { name: 'Link to another page' });
 
-            act(() => {
-                userEvent.click(link);
-            });
+            await userEvent.click(link);
 
             expect(screen.getByText('Another page')).toBeInTheDocument();
             const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
 
-            userEvent.tab();
+            await userEvent.tab();
             expect(skipLink).toHaveFocus();
         });
 
@@ -83,12 +82,10 @@ describe('Layout', () => {
                 name: 'Link to something in the same page',
             });
 
-            act(() => {
-                userEvent.click(linkToTheSamePage);
-            });
+            await userEvent.click(linkToTheSamePage);
             const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
 
-            userEvent.tab();
+            await userEvent.tab();
             expect(skipLink).not.toHaveFocus();
         });
     });

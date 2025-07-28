@@ -13,10 +13,15 @@ export default defineConfig({
             svgrOptions: { exportType: 'named', ref: true, svgo: false, titleProp: true },
             include: '**/*.svg',
         }),
-        commonjs(),
+        commonjs({
+            dynamic: {
+                onFiles: (files) => files.filter((f) => f !== 'viewer.html'),
+            },
+        }),
         eslint(),
     ],
     build: {
         commonjsOptions: { transformMixedEsModules: true },
+        chunkSizeWarningLimit: 1024,
     },
 });
