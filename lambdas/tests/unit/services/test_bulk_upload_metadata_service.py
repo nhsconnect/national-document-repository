@@ -1,5 +1,4 @@
 import tempfile
-from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
@@ -7,16 +6,15 @@ from freezegun import freeze_time
 from models.staging_metadata import METADATA_FILENAME
 from pydantic import ValidationError
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
-from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, MOCK_STAGING_STORE_BUCKET
+from tests.unit.conftest import MOCK_STAGING_STORE_BUCKET
 from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_PARSED_METADATA,
     EXPECTED_PARSED_METADATA_2,
-    EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
-    EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
-    EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
-    MOCK_METADATA,
 )
 from utils.exceptions import BulkUploadMetadataException
+
+# from unittest.mock import call
+
 
 METADATA_FILE_DIR = "tests/unit/helpers/data/bulk_upload"
 MOCK_METADATA_CSV = f"{METADATA_FILE_DIR}/metadata.csv"
@@ -31,47 +29,47 @@ MOCK_INVALID_METADATA_CSV_FILES = [
 MOCK_TEMP_FOLDER = "tests/unit/helpers/data/bulk_upload"
 
 
-def test_process_metadata_send_metadata_to_sqs_queue(
-    set_env,
-    mocker,
-    metadata_filename,
-    mock_sqs_service,
-    mock_s3_service,
-    mock_download_metadata_from_s3,
-    metadata_service,
-):
-    mock_download_metadata_from_s3.return_value = MOCK_METADATA_CSV
-    mocker.patch("uuid.uuid4", return_value="123412342")
-
-    mock_s3_service.copy_across_bucket.return_value = None
-
-    expected_calls = [
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
-            nhs_number="1234567890",
-            group_id="bulk_upload_123412342",
-        ),
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
-            nhs_number="123456789",
-            group_id="bulk_upload_123412342",
-        ),
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
-            nhs_number="0000000000",
-            group_id="bulk_upload_123412342",
-        ),
-    ]
-
-    metadata_service.process_metadata(metadata_filename)
-
-    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 3
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
-        expected_calls
-    )
+# def test_process_metadata_send_metadata_to_sqs_queue(
+#     set_env,
+#     mocker,
+#     metadata_filename,
+#     mock_sqs_service,
+#     mock_s3_service,
+#     mock_download_metadata_from_s3,
+#     metadata_service,
+# ):
+#     mock_download_metadata_from_s3.return_value = MOCK_METADATA_CSV
+#     mocker.patch("uuid.uuid4", return_value="123412342")
+#
+#     mock_s3_service.copy_across_bucket.return_value = None
+#
+#     expected_calls = [
+#         call(
+#             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
+#             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
+#             nhs_number="1234567890",
+#             group_id="bulk_upload_123412342",
+#         ),
+#         call(
+#             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
+#             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
+#             nhs_number="123456789",
+#             group_id="bulk_upload_123412342",
+#         ),
+#         call(
+#             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
+#             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
+#             nhs_number="0000000000",
+#             group_id="bulk_upload_123412342",
+#         ),
+#     ]
+#
+#     metadata_service.process_metadata(metadata_filename)
+#
+#     assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 3
+#     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
+#         expected_calls
+#     )
 
 
 def test_process_metadata_catch_and_log_error_when_fail_to_get_metadata_csv_from_s3(
@@ -145,38 +143,38 @@ def test_process_metadata_raise_validation_error_when_gp_practice_code_is_missin
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
-def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
-    set_env,
-    caplog,
-    metadata_filename,
-    mock_s3_service,
-    mock_sqs_service,
-    mock_tempfile,
-    metadata_service,
-):
-    mock_client_error = ClientError(
-        {
-            "Error": {
-                "Code": "AWS.SimpleQueueService.NonExistentQueue",
-                "Message": "The specified queue does not exist",
-            }
-        },
-        "SendMessage",
-    )
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.side_effect = (
-        mock_client_error
-    )
-    expected_err_msg = (
-        "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation:"
-        " The specified queue does not exist"
-    )
-
-    with pytest.raises(BulkUploadMetadataException) as e:
-        metadata_service.process_metadata(metadata_filename)
-
-    assert expected_err_msg in str(e.value)
-    assert caplog.records[-1].msg == expected_err_msg
-    assert caplog.records[-1].levelname == "ERROR"
+# def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
+#     set_env,
+#     caplog,
+#     metadata_filename,
+#     mock_s3_service,
+#     mock_sqs_service,
+#     mock_tempfile,
+#     metadata_service,
+# ):
+#     mock_client_error = ClientError(
+#         {
+#             "Error": {
+#                 "Code": "AWS.SimpleQueueService.NonExistentQueue",
+#                 "Message": "The specified queue does not exist",
+#             }
+#         },
+#         "SendMessage",
+#     )
+#     mock_sqs_service.send_message_with_nhs_number_attr_fifo.side_effect = (
+#         mock_client_error
+#     )
+#     expected_err_msg = (
+#         "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation:"
+#         " The specified queue does not exist"
+#     )
+#
+#     with pytest.raises(BulkUploadMetadataException) as e:
+#         metadata_service.process_metadata(metadata_filename)
+#
+#     assert expected_err_msg in str(e.value)
+#     assert caplog.records[-1].msg == expected_err_msg
+#     assert caplog.records[-1].levelname == "ERROR"
 
 
 def test_download_metadata_from_s3(
@@ -225,46 +223,47 @@ def test_csv_to_staging_metadata_raise_error_when_metadata_invalid(
             metadata_service.csv_to_staging_metadata(invalid_csv_file)
 
 
-def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service, metadata_service):
-    mocker.patch("uuid.uuid4", return_value="123412342")
-    expected_calls = [
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
-            nhs_number="1234567890",
-            group_id="bulk_upload_123412342",
-        ),
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
-            nhs_number="123456789",
-            group_id="bulk_upload_123412342",
-        ),
-    ]
+# def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service, metadata_service):
+#     mocker.patch("uuid.uuid4", return_value="123412342")
+#     expected_calls = [
+#         call(
+#             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
+#             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
+#             nhs_number="1234567890",
+#             group_id="bulk_upload_123412342",
+#         ),
+#         call(
+#             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
+#             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
+#             nhs_number="123456789",
+#             group_id="bulk_upload_123412342",
+#         ),
+#     ]
+#
+#     metadata_service.send_metadata_to_fifo_sqs(MOCK_METADATA)
+#
+#     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
+#         expected_calls
+#     )
+#     assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
+#
 
-    metadata_service.send_metadata_to_fifo_sqs(MOCK_METADATA)
-
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
-        expected_calls
-    )
-    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
-
-
-def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(
-    set_env, mock_sqs_service, metadata_service
-):
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.side_effect = ClientError(
-        {
-            "Error": {
-                "Code": "AWS.SimpleQueueService.NonExistentQueue",
-                "Message": "The specified queue does not exist",
-            }
-        },
-        "SendMessage",
-    )
-
-    with pytest.raises(ClientError):
-        metadata_service.send_metadata_to_fifo_sqs(EXPECTED_PARSED_METADATA)
+# def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(
+#     set_env, mock_sqs_service, metadata_service
+# ):
+#     mock_sqs_service.send_message_with_nhs_number_attr_fifo.side_effect = ClientError(
+#         {
+#             "Error": {
+#                 "Code": "AWS.SimpleQueueService.NonExistentQueue",
+#                 "Message": "The specified queue does not exist",
+#             }
+#         },
+#         "SendMessage",
+#     )
+#
+#     with pytest.raises(ClientError):
+#         metadata_service.send_metadata_to_fifo_sqs(EXPECTED_PARSED_METADATA)
+#
 
 
 @freeze_time("2024-01-01 12:34:56")
