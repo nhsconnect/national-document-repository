@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import pydantic
+from aws_embedded_metrics import metric_scope
 from botocore.exceptions import ClientError
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.snomed_codes import SnomedCodes
@@ -63,7 +64,7 @@ class BulkUploadService:
         self.pds_fhir_always_true = pds_fhir_always_true
         self.cloudwatch_service = CloudwatchService()
 
-    def log_custom_metrics(self):
+    def log_custom_metrics_with_emf(self):
         namespace = "Custom_metrics/BulkUpload"
         metric_sent = "MessagesSent"
         metric_processed = "MessagesProcessed"
@@ -76,10 +77,11 @@ class BulkUploadService:
         ods_codes = self.cloudwatch_service.list_dimension_values(
             metric_processed, namespace, ods_dimension_name
         )
-        logger.info("Preparing to log custom metrics")
+        logger.info("Preparing to log custom metrics with EMF")
         logger.info(f"ODS codes found: {ods_codes}")
+
         for ods_code in ods_codes:
-            logger.info(f"logging ods_code: {ods_code}")
+            logger.info(f"Gathering metric data for ODSCode: {ods_code}")
             dimension = {"Name": ods_dimension_name, "Value": ods_code}
 
             # Get metric data
@@ -99,9 +101,8 @@ class BulkUploadService:
                 start_time=start_time,
                 end_time=end_time,
             )
-            logger.info("just got processed_data")
-            logger.info(f"processed_data is : {processed_data}")
-            # Group processed by day
+            logger.info("just got processed data")
+            logger.info(f"processed data is : {processed_data}")
             processed_by_day = {}
             for dp in processed_data:
                 day = dp["Timestamp"].date().isoformat()
@@ -110,16 +111,98 @@ class BulkUploadService:
             total_sent = sum(dp["Value"] for dp in sent_data)
             total_processed = sum(dp["Value"] for dp in processed_data)
 
-            logger.info(
-                f"ODSCode {ods_code} - processed {int(total_processed)} out of {int(total_sent)} messages in the last 14 days"
+            # Emit as EMF log entry
+            self.emit_emf_summary_log(
+                ods_code=ods_code,
+                total_sent=total_sent,
+                total_processed=total_processed,
+                processed_by_day=processed_by_day,
             )
 
-            # Sort and log per-day processing
-            for day in sorted(processed_by_day.keys()):
-                daily_processed = processed_by_day[day]
-                logger.info(
-                    f"{day}: {int(daily_processed)} processed out of {int(total_sent)} sent"
-                )
+    @metric_scope
+    def emit_emf_summary_log(
+        self,
+        metrics,
+        ods_code: str,
+        total_sent: int,
+        total_processed: int,
+        processed_by_day: dict,
+    ):
+        metrics.set_namespace("Custom_metrics/BulkUpload/Summary")
+        metrics.put_dimensions({"ODSCode": ods_code})
+        metrics.put_metric("MessagesSentTotal", total_sent, "Count")
+        metrics.put_metric("MessagesProcessedTotal", total_processed, "Count")
+
+        for day, count in processed_by_day.items():
+            metric_name = f"Processed_{day}"
+            metrics.put_metric(metric_name, count, "Count")
+
+        metrics.set_property("DailyBreakdown", processed_by_day)
+        metrics.set_property("TotalSent", total_sent)
+        metrics.set_property("TotalProcessed", total_processed)
+
+        logger.info(
+            f"EMF Summary Log — ODSCode: {ods_code}, Sent: {total_sent},"
+            f" Processed: {total_processed}, Daily Breakdown: {processed_by_day}"
+        )
+
+    # def log_custom_metrics(self):
+    #     namespace = "Custom_metrics/BulkUpload"
+    #     metric_sent = "MessagesSent"
+    #     metric_processed = "MessagesProcessed"
+    #     ods_dimension_name = "ODSCode"
+    #
+    #     now = datetime.now(timezone.utc)
+    #     start_time = now - timedelta(days=14)
+    #     end_time = now
+    #
+    #     ods_codes = self.cloudwatch_service.list_dimension_values(
+    #         metric_processed, namespace, ods_dimension_name
+    #     )
+    #     logger.info("Preparing to log custom metrics")
+    #     logger.info(f"ODS codes found: {ods_codes}")
+    #     for ods_code in ods_codes:
+    #         logger.info(f"logging ods_code: {ods_code}")
+    #         dimension = {"Name": ods_dimension_name, "Value": ods_code}
+    #
+    #         # Get metric data
+    #         sent_data = self.cloudwatch_service.get_metric_data_by_dimension(
+    #             metric_name=metric_sent,
+    #             namespace=namespace,
+    #             dimension=dimension,
+    #             start_time=start_time,
+    #             end_time=end_time,
+    #         )
+    #         logger.info("just got sent data")
+    #         logger.info(f"sent data is : {sent_data}")
+    #         processed_data = self.cloudwatch_service.get_metric_data_by_dimension(
+    #             metric_name=metric_processed,
+    #             namespace=namespace,
+    #             dimension=dimension,
+    #             start_time=start_time,
+    #             end_time=end_time,
+    #         )
+    #         logger.info("just got processed_data")
+    #         logger.info(f"processed_data is : {processed_data}")
+    #         # Group processed by day
+    #         processed_by_day = {}
+    #         for dp in processed_data:
+    #             day = dp["Timestamp"].date().isoformat()
+    #             processed_by_day[day] = processed_by_day.get(day, 0) + dp["Value"]
+    #
+    #         total_sent = sum(dp["Value"] for dp in sent_data)
+    #         total_processed = sum(dp["Value"] for dp in processed_data)
+    #
+    #         logger.info(
+    #             f"ODSCode {ods_code} - processed {int(total_processed)} out of {int(total_sent)} messages in the last 14 days"
+    #         )
+    #
+    #         # Sort and log per-day processing
+    #         for day in sorted(processed_by_day.keys()):
+    #             daily_processed = processed_by_day[day]
+    #             logger.info(
+    #                 f"{day}: {int(daily_processed)} processed out of {int(total_sent)} sent"
+    #             )
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -168,13 +251,19 @@ class BulkUploadService:
                 )
                 logger.info(message_body)
 
-    def publish_ods_code_processed_metric(self, ods_code: str) -> None:
-        self.cloudwatch_service.publish_metric(
-            metric_name="MessagesProcessed",
-            value=1,
-            dimensions=[{"Name": "ODSCode", "Value": ods_code}],
-            namespace="Custom_metrics/BulkUpload",
-        )
+    @metric_scope
+    def publish_ods_code_processed_metric(self, metrics, ods_code: str) -> None:
+        metrics.set_namespace("Custom_metrics/BulkUpload")
+        metrics.put_dimensions({"ODSCode": ods_code})
+        metrics.put_metric("MessagesProcessed", 1, "Count")
+
+    # def publish_ods_code_processed_metric(self, ods_code: str) -> None:
+    #     self.cloudwatch_service.publish_metric(
+    #         metric_name="MessagesProcessed",
+    #         value=1,
+    #         dimensions=[{"Name": "ODSCode", "Value": ods_code}],
+    #         namespace="Custom_metrics/BulkUpload",
+    #     )
 
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
@@ -362,7 +451,7 @@ class BulkUploadService:
             accepted_reason,
             patient_ods_code,
         )
-        self.publish_ods_code_processed_metric(patient_ods_code)
+        self.publish_ods_code_processed_metric(ods_code=patient_ods_code)
 
         pdf_stitching_sqs_message = PdfStitchingSqsMessage(
             nhs_number=staging_metadata.nhs_number,
