@@ -23,6 +23,11 @@ on:
         required: true
         type: boolean
         default: false
+      e2e_tests:
+        description: "Do you want to execute e2e tests?"
+        required: true
+        type: boolean
+        default: true
 
 permissions:
   pull-requests: write
@@ -115,3 +120,13 @@ jobs:
       file_count: "1"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  e2e_tests:
+    name: "Executed E2e Tests"
+    if: ${{ inputs.e2e_tests }}
+    uses: "./.github/workflows/base-e2e-backendtest.yml"
+    needs: ["deploy_all_lambdas"]
+    with:
+      build_branch: ${{ inputs.sandbox }}
+      environment: ${{ inputs.environment }}
+      sandbox: ${{ inputs.sandbox }}
