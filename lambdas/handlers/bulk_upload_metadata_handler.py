@@ -1,3 +1,4 @@
+from aws_embedded_metrics import metric_scope
 from models.staging_metadata import METADATA_FILENAME
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
 from utils.audit_logging_setup import LoggingService
@@ -15,8 +16,9 @@ logger = LoggingService(__name__)
     names=["STAGING_STORE_BUCKET_NAME", "METADATA_SQS_QUEUE_URL"]
 )
 @handle_lambda_exceptions
-def lambda_handler(_event, _context):
+@metric_scope
+def lambda_handler(_event, _context, metrics):
     logger.info("Starting metadata reading process")
 
-    metadata_service = BulkUploadMetadataService()
+    metadata_service = BulkUploadMetadataService(metrics)
     metadata_service.process_metadata(METADATA_FILENAME)

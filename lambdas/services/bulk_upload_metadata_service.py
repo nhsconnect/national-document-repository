@@ -25,10 +25,11 @@ unsuccessful = "Unsuccessful bulk upload"
 
 
 class BulkUploadMetadataService:
-    def __init__(self):
+    def __init__(self, metrics=None):
         self.s3_service = S3Service()
         self.sqs_service = SQSService()
         self.cloudwatch_service = CloudwatchService()
+        self.metrics = metrics
 
         self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
         self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
@@ -111,12 +112,9 @@ class BulkUploadMetadataService:
             if staging_metadata.files
             else "UNKNOWN"
         )
-        self.cloudwatch_service.publish_metric(
-            metric_name="MessagesSent",
-            value=1,
-            dimensions=[{"Name": "ODSCode", "Value": ods_code}],
-            namespace="Custom_metrics/BulkUpload",
-        )
+        self.metrics.set_namespace("Custom_metrics/BulkUpload")
+        self.metrics.put_dimension("ODSCode", ods_code)
+        self.metrics.put_metric("MessagesSent", 1, "Count")
 
     def send_metadata_to_fifo_sqs(
         self, staging_metadata_list: list[StagingMetadata]
