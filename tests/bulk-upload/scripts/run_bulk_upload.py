@@ -21,7 +21,7 @@ def update_lambda_environment_variables(lambda_name, new_variable):
 
     response = lambda_client.get_function_configuration(FunctionName=lambda_name)
     current_environment = response["Environment"]["Variables"]
-    if current_environment["PDS_FHIR_IS_STUBBED"]:
+    if current_environment.get("PDS_FHIR_IS_STUBBED"):
         updated_environment = current_environment.copy()
         updated_environment.update(new_variable)
 
