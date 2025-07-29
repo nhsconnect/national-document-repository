@@ -19,7 +19,7 @@ on:
         type: "string"
         default: "development"
       bulk_upload:
-        description: "Do you want to run a Bulk Upload on this sandbox?"
+        description: "Do you want to disable the PDS stub and run a Bulk Upload on this sandbox?"
         required: true
         type: boolean
         default: false
