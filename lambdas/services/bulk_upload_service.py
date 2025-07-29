@@ -81,8 +81,6 @@ class BulkUploadService:
         for ods_code in ods_codes:
             dimension = {"Name": ods_dimension_name, "Value": ods_code}
 
-            # Get metric data
-            # sent_data = self.cloudwatch_service.get_metric_data_by_dimension(
             sent_data = self.cloudwatch_service.get_daily_metric_data(
                 metric_name=metric_sent,
                 namespace=namespace,
@@ -91,7 +89,6 @@ class BulkUploadService:
                 end_time=end_time,
             )
 
-            # processed_data = self.cloudwatch_service.get_metric_data_by_dimension(
             processed_data = self.cloudwatch_service.get_daily_metric_data(
                 metric_name=metric_processed,
                 namespace=namespace,
@@ -99,6 +96,11 @@ class BulkUploadService:
                 start_time=start_time,
                 end_time=end_time,
             )
+
+            sent_by_day = {}
+            for dp in sent_data:
+                day = dp["Timestamp"].date().isoformat()
+                sent_by_day[day] = sent_by_day.get(day, 0) + dp["Value"]
 
             processed_by_day = {}
             for dp in processed_data:
@@ -108,47 +110,50 @@ class BulkUploadService:
             total_sent = sum(dp["Value"] for dp in sent_data)
             total_processed = sum(dp["Value"] for dp in processed_data)
 
-            # Emit as EMF log entry
-            self.emit_emf_summary_log(
-                ods_code=ods_code,
-                total_sent=total_sent,
-                total_processed=total_processed,
-                processed_by_day=processed_by_day,
-            )
+            daily_metrics = {
+                "total_sent": total_sent,
+                "total_processed": total_processed,
+                "sent_by_day": sent_by_day,
+                "processed_by_day": processed_by_day,
+            }
+            self.emit_emf_summary_log(ods_code=ods_code, daily_metrics=daily_metrics)
 
-    def emit_emf_summary_log(
-        self,
-        ods_code: str,
-        total_sent: int,
-        total_processed: int,
-        processed_by_day: dict,
-    ):
+    def emit_emf_summary_log(self, ods_code: str, daily_metrics: dict):
         if not self.metrics:
             logger.warning("Metrics logger not available, skipping EMF summary log.")
             return
+
         self.metrics.set_namespace("Custom_metrics/BulkUpload/Summary")
         self.metrics.put_dimensions({"ODSCode": ods_code})
+
+        total_sent = daily_metrics["total_sent"]
+        total_processed = daily_metrics["total_processed"]
+        sent_by_day = daily_metrics["sent_by_day"]
+        processed_by_day = daily_metrics["processed_by_day"]
+
         self.metrics.put_metric("MessagesSentTotal", total_sent, "Count")
         self.metrics.put_metric("MessagesProcessedTotal", total_processed, "Count")
-        for day, count in processed_by_day.items():
-            metric_name = f"Processed_{day}"
-            self.metrics.put_metric(metric_name, count, "Count")
 
-        self.metrics.set_property("DailyBreakdown", processed_by_day)
+        for day, sent_count in sent_by_day.items():
+            self.metrics.put_metric(f"Sent_{day}", sent_count, "Count")
+        for day, processed_count in processed_by_day.items():
+            self.metrics.put_metric(f"Processed_{day}", processed_count, "Count")
+
+        self.metrics.set_property("DailySentBreakdown", sent_by_day)
+        self.metrics.set_property("DailyProcessedBreakdown", processed_by_day)
         self.metrics.set_property("TotalSent", total_sent)
         self.metrics.set_property("TotalProcessed", total_processed)
 
         logger.info(
-            f"EMF Summary Log — ODSCode: {ods_code}, Sent: {total_sent},"
-            f" Processed: {total_processed}, Daily processed Breakdown: {processed_by_day}"
+            f"EMF Summary Log — ODSCode: {ods_code}, Sent: {total_sent}, Processed: {total_processed}, "
+            f"Sent by Day: {sent_by_day}, Processed by Day: {processed_by_day}"
         )
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
             try:
-                logger.info(f"Processing message {index} of {len(records)}")
                 self.handle_sqs_message(message)
-                self.log_custom_metrics_with_emf()
+                # self.log_custom_metrics_with_emf()
             except (PdsTooManyRequestsException, PdsErrorException) as error:
                 logger.error(error)
 
@@ -181,6 +186,7 @@ class BulkUploadService:
         logger.info(
             f"Finish Processing successfully {len(records) - len(self.unhandled_messages)} of {len(records)} messages"
         )
+        self.log_custom_metrics_with_emf()
         if self.unhandled_messages:
             logger.info("Unable to process the following messages:")
             for message in self.unhandled_messages:
