@@ -77,11 +77,8 @@ class BulkUploadService:
         ods_codes = self.cloudwatch_service.list_dimension_values(
             metric_processed, namespace, ods_dimension_name
         )
-        logger.info("Preparing to log custom metrics with EMF")
-        logger.info(f"ODS codes found: {ods_codes}")
 
         for ods_code in ods_codes:
-            logger.info(f"Gathering metric data for ODSCode: {ods_code}")
             dimension = {"Name": ods_dimension_name, "Value": ods_code}
 
             # Get metric data
@@ -92,8 +89,7 @@ class BulkUploadService:
                 start_time=start_time,
                 end_time=end_time,
             )
-            logger.info("just got sent data")
-            logger.info(f"sent data is : {sent_data}")
+
             processed_data = self.cloudwatch_service.get_metric_data_by_dimension(
                 metric_name=metric_processed,
                 namespace=namespace,
@@ -101,8 +97,7 @@ class BulkUploadService:
                 start_time=start_time,
                 end_time=end_time,
             )
-            logger.info("just got processed data")
-            logger.info(f"processed data is : {processed_data}")
+
             processed_by_day = {}
             for dp in processed_data:
                 day = dp["Timestamp"].date().isoformat()
@@ -110,8 +105,7 @@ class BulkUploadService:
 
             total_sent = sum(dp["Value"] for dp in sent_data)
             total_processed = sum(dp["Value"] for dp in processed_data)
-            logger.info(f"total_sent is : {total_sent}")
-            logger.info(f"total_processed is : {total_processed}")
+
             # Emit as EMF log entry
             self.emit_emf_summary_log(
                 ods_code=ods_code,
