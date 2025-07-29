@@ -19,7 +19,7 @@ class LloydGeorgeDataHelper:
             "Created": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "CurrentGpOds": "H81109",
             "Custodian": "H81109",
-            "DocStatus": "final",
+            "DocStatus": lloyd_george_details.get("doc_status", "final"),
             "DocumentScanCreation": "2023-01-01",
             "FileLocation": f"s3://{self.s3_bucket}/{lloyd_george_details['nhs_number']}/{lloyd_george_details['nhs_number']}",
             "FileName": f"1of1_Lloyd_George_Record_[Holly Lorna MAGAN]_[{lloyd_george_details['nhs_number']}]_[29-05-2006].pdf",

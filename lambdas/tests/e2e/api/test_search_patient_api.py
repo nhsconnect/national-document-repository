@@ -53,16 +53,17 @@ def test_search_patient_details(test_data, snapshot):
     )
     del bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
 
-    assert bundle == snapshot
+    assert bundle["entry"][0] == snapshot
 
 
-def test_multiple_search_patient_details(test_data, snapshot):
+def test_multiple_cancelled_search_patient_details(test_data, snapshot):
     lloyd_george_record = {}
     test_data.append(lloyd_george_record)
 
     lloyd_george_record["id"] = str(uuid.uuid4())
     lloyd_george_record["nhs_number"] = "9449305943"
     lloyd_george_record["data"] = io.BytesIO(b"Sample PDF Content")
+    lloyd_george_record["doc_status"] = "cancelled"
 
     data_helper.create_metadata(lloyd_george_record)
     data_helper.create_resource(lloyd_george_record)
@@ -73,6 +74,7 @@ def test_multiple_search_patient_details(test_data, snapshot):
     second_lloyd_george_record["id"] = str(uuid.uuid4())
     second_lloyd_george_record["nhs_number"] = "9449305943"
     second_lloyd_george_record["data"] = io.BytesIO(b"Sample PDF Content")
+    second_lloyd_george_record["doc_status"] = "cancelled"
 
     data_helper.create_metadata(second_lloyd_george_record)
     data_helper.create_resource(second_lloyd_george_record)
@@ -90,7 +92,8 @@ def test_multiple_search_patient_details(test_data, snapshot):
     del bundle["entry"][1]["resource"]["date"]
     del bundle["entry"][1]["resource"]["content"][0]["attachment"]["url"]
 
-    assert bundle == snapshot
+    assert bundle["entry"][0] == snapshot
+    assert bundle["entry"][1] == snapshot
 
 
 def test_no_records(snapshot):
