@@ -70,7 +70,7 @@ def mock_jwt_decode(mocker):
     [
         "/DocumentManifest",
         "/DocumentDelete",
-        "/DocumentReference",
+        "/CreateDocumentReference",
         "/UploadConfirm",
         "/UploadState",
         "/VirusScan",
@@ -90,7 +90,7 @@ def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
 
 
 @pytest.mark.parametrize(
-    "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "Any"]
+    "test_path", ["/DocumentManifest", "/DocumentDelete", "/CreateDocumentReference", "Any"]
 )
 def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
     test_path,
@@ -106,7 +106,7 @@ def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
 
 
 @pytest.mark.parametrize(
-    "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "Any"]
+    "test_path", ["/DocumentManifest", "/DocumentDelete", "/CreateDocumentReference", "Any"]
 )
 def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
     test_path,
@@ -162,7 +162,7 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
     [
         "/UploadConfirm",
         "/UploadState",
-        "/DocumentReference",
+        "/CreateDocumentReference",
         "/VirusScan",
         "/LloydGeorgeStitch",
     ],

@@ -87,7 +87,7 @@ class AuthoriserService:
             case "/DocumentManifest":
                 deny_resource = deny_access_to_patient or deny_access_to_clinical_role
 
-            case "/DocumentReference":
+            case "/CreateDocumentReference":
                 deny_resource = (
                     deny_access_to_patient
                     or deny_access_to_clinical_role
