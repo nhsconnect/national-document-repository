@@ -5,12 +5,11 @@ import {
     SetUploadDocuments,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import LinkButton from '../../../generic/linkButton/LinkButton';
 import { FieldValues, useForm } from 'react-hook-form';
 import { SelectRef } from '../../../../types/generic/selectRef';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../generic/backButton/BackButton';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useRef, useState } from 'react';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
@@ -29,26 +28,25 @@ type FormData = {
 const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props) => {
     const navigate = useNavigate();
     const [errorMessage, setError] = useState('');
-    const [previewLoading, setPreviewLoading] = useState(false);
 
     const documentPositionKey = (documentId: string): string => {
         return `document-${documentId}-position`;
     };
 
-    const getDefaultValues = () => {
-        let defaults: FormData = {};
+    const getFormValues = () => {
+        let formData: FormData = {};
 
         documents.forEach((doc) => {
-            defaults[documentPositionKey(doc.id)] = doc.position!;
+            formData[documentPositionKey(doc.id)] = doc.position!;
         });
 
-        return defaults;
+        return formData;
     };
 
     const { handleSubmit, getValues, register, unregister, formState } = useForm<FormData>({
         reValidateMode: 'onChange',
         shouldFocusError: true,
-        defaultValues: getDefaultValues(),
+        values: getFormValues(),
     });
 
     const scrollToRef = useRef<HTMLDivElement>(null);
@@ -87,12 +85,14 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
 
         return (
             <Select
-                style={{ minWidth: '25%' }}
+                className="nhsuk-select"
+                // style={{ minWidth: '25%' }}
                 key={key}
                 data-testid={key}
                 selectRef={dropdownInputRef as SelectRef}
                 {...dropdownProps}
                 defaultValue={currentPosition}
+                aria-label="Select document position"
             >
                 <option key={`${documentId}_position_blank`} value=""></option>
                 {documents.map((_, index) => {
@@ -108,18 +108,24 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
     };
 
     const onRemove = (index: number) => {
-        let updatedDocList: UploadDocument[] = [];
+        let updatedDocList: UploadDocument[] = [...documents];
+        const docToRemove = documents[index];
         const key = documentPositionKey(documents[index].id);
         unregister(key);
 
-        if (index >= 0) {
-            updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
-        }
-        setDocuments(updatedDocList);
+        updatedDocList.splice(index, 1);
 
-        if (updatedDocList.length === 0) {
-            navigate(routes.DOCUMENT_UPLOAD);
+        if (docToRemove.position) {
+            updatedDocList = updatedDocList.map((doc) => {
+                if (doc.position && +doc.position > +docToRemove.position!) {
+                    doc.position = +doc.position - 1;
+                }
+
+                return doc;
+            });
         }
+
+        setDocuments(updatedDocList);
     };
 
     const updateDocumentPositions = () => {
@@ -153,13 +159,6 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         setError(errorMessages[0].message);
         scrollToRef.current?.scrollIntoView();
     };
-
-    useEffect(() => {
-        if (documents.length === 0) {
-            navigate(routes.DOCUMENT_UPLOAD);
-            return;
-        }
-    }, [navigate, documents.length]);
 
     return (
         <>
@@ -201,124 +200,117 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                 noValidate
                 data-testid="upload-document-form"
             >
-                {documents && documents.length > 0 && (
-                    <>
-                        <Table id="selected-documents-table" className="mb-5">
-                            <Table.Head>
-                                <Table.Row>
-                                    <Table.Cell width="45%">Filename</Table.Cell>
-                                    <Table.Cell>Pages</Table.Cell>
-                                    {/* <Table.Cell>Has pages without OCR</Table.Cell> */}
-                                    <Table.Cell
-                                        style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
-                                    >
-                                        Position
-                                    </Table.Cell>
-                                    <Table.Cell
-                                        style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
-                                    >
-                                        View file
-                                    </Table.Cell>
-                                    <Table.Cell
-                                        style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
-                                    >
-                                        Remove file
-                                    </Table.Cell>
-                                </Table.Row>
-                            </Table.Head>
+                <Table id="selected-documents-table" className="mb-5">
+                    <Table.Head>
+                        <Table.Row>
+                            <Table.Cell className="word-break-keep-all" width="45%">
+                                Filename
+                            </Table.Cell>
+                            <Table.Cell className="word-break-keep-all">Pages</Table.Cell>
+                            {/* <Table.Cell>Has pages without OCR</Table.Cell> */}
+                            <Table.Cell className="word-break-keep-all">Position</Table.Cell>
+                            <Table.Cell className="word-break-keep-all">View file</Table.Cell>
+                            <Table.Cell className="word-break-keep-all">Remove file</Table.Cell>
+                        </Table.Row>
+                    </Table.Head>
 
-                            <Table.Body>
-                                {documents.map((document: UploadDocument, index: number) => {
-                                    return (
-                                        <Table.Row key={document.id} id={document.file.name}>
-                                            <Table.Cell>
-                                                <div>{document.file.name}</div>
-                                            </Table.Cell>
-                                            <Table.Cell>{document.numPages}</Table.Cell>
-                                            {/* <Table.Cell>
+                    <Table.Body>
+                        {documents.length === 0 && (
+                            <Table.Row>
+                                <Table.Cell colSpan={5}>
+                                    <p>
+                                        You have removed all files. Go back to&nbsp;
+                                        <button
+                                            className="govuk-link"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                navigate(routes.DOCUMENT_UPLOAD);
+                                            }}
+                                        >
+                                            choose files
+                                        </button>
+                                        .
+                                    </p>
+                                </Table.Cell>
+                            </Table.Row>
+                        )}
+                        {documents.length !== 0 &&
+                            documents.map((document: UploadDocument, index: number) => {
+                                return (
+                                    <Table.Row key={document.id} id={document.file.name}>
+                                        <th scope="row" className="nhsuk-table__header">
+                                            {document.file.name}
+                                        </th>
+                                        <Table.Cell>{document.numPages}</Table.Cell>
+                                        {/* <Table.Cell>
                                                 {(document.pageInfo?.filter(p => !p).length ?? 0) > 0 ? 'Yes' : 'No'}
                                             </Table.Cell> */}
-                                            <Table.Cell>
-                                                {DocumentPositionDropdown(
-                                                    document.id,
-                                                    document.position ?? index + 1,
-                                                )}
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                <a
-                                                    href={URL.createObjectURL(document.file)}
-                                                    aria-label="Preview - opens in a new tab"
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                >
-                                                    View
-                                                </a>
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                <button
-                                                    type="button"
-                                                    aria-label={`Remove ${document.file.name} from selection`}
-                                                    className="link-button"
-                                                    disabled={previewLoading}
-                                                    onClick={() => {
-                                                        onRemove(index);
-                                                    }}
-                                                >
-                                                    Remove
-                                                </button>
-                                            </Table.Cell>
-                                        </Table.Row>
-                                    );
-                                })}
-                            </Table.Body>
-                        </Table>
+                                        <Table.Cell>
+                                            {DocumentPositionDropdown(
+                                                document.id,
+                                                document.position ?? index + 1,
+                                            )}
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <a
+                                                href={URL.createObjectURL(document.file)}
+                                                aria-label="Preview - opens in a new tab"
+                                                data-testid={`document-preview-${document.id}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                View
+                                            </a>
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <button
+                                                type="button"
+                                                aria-label={`Remove ${document.file.name} from selection`}
+                                                className="link-button"
+                                                onClick={() => {
+                                                    onRemove(index);
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </Table.Cell>
+                                    </Table.Row>
+                                );
+                            })}
+                    </Table.Body>
+                </Table>
 
-                        {documents.length > 1 && (
-                            <div className="lloydgeorge_upload-submission pb-5">
-                                <LinkButton
-                                    type="button"
-                                    onClick={() => {
-                                        navigate(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL);
-                                    }}
-                                    disabled={previewLoading}
-                                >
-                                    Remove all
-                                </LinkButton>
-                            </div>
-                        )}
-
-                        {documents.some((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE) &&
-                            !errorMessage &&
-                            formState.isValid && (
-                                <>
-                                    <h2>Preview this Lloyd George record</h2>
-                                    <p>
-                                        This shows how the final record will look when combined into
-                                        a single document.
-                                    </p>
-                                    <DocumentUploadLloydGeorgePreview
-                                        documents={documents
-                                            .filter(
-                                                (doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE,
-                                            )
-                                            .sort((a, b) => a.position! - b.position!)}
-                                        previewLoading={previewLoading}
-                                        setPreviewLoading={setPreviewLoading}
-                                        setMergedPdfBlob={setMergedPdfBlob}
-                                    />
-                                </>
-                            )}
-                    </>
+                {documents.some((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE) &&
+                    !errorMessage &&
+                    formState.isValid && (
+                        <>
+                            <h2>Preview this Lloyd George record</h2>
+                            <p>
+                                This shows how the final record will look when combined into a
+                                single document.
+                            </p>
+                            <p>
+                                Preview may take longer to load if there are many files or if
+                                individual files are large.
+                            </p>
+                            <DocumentUploadLloydGeorgePreview
+                                documents={documents
+                                    .filter((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE)
+                                    .sort((a, b) => a.position! - b.position!)}
+                                setMergedPdfBlob={setMergedPdfBlob}
+                            />
+                        </>
+                    )}
+                {documents.length > 0 && (
+                    <Button
+                        type="submit"
+                        id="form-submit"
+                        data-testid="form-submit-button"
+                        className="mt-4"
+                    >
+                        Continue
+                    </Button>
                 )}
-                <Button
-                    type="submit"
-                    id="form-submit"
-                    data-testid="form-submit-button"
-                    className="mt-4"
-                    disabled={previewLoading}
-                >
-                    Confirm the file order and continue
-                </Button>
             </form>
         </>
     );
