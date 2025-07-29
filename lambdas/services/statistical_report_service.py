@@ -92,11 +92,10 @@ class StatisticalReportService:
 
     @staticmethod
     def load_data_to_polars(data: list[StatisticData]) -> pl.DataFrame:
-        cast_decimal_to_float = column_select.by_dtype(pl.datatypes.Decimal).cast(pl.Float64)
-
-        data_as_dicts = [item.model_dump() for item in data]
-
-        loaded_data = pl.DataFrame(data_as_dicts).with_columns(cast_decimal_to_float)
+        cast_decimal_to_float = column_select.by_dtype(pl.datatypes.Decimal).cast(
+            pl.Float64
+        )
+        loaded_data = pl.DataFrame(data).with_columns(cast_decimal_to_float)
         return loaded_data
 
     def summarise_record_store_data(
