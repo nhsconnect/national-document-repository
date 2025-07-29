@@ -82,7 +82,8 @@ class BulkUploadService:
             dimension = {"Name": ods_dimension_name, "Value": ods_code}
 
             # Get metric data
-            sent_data = self.cloudwatch_service.get_metric_data_by_dimension(
+            # sent_data = self.cloudwatch_service.get_metric_data_by_dimension(
+            sent_data = self.cloudwatch_service.get_daily_metric_data(
                 metric_name=metric_sent,
                 namespace=namespace,
                 dimension=dimension,
@@ -90,7 +91,8 @@ class BulkUploadService:
                 end_time=end_time,
             )
 
-            processed_data = self.cloudwatch_service.get_metric_data_by_dimension(
+            # processed_data = self.cloudwatch_service.get_metric_data_by_dimension(
+            processed_data = self.cloudwatch_service.get_daily_metric_data(
                 metric_name=metric_processed,
                 namespace=namespace,
                 dimension=dimension,
