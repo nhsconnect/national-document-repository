@@ -1,5 +1,6 @@
 import os
 
+from aws_embedded_metrics import metric_scope
 from enums.feature_flags import FeatureFlags
 from services.bulk_upload_service import BulkUploadService
 from services.feature_flags_service import FeatureFlagService
@@ -18,7 +19,8 @@ logger = LoggingService(__name__)
 @override_error_check
 @ensure_environment_variables(names=["PDF_STITCHING_SQS_URL"])
 @handle_lambda_exceptions
-def lambda_handler(event, _context):
+@metric_scope
+def lambda_handler(event, _context, metrics):
     logger.info("Received event. Starting bulk upload process")
     feature_flag_service = FeatureFlagService()
     validation_strict_mode_flag_object = feature_flag_service.get_feature_flags_by_flag(
@@ -43,7 +45,9 @@ def lambda_handler(event, _context):
         ).create_api_gateway_response()
 
     bulk_upload_service = BulkUploadService(
-        strict_mode=validation_strict_mode, pds_fhir_always_true=pds_fhir_always_true
+        strict_mode=validation_strict_mode,
+        pds_fhir_always_true=pds_fhir_always_true,
+        metrics=metrics,
     )
 
     try:

@@ -4,7 +4,6 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import pydantic
-from aws_embedded_metrics import metric_scope
 from botocore.exceptions import ClientError
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.snomed_codes import SnomedCodes
@@ -52,7 +51,7 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadService:
-    def __init__(self, strict_mode, pds_fhir_always_true=False):
+    def __init__(self, strict_mode, pds_fhir_always_true=False, metrics=None):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
         self.bulk_upload_s3_repository = BulkUploadS3Repository()
@@ -63,6 +62,7 @@ class BulkUploadService:
         self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
         self.pds_fhir_always_true = pds_fhir_always_true
         self.cloudwatch_service = CloudwatchService()
+        self.metrics = metrics
 
     def log_custom_metrics_with_emf(self):
         namespace = "Custom_metrics/BulkUpload"
@@ -119,27 +119,29 @@ class BulkUploadService:
                 processed_by_day=processed_by_day,
             )
 
-    @metric_scope
     def emit_emf_summary_log(
         self,
-        metrics,
         ods_code: str,
         total_sent: int,
         total_processed: int,
         processed_by_day: dict,
     ):
-        metrics.set_namespace("Custom_metrics/BulkUpload/Summary")
-        metrics.put_dimensions({"ODSCode": ods_code})
-        metrics.put_metric("MessagesSentTotal", total_sent, "Count")
-        metrics.put_metric("MessagesProcessedTotal", total_processed, "Count")
-
+        if not self.metrics:
+            logger.warning("Metrics logger not available, skipping EMF summary log.")
+            return
+        logger.info(f"about to emit metric for ODSCode: {ods_code}")
+        self.metrics.set_namespace("Custom_metrics/BulkUpload/Summary")
+        self.metrics.put_dimensions({"ODSCode": ods_code})
+        self.metrics.put_metric("MessagesSentTotal", total_sent, "Count")
+        self.metrics.put_metric("MessagesProcessedTotal", total_processed, "Count")
+        logger.info(f"emited metric for ODSCode: {ods_code}")
         for day, count in processed_by_day.items():
             metric_name = f"Processed_{day}"
-            metrics.put_metric(metric_name, count, "Count")
+            self.metrics.put_metric(metric_name, count, "Count")
 
-        metrics.set_property("DailyBreakdown", processed_by_day)
-        metrics.set_property("TotalSent", total_sent)
-        metrics.set_property("TotalProcessed", total_processed)
+        self.metrics.set_property("DailyBreakdown", processed_by_day)
+        self.metrics.set_property("TotalSent", total_sent)
+        self.metrics.set_property("TotalProcessed", total_processed)
 
         logger.info(
             f"EMF Summary Log — ODSCode: {ods_code}, Sent: {total_sent},"
@@ -209,7 +211,7 @@ class BulkUploadService:
             try:
                 logger.info(f"Processing message {index} of {len(records)}")
                 self.handle_sqs_message(message)
-                self.log_custom_metrics()
+                self.log_custom_metrics_with_emf()
             except (PdsTooManyRequestsException, PdsErrorException) as error:
                 logger.error(error)
 
@@ -251,11 +253,14 @@ class BulkUploadService:
                 )
                 logger.info(message_body)
 
-    @metric_scope
-    def publish_ods_code_processed_metric(self, metrics, ods_code: str) -> None:
-        metrics.set_namespace("Custom_metrics/BulkUpload")
-        metrics.put_dimensions({"ODSCode": ods_code})
-        metrics.put_metric("MessagesProcessed", 1, "Count")
+    def publish_ods_code_processed_metric(self, ods_code: str) -> None:
+        if not self.metrics:
+            logger.warning("Metrics logger not available, skipping metric publishing.")
+            return
+        logger.info(f"Publishing metric for ODSCode: {ods_code}")
+        self.metrics.set_namespace("Custom_metrics/BulkUpload")
+        self.metrics.put_dimensions({"ODSCode": ods_code})
+        self.metrics.put_metric("MessagesProcessed", 1, "Count")
 
     # def publish_ods_code_processed_metric(self, ods_code: str) -> None:
     #     self.cloudwatch_service.publish_metric(
