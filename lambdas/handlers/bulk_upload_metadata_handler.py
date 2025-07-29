@@ -20,5 +20,5 @@ logger = LoggingService(__name__)
 def lambda_handler(_event, _context, metrics):
     logger.info("Starting metadata reading process")
 
-    metadata_service = BulkUploadMetadataService(metrics)
+    metadata_service = BulkUploadMetadataService(metrics=metrics)
     metadata_service.process_metadata(METADATA_FILENAME)

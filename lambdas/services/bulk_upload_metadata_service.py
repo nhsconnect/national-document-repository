@@ -114,8 +114,9 @@ class BulkUploadMetadataService:
         )
         logger.info(f"Publishing metric for ODSCode: {ods_code}")
         self.metrics.set_namespace("Custom_metrics/BulkUpload")
-        self.metrics.put_dimension("ODSCode", ods_code)
+        self.metrics.put_dimensions({"ODSCode": ods_code})
         self.metrics.put_metric("MessagesSent", 1, "Count")
+        logger.info(f"finished Publishing metric for ODSCode: {ods_code}")
 
     def send_metadata_to_fifo_sqs(
         self, staging_metadata_list: list[StagingMetadata]
@@ -124,8 +125,10 @@ class BulkUploadMetadataService:
 
         for staging_metadata in staging_metadata_list:
             nhs_number = staging_metadata.nhs_number
-            self.publish_ods_code_queued_metrics(staging_metadata)
-
+            try:
+                self.publish_ods_code_queued_metrics(staging_metadata)
+            except Exception as e:
+                logger.error(f"Error while publishing metric for ODSCode: {e}")
             logger.info(f"Sending metadata for patientId: {nhs_number}")
 
             self.sqs_service.send_message_with_nhs_number_attr_fifo(
