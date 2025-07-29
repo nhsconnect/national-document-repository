@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import sys
 
 import boto3
@@ -22,6 +23,7 @@ def update_lambda_environment_variables(lambda_name, new_variable):
     response = lambda_client.get_function_configuration(FunctionName=lambda_name)
     current_environment = response["Environment"]["Variables"]
     if current_environment.get("PDS_FHIR_IS_STUBBED"):
+        logging.info("Var exists for" + lambda_name)
         updated_environment = current_environment.copy()
         updated_environment.update(new_variable)
 
@@ -55,12 +57,18 @@ if __name__ == "__main__":
 
     client = boto3.client("lambda")
 
-    response = client.list_functions()
+    paginator = client.get_paginator("list_functions")
+
+    response_iterator = paginator.paginate()
+
+    all_functions = []
+    for page in response_iterator:
+        all_functions.extend(page["Functions"])
 
     lambda_to_update = [
         func["FunctionName"]
-        for func in response["Functions"]
-        if func["FunctionName"].startswith(f"{args.environment}_")
+        for func in all_functions
+        if func["FunctionName"].startswith(f"{args.environment}")
     ]
 
     if args.disable_pds_stub or (
