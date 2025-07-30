@@ -290,7 +290,7 @@ def test_s3_presigned_url_error(mock_service, valid_fhir_doc_json):
         mock_service.process_fhir_document_reference(valid_fhir_doc_json)
 
     assert excinfo.value.status_code == 500
-    assert excinfo.value.error == LambdaError.CreateDocPresign
+    assert excinfo.value.error == LambdaError.InternalServerError
 
 
 def test_s3_upload_error(mock_service, valid_fhir_doc_with_binary):
