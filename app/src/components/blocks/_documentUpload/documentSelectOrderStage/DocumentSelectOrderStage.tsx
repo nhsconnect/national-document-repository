@@ -10,7 +10,7 @@ import { FieldValues, useForm } from 'react-hook-form';
 import { SelectRef } from '../../../../types/generic/selectRef';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../generic/backButton/BackButton';
-import { Dispatch, SetStateAction, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
@@ -19,13 +19,12 @@ import React from 'react';
 type Props = {
     documents: UploadDocument[];
     setDocuments: SetUploadDocuments;
-    setMergedPdfBlob: Dispatch<SetStateAction<Blob | undefined>>;
 };
 type FormData = {
     [key: string]: number | null;
 };
 
-const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props) => {
+const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
     const navigate = useNavigate();
     const [errorMessage, setError] = useState('');
 
@@ -178,7 +177,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
 
             <p>When you upload your files, they will be combined into a single PDF document.</p>
 
-            <p>Your files are not currently in order:</p>
+            <p>If you have more than one file, they may not be in the correct order:</p>
             <ul>
                 <li>
                     put your files in the order you need them to appear in the final document by
@@ -289,7 +288,6 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                                 documents={documents
                                     .filter((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE)
                                     .sort((a, b) => a.position! - b.position!)}
-                                setMergedPdfBlob={setMergedPdfBlob}
                             />
                         </>
                     )}
