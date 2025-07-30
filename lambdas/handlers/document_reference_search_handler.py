@@ -30,7 +30,9 @@ def lambda_handler(event, context):
     request_context.patient_nhs_no = nhs_number
 
     document_reference_search_service = DocumentReferenceSearchService()
-    response = document_reference_search_service.get_document_references(nhs_number)
+    response = document_reference_search_service.get_document_references(
+        nhs_number, check_upload_completed=True
+    )
     logger.info("User is able to view docs", {"Result": "Successful viewing docs"})
 
     if response:
