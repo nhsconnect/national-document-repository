@@ -42,18 +42,12 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         return formData;
     };
 
-    const {
-        handleSubmit,
-        getValues,
-        register,
-        unregister,
-        formState,
-        setError: setFormError,
-    } = useForm<FormData>({
-        reValidateMode: 'onChange',
-        shouldFocusError: true,
-        values: getFormValues(),
-    });
+    const { handleSubmit, getValues, register, unregister, formState, setError } =
+        useForm<FormData>({
+            reValidateMode: 'onChange',
+            shouldFocusError: true,
+            values: getFormValues(),
+        });
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +67,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                 const values = Object.values(fieldValues).map((v) => +v!);
 
                 if (values.some((v) => v === 0)) {
-                    setFormError('root', {
+                    setError('root', {
                         type: 'manual',
                         message: 'Please select a position for every document',
                     });
@@ -82,7 +76,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                 }
 
                 if (new Set(values).size !== values.length) {
-                    setFormError('root', {
+                    setError('root', {
                         type: 'manual',
                         message: 'Please ensure all documents have a unique position selected',
                     });
