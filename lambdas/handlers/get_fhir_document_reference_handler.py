@@ -7,7 +7,7 @@ from services.oidc_service import OidcService
 from services.search_patient_details_service import SearchPatientDetailsService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions_fhir
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import AuthorisationException, OidcApiException
 from utils.lambda_exceptions import (
@@ -19,7 +19,7 @@ from utils.lambda_response import ApiGatewayResponse
 logger = LoggingService(__name__)
 
 
-@handle_lambda_exceptions
+@handle_lambda_exceptions_fhir
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[
