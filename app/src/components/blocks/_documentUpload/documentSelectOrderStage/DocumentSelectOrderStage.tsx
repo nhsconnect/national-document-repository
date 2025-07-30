@@ -6,11 +6,11 @@ import {
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
-import { FieldValues, set, useForm } from 'react-hook-form';
+import { FieldValues, useForm } from 'react-hook-form';
 import { SelectRef } from '../../../../types/generic/selectRef';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../generic/backButton/BackButton';
-import { Dispatch, SetStateAction, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useRef } from 'react';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
@@ -42,18 +42,12 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         return formData;
     };
 
-    const {
-        handleSubmit,
-        getValues,
-        register,
-        unregister,
-        formState,
-        setError: setFormError,
-    } = useForm<FormData>({
-        reValidateMode: 'onChange',
-        shouldFocusError: true,
-        values: getFormValues(),
-    });
+    const { handleSubmit, getValues, register, unregister, formState, setError } =
+        useForm<FormData>({
+            reValidateMode: 'onChange',
+            shouldFocusError: true,
+            values: getFormValues(),
+        });
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +67,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                 const values = Object.values(fieldValues).map((v) => +v!);
 
                 if (values.some((v) => v === 0)) {
-                    setFormError('root', {
+                    setError('root', {
                         type: 'manual',
                         message: 'Please select a position for every document',
                     });
@@ -82,7 +76,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                 }
 
                 if (new Set(values).size !== values.length) {
-                    setFormError('root', {
+                    setError('root', {
                         type: 'manual',
                         message: 'Please ensure all documents have a unique position selected',
                     });
