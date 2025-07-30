@@ -24,15 +24,19 @@ describe('DocumentSelectStage', () => {
 
     describe('Rendering', () => {
         it('renders', async () => {
-            render(<DocumentSelectStage 
-                documents={documents} 
-                setDocuments={() => {}} 
-                documentType={DOCUMENT_TYPE.LLOYD_GEORGE} />
+            render(
+                <DocumentSelectStage
+                    documents={documents}
+                    setDocuments={() => {}}
+                    documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                />,
             );
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Make sure that all files uploaded are for this patient only.'),
+                    screen.getByText(
+                        'Make sure that all files uploaded are for this patient only.',
+                    ),
                 ).toBeInTheDocument();
             });
         });

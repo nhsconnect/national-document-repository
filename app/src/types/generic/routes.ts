@@ -31,6 +31,7 @@ export enum routes {
 
     DOCUMENT_UPLOAD = '/patient/document-upload',
     DOCUMENT_UPLOAD_WILDCARD = '/patient/document-upload/*',
+    MOCK_LOGIN = 'Auth/MockLogin',
 }
 
 export enum routeChildren {
