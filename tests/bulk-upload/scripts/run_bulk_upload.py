@@ -16,7 +16,7 @@ def invoke_lambda(lambda_name, payload={}):
     return json.loads(response["Payload"].read())
 
 
-def update_lambda_environment_variables(lambda_name, new_variable):
+def update_lambda_environment_variables(lambda_name, variable):
     session = boto3.Session()
     lambda_client = session.client("lambda")
 
@@ -25,7 +25,7 @@ def update_lambda_environment_variables(lambda_name, new_variable):
     if current_environment.get("PDS_FHIR_IS_STUBBED"):
         logging.info("Var exists for" + lambda_name)
         updated_environment = current_environment.copy()
-        updated_environment.update(new_variable)
+        updated_environment.update(variable)
 
         lambda_client.update_function_configuration(
             FunctionName=lambda_name, Environment={"Variables": updated_environment}
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     for page in response_iterator:
         all_functions.extend(page["Functions"])
 
-    lambda_to_update = [
+    lambdas_to_update = [
         func["FunctionName"]
         for func in all_functions
         if func["FunctionName"].startswith(f"{args.environment}")
@@ -75,9 +75,9 @@ if __name__ == "__main__":
         sys.stdin.isatty()
         and input("Would you like to disable the FHIR Stub: ").lower() == "y"
     ):
-        new_variable = {"PDS_FHIR_IS_STUBBED": "false"}
-        for i in lambda_to_update:
-            update_lambda_environment_variables(i, new_variable)
+        variable = {"PDS_FHIR_IS_STUBBED": "false"}
+        for lambda_function in lambdas_to_update:
+            update_lambda_environment_variables(lambda_function, variable)
     if args.start_bulk_upload or input(
         "Would you like to start the Bulk Upload Process:"
     ):
