@@ -60,7 +60,10 @@ check-packages:
 	./lambdas/venv/bin/pip-audit -r $(ALERTING_REQUIREMENTS)
 
 test-api-e2e:
-	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e -vv
+
+test-api-e2e-snapshots:
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e --snapshot-update
 
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit
