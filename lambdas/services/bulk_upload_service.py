@@ -153,7 +153,6 @@ class BulkUploadService:
         for index, message in enumerate(records, start=1):
             try:
                 self.handle_sqs_message(message)
-                # self.log_custom_metrics_with_emf()
             except (PdsTooManyRequestsException, PdsErrorException) as error:
                 logger.error(error)
 
