@@ -1,6 +1,6 @@
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.dynamic_configuration_service import DynamicConfigurationService
-from services.login_redirect_service import LoginRedirectService
+from services.mock_login_redirect_service import MockLoginRedirectService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -31,8 +31,8 @@ def lambda_handler(event, context):
     configuration_service = DynamicConfigurationService()
     configuration_service.set_auth_ssm_prefix()
 
-    login_redirect_service = LoginRedirectService()
-    location_header = login_redirect_service.prepare_redirect_response()
+    mock_login_redirect_service = MockLoginRedirectService()
+    location_header = mock_login_redirect_service.prepare_redirect_response(event)
     return ApiGatewayResponse(303, "", "GET").create_api_gateway_response(
         headers=location_header
     )
