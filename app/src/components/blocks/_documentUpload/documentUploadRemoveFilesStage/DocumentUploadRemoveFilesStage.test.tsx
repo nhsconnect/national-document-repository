@@ -22,10 +22,12 @@ describe('DocumentUploadCompleteStage', () => {
 
     describe('Rendering', () => {
         it('renders', async () => {
-            render(<DocumentUploadRemoveFilesStage 
-                documents={documents} 
-                setDocuments={() => {}} 
-                documentType={DOCUMENT_TYPE.LLOYD_GEORGE} />
+            render(
+                <DocumentUploadRemoveFilesStage
+                    documents={documents}
+                    setDocuments={() => {}}
+                    documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                />,
             );
 
             await waitFor(async () => {

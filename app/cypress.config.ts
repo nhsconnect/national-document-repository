@@ -14,9 +14,9 @@ export default defineConfig({
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
     },
     env: {
-        USERNAME: process.env.CYPRESS_USERNAME,
-        PASSWORD: process.env.CYPRESS_PASSWORD,
         WORKSPACE: process.env.CYPRESS_WORKSPACE ?? 'local',
+        KEY: process.env.CYPRESS_KEY,
+        ODSCODE: process.env.CYPRESS_ODSCODE,
         AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
         AWS_REGION: process.env.AWS_REGION ?? 'eu-west-2',
