@@ -19,9 +19,9 @@ on:
     secrets:
       AWS_ASSUME_ROLE:
         required: true
-      CYPRESS_USERNAME:
+      CYPRESS_ODSCODE:
         required: true
-      CYPRESS_PASSWORD:
+      CYPRESS_KEY:
         required: true
 
 permissions:
