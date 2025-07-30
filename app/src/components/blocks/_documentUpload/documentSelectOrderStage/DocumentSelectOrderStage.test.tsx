@@ -12,6 +12,7 @@ import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 
 const mockNavigate = vi.fn();
 const mockSetDocuments = vi.fn();
+const mockSetMergedPdfBlob = vi.fn();
 
 vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('../../../../helpers/hooks/useTitle');
@@ -20,6 +21,9 @@ vi.mock('react-router-dom', () => ({
 }));
 
 URL.createObjectURL = vi.fn(() => 'mocked-url');
+
+// Mock scrollIntoView which is not available in JSDOM
+Element.prototype.scrollIntoView = vi.fn();
 
 vi.mock('../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview', () => ({
     default: ({ documents }: { documents: UploadDocument[] }) => (
@@ -62,7 +66,11 @@ describe('DocumentSelectOrderStage', () => {
     describe('Rendering', () => {
         it('renders the component with page title and instructions', async () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             await waitFor(() => {
@@ -70,7 +78,9 @@ describe('DocumentSelectOrderStage', () => {
                     screen.getByText('What order do you want these files in?'),
                 ).toBeInTheDocument();
                 expect(
-                    screen.getByText('Your files are not currently in order:'),
+                    screen.getByText(
+                        'If you have more than one file, they may not be in the correct order:',
+                    ),
                 ).toBeInTheDocument();
                 expect(
                     screen.getByText(
@@ -82,7 +92,11 @@ describe('DocumentSelectOrderStage', () => {
 
         it('renders the document table with headers', () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             expect(screen.getByText('Filename')).toBeInTheDocument();
@@ -94,7 +108,11 @@ describe('DocumentSelectOrderStage', () => {
 
         it('displays document information in the table', () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             expect(screen.getByText('test-document-1.pdf')).toBeInTheDocument();
@@ -105,7 +123,11 @@ describe('DocumentSelectOrderStage', () => {
 
         it('renders continue button when documents are present', () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
@@ -113,7 +135,11 @@ describe('DocumentSelectOrderStage', () => {
 
         it('does not show "Remove all" button when there is only one document', () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             expect(screen.queryByText('Remove all')).not.toBeInTheDocument();
@@ -121,7 +147,11 @@ describe('DocumentSelectOrderStage', () => {
 
         it('shows Lloyd George preview when documents contain Lloyd George type and form is valid', async () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             await waitFor(() => {
@@ -131,7 +161,13 @@ describe('DocumentSelectOrderStage', () => {
         });
 
         it('shows message when no documents are present', () => {
-            render(<DocumentSelectOrderStage documents={[]} setDocuments={mockSetDocuments} />);
+            render(
+                <DocumentSelectOrderStage
+                    documents={[]}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
+            );
 
             expect(screen.getByText(/You have removed all files/)).toBeInTheDocument();
             expect(screen.getByText('choose files')).toBeInTheDocument();
@@ -157,6 +193,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={multipleDocuments}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -191,6 +228,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={multipleDocuments}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -206,7 +244,11 @@ describe('DocumentSelectOrderStage', () => {
             const user = userEvent.setup();
 
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             const removeButton = screen.getByRole('button', {
@@ -253,6 +295,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={multipleDocuments}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -311,6 +354,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={multipleDocuments}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -360,6 +404,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={documentsWithoutPosition}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -403,6 +448,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={multipleDocuments}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -419,7 +465,13 @@ describe('DocumentSelectOrderStage', () => {
         });
 
         it('shows appropriate message when all documents are removed', () => {
-            render(<DocumentSelectOrderStage documents={[]} setDocuments={mockSetDocuments} />);
+            render(
+                <DocumentSelectOrderStage
+                    documents={[]}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
+            );
 
             expect(screen.getByText(/You have removed all files/)).toBeInTheDocument();
             expect(screen.getByText('choose files')).toBeInTheDocument();
@@ -445,6 +497,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={documentsWithoutPositions}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -459,6 +512,44 @@ describe('DocumentSelectOrderStage', () => {
         });
 
         it('shows error when duplicate positions are selected', async () => {
+            const documentsWithDuplicatePositions = [
+                {
+                    docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                    id: '1',
+                    file: createMockFile('test-document-1.pdf', '1'),
+                    attempts: 0,
+                    state: DOCUMENT_UPLOAD_STATE.SELECTED,
+                    numPages: 5,
+                    position: 1,
+                },
+                {
+                    docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                    id: '2',
+                    file: createMockFile('test-document-2.pdf', '2'),
+                    attempts: 0,
+                    state: DOCUMENT_UPLOAD_STATE.SELECTED,
+                    numPages: 3,
+                    position: 1, // Duplicate position
+                },
+            ];
+
+            render(
+                <DocumentSelectOrderStage
+                    documents={documentsWithDuplicatePositions}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
+            );
+
+            await waitFor(() => {
+                expect(screen.getByText('There is a problem')).toBeInTheDocument();
+            });
+            expect(
+                screen.getByText('Please ensure all documents have a unique position selected'),
+            ).toBeInTheDocument();
+        });
+
+        it('shows error when duplicate positions are selected and continue is clicked', async () => {
             const user = userEvent.setup();
             const documentsWithDuplicatePositions = [
                 {
@@ -485,6 +576,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={documentsWithDuplicatePositions}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -492,10 +584,11 @@ describe('DocumentSelectOrderStage', () => {
             await user.click(continueButton);
 
             await waitFor(() => {
-                expect(
-                    screen.getByText('Please ensure all documents have a unique position selected'),
-                ).toBeInTheDocument();
+                expect(screen.getByText('There is a problem')).toBeInTheDocument();
             });
+            expect(
+                screen.getByText('Please ensure all documents have a unique position selected'),
+            ).toBeInTheDocument();
         });
     });
 
@@ -504,7 +597,11 @@ describe('DocumentSelectOrderStage', () => {
             const user = userEvent.setup();
 
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             const continueButton = screen.getByRole('button', { name: 'Continue' });
@@ -518,7 +615,13 @@ describe('DocumentSelectOrderStage', () => {
         it('navigates to document upload when "choose files" link is clicked', async () => {
             const user = userEvent.setup();
 
-            render(<DocumentSelectOrderStage documents={[]} setDocuments={mockSetDocuments} />);
+            render(
+                <DocumentSelectOrderStage
+                    documents={[]}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
+            );
 
             const chooseFilesButton = screen.getByRole('button', { name: 'choose files' });
             await user.click(chooseFilesButton);
@@ -530,7 +633,11 @@ describe('DocumentSelectOrderStage', () => {
     describe('File Preview', () => {
         it('creates object URL for file preview', () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             const viewLink = screen.getByTestId('document-preview-1');
@@ -540,7 +647,11 @@ describe('DocumentSelectOrderStage', () => {
 
         it('opens file preview in new tab', () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             const viewLink = screen.getByTestId('document-preview-1');
@@ -552,7 +663,11 @@ describe('DocumentSelectOrderStage', () => {
     describe('PDF Viewer Integration', () => {
         it('renders PDF viewer when Lloyd George preview is shown', async () => {
             render(
-                <DocumentSelectOrderStage documents={documents} setDocuments={mockSetDocuments} />,
+                <DocumentSelectOrderStage
+                    documents={documents}
+                    setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
+                />,
             );
 
             await waitFor(() => {
@@ -586,6 +701,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={multipleDocuments}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
@@ -614,6 +730,7 @@ describe('DocumentSelectOrderStage', () => {
                 <DocumentSelectOrderStage
                     documents={documentsWithInvalidPositions}
                     setDocuments={mockSetDocuments}
+                    setMergedPdfBlob={mockSetMergedPdfBlob}
                 />,
             );
 
