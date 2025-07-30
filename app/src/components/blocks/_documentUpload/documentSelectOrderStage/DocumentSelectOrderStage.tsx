@@ -6,11 +6,11 @@ import {
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
-import { FieldValues, useForm } from 'react-hook-form';
+import { FieldValues, set, useForm } from 'react-hook-form';
 import { SelectRef } from '../../../../types/generic/selectRef';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../generic/backButton/BackButton';
-import { useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useRef, useState } from 'react';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
@@ -19,14 +19,14 @@ import React from 'react';
 type Props = {
     documents: UploadDocument[];
     setDocuments: SetUploadDocuments;
+    setMergedPdfBlob: Dispatch<SetStateAction<Blob | undefined>>;
 };
 type FormData = {
     [key: string]: number | null;
 };
 
-const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
+const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props) => {
     const navigate = useNavigate();
-    const [errorMessage, setError] = useState('');
 
     const documentPositionKey = (documentId: string): string => {
         return `document-${documentId}-position`;
@@ -42,7 +42,14 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
         return formData;
     };
 
-    const { handleSubmit, getValues, register, unregister, formState } = useForm<FormData>({
+    const {
+        handleSubmit,
+        getValues,
+        register,
+        unregister,
+        formState,
+        setError: setFormError,
+    } = useForm<FormData>({
         reValidateMode: 'onChange',
         shouldFocusError: true,
         values: getFormValues(),
@@ -66,18 +73,24 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                 const values = Object.values(fieldValues).map((v) => +v!);
 
                 if (values.some((v) => v === 0)) {
-                    setError('Please select a position for every document');
+                    setFormError('root', {
+                        type: 'manual',
+                        message: 'Please select a position for every document',
+                    });
                     scrollToRef.current?.scrollIntoView();
-                    return false;
+                    return 'Please select a position for every document';
                 }
 
                 if (new Set(values).size !== values.length) {
-                    setError('Please ensure all documents have a unique position selected');
+                    setFormError('root', {
+                        type: 'manual',
+                        message: 'Please ensure all documents have a unique position selected',
+                    });
                     scrollToRef.current?.scrollIntoView();
-                    return false;
+                    return 'Please ensure all documents have a unique position selected';
                 }
 
-                return !!fieldValues[key];
+                return true;
             },
             onChange: updateDocumentPositions,
         });
@@ -85,7 +98,6 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
         return (
             <Select
                 className="nhsuk-select"
-                // style={{ minWidth: '25%' }}
                 key={key}
                 data-testid={key}
                 selectRef={dropdownInputRef as SelectRef}
@@ -135,28 +147,31 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
             position: fieldValues[documentPositionKey(doc.id)]!,
         }));
 
-        setError('');
         setDocuments(updatedDocuments);
     };
 
     const submitDocuments = () => {
         updateDocumentPositions();
-        if (!errorMessage) {
+        if (formState.isValid && !formState.errors.root) {
             navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
+        } else {
+            scrollToRef.current?.scrollIntoView();
         }
     };
 
-    const handleErrors = (fields: FieldValues) => {
-        const errorMessages = Object.entries(fields).map(
-            ([k, v]: [string, { message: string; ref: Element }]) => {
-                return {
-                    message: v.message,
-                    id: v.ref.id,
-                };
-            },
-        );
-        setError(errorMessages[0].message);
+    const handleErrors = (_: FieldValues) => {
         scrollToRef.current?.scrollIntoView();
+    };
+
+    const onContinue = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+
+        if (formState.isValid && !formState.errors.root) {
+            updateDocumentPositions();
+            navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
+        } else {
+            scrollToRef.current?.scrollIntoView();
+        }
     };
 
     return (
@@ -165,12 +180,12 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
             <h1>{pageTitle}</h1>
             <PatientSimpleSummary />
 
-            {errorMessage && (
+            {formState.errors.root && (
                 <ErrorBox
                     dataTestId="error-box"
                     errorBoxSummaryId="document-positions"
                     messageTitle="There is a problem"
-                    messageBody={errorMessage}
+                    messageBody={formState.errors.root?.message}
                     scrollToRef={scrollToRef}
                 />
             )}
@@ -272,7 +287,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                 </Table>
 
                 {documents.some((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE) &&
-                    !errorMessage &&
+                    !formState.errors.root &&
                     formState.isValid && (
                         <>
                             <h2>Preview this Lloyd George record</h2>
@@ -288,6 +303,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                                 documents={documents
                                     .filter((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE)
                                     .sort((a, b) => a.position! - b.position!)}
+                                setMergedPdfBlob={setMergedPdfBlob}
                             />
                         </>
                     )}
@@ -297,6 +313,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments }: Props) => {
                         id="form-submit"
                         data-testid="form-submit-button"
                         className="mt-4"
+                        onClick={onContinue}
                     >
                         Continue
                     </Button>
