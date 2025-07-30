@@ -9,11 +9,14 @@ from handlers.create_document_reference_handler import (
 from tests.unit.conftest import MOCK_STAGING_STORE_BUCKET, TEST_NHS_NUMBER, TEST_UUID
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
+    MOCK_EVENT_BODY,
     ARF_MOCK_EVENT_BODY,
+    LG_MOCK_EVENT_BODY,
     ARF_MOCK_RESPONSE,
     LG_AND_ARF_MOCK_RESPONSE,
-    LG_MOCK_EVENT_BODY,
-    MOCK_EVENT_BODY,
+    LG_MOCK_RESPONSE,
+    UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE,
+    NON_GP_ADMIN_OR_CLINICIAN_ROLE_MOCK_RESPONSE
 )
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse
@@ -21,6 +24,8 @@ from utils.lambda_response import ApiGatewayResponse
 TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_STAGING_STORE_BUCKET}/{TEST_UUID}"
 TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_STAGING_STORE_BUCKET}/{TEST_UUID}"
 
+arf_environment_variables = ["STAGING_STORE_BUCKET_NAME"]
+lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_NAME"]
 
 class MockError(Enum):
     Error = {
@@ -66,19 +71,19 @@ def mock_processing_event_details(mocker):
 
 
 @pytest.fixture
-def mock_service(mocker):
-    mock_service = mocker.MagicMock()
+def mock_cdrService(mocker):
+    mock_cdrService = mocker.MagicMock()
     mocker.patch(
         "handlers.create_document_reference_handler.CreateDocumentReferenceService",
-        return_value=mock_service,
+        return_value=mock_cdrService,
     )
-    yield mock_service
+    yield mock_cdrService
 
 
 def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
-    set_env, both_type_event, context, mock_service, mock_upload_lambda_enabled
+    set_env, both_type_event, context, mock_cdrService, mock_upload_lambda_enabled
 ):
-    mock_service.create_document_reference_request.return_value = (
+    mock_cdrService.create_document_reference_request.return_value = (
         LG_AND_ARF_MOCK_RESPONSE
     )
     expected = ApiGatewayResponse(
@@ -90,9 +95,32 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
     assert actual == expected
 
 
-arf_environment_variables = ["STAGING_STORE_BUCKET_NAME"]
-lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_NAME"]
+def test_create_document_reference_valid_lg_type_returns_200_with_presigned_urls(
+    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+):
+    mock_cdrService.create_document_reference_request.return_value = (
+        LG_MOCK_RESPONSE
+    )
+    expected = ApiGatewayResponse(
+        200, json.dumps(LG_MOCK_RESPONSE), "POST"
+    ).create_api_gateway_response()
+    actual = lambda_handler(lg_type_event, context)
+    assert actual == expected
 
+
+def test_create_document_reference_as_non_gp_admin_returns_403(
+    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+):
+    mock_cdrService.create_document_reference_request.return_value = (
+        NON_GP_ADMIN_OR_CLINICIAN_ROLE_MOCK_RESPONSE
+    )
+
+    expected = ApiGatewayResponse(
+        403, json.dumps(NON_GP_ADMIN_OR_CLINICIAN_ROLE_MOCK_RESPONSE), "POST"
+    ).create_api_gateway_response()
+    actual = lambda_handler(lg_type_event, context)
+    assert actual == expected
+    
 
 @pytest.mark.parametrize("environment_variable", arf_environment_variables)
 def test_lambda_handler_missing_environment_variables_type_staging_returns_500(
@@ -201,10 +229,10 @@ def test_lambda_handler_service_raise_error(
     set_env,
     mock_processing_event_details,
     mock_upload_lambda_enabled,
-    mock_service,
+    mock_cdrService,
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
-    mock_service.create_document_reference_request.side_effect = (
+    mock_cdrService.create_document_reference_request.side_effect = (
         CreateDocumentRefException(400, MockError.Error),
     )
 
@@ -215,7 +243,7 @@ def test_lambda_handler_service_raise_error(
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
     assert expected == actual
-    mock_service.create_document_reference_request.assert_called_with(
+    mock_cdrService.create_document_reference_request.assert_called_with(
         TEST_NHS_NUMBER, ARF_FILE_LIST
     )
     mock_processing_event_details.assert_called_with(arf_type_event)
@@ -227,11 +255,11 @@ def test_lambda_handler_valid(
     set_env,
     mock_processing_event_details,
     mock_upload_lambda_enabled,
-    mock_service,
+    mock_cdrService,
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
 
-    mock_service.create_document_reference_request.return_value = ARF_MOCK_RESPONSE
+    mock_cdrService.create_document_reference_request.return_value = ARF_MOCK_RESPONSE
 
     expected = ApiGatewayResponse(
         200,
@@ -243,13 +271,19 @@ def test_lambda_handler_valid(
     mock_processing_event_details.assert_called_with(arf_type_event)
 
 
-def test_no_event_processing_when_upload_lambda_flag_not_enabled(
+def test_no_event_processing_when_upload_lambda_flag_disabled(
     set_env,
-    both_type_event,
+    lg_type_event,
     context,
     mock_processing_event_details,
     mock_upload_lambda_disabled,
 ):
-    lambda_handler(both_type_event, context)
+    
+    expected = ApiGatewayResponse(
+        404, json.dumps(UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE), "POST"
+    ).create_api_gateway_response()
 
+    actual = lambda_handler(lg_type_event, context)
+
+    assert expected == actual
     mock_processing_event_details.assert_not_called()

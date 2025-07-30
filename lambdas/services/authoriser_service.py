@@ -1,5 +1,6 @@
 import time
 
+from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from services.manage_user_session_access import ManageUserSessionAccess
 from services.token_service import TokenService
@@ -74,6 +75,7 @@ class AuthoriserService:
         deny_access_to_deceased_patient = (
             nhs_number not in self.deceased_nhs_numbers if nhs_number else False
         )
+        deny_access_to_admin_role = user_role == RepositoryRole.GP_ADMIN.value
         deny_access_to_clinical_role = user_role == RepositoryRole.GP_CLINICAL.value
         deny_access_to_pcse_role = user_role == RepositoryRole.PCSE.value
 
@@ -93,6 +95,8 @@ class AuthoriserService:
                     or deny_access_to_clinical_role
                     or deny_access_to_pcse_role
                 )
+                if not deny_access_to_admin_role and not deny_access_to_clinical_role:
+                    raise AuthorisationException(403, LambdaError.CreateDocRefUserForbidden)
 
             case "/LloydGeorgeStitch":
                 deny_resource = deny_access_to_patient or deny_access_to_pcse_role

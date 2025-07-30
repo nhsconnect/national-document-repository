@@ -192,6 +192,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
+    mock_check_existing_lloyd_george_records_and_remove_failed_upload,
     mock_fetch_document,
     mock_pds_patient,
 ):
@@ -240,7 +241,8 @@ def test_create_document_reference_request_with_lg_list_happy_path(
 
     mock_create_reference_in_dynamodb.assert_called_once()
     mock_validate_lg.assert_called_with(document_references, mock_pds_patient)
-
+    mock_check_existing_lloyd_george_records_and_remove_failed_upload.assert_called_with(TEST_NHS_NUMBER)
+    
 
 @freeze_time("2023-10-30T10:25:00")
 def test_create_document_reference_request_with_both_list(

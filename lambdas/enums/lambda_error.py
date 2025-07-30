@@ -98,6 +98,10 @@ class LambdaError(Enum):
         "message": "Failed to validate patient",
         "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
+    CreateDocRefUserForbidden = {
+        "err_code": "403",
+        "message": "User forbidden"
+    }
 
     """
        Errors for InvalidDocTypeException

@@ -1,7 +1,11 @@
+import json
 import pytest
+from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from services.authoriser_service import AuthoriserService
+from tests.unit.helpers.data.create_document_reference import UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE
 from utils.exceptions import AuthorisationException
+from utils.lambda_response import ApiGatewayResponse
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:74747474747474:<<restApiId>/dev"
 TEST_PUBLIC_KEY = "test_public_key"
@@ -90,7 +94,7 @@ def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
 
 
 @pytest.mark.parametrize(
-    "test_path", ["/DocumentManifest", "/DocumentDelete", "/CreateDocumentReference", "Any"]
+    "test_path", ["/DocumentManifest", "/DocumentDelete", "Any"]
 )
 def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
     test_path,
@@ -106,7 +110,7 @@ def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
 
 
 @pytest.mark.parametrize(
-    "test_path", ["/DocumentManifest", "/DocumentDelete", "/CreateDocumentReference", "Any"]
+    "test_path", ["/DocumentManifest", "/DocumentDelete", "Any"]
 )
 def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
     test_path,
@@ -119,6 +123,21 @@ def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
     )
     assert actual == expected
     mock_auth_service.allowed_nhs_numbers = []
+
+
+def test_deny_access_policy_returns_false_for_PCSE_role_on_create_document_reference(
+    mock_auth_service: AuthoriserService,
+):
+    expected_status_code = 403
+    expected_error = LambdaError.CreateDocRefUserForbidden
+
+    with pytest.raises(AuthorisationException) as e:
+        mock_auth_service.deny_access_policy(
+            "/CreateDocumentReference", RepositoryRole.PCSE.value, "900000002"
+        )
+
+    assert e.value.args[0] == expected_status_code
+    assert e.value.args[1] == expected_error
 
 
 def test_allow_access_policy_returns_false_for_nhs_number_not_in_allowed_on_search_path(

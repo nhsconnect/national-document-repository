@@ -50,7 +50,7 @@ def lambda_handler(event, context):
 
     if not upload_lambda_enabled_flag_object[upload_flag_name]:
         logger.info("Feature flag not enabled, event will not be processed")
-        raise FeatureFlagsException(500, LambdaError.FeatureFlagDisabled)
+        raise FeatureFlagsException(404, LambdaError.FeatureFlagDisabled)
 
     logger.info("Starting document reference creation process")
     nhs_number_query_string = event["queryStringParameters"]["patientId"]
