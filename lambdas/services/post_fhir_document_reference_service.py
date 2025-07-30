@@ -92,7 +92,7 @@ class PostFhirDocumentReferenceService:
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
         except ClientError as e:
             logger.error(f"AWS client error: {str(e)}")
-            raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
+            raise CreateDocumentRefException(500, LambdaError.InternalServerError)
 
     def _extract_nhs_number_from_fhir(self, fhir_doc: FhirDocumentReference) -> str:
         """Extract NHS number from FHIR document"""
@@ -174,7 +174,9 @@ class PostFhirDocumentReferenceService:
             logger.info(f"Successfully created document reference in {table_name}")
         except ClientError as e:
             logger.error(f"Failed to create document reference: {str(e)}")
-            raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
+            raise CreateDocumentRefException(
+                500, LambdaError.CreateDocUploadInternalError
+            )
 
     def _store_binary_in_s3(
         self, document_reference: DocumentReference, binary_content: bytes
@@ -215,7 +217,7 @@ class PostFhirDocumentReferenceService:
             return response
         except ClientError as e:
             logger.error(f"Failed to create pre-signed URL: {str(e)}")
-            raise CreateDocumentRefException(500, LambdaError.CreateDocPresign)
+            raise CreateDocumentRefException(500, LambdaError.InternalServerError)
 
     def _create_fhir_response(
         self,

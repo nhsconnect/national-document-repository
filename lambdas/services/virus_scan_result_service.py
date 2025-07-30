@@ -28,7 +28,7 @@ class VirusScanService:
         self.base_url = ""
         self.access_token = ""
 
-    def scan_file(self, file_ref: str):
+    def scan_file(self, file_ref: str, *args, **kwargs) -> VirusScanResult:
         try:
             if not self.base_url:
                 self.get_ssm_parameters_for_request_access_token()

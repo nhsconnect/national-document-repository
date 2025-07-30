@@ -33,11 +33,13 @@ def get_clean_files_filter(filter_builder: DynamoQueryFilterBuilder):
     filter_not_deleted = get_not_deleted_filter(filter_builder)
     return clean_filter_expression & filter_not_deleted
 
+
 def get_current_files_filter(filter_builder: DynamoQueryFilterBuilder):
     filter_builder.add_condition("Status", AttributeOperator.EQUAL, "current")
     clean_filter_expression = filter_builder.build()
     filter_not_deleted = get_not_deleted_filter(filter_builder)
     return clean_filter_expression & filter_not_deleted
+
 
 def get_doc_status_preliminary_filter(filter_builder: DynamoQueryFilterBuilder):
     filter_builder.add_condition("DocStatus", AttributeOperator.EQUAL, "preliminary")

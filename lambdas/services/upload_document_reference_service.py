@@ -113,7 +113,9 @@ class UploadDocumentReferenceService:
     ) -> VirusScanResult:
         """Perform a virus scan on the document"""
         try:
-            return self.virus_scan_service.scan_file(document_reference.s3_file_key)
+            return self.virus_scan_service.scan_file(
+                document_reference.s3_file_key, nhs_number=document_reference.nhs_number
+            )
 
         except Exception as e:
             logger.error(

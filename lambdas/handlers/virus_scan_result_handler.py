@@ -70,7 +70,9 @@ def lambda_handler(event, context):
 
     lg_table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
     virus_scan_service = get_virus_scan_service()
-    scan_result = virus_scan_service.scan_file(document_reference)
+    scan_result = virus_scan_service.scan_file(
+        document_reference, nhs_number=nhs_number
+    )
 
     dynamo_service = DynamoDBService()
     file_id = document_reference.split("/")[-1]
