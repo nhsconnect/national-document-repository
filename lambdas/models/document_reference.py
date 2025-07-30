@@ -48,7 +48,7 @@ class DocumentReference(BaseModel):
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(DATE_FORMAT)
     )
-    document_scan_creation: str = Field(
+    document_scan_creation: Optional[str] = Field(
         default_factory=lambda: datetime.date(datetime.now()).isoformat(),
     )
     current_gp_ods: str = Field(default=None)
