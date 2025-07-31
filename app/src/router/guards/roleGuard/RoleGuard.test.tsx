@@ -1,3 +1,5 @@
+// need to use happy-dom for this test file as jsdom doesn't support DOMMatrix https://github.com/jsdom/jsdom/issues/2647
+// @vitest-environment happy-dom
 import { render, waitFor } from '@testing-library/react';
 import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';

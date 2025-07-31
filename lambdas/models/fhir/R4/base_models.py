@@ -42,3 +42,8 @@ class Reference(BaseModel):
 class Link(BaseModel):
     relation: str = Field(..., alias="relation")
     url: str
+
+
+class Meta(BaseModel):
+    security: Optional[List[Coding]] = None
+    tag: Optional[List[Coding]] = None

@@ -43,12 +43,12 @@ class DocumentReference(BaseModel):
     )
 
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
-    author: str = Field(default=None, exclude=True)
+    author: str = Field(default=None)
     content_type: str = Field(default=DEFAULT_CONTENT_TYPE)
     created: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).strftime(DATE_FORMAT)
     )
-    document_scan_creation: str = Field(
+    document_scan_creation: Optional[str] = Field(
         default_factory=lambda: datetime.date(datetime.now()).isoformat(),
     )
     current_gp_ods: str = Field(default=None)
@@ -87,8 +87,8 @@ class DocumentReference(BaseModel):
     ttl: Optional[int] = Field(
         alias=str(DocumentReferenceMetadataFields.TTL.value), default=None
     )
-    uploaded: bool = Field(default=False)
-    uploading: bool = Field(default=False)
+    uploaded: bool = Field(default=None)
+    uploading: bool = Field(default=None)
     version: str = Field(default="1")
     virus_scanner_result: str = Field(default=None)
 

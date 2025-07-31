@@ -134,8 +134,9 @@ class UploadConfirmResultService:
     def update_dynamo_table(
         self, table_name: str, document_reference: str, bucket_name: str
     ):
-        file_location = f"s3://{bucket_name}/{self.nhs_number}/{document_reference}"
-        file_size = self.s3_service.get_file_size(bucket_name, file_location)
+        file_key = f"{self.nhs_number}/{document_reference}"
+        file_location = f"s3://{bucket_name}/{file_key}"
+        file_size = self.s3_service.get_file_size(bucket_name, file_key)
         self.dynamo_service.update_item(
             table_name=table_name,
             key_pair={DocumentReferenceMetadataFields.ID.value: document_reference},
@@ -194,9 +195,7 @@ class UploadConfirmResultService:
             + "~"
             + document_reference
         )
-        doc_details = Attachment(
-            url=document_api_endpoint,
-        )
+        doc_details = Attachment(url=document_api_endpoint, title=None)
         nrl_sqs_message = NrlSqsMessage(
             nhs_number=self.nhs_number,
             action=NrlActionTypes.CREATE,

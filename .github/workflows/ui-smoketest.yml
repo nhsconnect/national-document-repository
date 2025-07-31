@@ -34,5 +34,5 @@ jobs:
       sandbox: ${{github.event.inputs.sandbox}}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-      CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
-      CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+      CYPRESS_ODSCODE: ${{ secrets.CYPRESS_ODSCODE }}
+      CYPRESS_KEY: ${{ secrets.CYPRESS_KEY }}

@@ -7,6 +7,11 @@ on:
         description: "Feature branch to push to test?"
         required: true
         type: "string"
+      mock_login_enabled:
+        description: "Do you want to deploy with mock login enabled?"
+        required: true
+        type: boolean
+        default: true
 
 permissions:
   pull-requests: write
@@ -40,6 +45,7 @@ jobs:
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
       sandbox: ndr-test
+      mock_login_enabled: ${{ inputs.mock_login_enabled }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 

@@ -32,7 +32,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             '[Smoke] GP ADMIN user can download the Lloyd George document of an active patient',
             { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
-                cy.smokeLogin(Roles.GP_ADMIN);
+                cy.smokeLogin(Roles.SMOKE_GP_ADMIN);
                 cy.get('.nhsuk-navigation-container').should('exist');
                 cy.navigateToPatientSearchPage();
                 cy.get('#nhs-number-input').click();

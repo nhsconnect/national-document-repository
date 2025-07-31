@@ -60,7 +60,10 @@ check-packages:
 	./lambdas/venv/bin/pip-audit -r $(ALERTING_REQUIREMENTS)
 
 test-api-e2e:
-	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e -vv
+
+test-api-e2e-snapshots:
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e --snapshot-update
 
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit
@@ -102,7 +105,7 @@ zip:
 	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
 	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name) || true
 	mkdir -p $(ZIP_BASE_PATH)/handlers
-	cp lambdas/handlers/$(lambda_name).py $(ZIP_BASE_PATH)/handlers
+	cp lambdas/handlers/${lambda_path}/$(lambda_name).py $(ZIP_BASE_PATH)/handlers
 	cp -r $(ZIP_COMMON_FILES) $(ZIP_BASE_PATH)
 	cd $(ZIP_BASE_PATH) ; zip -r ../$(lambda_name).zip .
 	rm -rf $(ZIP_BASE_PATH)
