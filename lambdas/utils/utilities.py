@@ -9,8 +9,10 @@ from inflection import camelize
 from services.base.nhs_oauth_service import NhsOauthService
 from services.base.ssm_service import SSMService
 from services.mock_pds_service import MockPdsApiService
+from services.mock_virus_scan_service import MockVirusScanService
 from services.patient_search_service import PatientSearch
 from services.pds_api_service import PdsApiService
+from services.virus_scan_result_service import VirusScanService
 from utils.exceptions import InvalidNhsNumberException
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -74,6 +76,13 @@ def get_pds_service() -> PatientSearch:
         return MockPdsApiService(
             always_pass_mock=os.getenv("PDS_FHIR_ALWAYS_TRUE") in ["True", "true"]
         )
+
+
+def get_virus_scan_service():
+    if os.getenv("VIRUS_SCAN_STUB") in ["False", "false"]:
+        return VirusScanService()
+    else:
+        return MockVirusScanService()
 
 
 def redact_id_to_last_4_chars(str_id: str) -> str:

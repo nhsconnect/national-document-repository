@@ -41,6 +41,13 @@ def get_current_files_filter(filter_builder: DynamoQueryFilterBuilder):
     return clean_filter_expression & filter_not_deleted
 
 
+def get_doc_status_preliminary_filter(filter_builder: DynamoQueryFilterBuilder):
+    filter_builder.add_condition("DocStatus", AttributeOperator.EQUAL, "preliminary")
+    doc_status_filter_expression = filter_builder.build()
+    filter_not_deleted = get_not_deleted_filter(filter_builder)
+    return doc_status_filter_expression & filter_not_deleted
+
+
 NotDeleted = get_not_deleted_filter(DynamoQueryFilterBuilder())
 
 UploadCompleted = get_upload_complete_filter(DynamoQueryFilterBuilder())
@@ -50,3 +57,5 @@ UploadIncomplete = get_upload_incomplete_filter(DynamoQueryFilterBuilder())
 CleanFiles = get_clean_files_filter(DynamoQueryFilterBuilder())
 
 CurrentStatusFile = get_current_files_filter(DynamoQueryFilterBuilder())
+
+PreliminaryStatus = get_doc_status_preliminary_filter(DynamoQueryFilterBuilder())
