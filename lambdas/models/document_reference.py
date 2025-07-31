@@ -2,6 +2,8 @@ import pathlib
 from datetime import datetime, timezone
 from typing import Literal, Optional
 
+from pyparsing import Union
+
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
@@ -53,7 +55,7 @@ class DocumentReference(BaseModel):
     )
     current_gp_ods: str = Field(default=None)
     custodian: str = Field(default=None)
-    deleted: str = Field(default=None)
+    deleted: Union[bool, str] = Field(default=None)
     doc_status: Literal[
         "registered",
         "partial",
