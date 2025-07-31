@@ -587,6 +587,19 @@ jobs:
       lambda_layer_names: 'alerting_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+  deploy_bulk_upload_toggle_lambda:
+    name: Deploy bulk upload toggle lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: toggle_bulk_upload_handler
+      lambda_aws_name: ToggleBulkUploadLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_document_reference_virus_scan_lambda:
     name: Deploy Document References FHIR virus scanner check Lambda
