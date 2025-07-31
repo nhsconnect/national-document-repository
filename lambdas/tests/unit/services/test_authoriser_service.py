@@ -125,7 +125,7 @@ def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
     mock_auth_service.allowed_nhs_numbers = []
 
 
-def test_deny_access_policy_returns_false_for_PCSE_role_on_create_document_reference(
+def test_create_document_reference_as_non_gp_admin_returns_403(
     mock_auth_service: AuthoriserService,
 ):
     expected_status_code = 403
@@ -181,7 +181,7 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
     [
         "/UploadConfirm",
         "/UploadState",
-        "/CreateDocumentReference",
+        # "/CreateDocumentReference",
         "/VirusScan",
         "/LloydGeorgeStitch",
     ],

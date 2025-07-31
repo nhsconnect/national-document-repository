@@ -17,6 +17,8 @@ from utils.common_query_filters import NotDeleted
 from utils.exceptions import (
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
+    LGInvalidFilesException,
+    PatientNotFoundException
 )
 from utils.unicode_utils import (
     REGEX_PATIENT_NAME_PATTERN,
@@ -28,11 +30,6 @@ from utils.unicode_utils import (
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
-
-
-class LGInvalidFilesException(Exception):
-    pass
-
 
 file_name_invalid = "One or more of the files do not match naming convention"
 file_type_invalid = "One or more of the files do not match the required file type"
@@ -355,7 +352,7 @@ def check_pds_response_status(pds_response: requests.Response):
         )
     elif pds_response.status_code == 404:
         logger.error("Got 404, Could not find the given patient on PDS.")
-        raise LGInvalidFilesException("Could not find the given patient on PDS")
+        raise PatientNotFoundException("Could not find the given patient on PDS")
     try:
         pds_response.raise_for_status()
     except HTTPError as e:

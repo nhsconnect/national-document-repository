@@ -85,6 +85,14 @@ class LambdaError(Enum):
         "err_code": "CDR_4008",
         "message": "The patient already has a full set of record.",
     }
+    CreateDocPatientNotFound = {
+        "err_code": "CDR_4009",
+        "message": "Could not find the requested patient.",
+    }
+    CreateDocRefUserForbidden = {
+        "err_code": "CDR_4010",
+        "message": "User forbidden"
+    }
     CreateDocPresign = {
         "err_code": "CDR_5001",
         "message": "An error occurred when creating pre-signed url for document reference",
@@ -97,10 +105,6 @@ class LambdaError(Enum):
         "err_code": "CDR_5003",
         "message": "Failed to validate patient",
         "fhir_coding": FhirIssueCoding.EXCEPTION,
-    }
-    CreateDocRefUserForbidden = {
-        "err_code": "403",
-        "message": "User forbidden"
     }
 
     """

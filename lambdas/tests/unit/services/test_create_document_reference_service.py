@@ -19,7 +19,8 @@ from tests.unit.helpers.data.test_documents import (
     create_test_lloyd_george_doc_store_refs,
 )
 from utils.common_query_filters import UploadIncomplete
-from utils.lambda_exceptions import CreateDocumentRefException
+from utils.exceptions import PatientNotFoundException
+from utils.lambda_exceptions import CreateDocumentRefException, SearchPatientException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 from lambdas.enums.supported_document_types import SupportedDocumentTypes
@@ -397,6 +398,25 @@ def test_create_document_reference_failed_to_parse_pds_response(
     mock_getting_patient_info_from_pds.side_effect = LGInvalidFilesException
 
     with pytest.raises(CreateDocumentRefException):
+        create_doc_ref_service.create_document_reference_request(
+            TEST_NHS_NUMBER, LG_FILE_LIST
+        )
+
+    mock_create_document_reference.assert_not_called()
+    mock_prepare_pre_signed_url.assert_not_called()
+    mock_create_reference_in_dynamodb.assert_not_called()
+
+
+def test_create_document_reference_fails_when_nhs_number_is_not_found_in_pds(
+    mock_create_document_reference,
+    mock_prepare_pre_signed_url,
+    mock_create_reference_in_dynamodb,
+    mock_getting_patient_info_from_pds
+):
+    create_doc_ref_service = CreateDocumentReferenceService()
+    mock_getting_patient_info_from_pds.side_effect = PatientNotFoundException
+
+    with pytest.raises(SearchPatientException):
         create_doc_ref_service.create_document_reference_request(
             TEST_NHS_NUMBER, LG_FILE_LIST
         )

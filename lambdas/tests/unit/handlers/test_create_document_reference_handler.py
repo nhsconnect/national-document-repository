@@ -2,6 +2,7 @@ import json
 from enum import Enum
 
 import pytest
+from enums.lambda_error import LambdaError
 from handlers.create_document_reference_handler import (
     lambda_handler,
     processing_event_details,
@@ -18,11 +19,14 @@ from tests.unit.helpers.data.create_document_reference import (
     UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE,
     NON_GP_ADMIN_OR_CLINICIAN_ROLE_MOCK_RESPONSE
 )
-from utils.lambda_exceptions import CreateDocumentRefException
+from utils.exceptions import InvalidNhsNumberException, PatientNotFoundException
+from utils.lambda_exceptions import CreateDocumentRefException, SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_STAGING_STORE_BUCKET}/{TEST_UUID}"
 TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_STAGING_STORE_BUCKET}/{TEST_UUID}"
+
+INVALID_NHS_NUMBER = "12345"
 
 arf_environment_variables = ["STAGING_STORE_BUCKET_NAME"]
 lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_NAME"]
@@ -79,6 +83,11 @@ def mock_cdrService(mocker):
     )
     yield mock_cdrService
 
+@pytest.fixture
+def mock_invalid_nhs_number_exception(mocker):
+    mocker.patch("utils.decorators.validate_patient_id.validate_nhs_number", 
+                 side_effect = InvalidNhsNumberException())
+
 
 def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
     set_env, both_type_event, context, mock_cdrService, mock_upload_lambda_enabled
@@ -95,7 +104,7 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
     assert actual == expected
 
 
-def test_create_document_reference_valid_lg_type_returns_200_with_presigned_urls(
+def test_create_document_reference_valid_lg_type_returns_presigned_urls_and_200(
     set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
 ):
     mock_cdrService.create_document_reference_request.return_value = (
@@ -108,15 +117,14 @@ def test_create_document_reference_valid_lg_type_returns_200_with_presigned_urls
     assert actual == expected
 
 
-def test_create_document_reference_as_non_gp_admin_returns_403(
+def test_create_document_reference_with_nhs_number_not_in_pds_returns_404(
     set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
 ):
-    mock_cdrService.create_document_reference_request.return_value = (
-        NON_GP_ADMIN_OR_CLINICIAN_ROLE_MOCK_RESPONSE
-    )
+    mock_cdrService.create_document_reference_request.side_effect = SearchPatientException(
+        404, LambdaError.SearchPatientNoPDS)
 
     expected = ApiGatewayResponse(
-        403, json.dumps(NON_GP_ADMIN_OR_CLINICIAN_ROLE_MOCK_RESPONSE), "POST"
+        404, LambdaError.SearchPatientNoPDS, "POST"
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
@@ -287,3 +295,22 @@ def test_no_event_processing_when_upload_lambda_flag_disabled(
 
     assert expected == actual
     mock_processing_event_details.assert_not_called()
+
+def test_invalid_nhs_number_returns_400(
+    set_env, 
+    lg_type_event, 
+    context, 
+    mock_invalid_nhs_number_exception,
+    mock_processing_event_details,
+    mock_cdrService
+):  
+    
+    expected = ApiGatewayResponse(
+        400, LambdaError.PatientIdInvalid.create_error_body(
+                {"number": TEST_NHS_NUMBER}), "POST").create_api_gateway_response()
+    actual = lambda_handler(lg_type_event, context)
+
+    assert actual == expected
+    
+    mock_processing_event_details.assert_not_called()
+    mock_cdrService.assert_not_called()
