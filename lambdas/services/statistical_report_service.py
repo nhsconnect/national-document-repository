@@ -180,7 +180,7 @@ class StatisticalReportService:
 
         for other_dataframe in data_to_report[1:]:
             joined_dataframe = joined_dataframe.join(
-                other_dataframe, on="ods_code", how="outer_coalesce"
+                other_dataframe, on="ods_code", how='full', coalesce=True
             )
 
         return joined_dataframe
