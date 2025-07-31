@@ -5,12 +5,8 @@ import uuid
 
 import pytest
 import requests
-from services.base.dynamo_service import DynamoDBService
-from services.base.s3_service import S3Service
 from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 
-s3_service = S3Service()
-dynamo_service = DynamoDBService()
 data_helper = LloydGeorgeDataHelper()
 
 api_endpoint = os.environ.get("NDR_API_ENDPOINT")
