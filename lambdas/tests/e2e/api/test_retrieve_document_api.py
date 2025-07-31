@@ -106,4 +106,3 @@ def test_preliminary_file(test_data, snapshot):
     assert json == snapshot
 
 
-loyd_george_record = {}
