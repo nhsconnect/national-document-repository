@@ -103,8 +103,8 @@ def test_check_lloyd_george_record_for_patient_when_invalid_files(stitch_service
 
 def test_query_stitch_trace_with_nhs_number(stitch_service, mocker):
     mock_response = [
-        {"NhsNumber": TEST_NHS_NUMBER, "Deleted": False, "Data": "Some data"},
-        {"NhsNumber": TEST_NHS_NUMBER, "Deleted": False, "Data": "More data"},
+        {"NhsNumber": TEST_NHS_NUMBER, "Deleted": "false", "Data": "Some data"},
+        {"NhsNumber": TEST_NHS_NUMBER, "Deleted": "false", "Data": "More data"},
     ]
 
     stitch_service.dynamo_service.query_table_by_index.return_value = mock_response
@@ -221,9 +221,8 @@ def test_get_expiration_time(stitch_service):
 
 
 def test_query_document_stitch_job(stitch_service, mocker):
-
     mock_response = [
-        {"NhsNumber": TEST_NHS_NUMBER, "Deleted": False, "Data": "Some data"}
+        {"NhsNumber": TEST_NHS_NUMBER, "Deleted": "false", "Data": "Some data"}
     ]
     mock_latest_stitch_trace = mocker.MagicMock()
 
