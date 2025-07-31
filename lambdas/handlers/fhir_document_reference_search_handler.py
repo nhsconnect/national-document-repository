@@ -62,6 +62,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         nhs_number=nhs_number,
         return_fhir=True,
         additional_filters=search_filters,
+        check_upload_completed=False,
     )
 
     if not document_references:
