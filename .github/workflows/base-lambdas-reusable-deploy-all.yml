@@ -22,6 +22,11 @@ on:
         required: false
         default: false
         type: boolean
+      mock_login_enabled:
+        description: "Do you want to deploy with mock login enabled?"
+        required: false
+        type: boolean
+        default: false
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -143,6 +148,7 @@ jobs:
 
   deploy_token_request_lambda:
     name: Deploy TokenRequestHandler
+    if: ${{ !inputs.mock_login_enabled }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -155,8 +161,25 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
+  deploy_mock_token_request_lambda:
+    name: Deploy Mock TokenRequestHandler
+    if: ${{ inputs.mock_login_enabled && (inputs.environment != 'prod') }}
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: token_handler
+      lambda_handler_path: mocks
+      lambda_aws_name: TokenRequestHandler
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_login_redirect_lambda:
     name: Deploy LoginRedirectHandler
+    if: ${{ !inputs.mock_login_enabled }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -164,6 +187,22 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: login_redirect_handler
+      lambda_aws_name: LoginRedirectHandler
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_mock_login_redirect_lambda:
+    name: Deploy Mock LoginRedirectHandler
+    if: ${{ inputs.mock_login_enabled && (inputs.environment  != 'prod') }}
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: login_redirect_handler
+      lambda_handler_path: mocks
       lambda_aws_name: LoginRedirectHandler
       lambda_layer_names: 'core_lambda_layer'
     secrets:
@@ -546,5 +585,33 @@ jobs:
       lambda_handler_name: im_alerting_handler
       lambda_aws_name: IMAlertingLambda
       lambda_layer_names: 'alerting_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+  deploy_bulk_upload_toggle_lambda:
+    name: Deploy bulk upload toggle lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: toggle_bulk_upload_handler
+      lambda_aws_name: ToggleBulkUploadLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_document_reference_virus_scan_lambda:
+    name: Deploy Document References FHIR virus scanner check Lambda
+    if: inputs.environment == 'development' || inputs.environment == 'test'
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: document_reference_virus_scan_handler
+      lambda_aws_name: DocumentReferenceVirusScanCheck
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

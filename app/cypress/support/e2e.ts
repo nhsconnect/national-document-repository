@@ -48,48 +48,28 @@ Cypress.Commands.add('login', (role, featureFlags) => {
 
 Cypress.Commands.add('smokeLogin', (role) => {
     // Login for smoke tests
-    if (roleIds.includes(role)) {
-        const baseUrl = Cypress.config('baseUrl');
-        const username = Cypress.env('USERNAME');
-        const password = Cypress.env('PASSWORD');
+    const baseUrl = Cypress.config('baseUrl');
+    const key = Cypress.env('KEY');
+    const odsCode = Cypress.env('ODSCODE');
 
-        const startUrl = '/';
-        const authCallback = '/auth-callback';
-        cy.visit(startUrl);
-        cy.url().should('eq', baseUrl + startUrl);
-        cy.get('.nhsuk-header__transactional-service-name--link').should(
-            'have.text',
-            'Access and store digital patient documents',
-        );
-        cy.get('.nhsuk-header__navigation').should('not.exist');
-        cy.getByTestId('start-btn').should('exist');
-        cy.getByTestId('start-btn').click();
-        cy.origin(
-            'https://am.nhsdev.auth-ptl.cis2.spineservices.nhs.uk',
-            { args: { username, password, role } },
-            (args) => {
-                Cypress.on('uncaught:exception', () => false);
-                const { username, password, role } = args;
-                cy.url().should('include', 'cis2.spineservices.nhs.uk');
-                cy.get('.nhsuk-cis2-cia-header-text').should('exist');
-                cy.get('.nhsuk-cis2-cia-header-text').should('include.text', 'Authentication');
-                cy.get('#floatingLabelInput19').should('exist');
-                cy.get('#floatingLabelInput19').type(username);
-                cy.get('#floatingLabelInput25').should('exist');
-                cy.get('#floatingLabelInput25').type(password);
-
-                cy.get('.nhsuk-button').should('exist');
-                cy.get('.nhsuk-button').invoke('attr', 'type').should('eq', 'submit');
-                cy.get('.nhsuk-button').click();
-                cy.get(`#nhsRoleId_${role}`).should('exist');
-                cy.get(`#nhsRoleId_${role}`).click();
-            },
-        );
-        // cy.url().should('contain', baseUrl + authCallback);
-        // cy.url({ timeout: 15000 }).should('not.contain', baseUrl + authCallback);
-    } else {
-        throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
-    }
+    const startUrl = '/';
+    cy.visit(startUrl);
+    cy.url().should('eq', baseUrl + startUrl);
+    cy.get('.nhsuk-header__transactional-service-name--link').should(
+        'have.text',
+        'Access and store digital patient documents',
+    );
+    cy.get('.nhsuk-header__navigation').should('not.exist');
+    cy.getByTestId('start-btn').should('exist');
+    cy.getByTestId('start-btn').click();
+    cy.get('#key').should('exist');
+    cy.get('#key').type(key);
+    cy.get('#odsCode').should('exist');
+    cy.get('#odsCode').type(odsCode);
+    cy.get('#repositoryRole').should('exist');
+    cy.get('#repositoryRole').select(role);
+    cy.get('#submit-login-details').should('exist');
+    cy.get('#submit-login-details').click();
 });
 
 Cypress.Commands.add('navigateToHomePage', () => {

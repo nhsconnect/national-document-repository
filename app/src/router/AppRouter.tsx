@@ -27,6 +27,7 @@ import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/Feedback
 import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
 import NonAuthGuard from './guards/notAuthGuard/NonAuthGuard';
 import PatientAccessAuditPage from '../pages/patientAccessAuditPage/PatientAccessAuditPage';
+import MockLoginPage from '../pages/mockLoginPage/MockLoginPage';
 import DocumentUploadPage from '../pages/documentUploadPage/DocumentUploadPage';
 
 const {
@@ -57,6 +58,7 @@ const {
     REPORT_DOWNLOAD_WILDCARD,
     PATIENT_ACCESS_AUDIT,
     PATIENT_ACCESS_AUDIT_WILDCARD,
+    MOCK_LOGIN,
     DOCUMENT_UPLOAD,
     DOCUMENT_UPLOAD_WILDCARD,
 } = routes;
@@ -225,6 +227,10 @@ export const routeMap: Routes = {
         page: <PrivacyPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
+    [MOCK_LOGIN]: {
+        page: <MockLoginPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
 
     // Auth guard routes
     [LOGOUT]: {
@@ -255,6 +261,7 @@ export const routeMap: Routes = {
         page: <ReportDownloadPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
+
     // App guard routes
     [VERIFY_PATIENT]: {
         page: <PatientResultPage />,

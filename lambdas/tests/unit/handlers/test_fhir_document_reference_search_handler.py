@@ -143,7 +143,10 @@ def test_lambda_handler_returns_200_with_documents(
     assert response["statusCode"] == 200
     assert json.loads(response["body"]) == mock_document_references
     mock_document_reference_search_service.get_document_references.assert_called_once_with(
-        nhs_number="9000000009", return_fhir=True, additional_filters={}
+        nhs_number="9000000009",
+        return_fhir=True,
+        additional_filters={},
+        check_upload_completed=False,
     )
 
 
@@ -156,7 +159,10 @@ def test_lambda_handler_returns_404_when_no_documents(
 
     assert response["statusCode"] == 404
     mock_document_reference_search_service.get_document_references.assert_called_once_with(
-        nhs_number="9000000009", return_fhir=True, additional_filters={}
+        nhs_number="9000000009",
+        return_fhir=True,
+        additional_filters={},
+        check_upload_completed=False,
     )
 
 
@@ -198,7 +204,10 @@ def test_lambda_handler_with_additional_filters(
     # Check that the filters were correctly parsed and passed
     expected_filters = {"file_type": "736253002", "custodian": "Y12345"}
     mock_document_reference_search_service.get_document_references.assert_called_once_with(
-        nhs_number="9000000009", return_fhir=True, additional_filters=expected_filters
+        nhs_number="9000000009",
+        return_fhir=True,
+        additional_filters=expected_filters,
+        check_upload_completed=False,
     )
 
 

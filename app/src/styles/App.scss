@@ -1258,3 +1258,8 @@ button.govuk-link {
         color: white;
     }
 }
+
+.word-break-keep-all {
+    white-space: pre;
+    word-break: keep-all;
+}
