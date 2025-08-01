@@ -121,7 +121,8 @@ describe('<LloydGeorgeViewRecordStage />', () => {
         it('renders empty state when there is no LG record', async () => {
             renderComponent({ downloadStage: DOWNLOAD_STAGE.NO_RECORDS });
 
-            await screen.findByText(/This patient does not have a Lloyd George record/i);
+            expect(screen.getByText(/This patient does not have a Lloyd George record/i)).toBeInTheDocument();;
+            
         });
 
         it('shows full screen mode with patient info', async () => {
