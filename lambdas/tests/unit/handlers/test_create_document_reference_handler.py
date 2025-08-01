@@ -128,6 +128,18 @@ def test_create_document_reference_with_nhs_number_not_in_pds_returns_404(
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
+
+def test_cdr_request_including_non_pdf_files_returns_400(
+    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+):
+    mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
+        400, LambdaError.CreateDocFiles)
+    
+    expected = ApiGatewayResponse(
+        400, LambdaError.CreateDocFiles, "POST"
+    ).create_api_gateway_response()
+    actual = lambda_handler(lg_type_event, context)
+    assert actual == expected
     
 
 @pytest.mark.parametrize("environment_variable", arf_environment_variables)

@@ -70,12 +70,15 @@ def lambda_handler(event, context):
             nhs_number_query_string, doc_list
         )
     
-    except SearchPatientException as e:
+    except (
+        SearchPatientException,
+        CreateDocumentRefException
+    ) as e:
         logger.error(e.error.to_str())
         return ApiGatewayResponse(
             e.status_code, e.error, "POST"
         ).create_api_gateway_response()
-
+    
     return ApiGatewayResponse(
         200, json.dumps(url_references), "POST"
     ).create_api_gateway_response()
