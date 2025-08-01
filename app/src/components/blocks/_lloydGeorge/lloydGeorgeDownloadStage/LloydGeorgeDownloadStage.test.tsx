@@ -7,7 +7,6 @@ import {
 } from '../../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
 import usePatient from '../../../../helpers/hooks/usePatient';
-import { LinkProps } from 'react-router-dom';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { MemoryHistory, createMemoryHistory } from 'history';
@@ -22,7 +21,7 @@ vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual('react-router-dom');
     return {
         ...actual,
-        Link: (props: LinkProps) => <a {...props} role="link" />,
+        Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
         useNavigate: () => mockedUseNavigate,
     };
 });

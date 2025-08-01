@@ -4,7 +4,7 @@ import {
 } from './uploadDocumentValidation';
 import {
     buildDocument,
-    buildLgFile,
+    buildLgFileOld,
     buildPatientDetails,
     buildTextFile,
 } from '../test/testBuilders';
@@ -35,8 +35,8 @@ describe('uploadDocumentValidation', () => {
         });
 
         it('detect files larger than 5 GB', () => {
-            const largeFile = buildLgFile(1, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
-            const normalFile = buildLgFile(2, 2, 'Joe Blogs');
+            const largeFile = buildLgFileOld(1, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
+            const normalFile = buildLgFileOld(2, 2, 'Joe Blogs');
             const testUploadDocuments = [largeFile, normalFile].map((file) =>
                 buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
             );
@@ -54,7 +54,7 @@ describe('uploadDocumentValidation', () => {
             const nonPdfFile = buildTextFile(
                 '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
             );
-            const normalFile = buildLgFile(2, 2, 'Joe Blogs');
+            const normalFile = buildLgFileOld(2, 2, 'Joe Blogs');
             const testUploadDocuments = [nonPdfFile, normalFile].map((file) =>
                 buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
             );
