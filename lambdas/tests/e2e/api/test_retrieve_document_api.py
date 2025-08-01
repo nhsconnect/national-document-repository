@@ -3,6 +3,7 @@ import os
 import uuid
 
 import requests
+from tests.e2e.conftest import LLOYD_GEORGE_SNOMED
 from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 
 data_helper = LloydGeorgeDataHelper()
@@ -22,7 +23,7 @@ def test_small_file(test_data, snapshot):
     data_helper.create_metadata(lloyd_george_record)
     data_helper.create_resource(lloyd_george_record)
 
-    url = f"https://{api_endpoint}/FhirDocumentReference/16521000000101~{lloyd_george_record['id']}"
+    url = f"https://{api_endpoint}/FhirDocumentReference/{LLOYD_GEORGE_SNOMED}~{lloyd_george_record['id']}"
     headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
     response = requests.request("GET", url, headers=headers)
     json = response.json()
@@ -47,7 +48,7 @@ def test_large_file(test_data, snapshot):
     data_helper.create_metadata(lloyd_george_record)
     data_helper.create_resource(lloyd_george_record)
 
-    url = f"https://{api_endpoint}/FhirDocumentReference/16521000000101~{lloyd_george_record['id']}"
+    url = f"https://{api_endpoint}/FhirDocumentReference/{LLOYD_GEORGE_SNOMED}~{lloyd_george_record['id']}"
     headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
     response = requests.request("GET", url, headers=headers)
     json = response.json()
@@ -66,7 +67,7 @@ def test_no_file_found(snapshot):
     lloyd_george_record = {}
     lloyd_george_record["id"] = str(uuid.uuid4())
 
-    url = f"https://{api_endpoint}/FhirDocumentReference/16521000000101~{lloyd_george_record['id']}"
+    url = f"https://{api_endpoint}/FhirDocumentReference/{LLOYD_GEORGE_SNOMED}~{lloyd_george_record['id']}"
     headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
     response = requests.request("GET", url, headers=headers)
     json = response.json()
@@ -86,7 +87,7 @@ def test_preliminary_file(test_data, snapshot):
     data_helper.create_metadata(lloyd_george_record)
     data_helper.create_resource(lloyd_george_record)
 
-    url = f"https://{api_endpoint}/FhirDocumentReference/16521000000101~{lloyd_george_record['id']}"
+    url = f"https://{api_endpoint}/FhirDocumentReference/{LLOYD_GEORGE_SNOMED}~{lloyd_george_record['id']}"
     headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
     response = requests.request("GET", url, headers=headers)
     json = response.json()
