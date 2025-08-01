@@ -1,44 +1,162 @@
 // need to use happy-dom for this test file as jsdom doesn't support DOMMatrix https://github.com/jsdom/jsdom/issues/2647
 // @vitest-environment happy-dom
-import { render, waitFor, screen } from '@testing-library/react';
+import { render, waitFor, screen, fireEvent } from '@testing-library/react';
 import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
-import DocumentSelectStage from './DocumentSelectStage';
+import DocumentSelectStage, { Props } from './DocumentSelectStage';
+import { buildLgFile } from '../../../../helpers/test/testBuilders';
+import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
+import * as ReactRouter from 'react-router-dom';
+import { MemoryHistory, createMemoryHistory } from 'history';
+import { routeChildren } from '../../../../types/generic/routes';
 
-const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
-vi.mock('react-router-dom', () => ({
-    useNavigate: () => mockNavigate,
-}));
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
+        useNavigate: () => mockedUseNavigate,
+    };
+});
+vi.mock('pdfjs-dist');
 
 URL.createObjectURL = vi.fn();
+const mockedUseNavigate = vi.fn();
+
+let history = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
+});
 
 describe('DocumentSelectStage', () => {
-    let documents: UploadDocument[] = [];
     beforeEach(() => {
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
-        documents = [];
+        history = createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 });
     });
     afterEach(() => {
         vi.clearAllMocks();
     });
 
-    describe('Rendering', () => {
-        it('renders', async () => {
-            render(
-                <DocumentSelectStage
-                    documents={documents}
-                    setDocuments={() => {}}
-                    documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                />,
-            );
+    it('renders correctly', async () => {
+        renderApp(history);
+
+        await waitFor(async () => {
+            expect(screen.getByText('Choose Lloyd George files to upload')).toBeInTheDocument();
+        });
+    });
+
+    it.each([
+        { doc_type: DOCUMENT_TYPE.LLOYD_GEORGE, title: 'Lloyd George files' },
+        { doc_type: DOCUMENT_TYPE.ALL, title: 'files' },
+    ])('should render the correct title based on document type', async (theory) => {
+        renderApp(history, theory.doc_type);
+
+        await waitFor(async () => {
+            expect(screen.getByText(`Choose ${theory.title} to upload`)).toBeInTheDocument();
+        });
+    });
+
+    describe('file handling', () => {
+        let lgDocumentOne: File, lgDocumentTwo: File;
+        beforeEach(async () => {
+            lgDocumentOne = await buildLgFile(1);
+            lgDocumentTwo = await buildLgFile(2);
+        });
+
+        it('can upload PDF file using drag and drop and button', async () => {
+            renderApp(history);
+
+            const uploadInput = screen.getByTestId('button-input');
+            const dropzone = screen.getByTestId('dropzone');
+
+            expect(
+                screen.getByText('Drag and drop a file or multiple files here'),
+            ).toBeInTheDocument();
+            expect(dropzone);
+
+            fireEvent.drop(dropzone, { dataTransfer: { files: [lgDocumentOne] } });
+
+            const file1 = await screen.findByText(lgDocumentOne.name);
+            expect(file1).toBeInTheDocument();
+
+            await userEvent.upload(uploadInput, lgDocumentTwo);
+
+            const file2 = await screen.findByText(lgDocumentTwo.name);
+            expect(file2).toBeInTheDocument();
+        });
+
+        it('can select and then remove a file', async () => {
+            renderApp(history);
+
+            await userEvent.upload(screen.getByTestId('button-input'), [
+                lgDocumentOne,
+                lgDocumentTwo,
+            ]);
+
+            let removeFile: HTMLElement;
+            await waitFor(async () => {
+                removeFile = await screen.findByRole('button', {
+                    name: `Remove ${lgDocumentTwo.name} from selection`,
+                });
+            });
+
+            await userEvent.click(removeFile!);
 
             await waitFor(async () => {
-                expect(
-                    screen.getByText(
-                        'Make sure that all files uploaded are for this patient only.',
-                    ),
-                ).toBeInTheDocument();
+                expect(screen.getByText(lgDocumentOne.name)).toBeInTheDocument();
+                expect(screen.queryByText(lgDocumentTwo.name)).not.toBeInTheDocument();
             });
         });
     });
+
+    describe('Navigation', () => {
+        it('should navigate to the remove all screen when clicking remove all files', async () => {
+            renderApp(history);
+            const lgDocumentOne = await buildLgFile(1);
+
+            await userEvent.upload(screen.getByTestId('button-input'), [lgDocumentOne]);
+
+            await userEvent.click(await screen.findByTestId('remove-all-button'));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL,
+                );
+            });
+        });
+
+        it('should navigate to the previous screen when go back is clicked', async () => {
+            renderApp(history);
+
+            await userEvent.click(await screen.findByTestId('back-button'));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(-1);
+            });
+        });
+    });
+
+    const TestApp = (props: Partial<Props>) => {
+        const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
+
+        return (
+            <DocumentSelectStage
+                documents={documents}
+                setDocuments={setDocuments}
+                documentType={props.documentType || DOCUMENT_TYPE.LLOYD_GEORGE}
+            />
+        );
+    };
+
+    const renderApp = (
+        history: MemoryHistory,
+        docType: DOCUMENT_TYPE = DOCUMENT_TYPE.LLOYD_GEORGE,
+    ) => {
+        return render(
+            <ReactRouter.Router navigator={history} location={history.location}>
+                <TestApp documentType={docType} />
+            </ReactRouter.Router>,
+        );
+    };
 });
