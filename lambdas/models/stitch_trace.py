@@ -1,4 +1,3 @@
-from typing import Union
 import uuid
 from datetime import datetime, timezone
 
@@ -27,7 +26,7 @@ class StitchTrace(BaseModel):
     file_last_updated: str = ""
     total_file_size_in_bytes: int = 0
     expire_at: int
-    deleted: Union[bool, str] = False
+    deleted: bool = False
 
     def convert_created_to_datetime(self):
         return datetime.fromisoformat(self.created.replace("Z", "+00:00"))
