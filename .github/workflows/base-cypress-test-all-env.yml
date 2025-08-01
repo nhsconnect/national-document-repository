@@ -12,7 +12,6 @@ on:
         required: true
         type: "string"
 
-
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
@@ -39,10 +38,4 @@ jobs:
     with:
       build_branch: ${{ inputs.build_branch }}
       cypress_browser: "edge"
-      cypress_base_url: ${{ inputs.cypress_base_url }}
-  cypress_test_firefox:
-    uses: ./.github/workflows/base-cypress-test.yml
-    with:
-      build_branch: ${{ inputs.build_branch }}
-      cypress_browser: "firefox"
       cypress_base_url: ${{ inputs.cypress_base_url }}

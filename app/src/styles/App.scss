@@ -545,8 +545,15 @@ $hunit: '%';
         padding: 32px;
         align-items: center;
         gap: 34px;
-        border: 1px dashed #212b32;
+        border: 2px dashed $nhsuk-secondary-button-text-color;
+        border-radius: 4px;
         background: #d8dde0;
+        display: flex;
+        flex-direction: column;
+
+        .nhsuk-button--secondary {
+            background-color: white;
+        }
     }
 
     &_link {
