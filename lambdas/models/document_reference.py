@@ -55,7 +55,7 @@ class DocumentReference(BaseModel):
     )
     current_gp_ods: str = Field(default=None)
     custodian: str = Field(default=None)
-    deleted: Union[bool, str] = Field(default=None)
+    deleted: Optional[str] = Field(default=None)
     doc_status: Literal[
         "registered",
         "partial",
