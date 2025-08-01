@@ -7,7 +7,8 @@ import TestToggle, { ToggleProps } from './TestToggle';
 
 function TestPanel() {
     const [config, setConfig] = useConfigContext();
-    const { recordUploaded, userRole, patientIsActive, uploading } = config.mockLocal;
+    const { recordUploaded, userRole, patientIsActive, uploading, patientIsDeceased } =
+        config.mockLocal;
 
     const updateLocalFlag = (key: keyof LocalFlags, value: boolean | REPOSITORY_ROLE) => {
         setConfig({
@@ -49,6 +50,13 @@ function TestPanel() {
             checked: !!recordUploaded,
             onChange: () => {
                 updateLocalFlag('recordUploaded', !recordUploaded);
+            },
+        },
+        'deceased-toggle': {
+            label: 'Patient is deceased',
+            checked: !!patientIsDeceased,
+            onChange: () => {
+                updateLocalFlag('patientIsDeceased', !patientIsDeceased);
             },
         },
         'uploading-toggle': {
