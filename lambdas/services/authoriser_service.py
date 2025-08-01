@@ -6,6 +6,7 @@ from services.manage_user_session_access import ManageUserSessionAccess
 from services.token_service import TokenService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
+from utils.lambda_exceptions import CreateDocumentRefException
 from utils.request_context import request_context
 from utils.utilities import redact_id_to_last_4_chars
 
@@ -65,41 +66,51 @@ class AuthoriserService:
 
         except (KeyError, IndexError) as e:
             raise AuthorisationException(e)
+        
+        except (
+            CreateDocumentRefException
+        ) as e: 
+            raise
 
     def deny_access_policy(self, path, user_role, nhs_number: str = None):
         logger.info(f"Path: {path}")
 
-        deny_access_to_patient = (
+        # deny_access_policy = True (deny access)
+        # deny_access_policy = False (allow access)
+
+        patient_is_not_allowed = (
             nhs_number not in self.allowed_nhs_numbers if nhs_number else False
         )
-        deny_access_to_deceased_patient = (
+        patient_is_not_deceased = (
             nhs_number not in self.deceased_nhs_numbers if nhs_number else False
         )
-        deny_access_to_admin_role = user_role == RepositoryRole.GP_ADMIN.value
-        deny_access_to_clinical_role = user_role == RepositoryRole.GP_CLINICAL.value
-        deny_access_to_pcse_role = user_role == RepositoryRole.PCSE.value
+        is_user_gp_admin = user_role == RepositoryRole.GP_ADMIN.value
+        is_user_gp_clinical = user_role == RepositoryRole.GP_CLINICAL.value
+        is_user_pcse = user_role == RepositoryRole.PCSE.value
 
         match path:
             case "/AccessAudit":
-                deny_resource = deny_access_to_deceased_patient
+                deny_resource = patient_is_not_deceased
 
             case "/DocumentDelete":
-                deny_resource = deny_access_to_patient or deny_access_to_clinical_role
+                deny_resource = patient_is_not_allowed or is_user_gp_clinical
 
             case "/DocumentManifest":
-                deny_resource = deny_access_to_patient or deny_access_to_clinical_role
+                deny_resource = patient_is_not_allowed or is_user_gp_clinical
 
             case "/CreateDocumentReference":
                 deny_resource = (
-                    deny_access_to_patient
-                    or deny_access_to_clinical_role
-                    or deny_access_to_pcse_role
+                    patient_is_not_allowed
+                    or is_user_gp_clinical
+                    or is_user_pcse
                 )
-                if not deny_access_to_admin_role and not deny_access_to_clinical_role:
+                if not patient_is_not_deceased:
+                    raise CreateDocumentRefException(422, LambdaError.CreateDocRefPatientDeceased)
+                if not is_user_gp_admin and not is_user_gp_clinical:
                     raise AuthorisationException(403, LambdaError.CreateDocRefUserForbidden)
 
             case "/LloydGeorgeStitch":
-                deny_resource = deny_access_to_patient or deny_access_to_pcse_role
+                deny_resource = patient_is_not_allowed or is_user_pcse
 
             case "/OdsReport":
                 deny_resource = False
@@ -109,27 +120,27 @@ class AuthoriserService:
 
             case "/UploadConfirm":
                 deny_resource = (
-                    deny_access_to_patient
-                    or deny_access_to_clinical_role
-                    or deny_access_to_pcse_role
+                    patient_is_not_allowed
+                    or is_user_gp_clinical
+                    or is_user_pcse
                 )
 
             case "/UploadState":
                 deny_resource = (
-                    deny_access_to_patient
-                    or deny_access_to_clinical_role
-                    or deny_access_to_pcse_role
+                    patient_is_not_allowed
+                    or is_user_gp_clinical
+                    or is_user_pcse
                 )
 
             case "/VirusScan":
                 deny_resource = (
-                    deny_access_to_patient
-                    or deny_access_to_clinical_role
-                    or deny_access_to_pcse_role
+                    patient_is_not_allowed
+                    or is_user_gp_clinical
+                    or is_user_pcse
                 )
 
             case _:
-                deny_resource = deny_access_to_patient
+                deny_resource = patient_is_not_allowed
 
         logger.info("Allow resource: %s" % (not deny_resource))
 

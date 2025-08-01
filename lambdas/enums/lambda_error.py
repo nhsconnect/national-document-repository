@@ -93,6 +93,10 @@ class LambdaError(Enum):
         "err_code": "CDR_4010",
         "message": "User forbidden"
     }
+    CreateDocRefPatientDeceased = {
+        "err_code": "CDR_4010",
+        "message": "Patient is deceased"
+    }
     CreateDocPresign = {
         "err_code": "CDR_5001",
         "message": "An error occurred when creating pre-signed url for document reference",

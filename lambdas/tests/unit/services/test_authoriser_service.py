@@ -5,6 +5,7 @@ from enums.repository_role import RepositoryRole
 from services.authoriser_service import AuthoriserService
 from tests.unit.helpers.data.create_document_reference import UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE
 from utils.exceptions import AuthorisationException
+from utils.lambda_exceptions import CreateDocumentRefException, LambdaException
 from utils.lambda_response import ApiGatewayResponse
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:74747474747474:<<restApiId>/dev"
@@ -126,15 +127,36 @@ def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
 
 
 def test_create_document_reference_as_non_gp_admin_returns_403(
-    mock_auth_service: AuthoriserService,
+    mock_auth_service: AuthoriserService
 ):
-    expected_status_code = 403
-    expected_error = LambdaError.CreateDocRefUserForbidden
 
     with pytest.raises(AuthorisationException) as e:
         mock_auth_service.deny_access_policy(
-            "/CreateDocumentReference", RepositoryRole.PCSE.value, "900000002"
-        )
+            "/CreateDocumentReference",
+            RepositoryRole.PCSE.value,
+            "122222222")
+
+    expected_status_code = 403
+    expected_error = LambdaError.CreateDocRefUserForbidden
+
+    assert e.value.args[0] == expected_status_code
+    assert e.value.args[1] == expected_error
+
+
+def test_create_document_reference_on_deceased_patient_returns_422(
+    mock_auth_service: AuthoriserService
+):
+
+    mock_auth_service.deceased_nhs_numbers.append("122222222")
+
+    with pytest.raises(CreateDocumentRefException) as e:
+        mock_auth_service.deny_access_policy(
+            "/CreateDocumentReference",
+            any(RepositoryRole),
+            "122222222")
+
+    expected_status_code = 422
+    expected_error = LambdaError.CreateDocRefPatientDeceased
 
     assert e.value.args[0] == expected_status_code
     assert e.value.args[1] == expected_error

@@ -9,6 +9,7 @@ This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS O
 See the License for the specific language governing permissions and limitations under the License.
 """
 
+import json
 import os
 
 from botocore.exceptions import ClientError
@@ -21,6 +22,8 @@ from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import AuthorisationException
+from utils.lambda_exceptions import CreateDocumentRefException
+from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)
@@ -65,6 +68,12 @@ def lambda_handler(event, context):
     except (AuthorisationException, ClientError) as e:
         logger.error(str(e), {"Result": "Failed to authenticate user"})
         policy.deny_all_methods()
+    
+    except CreateDocumentRefException as e:
+        logger.error(str(e), {"Result": "Patient is deceased"})
+        return ApiGatewayResponse(
+            e.status_code, e.error, "POST"
+        ).create_api_gateway_response()
 
     auth_response = policy.build()
     return auth_response
