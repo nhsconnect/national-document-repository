@@ -2,21 +2,13 @@ import PDFMerger from 'pdf-merger-js/browser';
 import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import PdfViewer from '../../../generic/pdfViewer/PdfViewer';
-import Spinner from '../../../generic/spinner/Spinner';
 
 type Props = {
     documents: UploadDocument[];
-    previewLoading: boolean;
-    setPreviewLoading: Dispatch<SetStateAction<boolean>>;
     setMergedPdfBlob: Dispatch<SetStateAction<Blob | undefined>>;
 };
 
-const DocumentUploadLloydGeorgePreview = ({
-    documents,
-    previewLoading,
-    setPreviewLoading,
-    setMergedPdfBlob,
-}: Props) => {
+const DocumentUploadLloydGeorgePreview = ({ documents, setMergedPdfBlob }: Props) => {
     const [mergedPdfUrl, setMergedPdfUrl] = useState('');
 
     const runningRef = useRef(false);
@@ -58,13 +50,10 @@ const DocumentUploadLloydGeorgePreview = ({
             const url = URL.createObjectURL(blob);
 
             runningRef.current = false;
-            setPreviewLoading(false);
             return setMergedPdfUrl(url);
         };
 
-        setPreviewLoading(true);
         render().catch((err) => {
-            setPreviewLoading(false);
             runningRef.current = false;
             throw err;
         });
@@ -74,8 +63,7 @@ const DocumentUploadLloydGeorgePreview = ({
 
     return (
         <>
-            {previewLoading && <Spinner status="Loading preview..."></Spinner>}
-            {documents && mergedPdfUrl && !previewLoading && (
+            {documents && mergedPdfUrl && (
                 <PdfViewer
                     customClasses={['upload-preview']}
                     fileUrl={mergedPdfUrl}
