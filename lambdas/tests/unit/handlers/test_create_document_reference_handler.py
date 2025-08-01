@@ -7,6 +7,7 @@ from handlers.create_document_reference_handler import (
     lambda_handler,
     processing_event_details,
 )
+from services.create_document_reference_service import CreateDocumentReferenceService
 from tests.unit.conftest import MOCK_STAGING_STORE_BUCKET, TEST_NHS_NUMBER, TEST_UUID
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
@@ -142,6 +143,36 @@ def test_cdr_request_including_non_pdf_files_returns_400(
     assert actual == expected
     
 
+def test_cdr_request_when_lgr_already_exists_returns_422(
+    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+):
+    mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
+        422, LambdaError.CreateDocRecordAlreadyInPlace)
+    
+    expected = ApiGatewayResponse(
+        422, LambdaError.CreateDocRecordAlreadyInPlace, "POST"
+    ).create_api_gateway_response()
+    actual = lambda_handler(lg_type_event, context)
+    assert actual == expected
+
+    mock_cdrService.create_document_reference_request.assert_called_once()
+
+
+def test_cdr_request_when_lgr_is_in_process_of_uploading_returns_423(
+    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+):
+    mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
+        423, LambdaError.UploadInProgressError)
+    
+    expected = ApiGatewayResponse(
+        423, LambdaError.UploadInProgressError, "POST"
+    ).create_api_gateway_response()
+    actual = lambda_handler(lg_type_event, context)
+    assert actual == expected
+
+    mock_cdrService.create_document_reference_request.assert_called_once()
+    
+
 @pytest.mark.parametrize("environment_variable", arf_environment_variables)
 def test_lambda_handler_missing_environment_variables_type_staging_returns_500(
     set_env,
@@ -240,32 +271,6 @@ def test_lambda_handler_processing_event_details_raise_error(
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
     assert expected == actual
-    mock_processing_event_details.assert_called_with(arf_type_event)
-
-
-def test_lambda_handler_service_raise_error(
-    arf_type_event,
-    context,
-    set_env,
-    mock_processing_event_details,
-    mock_upload_lambda_enabled,
-    mock_cdrService,
-):
-    mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
-    mock_cdrService.create_document_reference_request.side_effect = (
-        CreateDocumentRefException(400, MockError.Error),
-    )
-
-    expected = ApiGatewayResponse(
-        400,
-        json.dumps(MockError.Error.value),
-        "POST",
-    ).create_api_gateway_response()
-    actual = lambda_handler(arf_type_event, context)
-    assert expected == actual
-    mock_cdrService.create_document_reference_request.assert_called_with(
-        TEST_NHS_NUMBER, ARF_FILE_LIST
-    )
     mock_processing_event_details.assert_called_with(arf_type_event)
 
 

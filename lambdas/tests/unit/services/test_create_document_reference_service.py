@@ -483,8 +483,7 @@ def test_create_document_reference_request_lg_upload_throw_lambda_error_if_got_a
     mock_fetch_document,
     mock_create_reference_in_dynamodb,
 ):
-    mock_records_complete_upload = create_test_lloyd_george_doc_store_refs()
-    mock_fetch_document.return_value = mock_records_complete_upload
+    mock_fetch_document.return_value = create_test_lloyd_george_doc_store_refs()
 
     with pytest.raises(CreateDocumentRefException) as e:
         mock_create_doc_ref_service.create_document_reference_request(
@@ -492,7 +491,7 @@ def test_create_document_reference_request_lg_upload_throw_lambda_error_if_got_a
         )
 
     assert e.value == CreateDocumentRefException(
-        400, LambdaError.CreateDocRecordAlreadyInPlace
+        422, LambdaError.CreateDocRecordAlreadyInPlace
     )
 
     mock_create_reference_in_dynamodb.assert_not_called()
@@ -756,59 +755,41 @@ def test_check_existing_lloyd_george_records_does_nothing_if_no_record_exist(
 
 @freeze_time("2023-10-30T10:25:00")
 def test_check_existing_lloyd_george_records_throw_error_if_upload_in_progress(
-    mock_create_doc_ref_service, mock_fetch_document
+    mock_create_doc_ref_service, mock_fetch_document, mock_remove_records
 ):
     two_minutes_ago = 1698661380  # 2023-10-30T10:23:00
-    mock_records_upload_in_process = create_test_lloyd_george_doc_store_refs(
+    mock_fetch_document.return_value = create_test_lloyd_george_doc_store_refs(
         override={"uploaded": False, "uploading": True, "last_updated": two_minutes_ago}
     )
-    mock_fetch_document.return_value = mock_records_upload_in_process
 
-    with pytest.raises(CreateDocumentRefException) as e:
-        mock_create_doc_ref_service.stop_if_upload_is_in_process(
-            mock_records_upload_in_process
+    with pytest.raises(Exception) as e:
+        mock_create_doc_ref_service.check_existing_lloyd_george_records_and_remove_failed_upload(
+            TEST_NHS_NUMBER
         )
-    assert e.value == CreateDocumentRefException(423, LambdaError.UploadInProgressError)
+    ex = e.value
+    assert isinstance(ex, CreateDocumentRefException)
+    assert ex.status_code == 423
+    assert ex.message == "Records are in the process of being uploaded"
+
+    mock_remove_records.assert_not_called()
 
 
 def test_check_existing_lloyd_george_records_throw_error_if_got_a_full_set_of_uploaded_record(
-    mock_create_doc_ref_service, mock_fetch_document
+    mock_create_doc_ref_service, mock_fetch_document, mock_remove_records
 ):
-    mock_records_complete_upload = create_test_lloyd_george_doc_store_refs()
-    with pytest.raises(CreateDocumentRefException) as e:
-        mock_create_doc_ref_service.stop_if_all_records_uploaded(
-            mock_records_complete_upload
+    mock_fetch_document.return_value = create_test_lloyd_george_doc_store_refs()
+
+    with pytest.raises(Exception) as e:
+        mock_create_doc_ref_service.check_existing_lloyd_george_records_and_remove_failed_upload(
+            TEST_NHS_NUMBER
         )
 
-    assert e.value == CreateDocumentRefException(
-        400, LambdaError.CreateDocRecordAlreadyInPlace
-    )
+    ex = e.value
+    assert isinstance(ex, CreateDocumentRefException)
+    assert ex.status_code == 422
+    assert ex.message == "The patient already has a full set of record."
 
-
-@freeze_time("2023-10-30T10:25:00")
-def test_stop_if_upload_is_in_process_raise_lambda_error(mock_create_doc_ref_service):
-    two_minutes_ago = 1698661380  # 2023-10-30T10:23:00
-    mock_records_upload_in_process = create_test_lloyd_george_doc_store_refs(
-        override={"uploaded": False, "uploading": True, "last_updated": two_minutes_ago}
-    )
-    with pytest.raises(CreateDocumentRefException) as e:
-        mock_create_doc_ref_service.stop_if_upload_is_in_process(
-            mock_records_upload_in_process
-        )
-
-    assert e.value == CreateDocumentRefException(423, LambdaError.UploadInProgressError)
-
-
-def test_stop_if_all_records_uploaded_raise_lambda_error(mock_create_doc_ref_service):
-    mock_records_complete_upload = create_test_lloyd_george_doc_store_refs()
-    with pytest.raises(CreateDocumentRefException) as e:
-        mock_create_doc_ref_service.stop_if_all_records_uploaded(
-            mock_records_complete_upload
-        )
-
-    assert e.value == CreateDocumentRefException(
-        400, LambdaError.CreateDocRecordAlreadyInPlace
-    )
+    mock_remove_records.assert_not_called()
 
 
 def test_remove_records_of_failed_upload(mock_create_doc_ref_service, mocker):

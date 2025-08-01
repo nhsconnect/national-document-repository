@@ -128,7 +128,12 @@ class CreateDocumentReferenceService:
             PatientNotFoundException
         ) as e: 
             raise SearchPatientException(404, LambdaError.SearchPatientNoPDS)
-
+        
+        except (
+            CreateDocumentRefException
+        ) as e: 
+            raise
+        
         except (
             InvalidNhsNumberException,
             LGInvalidFilesException,
@@ -277,7 +282,7 @@ class CreateDocumentReferenceService:
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
             raise CreateDocumentRefException(
-                400, LambdaError.CreateDocRecordAlreadyInPlace
+                422, LambdaError.CreateDocRecordAlreadyInPlace
             )
 
     def remove_records_of_failed_upload(
