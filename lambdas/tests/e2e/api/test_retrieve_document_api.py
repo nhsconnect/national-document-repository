@@ -2,7 +2,6 @@ import io
 import os
 import uuid
 
-import pytest
 import requests
 from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 
@@ -10,14 +9,6 @@ data_helper = LloydGeorgeDataHelper()
 
 api_endpoint = os.environ.get("NDR_API_ENDPOINT")
 api_key = os.environ.get("NDR_API_KEY")
-
-
-@pytest.fixture
-def test_data():
-    test_records = []
-    yield test_records
-    for record in test_records:
-        data_helper.tidyup(record)
 
 
 def test_small_file(test_data, snapshot):
@@ -104,5 +95,3 @@ def test_preliminary_file(test_data, snapshot):
     del json["id"]
 
     assert json == snapshot
-
-
