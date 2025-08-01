@@ -1,20 +1,24 @@
 import { Button, Select, Table } from 'nhsuk-react-components';
+import React, { Dispatch, SetStateAction, useEffect, useRef } from 'react';
+import { FieldErrors, FieldValues, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import {
+    fileUploadErrorMessages,
+    UPLOAD_FILE_ERROR_TYPE,
+} from '../../../../helpers/utils/fileUploadErrorMessages';
+import { routeChildren, routes } from '../../../../types/generic/routes';
+import { SelectRef } from '../../../../types/generic/selectRef';
 import {
     DOCUMENT_TYPE,
     SetUploadDocuments,
     UploadDocument,
+    UploadFilesErrors,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
-import { FieldValues, useForm } from 'react-hook-form';
-import { SelectRef } from '../../../../types/generic/selectRef';
-import { useNavigate } from 'react-router-dom';
 import BackButton from '../../../generic/backButton/BackButton';
-import { Dispatch, SetStateAction, useRef } from 'react';
+import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import { routeChildren, routes } from '../../../../types/generic/routes';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
-import React from 'react';
 
 type Props = {
     documents: UploadDocument[];
@@ -29,30 +33,26 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
     const navigate = useNavigate();
 
     const documentPositionKey = (documentId: string): string => {
-        return `document-${documentId}-position`;
+        return `${documentId}`;
     };
 
-    const getFormValues = () => {
-        let formData: FormData = {};
-
-        documents.forEach((doc) => {
-            formData[documentPositionKey(doc.id)] = doc.position!;
-        });
-
-        return formData;
-    };
-
-    const { handleSubmit, getValues, register, unregister, formState, setError } =
+    const { handleSubmit, getValues, register, unregister, formState, setValue } =
         useForm<FormData>({
-            reValidateMode: 'onChange',
+            reValidateMode: 'onSubmit',
             shouldFocusError: true,
-            values: getFormValues(),
         });
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
     const pageTitle = 'What order do you want these files in?';
     useTitle({ pageTitle });
+
+    useEffect(() => {
+        documents.forEach((doc) => {
+            const key = documentPositionKey(doc.id);
+            setValue(key, doc.position || documents.findIndex((d) => d.id === doc.id) + 1);
+        });
+    }, [documents.length]); // Only run when documents array length changes
 
     const DocumentPositionDropdown = (
         documentId: string,
@@ -61,27 +61,18 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         const key = documentPositionKey(documentId);
 
         const { ref: dropdownInputRef, ...dropdownProps } = register(key, {
-            validate: () => {
-                const fieldValues = getValues();
-
-                const values = Object.values(fieldValues).map((v) => +v!);
-
-                if (values.some((v) => v === 0)) {
-                    setError('root', {
-                        type: 'manual',
-                        message: 'Please select a position for every document',
-                    });
-                    scrollToRef.current?.scrollIntoView();
+            validate: (value, fieldValues) => {
+                if (!value || +value === 0) {
                     return 'Please select a position for every document';
                 }
 
-                if (new Set(values).size !== values.length) {
-                    setError('root', {
-                        type: 'manual',
-                        message: 'Please ensure all documents have a unique position selected',
-                    });
-                    scrollToRef.current?.scrollIntoView();
-                    return 'Please ensure all documents have a unique position selected';
+                // Check if any other form field has the same value
+                const otherFieldsWithSameValue = Object.keys(fieldValues).filter(
+                    (k) => k !== key && Number(fieldValues[k]) === Number(value),
+                );
+
+                if (otherFieldsWithSameValue.length > 0) {
+                    return fileUploadErrorMessages.duplicatePositionError.inline;
                 }
 
                 return true;
@@ -89,26 +80,51 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
             onChange: updateDocumentPositions,
         });
 
+        const hasErr = !!formState.errors[key];
+        const ariaDescribedBy = hasErr ? `${key}-error` : undefined;
+        const document = documents.find((doc) => doc.id === documentId)!;
+
         return (
-            <Select
-                className="nhsuk-select"
-                key={key}
-                data-testid={key}
-                selectRef={dropdownInputRef as SelectRef}
-                {...dropdownProps}
-                defaultValue={currentPosition}
-                aria-label="Select document position"
-            >
-                <option key={`${documentId}_position_blank`} value=""></option>
-                {documents.map((_, index) => {
-                    const position = index + 1;
-                    return (
-                        <option key={`${documentId}_position_${position}`} value={position}>
-                            {position}
-                        </option>
-                    );
-                })}
-            </Select>
+            <div className={'nhsuk-form-group ' + (hasErr ? ' nhsuk-form-group--error' : '')}>
+                <fieldset
+                    className="nhsuk-fieldset"
+                    aria-describedby={`${document.file.name}`}
+                    role="group"
+                >
+                    <span>
+                        {hasErr && (
+                            <span className="nhsuk-error-message" id={`${key}-error`}>
+                                <span className="nhsuk-u-visually-hidden">Error:</span>
+                                <>{formState.errors[key]?.message}</>
+                            </span>
+                        )}
+                        <Select
+                            aria-describedby={ariaDescribedBy}
+                            aria-invalid={hasErr}
+                            aria-label="Select document position"
+                            className="nhsuk-select"
+                            data-testid={key}
+                            defaultValue={currentPosition}
+                            id={`${key}-select`}
+                            key={`${key}-select`}
+                            selectRef={dropdownInputRef as SelectRef}
+                            {...dropdownProps}
+                        >
+                            {documents.map((_, index) => {
+                                const position = index + 1;
+                                return (
+                                    <option
+                                        key={`${documentId}_position_${position}`}
+                                        value={position}
+                                    >
+                                        {position}
+                                    </option>
+                                );
+                            })}
+                        </Select>
+                    </span>
+                </fieldset>
+            </div>
         );
     };
 
@@ -146,27 +162,31 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
 
     const submitDocuments = () => {
         updateDocumentPositions();
-        if (formState.isValid && !formState.errors.root) {
-            navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
-        } else {
-            scrollToRef.current?.scrollIntoView();
+        if (documents.length === 1) {
+            navigate(routeChildren.DOCUMENT_UPLOAD_UPLOADING);
+            return;
         }
+        navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
     };
 
     const handleErrors = (_: FieldValues) => {
         scrollToRef.current?.scrollIntoView();
     };
 
-    const onContinue = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-
-        if (formState.isValid && !formState.errors.root) {
-            updateDocumentPositions();
-            navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
-        } else {
-            scrollToRef.current?.scrollIntoView();
-        }
-    };
+    const errorMessageList = (formStateErrors: FieldErrors<FormData>): UploadFilesErrors[] =>
+        Object.entries(formStateErrors)
+            .map(([key, error]) => {
+                const document = documents.find((doc) => doc.id === key);
+                if (!error || !document || !error.message) {
+                    return undefined;
+                }
+                return {
+                    filename: document.file.name,
+                    error: UPLOAD_FILE_ERROR_TYPE.duplicatePositionError,
+                    details: error.message,
+                };
+            })
+            .filter((item) => item !== undefined);
 
     return (
         <>
@@ -174,12 +194,12 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
             <h1>{pageTitle}</h1>
             <PatientSimpleSummary />
 
-            {formState.errors.root && (
+            {Object.keys(formState.errors).length > 0 && (
                 <ErrorBox
                     dataTestId="error-box"
                     errorBoxSummaryId="document-positions"
                     messageTitle="There is a problem"
-                    messageBody={formState.errors.root?.message}
+                    errorMessageList={errorMessageList(formState.errors)}
                     scrollToRef={scrollToRef}
                 />
             )}
@@ -279,35 +299,31 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                             })}
                     </Table.Body>
                 </Table>
-
-                {documents.some((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE) &&
-                    !formState.errors.root &&
-                    formState.isValid && (
-                        <>
-                            <h2>Preview this Lloyd George record</h2>
-                            <p>
-                                This shows how the final record will look when combined into a
-                                single document.
-                            </p>
-                            <p>
-                                Preview may take longer to load if there are many files or if
-                                individual files are large.
-                            </p>
-                            <DocumentUploadLloydGeorgePreview
-                                documents={documents
-                                    .filter((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE)
-                                    .sort((a, b) => a.position! - b.position!)}
-                                setMergedPdfBlob={setMergedPdfBlob}
-                            />
-                        </>
-                    )}
+                <div>
+                    <h2>Preview this Lloyd George record</h2>
+                    <p>
+                        This shows how the final record will look when combined into a single
+                        document.
+                    </p>
+                    <p>
+                        Preview may take longer to load if there are many files or if individual
+                        files are large.
+                    </p>
+                    <DocumentUploadLloydGeorgePreview
+                        documents={documents
+                            .filter((doc) => doc.docType === DOCUMENT_TYPE.LLOYD_GEORGE)
+                            .sort((a, b) => a.position! - b.position!)}
+                        setMergedPdfBlob={setMergedPdfBlob}
+                    />
+                </div>
                 {documents.length > 0 && (
                     <Button
                         type="submit"
                         id="form-submit"
                         data-testid="form-submit-button"
                         className="mt-4"
-                        onClick={onContinue}
+                        role="button"
+                        name="continue"
                     >
                         Continue
                     </Button>

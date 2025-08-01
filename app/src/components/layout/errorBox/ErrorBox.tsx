@@ -1,5 +1,5 @@
 import { ErrorSummary } from 'nhsuk-react-components';
-import { LegacyRef, MouseEvent } from 'react';
+import { Ref, MouseEvent } from 'react';
 import { UploadFilesErrors } from '../../../types/pages/UploadDocumentsPage/types';
 import { groupUploadErrorsByType } from '../../../helpers/utils/fileUploadErrorMessages';
 
@@ -13,7 +13,7 @@ type Props = {
     dataTestId?: string;
     errorOnClick?: () => void;
     errorMessageList?: UploadFilesErrors[];
-    scrollToRef?: LegacyRef<HTMLDivElement>;
+    scrollToRef?: Ref<HTMLDivElement>;
 };
 
 type UploadErrorMessagesProps = {
@@ -25,23 +25,22 @@ function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesP
 
     return (
         <>
-            {Object.entries(uploadErrorsGrouped).map(([errorType, { filenames, errorMessage }]) => (
-                <div key={errorType}>
-                    <p>{errorMessage}</p>
-                    <ErrorSummary.List>
-                        {filenames.map((filename) => (
-                            <ErrorSummary.Item href={'#' + filename} key={errorType + filename}>
-                                {filename}
+            {Object.entries(uploadErrorsGrouped).map(([errorType, { filenames, errorMessage }]) => {
+                const firstFile = filenames[0];
+                return (
+                    <div key={errorType}>
+                        <ErrorSummary.List>
+                            <ErrorSummary.Item href={'#' + firstFile} key={errorType + firstFile}>
+                                {errorMessage}
                             </ErrorSummary.Item>
-                        ))}
-                    </ErrorSummary.List>
-                </div>
-            ))}
+                        </ErrorSummary.List>
+                    </div>
+                );
+            })}
         </>
     );
 }
 
-// @ts-ignore
 const ErrorBox = ({
     errorBoxSummaryId,
     errorInputLink,

@@ -12,6 +12,7 @@ export enum UPLOAD_FILE_ERROR_TYPE {
     totalFileNumberUnmatchError = 'totalFileNumberUnmatchError',
     fileNumberMissingError = 'fileNumberMissingError',
     fileNumberOutOfRangeError = 'fileNumberOutOfRangeError',
+    duplicatePositionError = 'duplicatePositionError',
 }
 
 export function getInlineErrorMessage(uploadFileError: UploadFilesErrors): string {
@@ -102,5 +103,9 @@ export const fileUploadErrorMessages: errorMessageType = {
     fileNumberOutOfRangeError: {
         inline: 'The file number should be between 1 and the total file number',
         errorBox: 'Some file numbers are higher than the total file number',
+    },
+    duplicatePositionError: {
+        inline: 'You have selected the same position number for two or more files',
+        errorBox: 'You have selected the same position number for two or more files',
     },
 };
