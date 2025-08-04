@@ -1,7 +1,5 @@
 import argparse
 import json
-import logging
-import sys
 
 import boto3
 
@@ -16,33 +14,12 @@ def invoke_lambda(lambda_name, payload={}):
     return json.loads(response["Payload"].read())
 
 
-def update_lambda_environment_variables(lambda_name, variable):
-    session = boto3.Session()
-    lambda_client = session.client("lambda")
-
-    response = lambda_client.get_function_configuration(FunctionName=lambda_name)
-    current_environment = response["Environment"]["Variables"]
-    if current_environment.get("PDS_FHIR_IS_STUBBED"):
-        logging.info("Var exists for" + lambda_name)
-        updated_environment = current_environment.copy()
-        updated_environment.update(variable)
-
-        lambda_client.update_function_configuration(
-            FunctionName=lambda_name, Environment={"Variables": updated_environment}
-        )
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Bulk Upload Script")
 
     parser.add_argument(
         "--environment",
         help="The name of the environment",
-    )
-    parser.add_argument(
-        "--disable-pds-stub",
-        action="store_true",
-        help="Disable the PDS Stub",
     )
     parser.add_argument(
         "--start-bulk-upload",
@@ -55,29 +32,6 @@ if __name__ == "__main__":
     if not args.environment:
         args.environment = input("Please enter the name of the environment: ")
 
-    client = boto3.client("lambda")
-
-    paginator = client.get_paginator("list_functions")
-
-    response_iterator = paginator.paginate()
-
-    all_functions = []
-    for page in response_iterator:
-        all_functions.extend(page["Functions"])
-
-    lambdas_to_update = [
-        func["FunctionName"]
-        for func in all_functions
-        if func["FunctionName"].startswith(f"{args.environment}")
-    ]
-
-    if args.disable_pds_stub or (
-        sys.stdin.isatty()
-        and input("Would you like to disable the FHIR Stub: ").lower() == "y"
-    ):
-        variable = {"PDS_FHIR_IS_STUBBED": "false"}
-        for lambda_function in lambdas_to_update:
-            update_lambda_environment_variables(lambda_function, variable)
     if args.start_bulk_upload or input(
         "Would you like to start the Bulk Upload Process:"
     ):
