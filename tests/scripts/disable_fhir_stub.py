@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     if not args.environment:
         args.environment = input("Please enter the name of the environment: ")
-        lambdas_to_update = retrieve_all_deployed_lambdas(args.environment)
-        variable = {"PDS_FHIR_IS_STUBBED": "false"}
-        for lambda_function in lambdas_to_update:
-            update_lambda_environment_variables(lambda_function, variable)
+    lambdas_to_update = retrieve_all_deployed_lambdas(args.environment)
+    variable = {"PDS_FHIR_IS_STUBBED": "false"}
+    for lambda_function in lambdas_to_update:
+        update_lambda_environment_variables(lambda_function, variable)
