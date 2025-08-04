@@ -1,0 +1,163 @@
+# serializer version: 1
+# name: test_large_file
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'language': 'en-GB',
+          'size': 10737418240,
+          'title': '1of1_Lloyd_George_Record_[Holly Lorna MAGAN]_[9449305943]_[29-05-2006].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'final',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9449305943',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---
+# name: test_no_file_found
+  dict({
+    'issue': list([
+      dict({
+        'code': 'exception',
+        'details': dict({
+          'coding': list([
+            dict({
+              'code': 'not-found',
+              'display': 'Not Found',
+              'system': 'http://hl7.org/fhir/issue-type',
+            }),
+          ]),
+        }),
+        'diagnostics': 'Document reference not found',
+        'severity': 'error',
+      }),
+    ]),
+    'resourceType': 'OperationOutcome',
+  })
+# ---
+# name: test_preliminary_file
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'language': 'en-GB',
+          'title': '1of1_Lloyd_George_Record_[Holly Lorna MAGAN]_[9449305943]_[29-05-2006].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'preliminary',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9449305943',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---
+# name: test_small_file
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'data': 'U2FtcGxlIFBERiBDb250ZW50',
+          'language': 'en-GB',
+          'size': 128670,
+          'title': '1of1_Lloyd_George_Record_[Holly Lorna MAGAN]_[9449305943]_[29-05-2006].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'final',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9449305943',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---

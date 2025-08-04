@@ -8,7 +8,7 @@
           'coding': list([
             dict({
               'code': 'invalid',
-              'display': 'Invalid',
+              'display': 'Invalid Content',
               'system': 'http://hl7.org/fhir/issue-type',
             }),
           ]),
