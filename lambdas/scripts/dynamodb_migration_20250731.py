@@ -39,27 +39,30 @@ class VersionMigration:
                 all_entries=all_entries, total_count=total_count
             )
             self.run_status_migration(all_entries=all_entries, total_count=total_count)
+            self.run_uploading_migration(
+                all_entries=all_entries, total_count=total_count
+            )
         except Exception as e:
             self.logger.error("Migration failed", exc_info=e)
             raise
 
-    def run_version_migration(self, all_entries: list[dict], total_count: int) -> None:
-        self.logger.info("Running version migration")
+    def process_entries(
+        self, label: str, all_entries: list[dict], total_count: int, update_fn
+    ):
+        self.logger.info(f"Running {label} migration")
 
         for index, entry in enumerate(all_entries, start=1):
             item_id = entry.get("ID")
-            current_version = entry.get("Version")
             self.logger.info(
-                f"[Version] Processing item {index} of {total_count} (ID: {item_id})"
+                f"[{label}] Processing item {index} of {total_count} (ID: {item_id})"
             )
 
-            if current_version == 1:
+            updated_fields = update_fn(entry)
+            if not updated_fields:
                 self.logger.debug(
-                    f"[Version] Item {item_id} already at version 1, skipping."
+                    f"[{label}] Item {item_id} does not require update, skipping."
                 )
                 continue
-
-            updated_fields = {"Version": 1}
 
             if self.dry_run:
                 self.logger.info(
@@ -73,200 +76,83 @@ class VersionMigration:
                     updated_fields=updated_fields,
                 )
 
-        self.logger.info("Version migration completed.")
+        self.logger.info(f"{label} migration completed.")
 
-    def run_author_migration(self, all_entries: list[dict], total_count: int) -> None:
+    def run_version_migration(self, all_entries, total_count):
+        self.process_entries(
+            "Version",
+            all_entries,
+            total_count,
+            lambda e: {"Version": 1} if e.get("Version") != 1 else None,
+        )
+
+    def run_author_migration(self, all_entries, total_count):
         self.logger.info("Running author migration")
 
-        # Fetch BulkUploadReport table once, build a lookup dict keyed by (NhsNumber, PdsOdsCode)
-        bulk_reports = self.dynamo_service.scan_whole_table(
-            table_name=self.bulk_upload_table
+        bulk_reports = self.dynamo_service.scan_whole_table(self.bulk_upload_table)
+        report_lookup = {
+            (r.get("NhsNumber"), r.get("PdsOdsCode")): r.get("UploaderOdsCode")
+            for r in bulk_reports
+        }
+
+        def author_update(entry):
+            key = (entry.get("NhsNumber"), entry.get("CurrentGpOds"))
+            author = report_lookup.get(key)
+            if not author or entry.get("Author") == author:
+                return None
+            return {"Author": author}
+
+        self.process_entries("Author", all_entries, total_count, author_update)
+
+    def run_deleted_cleanup_migration(self, all_entries, total_count):
+        self.process_entries(
+            "Deleted",
+            all_entries,
+            total_count,
+            lambda e: {"Deleted": ""} if e.get("Deleted") == "<empty>" else None,
         )
-        report_lookup = {}
-        for r in bulk_reports:
-            key = (r.get("NhsNumber"), r.get("PdsOdsCode"))
-            if key not in report_lookup:
-                report_lookup[key] = r.get("UploaderOdsCode")
-
-        for index, entry in enumerate(all_entries, start=1):
-            item_id = entry.get("ID")
-            nhs_number = entry.get("NhsNumber")
-            current_gp_ods = entry.get("CurrentGpOds")
-            self.logger.info(
-                f"[Author] Processing item {index} of {total_count} (ID: {item_id})"
-            )
-
-            # Lookup matching author
-            author = report_lookup.get((nhs_number, current_gp_ods))
-            if not author:
-                self.logger.debug(
-                    f"[Author] No matching BulkUploadReport for item {item_id}, skipping."
-                )
-                continue
-
-            if entry.get("Author") == author:
-                self.logger.debug(
-                    f"[Author] Item {item_id} already has Author '{author}', skipping."
-                )
-                continue
-
-            updated_fields = {"Author": author}
-
-            if self.dry_run:
-                self.logger.info(
-                    f"[Dry Run] Would update item {item_id} with {updated_fields}"
-                )
-            else:
-                self.logger.info(f"Updating item {item_id} with {updated_fields}")
-                self.dynamo_service.update_item(
-                    table_name=self.target_table,
-                    key_pair={"ID": item_id},
-                    updated_fields=updated_fields,
-                )
-
-        self.logger.info("Author migration completed.")
-
-    def run_deleted_cleanup_migration(
-        self, all_entries: list[dict], total_count: int
-    ) -> None:
-        self.logger.info("Running deleted field cleanup migration")
-
-        for index, entry in enumerate(all_entries, start=1):
-            item_id = entry.get("ID")
-            deleted_value = entry.get("Deleted")
-
-            self.logger.info(
-                f"[Deleted] Processing item {index} of {total_count} (ID: {item_id})"
-            )
-
-            if deleted_value != "<empty>":
-                self.logger.debug(
-                    f"[Deleted] Item {item_id} has Deleted = '{deleted_value}', skipping."
-                )
-                continue
-
-            updated_fields = {"Deleted": ""}
-
-            if self.dry_run:
-                self.logger.info(
-                    f"[Dry Run] Would update item {item_id} to clear Deleted field"
-                )
-            else:
-                self.logger.info(f"Updating item {item_id} to clear Deleted field")
-                self.dynamo_service.update_item(
-                    table_name=self.target_table,
-                    key_pair={"ID": item_id},
-                    updated_fields=updated_fields,
-                )
-
-        self.logger.info("Deleted field cleanup completed.")
 
     def run_custodian_migration(self, all_entries, total_count):
-        self.logger.info("Running custodian cleanup migration")
-
-        target_gp_ods_values = {"REST", "DECE", "SUSP"}
-
-        for index, entry in enumerate(all_entries, start=1):
-            item_id = entry.get("ID")
-            current_gp_ods = entry.get("CurrentGpOds")
-
-            self.logger.info(
-                f"[Custodian] Processing item {index} of {total_count} (ID: {item_id})"
-            )
-
-            if current_gp_ods not in target_gp_ods_values:
-                self.logger.debug(
-                    f"[Custodian] Item {item_id} has CurrentGpOds = '{current_gp_ods}', skipping."
-                )
-                continue
-
-            updated_fields = {"Custodian": "X4S4L"}
-
-            if self.dry_run:
-                self.logger.info(
-                    f"[Dry Run] Would update item {item_id} to set Custodian = 'X4S4L'"
-                )
-            else:
-                self.logger.info(f"Updating item {item_id} to set Custodian = 'X4S4L'")
-                self.dynamo_service.update_item(
-                    table_name=self.target_table,
-                    key_pair={"ID": item_id},
-                    updated_fields=updated_fields,
-                )
-
-        self.logger.info("Custodian cleanup completed.")
+        target_gp_ods = {"REST", "DECE", "SUSP"}
+        self.process_entries(
+            "Custodian",
+            all_entries,
+            total_count,
+            lambda e: (
+                {"Custodian": "X4S4L"}
+                if e.get("CurrentGpOds") in target_gp_ods
+                else None
+            ),
+        )
 
     def run_document_snomed_code_type_migration(self, all_entries, total_count):
-        self.logger.info("Running DocumentSnomedCodeType migration")
-
         fixed_value = 16521000000101
-
-        for index, entry in enumerate(all_entries, start=1):
-            item_id = entry.get("ID")
-            current_value = entry.get("DocumentSnomedCodeType")
-            self.logger.info(
-                f"[DocumentSnomedCodeType] Processing item {index} of {total_count} (ID: {item_id})"
-            )
-
-            if current_value == fixed_value:
-                self.logger.debug(
-                    f"[DocumentSnomedCodeType] Item {item_id} already has value {fixed_value}, skipping."
-                )
-                continue
-            updated_fields = {"DocumentSnomedCodeType": fixed_value}
-
-            if self.dry_run:
-                self.logger.info(
-                    f"[Dry Run] Would update item {item_id} to set DocumentSnomedCodeType = {fixed_value}"
-                )
-            else:
-                self.logger.info(
-                    f"Updating item {item_id} to set DocumentSnomedCodeType = {fixed_value}"
-                )
-                self.dynamo_service.update_item(
-                    table_name=self.target_table,
-                    key_pair={"ID": item_id},
-                    updated_fields=updated_fields,
-                )
-
-        self.logger.info("DocumentSnomedCodeType migration completed.")
+        self.process_entries(
+            "DocumentSnomedCodeType",
+            all_entries,
+            total_count,
+            lambda e: (
+                {"DocumentSnomedCodeType": fixed_value}
+                if e.get("DocumentSnomedCodeType") != fixed_value
+                else None
+            ),
+        )
 
     def run_status_migration(self, all_entries, total_count):
-        self.logger.info("Running Status migration")
+        self.process_entries(
+            "Status",
+            all_entries,
+            total_count,
+            lambda e: {"Status": "current"} if e.get("Status") != "current" else None,
+        )
 
-        target_value = "current"
-
-        for index, entry in enumerate(all_entries, start=1):
-            item_id = entry.get("ID")
-            current_status = entry.get("Status")
-
-            self.logger.info(
-                f"[Status] Processing item {index} of {total_count} (ID: {item_id})"
-            )
-
-            if current_status == target_value:
-                self.logger.debug(
-                    f"[Status] Item {item_id} already has value '{target_value}', skipping."
-                )
-                continue
-
-            updated_fields = {"Status": target_value}
-
-            if self.dry_run:
-                self.logger.info(
-                    f"[Dry Run] Would update item {item_id} to set Status = '{target_value}'"
-                )
-            else:
-                self.logger.info(
-                    f"Updating item {item_id} to set Status = '{target_value}'"
-                )
-                self.dynamo_service.update_item(
-                    table_name=self.target_table,
-                    key_pair={"ID": item_id},
-                    updated_fields=updated_fields,
-                )
-
-        self.logger.info("Status migration completed.")
+    def run_uploading_migration(self, all_entries, total_count):
+        self.process_entries(
+            "Uploading",
+            all_entries,
+            total_count,
+            lambda e: {"Uploading": False} if e.get("Uploading") is not False else None,
+        )
 
 
 def setup_logging():
