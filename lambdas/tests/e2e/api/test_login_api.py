@@ -1,7 +1,7 @@
 import pytest
 from tests.e2e.helpers.lloyd_george_mockcis2_helper import LloydGeorgeMockcis2Helper
 
-# Note this is testing a mock, but this test is valuable to ensure the login test is working
+# Note this is testing a mock, but this test is valuable to ensure the login code is working for other tests
 
 
 @pytest.mark.parametrize(
