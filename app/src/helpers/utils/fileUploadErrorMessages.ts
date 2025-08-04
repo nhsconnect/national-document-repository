@@ -1,49 +1,45 @@
-import { UploadFilesErrors } from '../../types/pages/UploadDocumentsPage/types';
+import { UploadFilesError } from '../../types/pages/UploadDocumentsPage/types';
 
 export enum UPLOAD_FILE_ERROR_TYPE {
     noFiles = 'noFiles',
-    duplicateFile = 'duplicateFile',
-    fileTypeError = 'fileTypeError',
-    fileSizeError = 'fileSizeError',
-    generalFileNameError = 'generalFileNameError',
-    dateOfBirthError = 'dateOfBirthError',
-    patientNameError = 'patientNameError',
-    nhsNumberError = 'nhsNumberError',
-    totalFileNumberUnmatchError = 'totalFileNumberUnmatchError',
-    fileNumberMissingError = 'fileNumberMissingError',
-    fileNumberOutOfRangeError = 'fileNumberOutOfRangeError',
+    passwordProtected = 'passwordProtected',
+    invalidPdf = 'invalidPdf',
+    emptyPdf = 'emptyPdf',
 }
 
-export function getInlineErrorMessage(uploadFileError: UploadFilesErrors): string {
+export enum PDF_PARSING_ERROR_TYPE {
+    INVALID_PDF_STRUCTURE = 'Invalid PDF structure.',
+    PASSWORD_MISSING = 'No password given',
+    EMPTY_PDF = 'The PDF file is empty, i.e. its size is zero bytes.',
+}
+
+export function getInlineErrorMessage(uploadFileError: UploadFilesError): string {
     const errorMessage = fileUploadErrorMessages[uploadFileError.error].inline;
-    if (
-        uploadFileError.error === UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError &&
-        uploadFileError.details
-    ) {
+    if (uploadFileError.details) {
         return `${errorMessage} ${uploadFileError.details}`;
     }
     return errorMessage;
 }
 
-export function getErrorBoxErrorMessage(uploadFileError: UploadFilesErrors): string {
+export function getErrorBoxErrorMessage(uploadFileError: UploadFilesError): string {
     return fileUploadErrorMessages[uploadFileError.error].errorBox;
 }
 
 type UploadFilesErrorBoxMessages = Partial<
-    Record<UPLOAD_FILE_ERROR_TYPE, { filenames: string[]; errorMessage: string }>
+    Record<UPLOAD_FILE_ERROR_TYPE, { linkIds: string[]; errorMessage: string }>
 >;
 export function groupUploadErrorsByType(
-    uploadFileErrors: UploadFilesErrors[],
+    uploadFileErrors: UploadFilesError[],
 ): UploadFilesErrorBoxMessages {
     const result: UploadFilesErrorBoxMessages = {};
 
     uploadFileErrors.forEach((errorItem) => {
-        const { error, filename = '' } = errorItem;
+        const { error, linkId = '' } = errorItem;
         const errorMessage = getErrorBoxErrorMessage(errorItem);
         if (!(error in result)) {
-            result[error] = { filenames: [filename], errorMessage };
+            result[error] = { linkIds: [linkId], errorMessage };
         } else {
-            result[error]?.filenames?.push(filename);
+            result[error]?.linkIds?.push(linkId);
         }
     });
 
@@ -58,49 +54,19 @@ export type fileUploadErrorMessageType = {
 type errorMessageType = { [errorType in UPLOAD_FILE_ERROR_TYPE]: fileUploadErrorMessageType };
 export const fileUploadErrorMessages: errorMessageType = {
     noFiles: {
-        inline: 'You did not select any file to upload',
-        errorBox: 'You did not select any file to upload',
+        inline: 'Select a file to upload',
+        errorBox: 'Select a file to upload',
     },
-    duplicateFile: {
-        inline: 'The file has the same name as another',
-        errorBox:
-            'This file has the same name as another file you selected. Check the name of these file(s) and try again.',
+    invalidPdf: {
+        inline: 'The selected file is be damaged or unreadable. Fix it to continue with upload.',
+        errorBox: 'The selected file is be damaged or unreadable. Fix it to continue with upload.',
     },
-    fileTypeError: {
-        inline: 'The file must be in a PDF file format',
-        errorBox: 'All files should be in a PDF format',
+    passwordProtected: {
+        inline: 'The selected file is password protected. Remove password and upload again.',
+        errorBox: 'The selected file is password protected. Remove password and upload again.',
     },
-    fileSizeError: {
-        inline: 'Please ensure that all files are less than 5GB in size',
-        errorBox: 'Please ensure that all files are less than 5GB in size',
-    },
-    generalFileNameError: {
-        inline: 'Your file has an incorrect filename',
-        errorBox:
-            'Your filename must follow the format [PDFnumber]_Lloyd_George_Record_[Patient Name]_[NHS Number]_[D.O.B].PDF',
-    },
-    dateOfBirthError: {
-        inline: 'The patient’s date of birth does not match this filename',
-        errorBox: 'The patient’s date of birth does not match this filename',
-    },
-    patientNameError: {
-        inline: 'The patient’s name does not match this filename',
-        errorBox: 'The patient’s name does not match this filename',
-    },
-    nhsNumberError: {
-        inline: 'The patient’s NHS number does not match this filename',
-        errorBox: 'The patient’s NHS number does not match this filename',
-    },
-    totalFileNumberUnmatchError: {
-        inline: 'The total file numbers do not match each other',
-        errorBox: 'The total file numbers do not match each other',
-    },
-    fileNumberMissingError: {
-        inline: 'This record is missing some files',
-        errorBox: 'This record is not complete',
-    },
-    fileNumberOutOfRangeError: {
-        inline: 'The file number should be between 1 and the total file number',
-        errorBox: 'Some file numbers are higher than the total file number',
+    emptyPdf: {
+        inline: 'The selected file is empty. Remove it to continue with upload.',
+        errorBox: 'The selected file is empty. Remove it to continue with upload.',
     },
 };
