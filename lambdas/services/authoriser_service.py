@@ -1,6 +1,5 @@
 import time
 
-from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from services.manage_user_session_access import ManageUserSessionAccess
 from services.token_service import TokenService

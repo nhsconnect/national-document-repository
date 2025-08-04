@@ -1,12 +1,8 @@
-import json
 import pytest
-from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from services.authoriser_service import AuthoriserService
 from tests.unit.helpers.data.create_document_reference import UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE
 from utils.exceptions import AuthorisationException
-from utils.lambda_exceptions import CreateDocumentRefException, LambdaException
-from utils.lambda_response import ApiGatewayResponse
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:74747474747474:<<restApiId>/dev"
 TEST_PUBLIC_KEY = "test_public_key"

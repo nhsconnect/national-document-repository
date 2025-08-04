@@ -21,7 +21,7 @@ from tests.unit.helpers.data.test_documents import (
 )
 from utils.common_query_filters import UploadIncomplete
 from utils.exceptions import PatientNotFoundException
-from utils.lambda_exceptions import CreateDocumentRefException, SearchPatientException
+from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 from lambdas.enums.supported_document_types import SupportedDocumentTypes

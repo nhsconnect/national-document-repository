@@ -15,7 +15,7 @@ from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadIncomplete
 from utils.exceptions import InvalidNhsNumberException, PdsTooManyRequestsException, PatientNotFoundException
-from utils.lambda_exceptions import CreateDocumentRefException, SearchPatientException
+from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import (
     getting_patient_info_from_pds,
     validate_lg_files,
@@ -132,11 +132,6 @@ class CreateDocumentReferenceService:
             PatientNotFoundException
         ) as e: 
             raise CreateDocumentRefException(404, LambdaError.SearchPatientNoPDS)
-        
-        except (
-            CreateDocumentRefException
-        ) as e: 
-            raise
         
         except (
             InvalidNhsNumberException,

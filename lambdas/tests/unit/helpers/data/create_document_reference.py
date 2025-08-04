@@ -232,7 +232,3 @@ UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE = {
     "err_code": "FFL_5003", 
     "interaction_id": "88888888-4444-4444-4444-121212121212"
 }
-
-NON_GP_ADMIN_OR_CLINICIAN_ROLE_MOCK_RESPONSE = {
-    "message": "403 Forbidden",
-}

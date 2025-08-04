@@ -1,9 +1,6 @@
-from enums.lambda_error import LambdaError
 from handlers.authoriser_handler import lambda_handler
 from tests.unit.conftest import SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, TEST_NHS_NUMBER
 from utils.exceptions import AuthorisationException
-from utils.lambda_exceptions import CreateDocumentRefException
-from utils.lambda_response import ApiGatewayResponse
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:fake_arn:fake_api_endpoint/dev"
 TEST_PUBLIC_KEY = "test_public_key"

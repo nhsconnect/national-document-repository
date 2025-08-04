@@ -7,7 +7,6 @@ from handlers.create_document_reference_handler import (
     lambda_handler,
     processing_event_details,
 )
-from services.create_document_reference_service import CreateDocumentReferenceService
 from tests.unit.conftest import MOCK_STAGING_STORE_BUCKET, TEST_NHS_NUMBER, TEST_UUID
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
@@ -17,10 +16,9 @@ from tests.unit.helpers.data.create_document_reference import (
     ARF_MOCK_RESPONSE,
     LG_AND_ARF_MOCK_RESPONSE,
     LG_MOCK_RESPONSE,
-    UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE,
-    NON_GP_ADMIN_OR_CLINICIAN_ROLE_MOCK_RESPONSE
+    UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE
 )
-from utils.exceptions import InvalidNhsNumberException, PatientNotFoundException
+from utils.exceptions import InvalidNhsNumberException
 from utils.lambda_exceptions import CreateDocumentRefException, SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
 
