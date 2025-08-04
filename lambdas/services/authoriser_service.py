@@ -65,11 +65,6 @@ class AuthoriserService:
 
         except (KeyError, IndexError) as e:
             raise AuthorisationException(e)
-        
-        except (
-            CreateDocumentRefException
-        ) as e: 
-            raise
 
     def deny_access_policy(self, path, user_role, nhs_number: str = None):
         logger.info(f"Path: {path}")
