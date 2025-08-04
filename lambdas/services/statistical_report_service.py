@@ -22,7 +22,6 @@ from utils.utilities import generate_date_folder_name
 
 logger = LoggingService(__name__)
 
-
 class StatisticalReportService:
     def __init__(self):
         self.dynamo_service = DynamoDBService()
