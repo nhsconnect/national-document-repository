@@ -2,8 +2,8 @@ import io
 import logging
 import uuid
 
-from tests.e2e.conftest import API_KEY, API_ENDPOINT
 import requests
+from tests.e2e.conftest import API_ENDPOINT, API_KEY, APIM_ENDPOINT, LLOYD_GEORGE_SNOMED
 from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 
 data_helper = LloydGeorgeDataHelper()
@@ -31,7 +31,8 @@ def test_search_patient_details(test_data, snapshot):
     del bundle["timestamp"]
     attachment_url = bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
     assert (
-        "https://internal-dev.api.service.nhs.uk/national-document-repository/DocumentReference/16521000000101~" in attachment_url
+        f"https://{APIM_ENDPOINT}/national-document-repository/DocumentReference/{LLOYD_GEORGE_SNOMED}~"
+        in attachment_url
     )
     del bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
 
