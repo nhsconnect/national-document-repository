@@ -18,4 +18,5 @@ export enum endpoints {
     UPLOAD_DOCUMENT_STATE = '/UploadState',
 
     ODS_REPORT = '/OdsReport',
+    MOCK_LOGIN = 'Auth/MockLogin',
 }

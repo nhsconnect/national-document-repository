@@ -1,13 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { act } from 'react';
-import { buildPatientDetails, buildLgFile } from '../../../../helpers/test/testBuilders';
+import { buildLgFileOld, buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import userEvent from '@testing-library/user-event';
 import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
 import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
-
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
@@ -32,12 +31,12 @@ const mockPatient = buildPatientDetails();
 
 const mockedUseNavigate = vi.fn();
 
-const lgDocumentOne = buildLgFile(1, 2, 'John Doe');
-const lgDocumentTwo = buildLgFile(2, 2, 'John Doe');
+const lgDocumentOne = buildLgFileOld(1, 2, 'John Doe');
+const lgDocumentTwo = buildLgFileOld(2, 2, 'John Doe');
 const lgFiles = [lgDocumentOne, lgDocumentTwo];
 
-const lgDocumentThreeNamesOne = buildLgFile(1, 2, 'Dom Jacob Alexander');
-const lgDocumentThreeNamesTwo = buildLgFile(2, 2, 'Dom Jacob Alexander');
+const lgDocumentThreeNamesOne = buildLgFileOld(1, 2, 'Dom Jacob Alexander');
+const lgDocumentThreeNamesTwo = buildLgFileOld(2, 2, 'Dom Jacob Alexander');
 const lgFilesThreeNames = [lgDocumentThreeNamesOne, lgDocumentThreeNamesTwo];
 const mockPatientThreeWordsName = buildPatientDetails({
     givenName: ['Dom', 'Jacob'],
@@ -46,8 +45,8 @@ const mockPatientThreeWordsName = buildPatientDetails({
 
 const nonStandardCharName =
     'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer';
-const lgDocumentNonStandardCharacterNamesOne = buildLgFile(1, 2, nonStandardCharName);
-const lgDocumentNonStandardCharacterNamesTwo = buildLgFile(2, 2, nonStandardCharName);
+const lgDocumentNonStandardCharacterNamesOne = buildLgFileOld(1, 2, nonStandardCharName);
+const lgDocumentNonStandardCharacterNamesTwo = buildLgFileOld(2, 2, nonStandardCharName);
 const lgFilesNonStandardCharacterNames = [
     lgDocumentNonStandardCharacterNamesOne,
     lgDocumentNonStandardCharacterNamesTwo,
@@ -280,7 +279,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
         it('does not upload if selected file is more than 5GB', async () => {
             renderApp();
 
-            const documentBig = buildLgFile(1, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
+            const documentBig = buildLgFileOld(1, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
 
             await userEvent.upload(screen.getByTestId('button-input'), documentBig);
 
@@ -326,7 +325,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
         it('does not upload LG form if total number of file does not match file name', async () => {
             renderApp();
 
-            const lgExtraFile = buildLgFile(3, 3, 'John Doe');
+            const lgExtraFile = buildLgFileOld(3, 3, 'John Doe');
 
             await userEvent.upload(screen.getByTestId(`button-input`), lgExtraFile);
 
@@ -369,7 +368,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
             renderApp();
 
-            const pdfFileWithBadNumber = buildLgFile(2, 1, 'Joe Blogs');
+            const pdfFileWithBadNumber = buildLgFileOld(2, 1, 'Joe Blogs');
             await userEvent.upload(screen.getByTestId(`button-input`), pdfFileWithBadNumber);
 
             const errorBox = screen.getByTestId('error-box');
@@ -522,8 +521,8 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     }),
                 );
                 const documentsToUpload = [
-                    buildLgFile(1, 2, 'John Blogg Smith'),
-                    buildLgFile(2, 2, 'John Blogg Smith'),
+                    buildLgFileOld(1, 2, 'John Blogg Smith'),
+                    buildLgFileOld(2, 2, 'John Blogg Smith'),
                 ];
 
                 renderApp();
@@ -540,8 +539,8 @@ describe('<LloydGeorgeFileInputStage />', () => {
             it('Handles accent chars NFC NFD differences when comparing patient names', async () => {
                 mockedUsePatient.mockReturnValue(mockPatientNonStandardCharName);
                 const documentsToUpload = [
-                    buildLgFile(1, 2, nonStandardCharName.normalize('NFD')),
-                    buildLgFile(2, 2, nonStandardCharName.normalize('NFD')),
+                    buildLgFileOld(1, 2, nonStandardCharName.normalize('NFD')),
+                    buildLgFileOld(2, 2, nonStandardCharName.normalize('NFD')),
                 ];
 
                 renderApp();

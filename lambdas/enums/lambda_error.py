@@ -105,7 +105,7 @@ class LambdaError(Enum):
         "err_code": "CDR_5001",
         "message": "An error occurred when creating pre-signed url for document reference",
     }
-    CreateDocUpload = {
+    CreateDocUploadInternalError = {
         "err_code": "CDR_5002",
         "message": "An error occurred when creating pre-signed url for document reference",
     }

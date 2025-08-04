@@ -22,15 +22,15 @@ describe('DocumentUploadCompleteStage', () => {
 
     describe('Rendering', () => {
         it('renders', async () => {
-            render(<DocumentUploadConfirmStage 
-                documents={documents} 
-                startUpload={() => Promise.resolve()} />
+            render(
+                <DocumentUploadConfirmStage
+                    documents={documents}
+                    startUpload={() => Promise.resolve()}
+                />,
             );
 
             await waitFor(async () => {
-                expect(
-                    screen.getByText('Check your files before uploading'),
-                ).toBeInTheDocument();
+                expect(screen.getByText('Check your files before uploading')).toBeInTheDocument();
             });
         });
     });
