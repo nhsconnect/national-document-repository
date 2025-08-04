@@ -73,7 +73,7 @@ describe('DocumentSelectStage', () => {
             expect(
                 screen.getByText('Drag and drop a file or multiple files here'),
             ).toBeInTheDocument();
-            expect(dropzone);
+            expect(dropzone).toBeInTheDocument();
 
             fireEvent.drop(dropzone, { dataTransfer: { files: [lgDocumentOne] } });
 
