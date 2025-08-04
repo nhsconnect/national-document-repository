@@ -65,19 +65,19 @@ def lambda_handler(event, context):
     logger.info("Processed upload documents from request")
     docs_services = CreateDocumentReferenceService()
     
-    try:
-        url_references = docs_services.create_document_reference_request(
-            nhs_number_query_string, doc_list
-        )
+    # try:
+    url_references = docs_services.create_document_reference_request(
+        nhs_number_query_string, doc_list
+    )
     
-    except (
-        SearchPatientException,
-        CreateDocumentRefException
-    ) as e:
-        logger.error(e.error.to_str())
-        return ApiGatewayResponse(
-            e.status_code, e.error, "POST"
-        ).create_api_gateway_response()
+    # except (
+    #     SearchPatientException,
+    #     CreateDocumentRefException
+    # ) as e:
+    #     logger.error(e.error.to_str())
+    #     return ApiGatewayResponse(
+    #         e.status_code, e.error, "POST"
+    #     ).create_api_gateway_response()
     
     return ApiGatewayResponse(
         200, json.dumps(url_references), "POST"

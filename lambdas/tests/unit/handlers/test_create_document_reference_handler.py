@@ -123,9 +123,15 @@ def test_create_document_reference_with_nhs_number_not_in_pds_returns_404(
 ):
     mock_cdrService.create_document_reference_request.side_effect = SearchPatientException(
         404, LambdaError.SearchPatientNoPDS)
+    
+    expected_body = {
+        "message": f"Patient does not exist for given NHS number",
+        "err_code": "SP_4002",
+        "interaction_id": "88888888-4444-4444-4444-121212121212"
+    }
 
     expected = ApiGatewayResponse(
-        404, LambdaError.SearchPatientNoPDS, "POST"
+        404, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
@@ -136,8 +142,14 @@ def test_cdr_request_including_non_pdf_files_returns_400(
     mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
         400, LambdaError.CreateDocFiles)
     
+    expected_body = {
+        "message": f"Invalid files or id",
+        "err_code": "CDR_4004",
+        "interaction_id": "88888888-4444-4444-4444-121212121212"
+    }
+    
     expected = ApiGatewayResponse(
-        400, LambdaError.CreateDocFiles, "POST"
+        400, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
@@ -149,8 +161,14 @@ def test_cdr_request_when_lgr_already_exists_returns_422(
     mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
         422, LambdaError.CreateDocRecordAlreadyInPlace)
     
+    expected_body = {
+        "message": f"The patient already has a full set of record.",
+        "err_code": "CDR_4008",
+        "interaction_id": "88888888-4444-4444-4444-121212121212"
+    }
+    
     expected = ApiGatewayResponse(
-        422, LambdaError.CreateDocRecordAlreadyInPlace, "POST"
+        422, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
@@ -164,8 +182,14 @@ def test_cdr_request_when_lgr_is_in_process_of_uploading_returns_423(
     mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
         423, LambdaError.UploadInProgressError)
     
+    expected_body = {
+        "message": f"Records are in the process of being uploaded",
+        "err_code": "LGL_423",
+        "interaction_id": "88888888-4444-4444-4444-121212121212"
+    }
+    
     expected = ApiGatewayResponse(
-        423, LambdaError.UploadInProgressError, "POST"
+        423, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
@@ -189,9 +213,7 @@ def test_lambda_handler_missing_environment_variables_type_staging_returns_500(
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
     expected = ApiGatewayResponse(
-        500,
-        json.dumps(expected_body),
-        "POST",
+        500, json.dumps(expected_body), "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
     assert expected == actual
@@ -342,8 +364,14 @@ def test_ods_code_not_in_pilot_returns_404(
     mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
         404, LambdaError.CreateDocRefOdsCodeNotAllowed)
     
+    expected_body = {
+        "message": f"ODS code does not match any of the allowed.",
+        "err_code": "CDR_4011",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
+    
     expected = ApiGatewayResponse(
-        404, LambdaError.CreateDocRefOdsCodeNotAllowed, "POST"
+        404, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
 

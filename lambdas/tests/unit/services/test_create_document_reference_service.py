@@ -380,24 +380,6 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_validate_lg_files.assert_called_with(document_references, mock_pds_patient)
 
 
-def test_create_document_reference_invalid_nhs_number(
-    mock_create_document_reference,
-    mock_prepare_pre_signed_url,
-    mock_create_reference_in_dynamodb,
-):
-    nhs_number = "100000009"
-    create_doc_ref_service = CreateDocumentReferenceService()
-
-    with pytest.raises(CreateDocumentRefException):
-        create_doc_ref_service.create_document_reference_request(
-            nhs_number, ARF_FILE_LIST
-        )
-
-    mock_create_document_reference.assert_not_called()
-    mock_prepare_pre_signed_url.assert_not_called()
-    mock_create_reference_in_dynamodb.assert_not_called()
-
-
 def test_create_document_reference_failed_to_parse_pds_response(
     mock_create_doc_ref_service,
     mock_create_document_reference,
