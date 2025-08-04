@@ -131,7 +131,7 @@ class CreateDocumentReferenceService:
         except (
             PatientNotFoundException
         ) as e: 
-            raise SearchPatientException(404, LambdaError.SearchPatientNoPDS)
+            raise CreateDocumentRefException(404, LambdaError.SearchPatientNoPDS)
         
         except (
             CreateDocumentRefException

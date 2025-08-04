@@ -78,10 +78,10 @@ class AuthoriserService:
         # deny_access_policy = True (deny access)
         # deny_access_policy = False (allow access)
 
-        patient_is_not_allowed = (
+        patient_access_is_not_allowed = (
             nhs_number not in self.allowed_nhs_numbers if nhs_number else False
         )
-        patient_is_not_deceased = (
+        deny_access_to_deceased_patient = (
             nhs_number not in self.deceased_nhs_numbers if nhs_number else False
         )
         is_user_gp_admin = user_role == RepositoryRole.GP_ADMIN.value
@@ -90,29 +90,27 @@ class AuthoriserService:
 
         match path:
             case "/AccessAudit":
-                deny_resource = patient_is_not_deceased
+                deny_resource = deny_access_to_deceased_patient
 
             case "/DocumentDelete":
-                deny_resource = patient_is_not_allowed or is_user_gp_clinical
+                deny_resource = patient_access_is_not_allowed or is_user_gp_clinical
 
             case "/DocumentManifest":
-                deny_resource = patient_is_not_allowed or is_user_gp_clinical
+                deny_resource = patient_access_is_not_allowed or is_user_gp_clinical
 
             case "/CreateDocumentReference":
                 deny_resource = (
-                    patient_is_not_allowed
+                    patient_access_is_not_allowed
                     or is_user_gp_clinical
                     or is_user_pcse
                 )
-                if not patient_is_not_deceased:
-                    # raise CreateDocumentRefException(422, LambdaError.CreateDocRefPatientDeceased)
+                if not deny_access_to_deceased_patient:
                     deny_resource = False
                 if not is_user_gp_admin and not is_user_gp_clinical:
-                    # raise AuthorisationException(403, LambdaError.CreateDocRefUserForbidden)
                     deny_resource = False
 
             case "/LloydGeorgeStitch":
-                deny_resource = patient_is_not_allowed or is_user_pcse
+                deny_resource = patient_access_is_not_allowed or is_user_pcse
 
             case "/OdsReport":
                 deny_resource = False
@@ -122,27 +120,27 @@ class AuthoriserService:
 
             case "/UploadConfirm":
                 deny_resource = (
-                    patient_is_not_allowed
+                    patient_access_is_not_allowed
                     or is_user_gp_clinical
                     or is_user_pcse
                 )
 
             case "/UploadState":
                 deny_resource = (
-                    patient_is_not_allowed
+                    patient_access_is_not_allowed
                     or is_user_gp_clinical
                     or is_user_pcse
                 )
 
             case "/VirusScan":
                 deny_resource = (
-                    patient_is_not_allowed
+                    patient_access_is_not_allowed
                     or is_user_gp_clinical
                     or is_user_pcse
                 )
 
             case _:
-                deny_resource = patient_is_not_allowed
+                deny_resource = patient_access_is_not_allowed
 
         logger.info("Allow resource: %s" % (not deny_resource))
 

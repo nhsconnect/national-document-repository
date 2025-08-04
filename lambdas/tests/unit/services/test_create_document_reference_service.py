@@ -420,7 +420,7 @@ def test_cdr_nhs_number_not_found_raises_search_patient_exception(
         )
 
     exception = exc_info.value
-    assert isinstance(exception, SearchPatientException)
+    assert isinstance(exception, CreateDocumentRefException)
     assert exception.status_code == 404
     assert exception.message == "Patient does not exist for given NHS number"
 
