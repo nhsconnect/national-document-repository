@@ -331,3 +331,22 @@ def test_invalid_nhs_number_returns_400(
     
     mock_processing_event_details.assert_not_called()
     mock_cdrService.assert_not_called()
+
+def test_ods_code_not_in_pilot_returns_404(
+    set_env,
+    context,
+    lg_type_event,
+    mock_cdrService,
+    mock_upload_lambda_enabled
+):
+    mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
+        404, LambdaError.CreateDocRefOdsCodeNotAllowed)
+    
+    expected = ApiGatewayResponse(
+        404, LambdaError.CreateDocRefOdsCodeNotAllowed, "POST"
+    ).create_api_gateway_response()
+    actual = lambda_handler(lg_type_event, context)
+
+    assert actual == expected
+
+    mock_cdrService.create_document_reference_request.create_document_reference.assert_not_called()

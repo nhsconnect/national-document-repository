@@ -11,6 +11,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
+from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadIncomplete
 from utils.exceptions import InvalidNhsNumberException, PdsTooManyRequestsException, PatientNotFoundException
@@ -31,6 +32,7 @@ PRESIGNED_URL_ERROR_MESSAGE = (
 )
 
 logger = LoggingService(__name__)
+token_handler_ssm_service = TokenHandlerSSMService()
 
 
 class CreateDocumentReferenceService:
@@ -69,7 +71,9 @@ class CreateDocumentReferenceService:
                 current_gp_ods = (
                     pds_patient_details.get_ods_code_or_inactive_status_for_gp()
                 )
-                # self.check_if_ods_code_is_in_pilot(current_gp_ods)
+                ods_allowed = self.check_if_ods_code_is_in_pilot(current_gp_ods)
+                if not ods_allowed:
+                    raise CreateDocumentRefException(404, LambdaError.CreateDocRefOdsCodeNotAllowed)
                 snomed_code_type = SnomedCodes.LLOYD_GEORGE.value.code
 
             for validated_doc in upload_request_documents:
@@ -145,9 +149,9 @@ class CreateDocumentReferenceService:
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
 
-    def check_if_ods_code_is_in_pilot(ods_code):
-        # define functionality (hardcoded list or dynamo table)
-        return 0 
+    def check_if_ods_code_is_in_pilot(self, ods_code) -> bool:
+        pilot_ods_codes = token_handler_ssm_service.get_allowed_list_of_ods_codes_for_pilot()
+        return ods_code in pilot_ods_codes
 
     def check_existing_arf_record_and_remove_failed_upload(self, nhs_number):
         incomplete_arf_upload_records = self.fetch_incomplete_arf_upload_records(

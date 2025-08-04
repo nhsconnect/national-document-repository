@@ -11,6 +11,7 @@ from utils.constants.ssm import (
     ITOC_ODS_CODES,
     PCSE_ODS_CODE,
     PCSE_USER_ROLE_CODE,
+    ALLOWED_ODS_CODES_LIST_PILOT
 )
 from utils.lambda_exceptions import LoginException
 
@@ -107,6 +108,20 @@ MOCK_ALLOWED_LIST_OF_ODS_CODES = {
         "Name": ALLOWED_ODS_CODES_LIST,
         "Type": "StringList",
         "Value": "R0013,R0014,R0015",
+        "Version": 123,
+        "Selector": "string",
+        "SourceResult": "string",
+        "LastModifiedDate": datetime(2015, 1, 1),
+        "ARN": "string",
+        "DataType": "string",
+    },
+}
+
+MOCK_ALLOWED_ODS_CODES_LIST_PILOT = {
+    "Parameter": {
+        "Name": ALLOWED_ODS_CODES_LIST_PILOT,
+        "Type": "StringList",
+        "Value": "PI001,PI002,PI003",
         "Version": 123,
         "Selector": "string",
         "SourceResult": "string",
@@ -321,6 +336,18 @@ def test_get_allowed_list_of_ods_codes(mock_service, mock_ssm):
 
     mock_ssm.get_parameter.assert_called_once_with(
         Name=ALLOWED_ODS_CODES_LIST, WithDecryption=False
+    )
+
+    assert actual == expected
+
+def test_get_allowed_list_of_ods_codes_for_pilot(mock_service, mock_ssm):
+    mock_ssm.get_parameter.return_value = MOCK_ALLOWED_ODS_CODES_LIST_PILOT
+    expected = "PI001,PI002,PI003"
+
+    actual = mock_service.get_allowed_list_of_ods_codes_for_pilot()
+
+    mock_ssm.get_parameter.assert_called_once_with(
+        Name=ALLOWED_ODS_CODES_LIST_PILOT, WithDecryption=False
     )
 
     assert actual == expected

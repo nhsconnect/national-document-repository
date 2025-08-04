@@ -9,6 +9,7 @@ from utils.constants.ssm import (
     ITOC_ODS_CODES,
     PCSE_ODS_CODE,
     PCSE_USER_ROLE_CODE,
+    ALLOWED_ODS_CODES_LIST_PILOT
 )
 from utils.lambda_exceptions import LoginException
 
@@ -144,4 +145,11 @@ class TokenHandlerSSMService(SSMService):
         response = self.get_ssm_parameter(ALLOWED_ODS_CODES_LIST)
         if not response:
             logger.warning("No ODS codes found in allowed list")
+        return response
+    
+    def get_allowed_list_of_ods_codes_for_pilot(self) -> list[str]:
+        logger.info("Starting ssm request to retrieve allowed list of ODS codes for Pilot")
+        response = self.get_ssm_parameter(ALLOWED_ODS_CODES_LIST_PILOT)
+        if not response:
+            logger.warning("No ODS codes found in allowed list for Pilot")
         return response

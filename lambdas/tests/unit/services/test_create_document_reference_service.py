@@ -6,6 +6,7 @@ from freezegun import freeze_time
 from models.document_reference import DocumentReference, UploadRequestDocument
 from services.create_document_reference_service import CreateDocumentReferenceService
 from services.document_service import DocumentService
+from services.token_handler_ssm_service import TokenHandlerSSMService
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
     LG_FILE_LIST,
@@ -119,6 +120,11 @@ def undo_mocking_for_is_upload_in_process(mock_create_doc_ref_service):
         DocumentService.is_upload_in_process
     )
 
+@pytest.fixture
+def mock_get_allowed_list_of_ods_codes_for_pilot(mocker):
+    return mocker.patch.object(
+        TokenHandlerSSMService, "get_allowed_list_of_ods_codes_for_pilot"
+    )
 
 def test_create_document_reference_request_empty_list(
     mock_create_doc_ref_service,
@@ -196,6 +202,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     mock_check_existing_lloyd_george_records_and_remove_failed_upload,
     mock_fetch_document,
     mock_pds_patient,
+    mock_get_allowed_list_of_ods_codes_for_pilot
 ):
     document_references = []
     side_effects = []
@@ -218,6 +225,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
         side_effects.append(document_references[index])
 
     mock_create_document_reference.side_effect = side_effects
+    mock_get_allowed_list_of_ods_codes_for_pilot.return_value = [TEST_CURRENT_GP_ODS]
 
     mock_create_doc_ref_service.create_document_reference_request(
         TEST_NHS_NUMBER, LG_FILE_LIST
@@ -255,6 +263,7 @@ def test_create_document_reference_request_with_both_list(
     mock_validate_lg_files,
     mock_fetch_document,
     undo_mocking_for_is_upload_in_process,
+    mock_get_allowed_list_of_ods_codes_for_pilot
 ):
     files_list = ARF_FILE_LIST + LG_FILE_LIST
     lg_file_names = [file["fileName"] for file in LG_FILE_LIST]
@@ -279,6 +288,7 @@ def test_create_document_reference_request_with_both_list(
     )
 
     mock_create_document_reference.side_effect = prepare_doc_object_mock_return_values
+    mock_get_allowed_list_of_ods_codes_for_pilot.return_value = [TEST_CURRENT_GP_ODS]
 
     mock_create_doc_ref_service.create_document_reference_request(
         TEST_NHS_NUMBER, files_list
@@ -318,6 +328,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_create_reference_in_dynamodb,
     mock_validate_lg_files,
     mock_pds_patient,
+    mock_get_allowed_list_of_ods_codes_for_pilot
 ):
     document_references = []
     side_effects = []
@@ -341,6 +352,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
 
     mock_create_document_reference.side_effect = side_effects
     mock_validate_lg_files.side_effect = LGInvalidFilesException("test")
+    mock_get_allowed_list_of_ods_codes_for_pilot.return_value = [TEST_CURRENT_GP_ODS]
 
     with pytest.raises(CreateDocumentRefException):
         mock_create_doc_ref_service.create_document_reference_request(
@@ -438,9 +450,11 @@ def test_cdr_nhs_number_not_found_raises_search_patient_exception(
 def test_cdr_non_pdf_file_raises_exception(
     mock_create_doc_ref_service,
     mock_validate_lg_files,
-    mock_create_reference_in_dynamodb
+    mock_create_reference_in_dynamodb,
+    mock_get_allowed_list_of_ods_codes_for_pilot
 ):
     mock_validate_lg_files.side_effect = LGInvalidFilesException
+    mock_get_allowed_list_of_ods_codes_for_pilot.return_value = [TEST_CURRENT_GP_ODS]
 
     with pytest.raises(Exception) as exc_info:
         mock_create_doc_ref_service.create_document_reference_request(
@@ -461,12 +475,14 @@ def test_create_document_reference_request_lg_upload_throw_lambda_error_if_uploa
     mock_validate_lg_files,
     mock_fetch_document,
     mock_create_reference_in_dynamodb,
+    mock_get_allowed_list_of_ods_codes_for_pilot
 ):
     two_minutes_ago = 1698661380  # 2023-10-30T10:23:00
     mock_records_upload_in_process = create_test_lloyd_george_doc_store_refs(
         override={"uploaded": False, "uploading": True, "last_updated": two_minutes_ago}
     )
     mock_fetch_document.return_value = mock_records_upload_in_process
+    mock_get_allowed_list_of_ods_codes_for_pilot.return_value = [TEST_CURRENT_GP_ODS]
 
     with pytest.raises(CreateDocumentRefException) as e:
         mock_create_doc_ref_service.create_document_reference_request(
@@ -482,8 +498,10 @@ def test_create_document_reference_request_lg_upload_throw_lambda_error_if_got_a
     mock_validate_lg_files,
     mock_fetch_document,
     mock_create_reference_in_dynamodb,
+    mock_get_allowed_list_of_ods_codes_for_pilot
 ):
     mock_fetch_document.return_value = create_test_lloyd_george_doc_store_refs()
+    mock_get_allowed_list_of_ods_codes_for_pilot.return_value = [TEST_CURRENT_GP_ODS]
 
     with pytest.raises(CreateDocumentRefException) as e:
         mock_create_doc_ref_service.create_document_reference_request(
@@ -811,3 +829,28 @@ def test_remove_records_of_failed_upload(mock_create_doc_ref_service, mocker):
         table_name=MOCK_LG_TABLE_NAME,
         document_references=mock_doc_refs_of_failed_upload,
     )
+
+def test_ods_code_not_in_pilot_raises_exception(
+    mocker, 
+    mock_create_doc_ref_service,
+    mock_create_document_reference,
+    mock_prepare_pre_signed_url,
+    mock_create_reference_in_dynamodb,
+    mock_get_allowed_list_of_ods_codes_for_pilot
+):
+    mock_get_allowed_list_of_ods_codes_for_pilot.return_value = ["PI001"]
+
+    with pytest.raises(CreateDocumentRefException) as exc_info:
+        mock_create_doc_ref_service.create_document_reference_request(
+            TEST_NHS_NUMBER, LG_FILE_LIST
+        )
+
+    mock_create_document_reference.assert_not_called()
+    mock_prepare_pre_signed_url.assert_not_called()
+    mock_create_reference_in_dynamodb.assert_not_called()
+
+    exception = exc_info.value
+    assert isinstance(exception, CreateDocumentRefException)
+    assert exception.status_code == 404
+    assert exception.message == "ODS code does not match any of the allowed."
+

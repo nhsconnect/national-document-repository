@@ -97,6 +97,10 @@ class LambdaError(Enum):
         "err_code": "CDR_4010",
         "message": "Patient is deceased"
     }
+    CreateDocRefOdsCodeNotAllowed = {
+        "err_code": "CDR_4011",
+        "message": "ODS code does not match any of the allowed."
+    }
     CreateDocPresign = {
         "err_code": "CDR_5001",
         "message": "An error occurred when creating pre-signed url for document reference",
