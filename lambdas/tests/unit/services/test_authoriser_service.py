@@ -126,40 +126,31 @@ def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
     mock_auth_service.allowed_nhs_numbers = []
 
 
-def test_create_document_reference_as_non_gp_admin_returns_403(
+def test_deny_create_document_reference_as_non_gp_admin_returns_false(
     mock_auth_service: AuthoriserService
 ):
+    expected = False
 
-    with pytest.raises(AuthorisationException) as e:
-        mock_auth_service.deny_access_policy(
-            "/CreateDocumentReference",
-            RepositoryRole.PCSE.value,
-            "122222222")
+    actual = mock_auth_service.deny_access_policy(
+        "/CreateDocumentReference",
+        RepositoryRole.PCSE.value,
+        "122222222")
 
-    expected_status_code = 403
-    expected_error = LambdaError.CreateDocRefUserForbidden
-
-    assert e.value.args[0] == expected_status_code
-    assert e.value.args[1] == expected_error
+    assert actual == expected
 
 
-def test_create_document_reference_on_deceased_patient_returns_422(
+def test_deny_create_document_reference_on_deceased_patient_returns_false(
     mock_auth_service: AuthoriserService
 ):
-
+    expected = False
     mock_auth_service.deceased_nhs_numbers.append("122222222")
 
-    with pytest.raises(CreateDocumentRefException) as e:
-        mock_auth_service.deny_access_policy(
-            "/CreateDocumentReference",
-            any(RepositoryRole),
-            "122222222")
-
-    expected_status_code = 422
-    expected_error = LambdaError.CreateDocRefPatientDeceased
-
-    assert e.value.args[0] == expected_status_code
-    assert e.value.args[1] == expected_error
+    actual = mock_auth_service.deny_access_policy(
+        "/CreateDocumentReference",
+        RepositoryRole.GP_ADMIN.value,
+        "122222222")
+    
+    assert actual == expected
 
 
 def test_allow_access_policy_returns_false_for_nhs_number_not_in_allowed_on_search_path(

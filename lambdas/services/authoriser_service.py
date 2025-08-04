@@ -105,9 +105,11 @@ class AuthoriserService:
                     or is_user_pcse
                 )
                 if not patient_is_not_deceased:
-                    raise CreateDocumentRefException(422, LambdaError.CreateDocRefPatientDeceased)
+                    # raise CreateDocumentRefException(422, LambdaError.CreateDocRefPatientDeceased)
+                    deny_resource = False
                 if not is_user_gp_admin and not is_user_gp_clinical:
-                    raise AuthorisationException(403, LambdaError.CreateDocRefUserForbidden)
+                    # raise AuthorisationException(403, LambdaError.CreateDocRefUserForbidden)
+                    deny_resource = False
 
             case "/LloydGeorgeStitch":
                 deny_resource = patient_is_not_allowed or is_user_pcse

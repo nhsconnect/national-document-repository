@@ -69,11 +69,12 @@ def lambda_handler(event, context):
         logger.error(str(e), {"Result": "Failed to authenticate user"})
         policy.deny_all_methods()
     
-    except CreateDocumentRefException as e:
-        logger.error(str(e), {"Result": "Patient is deceased"})
-        return ApiGatewayResponse(
-            e.status_code, e.error, "POST"
-        ).create_api_gateway_response()
+    # except CreateDocumentRefException as e:
+    #     logger.error(str(e), {"Result": "Patient is deceased"})
+    #     #  deny the method
+    #     return ApiGatewayResponse(
+    #         e.status_code, e.error, "POST"
+    #     ).create_api_gateway_response()
 
     auth_response = policy.build()
     return auth_response

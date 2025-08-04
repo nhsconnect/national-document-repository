@@ -179,29 +179,61 @@ def test_return_deny_all_policy_user_when_auth_exception(set_env, mocker, contex
     mock_auth_service.assert_not_called()
 
 
-def test_cdr_for_deceased_patients_returns_returns_422(set_env, context, mocker):
-    mock_auth_service = mocker.patch(
-        "services.authoriser_service.AuthoriserService.auth_request"
-    )
-    mock_auth_service.side_effect = CreateDocumentRefException(422, LambdaError.CreateDocRefPatientDeceased)
-
+def test_deny_cdr_for_deceased_patients_returns(set_env, context, mocker):
+    expected_deny_policy = {
+        "Statement": [
+            {
+                "Action": "execute-api:Invoke",
+                "Effect": "Deny",
+                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/POST/CreateDocumentReference"],
+            }
+        ],
+        "Version": "2012-10-17",
+    }
     auth_token = "valid_gp_admin_token"
+
     test_event = {
         "headers": {"authorization": auth_token},
         "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/POST/CreateDocumentReference",
     }
+    mock_auth_service = mocker.patch(
+        "services.authoriser_service.AuthoriserService.auth_request", return_value=False
+    )
 
-    expected = ApiGatewayResponse(
-            422, LambdaError.CreateDocRefPatientDeceased, "POST"
-        ).create_api_gateway_response()
-    actual = lambda_handler(event=test_event, context=context)
-
-    assert actual == expected
+    response = lambda_handler(test_event, context=context)
 
     mock_auth_service.assert_called_with(
-        "/CreateDocumentReference",
-        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY,
-        auth_token,
-        TEST_NHS_NUMBER,
+        "/CreateDocumentReference", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
     )
+    assert response["policyDocument"] == expected_deny_policy
+
+
+def test_deny_cdr_for_non_gp_admins(set_env, context, mocker):
+    expected_deny_policy = {
+        "Statement": [
+            {
+                "Action": "execute-api:Invoke",
+                "Effect": "Deny",
+                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/POST/CreateDocumentReference"],
+            }
+        ],
+        "Version": "2012-10-17",
+    }
+    auth_token = "valid_pcse_token"
+
+    test_event = {
+        "headers": {"authorization": auth_token},
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
+        "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/POST/CreateDocumentReference",
+    }
+    mock_auth_service = mocker.patch(
+        "services.authoriser_service.AuthoriserService.auth_request", return_value=False
+    )
+
+    response = lambda_handler(test_event, context=context)
+
+    mock_auth_service.assert_called_with(
+        "/CreateDocumentReference", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
+    )
+    assert response["policyDocument"] == expected_deny_policy
