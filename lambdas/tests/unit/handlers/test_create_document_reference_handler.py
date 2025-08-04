@@ -366,7 +366,7 @@ def test_ods_code_not_in_pilot_returns_404(
     
     expected_body = {
         "message": f"ODS code does not match any of the allowed.",
-        "err_code": "CDR_4011",
+        "err_code": "CDR_4012",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
     

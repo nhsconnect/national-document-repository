@@ -94,11 +94,11 @@ class LambdaError(Enum):
         "message": "User forbidden"
     }
     CreateDocRefPatientDeceased = {
-        "err_code": "CDR_4010",
+        "err_code": "CDR_4011",
         "message": "Patient is deceased"
     }
     CreateDocRefOdsCodeNotAllowed = {
-        "err_code": "CDR_4011",
+        "err_code": "CDR_4012",
         "message": "ODS code does not match any of the allowed."
     }
     CreateDocPresign = {
