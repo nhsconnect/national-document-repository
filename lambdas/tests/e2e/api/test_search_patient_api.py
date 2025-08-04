@@ -1,16 +1,12 @@
 import io
 import logging
-import os
 import uuid
 
+from tests.e2e.conftest import API_KEY, API_ENDPOINT
 import requests
 from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 
 data_helper = LloydGeorgeDataHelper()
-
-api_endpoint = os.environ.get("NDR_API_ENDPOINT")
-api_key = os.environ.get("NDR_API_KEY")
-dynamo_table = os.environ.get("NDR_DYNAMO_STORE") or ""
 
 
 def test_search_patient_details(test_data, snapshot):
@@ -24,8 +20,8 @@ def test_search_patient_details(test_data, snapshot):
     data_helper.create_metadata(lloyd_george_record)
     data_helper.create_resource(lloyd_george_record)
 
-    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    headers = {"Authorization": "Bearer 123", "X-Api-Key": API_KEY}
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
     logging.info(bundle)
@@ -35,8 +31,7 @@ def test_search_patient_details(test_data, snapshot):
     del bundle["timestamp"]
     attachment_url = bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
     assert (
-        "https://internal-dev.api.service.nhs.uk/national-document-repository/DocumentReference/16521000000101~"
-        in attachment_url
+        "https://internal-dev.api.service.nhs.uk/national-document-repository/DocumentReference/16521000000101~" in attachment_url
     )
     del bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
 
@@ -66,8 +61,8 @@ def test_multiple_cancelled_search_patient_details(test_data, snapshot):
     data_helper.create_metadata(second_lloyd_george_record)
     data_helper.create_resource(second_lloyd_george_record)
 
-    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    headers = {"Authorization": "Bearer 123", "X-Api-Key": API_KEY}
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
@@ -87,8 +82,8 @@ def test_no_records(snapshot):
     lloyd_george_record = {}  # Initialize the dictionary
     lloyd_george_record["nhs_number"] = "9449305943"
 
-    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    headers = {"Authorization": "Bearer 123", "X-Api-Key": API_KEY}
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
@@ -99,8 +94,8 @@ def test_invalid_patient(snapshot):
     lloyd_george_record = {}
     lloyd_george_record["nhs_number"] = "9999999993"
 
-    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    headers = {"Authorization": "Bearer 123", "X-Api-Key": API_KEY}
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
