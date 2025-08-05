@@ -11,7 +11,7 @@ import { FieldValues, UseControllerReturn } from 'react-hook-form';
 type Props = {
     documents: Array<UploadDocument>;
     formController: UseControllerReturn<FieldValues, string>;
-    inputRef: React.MutableRefObject<HTMLInputElement | null>;
+    inputRef: React.RefObject<HTMLInputElement | null>;
     onDocumentRemove: (index: number, docType: DOCUMENT_TYPE) => void;
     onDocumentInput: (e: FileInputEvent, docType: DOCUMENT_TYPE) => void;
     formType: DOCUMENT_TYPE;
