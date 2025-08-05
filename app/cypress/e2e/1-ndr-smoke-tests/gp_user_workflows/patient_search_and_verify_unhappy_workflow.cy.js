@@ -6,7 +6,7 @@ describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient 
     const gpRoles = [Roles.SMOKE_GP_ADMIN_H85686, Roles.SMOKE_GP_CLINICAL_H85686];
 
     const workspace = Cypress.env('WORKSPACE');
-    const activePatient = workspace === 'ndr-dev' ? '9730153817' : '9000000017';
+    const activePatient = workspace === 'ndr-dev' ? '9730148341' : '9000000068';
 
     gpRoles.forEach((role) => {
         it(
