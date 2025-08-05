@@ -22,10 +22,10 @@ import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 import BackButton from '../../../generic/backButton/BackButton';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -144,7 +144,11 @@ const DeleteSubmitStageIndexView = ({ docType, recordType, resetDocState }: Inde
             <form onSubmit={handleSubmit(submit)}>
                 <Fieldset id="radio-selection">
                     <Fieldset.Legend isPageHeading>{pageTitle}:</Fieldset.Legend>
-                    <PatientSimpleSummary separator showDeceasedTag />
+                    <PatientSummary showDeceasedTag>
+                        <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                        <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                        <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                    </PatientSummary>
 
                     {!userIsGP && (
                         <WarningCallout>

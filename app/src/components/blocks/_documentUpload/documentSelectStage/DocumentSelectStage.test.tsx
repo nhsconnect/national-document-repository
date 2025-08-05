@@ -9,6 +9,10 @@ import { useState } from 'react';
 import * as ReactRouter from 'react-router-dom';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import { routeChildren, routes } from '../../../../types/generic/routes';
+import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 
 vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('react-router-dom', async () => {
@@ -21,6 +25,8 @@ vi.mock('react-router-dom', async () => {
 });
 vi.mock('pdfjs-dist');
 
+const patientDetails = buildPatientDetails();
+
 URL.createObjectURL = vi.fn();
 const mockedUseNavigate = vi.fn();
 
@@ -31,6 +37,8 @@ let history = createMemoryHistory({
 
 describe('DocumentSelectStage', () => {
     beforeEach(() => {
+        vi.mocked(usePatient).mockReturnValue(patientDetails);
+
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
         history = createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 });
     });
@@ -107,6 +115,31 @@ describe('DocumentSelectStage', () => {
                 expect(screen.getByText(lgDocumentOne.name)).toBeInTheDocument();
                 expect(screen.queryByText(lgDocumentTwo.name)).not.toBeInTheDocument();
             });
+
+            expect(
+                screen.getByRole('heading', { level: 2, name: 'Before you upload' }),
+            ).toBeInTheDocument();
+        });
+
+        it('renders patient summary fields is inset', async () => {
+            renderApp(history);
+
+            const insetText = screen
+                .getByText('Make sure that all files uploaded are for this patient only:')
+                .closest('.nhsuk-inset-text');
+            expect(insetText).toBeInTheDocument();
+
+            const expectedFullName = `${patientDetails.familyName}, ${patientDetails.givenName}`;
+            expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
+            expect(screen.getByText(expectedFullName)).toBeInTheDocument();
+
+            expect(screen.getByText(/NHS number/i)).toBeInTheDocument();
+            const expectedNhsNumber = formatNhsNumber(patientDetails.nhsNumber);
+            expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
+
+            expect(screen.getByText(/Date of birth/i)).toBeInTheDocument();
+            const expectedDob = getFormattedDate(new Date(patientDetails.birthDate));
+            expect(screen.getByText(expectedDob)).toBeInTheDocument();
         });
     });
 
