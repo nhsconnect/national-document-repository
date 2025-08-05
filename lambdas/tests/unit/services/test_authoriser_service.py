@@ -71,7 +71,6 @@ def mock_jwt_decode(mocker):
     [
         "/DocumentManifest",
         "/DocumentDelete",
-        "/CreateDocumentReference",
         "/UploadConfirm",
         "/UploadState",
         "/VirusScan",
@@ -122,10 +121,42 @@ def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
     mock_auth_service.allowed_nhs_numbers = []
 
 
-def test_deny_create_document_reference_as_non_gp_admin_returns_false(
+def test_deny_create_document_reference_as_gp_admin_returns_false(
     mock_auth_service: AuthoriserService
 ):
+    mock_auth_service.allowed_nhs_numbers.append("122222222")
+
     expected = False
+
+    actual = mock_auth_service.deny_access_policy(
+        "/CreateDocumentReference",
+        RepositoryRole.GP_ADMIN.value,
+        "122222222")
+
+    assert actual == expected
+
+
+def test_deny_create_document_reference_as_gp_clinical_returns_false(
+    mock_auth_service: AuthoriserService
+):
+    mock_auth_service.allowed_nhs_numbers.append("122222222")
+
+    expected = False
+
+    actual = mock_auth_service.deny_access_policy(
+        "/CreateDocumentReference",
+        RepositoryRole.GP_CLINICAL.value,
+        "122222222")
+
+    assert actual == expected
+
+
+def test_deny_create_document_reference_as_pcse_returns_true(
+    mock_auth_service: AuthoriserService
+):  
+    mock_auth_service.allowed_nhs_numbers.append("122222222")
+
+    expected = True
 
     actual = mock_auth_service.deny_access_policy(
         "/CreateDocumentReference",
@@ -135,15 +166,33 @@ def test_deny_create_document_reference_as_non_gp_admin_returns_false(
     assert actual == expected
 
 
-def test_deny_create_document_reference_on_deceased_patient_returns_false(
+def test_deny_create_document_reference_as_gp_admin_on_deceased_patient_returns_true(
     mock_auth_service: AuthoriserService
 ):
-    expected = False
+    expected = True
+
+    mock_auth_service.allowed_nhs_numbers.append("122222222")
     mock_auth_service.deceased_nhs_numbers.append("122222222")
 
     actual = mock_auth_service.deny_access_policy(
         "/CreateDocumentReference",
         RepositoryRole.GP_ADMIN.value,
+        "122222222")
+    
+    assert actual == expected
+
+
+def test_deny_create_document_reference_as_pcse_on_deceased_patient_returns_true(
+    mock_auth_service: AuthoriserService
+):
+    mock_auth_service.allowed_nhs_numbers.append("122222222")
+    mock_auth_service.deceased_nhs_numbers.append("122222222")
+
+    expected = True
+
+    actual = mock_auth_service.deny_access_policy(
+        "/CreateDocumentReference",
+        RepositoryRole.PCSE.value,
         "122222222")
     
     assert actual == expected
@@ -181,7 +230,10 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
     mock_auth_service: AuthoriserService,
 ):
     expected = False
-    actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.PCSE.value)
+
+    mock_auth_service.allowed_nhs_numbers = ["122222222"]
+
+    actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.PCSE.value, "122222222")
     assert expected == actual
 
 
@@ -190,7 +242,7 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
     [
         "/UploadConfirm",
         "/UploadState",
-        # "/CreateDocumentReference",
+        "/CreateDocumentReference",
         "/VirusScan",
         "/LloydGeorgeStitch",
     ],
@@ -207,7 +259,7 @@ def test_deny_access_policy_returns_true_for_pcse_on_paths(
 def test_deny_access_policy_returns_false_for_unrecognised_path(
     mock_auth_service: AuthoriserService,
 ):
-    expected = False
+    expected = True
 
     actual = mock_auth_service.deny_access_policy(
         "/test",

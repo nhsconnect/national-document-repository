@@ -69,42 +69,36 @@ class AuthoriserService:
     def deny_access_policy(self, path, user_role, nhs_number: str = None):
         logger.info(f"Path: {path}")
 
-        # deny_access_policy = True (deny access)
-        # deny_access_policy = False (allow access)
+        patient_access_is_allowed = (
+            nhs_number in self.allowed_nhs_numbers if nhs_number else False
+        )
+        access_to_deceased_patient = (
+            nhs_number in self.deceased_nhs_numbers if nhs_number else False
+        )
 
-        patient_access_is_not_allowed = (
-            nhs_number not in self.allowed_nhs_numbers if nhs_number else False
-        )
-        deny_access_to_deceased_patient = (
-            nhs_number not in self.deceased_nhs_numbers if nhs_number else False
-        )
         is_user_gp_admin = user_role == RepositoryRole.GP_ADMIN.value
         is_user_gp_clinical = user_role == RepositoryRole.GP_CLINICAL.value
         is_user_pcse = user_role == RepositoryRole.PCSE.value
 
         match path:
             case "/AccessAudit":
-                deny_resource = deny_access_to_deceased_patient
+                deny_resource = not access_to_deceased_patient
 
             case "/DocumentDelete":
-                deny_resource = patient_access_is_not_allowed or is_user_gp_clinical
+                deny_resource = not patient_access_is_allowed or is_user_gp_clinical
 
             case "/DocumentManifest":
-                deny_resource = patient_access_is_not_allowed or is_user_gp_clinical
+                deny_resource = not patient_access_is_allowed or is_user_gp_clinical
 
             case "/CreateDocumentReference":
-                deny_resource = (
-                    patient_access_is_not_allowed
-                    or is_user_gp_clinical
-                    or is_user_pcse
-                )
-                if not deny_access_to_deceased_patient:
+                deny_resource = True
+                if (is_user_gp_admin or is_user_gp_clinical) and patient_access_is_allowed:
                     deny_resource = False
-                if not is_user_gp_admin and not is_user_gp_clinical:
-                    deny_resource = False
+                if patient_access_is_allowed and access_to_deceased_patient:
+                    deny_resource = True
 
             case "/LloydGeorgeStitch":
-                deny_resource = patient_access_is_not_allowed or is_user_pcse
+                deny_resource = not patient_access_is_allowed or is_user_pcse
 
             case "/OdsReport":
                 deny_resource = False
@@ -114,27 +108,27 @@ class AuthoriserService:
 
             case "/UploadConfirm":
                 deny_resource = (
-                    patient_access_is_not_allowed
+                    not patient_access_is_allowed
                     or is_user_gp_clinical
                     or is_user_pcse
                 )
 
             case "/UploadState":
                 deny_resource = (
-                    patient_access_is_not_allowed
+                    not patient_access_is_allowed
                     or is_user_gp_clinical
                     or is_user_pcse
                 )
 
             case "/VirusScan":
                 deny_resource = (
-                    patient_access_is_not_allowed
+                    not patient_access_is_allowed
                     or is_user_gp_clinical
                     or is_user_pcse
                 )
 
             case _:
-                deny_resource = patient_access_is_not_allowed
+                deny_resource = not patient_access_is_allowed
 
         logger.info("Allow resource: %s" % (not deny_resource))
 
