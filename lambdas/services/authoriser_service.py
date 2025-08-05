@@ -103,7 +103,7 @@ class AuthoriserService:
             case "/SearchPatient":
                 deny_resource = False
 
-            case "/UploadConfirm":
+            case "/DocumentStatus":
                 deny_resource = (
                     deny_access_to_patient
                     or deny_access_to_clinical_role
