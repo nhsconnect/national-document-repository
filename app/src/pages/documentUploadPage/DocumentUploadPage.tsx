@@ -88,13 +88,6 @@ function DocumentUploadPage() {
                               state: confirmDocumentState,
                           })),
                 );
-                const confirmationDocumentState = DOCUMENT_UPLOAD_STATE.SUCCEEDED;
-                setDocuments((prevState) =>
-                    prevState.map((document) => ({
-                        ...document,
-                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    })),
-                );
 
                 window.clearInterval(intervalTimer);
                 navigate(routeChildren.DOCUMENT_UPLOAD_COMPLETED);
