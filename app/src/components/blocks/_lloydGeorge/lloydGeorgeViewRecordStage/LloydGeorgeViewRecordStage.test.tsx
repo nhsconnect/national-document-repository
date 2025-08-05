@@ -121,7 +121,9 @@ describe('<LloydGeorgeViewRecordStage />', () => {
         it('renders empty state when there is no LG record', async () => {
             renderComponent({ downloadStage: DOWNLOAD_STAGE.NO_RECORDS });
             expect(
-                screen.getByText('This patient does not have a Lloyd George record stored in this service.'),
+                screen.getByText(
+                    'This patient does not have a Lloyd George record stored in this service.'
+                ),
             ).toBeInTheDocument();
         });
 
