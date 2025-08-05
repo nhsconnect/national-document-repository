@@ -32,6 +32,7 @@ import { v4 as uuidv4 } from 'uuid';
 import DocumentUploadCompleteStage from '../../components/blocks/_documentUpload/documentUploadCompleteStage/DocumentUploadCompleteStage';
 import DocumentUploadRemoveFilesStage from '../../components/blocks/_documentUpload/documentUploadRemoveFilesStage/DocumentUploadRemoveFilesStage';
 import useConfig from '../../helpers/hooks/useConfig';
+import DocumentUploadInfectedStage from '../../components/blocks/_documentUpload/documentUploadInfectedStage/DocumentUploadInfectedStage';
 
 function DocumentUploadPage() {
     const patientDetails = usePatient();
@@ -87,6 +88,7 @@ function DocumentUploadPage() {
                               state: confirmDocumentState,
                           })),
                 );
+
                 window.clearInterval(intervalTimer);
                 navigate(routeChildren.DOCUMENT_UPLOAD_COMPLETED);
             } catch (e) {
@@ -106,7 +108,7 @@ function DocumentUploadPage() {
         } else if (hasVirus && !virusReference.current) {
             virusReference.current = true;
             window.clearInterval(intervalTimer);
-            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED);
+            navigate(routeChildren.DOCUMENT_UPLOAD_INFECTED);
         } else if (hasNoVirus && !confirmedReference.current) {
             confirmedReference.current = true;
             void confirmUpload();
@@ -271,8 +273,19 @@ function DocumentUploadPage() {
                     } else if (doc.state !== DOCUMENT_UPLOAD_STATE.SCANNING) {
                         doc.state = DOCUMENT_UPLOAD_STATE.SCANNING;
                     } else {
-                        doc.state = DOCUMENT_UPLOAD_STATE.CLEAN;
+                        const hasVirusFile = documents.filter(
+                            (d) => d.file.name.toLocaleLowerCase() === 'virus.pdf',
+                        );
+                        const hasFailedFile = documents.filter(
+                            (d) => d.file.name.toLocaleLowerCase() === 'virus-failed.pdf',
+                        );
+                        hasVirusFile.length > 0
+                            ? (doc.state = DOCUMENT_UPLOAD_STATE.INFECTED)
+                            : hasFailedFile.length > 0
+                              ? (doc.state = DOCUMENT_UPLOAD_STATE.FAILED)
+                              : (doc.state = DOCUMENT_UPLOAD_STATE.CLEAN);
                     }
+
                     return doc;
                 });
                 setDocuments(updatedDocuments);
@@ -297,61 +310,63 @@ function DocumentUploadPage() {
     }
 
     return (
-        <>
-            <div>
-                <Routes>
-                    <Route
-                        index
-                        element={
-                            <DocumentSelectStage
-                                documents={documents}
-                                setDocuments={setDocuments}
-                                documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                            />
-                        }
-                    />
-                    <Route
-                        path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER) + '/*'}
-                        element={
-                            <DocumentSelectOrderStage
-                                documents={documents}
-                                setDocuments={setDocuments}
-                                setMergedPdfBlob={setMergedPdfBlob}
-                            />
-                        }
-                    />
-                    <Route
-                        path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL) + '/*'}
-                        element={
-                            <DocumentUploadRemoveFilesStage
-                                documents={documents}
-                                setDocuments={setDocuments}
-                                documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                            />
-                        }
-                    />
-                    <Route
-                        path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION) + '/*'}
-                        element={
-                            <DocumentUploadConfirmStage
-                                documents={documents}
-                                startUpload={submitDocuments}
-                            />
-                        }
-                    />
-                    <Route
-                        path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_UPLOADING) + '/*'}
-                        element={<DocumentUploadingStage documents={documents} />}
-                    />
-                    <Route
-                        path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_COMPLETED) + '/*'}
-                        element={<DocumentUploadCompleteStage />}
-                    />
-                </Routes>
+        <div>
+            <Routes>
+                <Route
+                    index
+                    element={
+                        <DocumentSelectStage
+                            documents={documents}
+                            setDocuments={setDocuments}
+                            documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                        />
+                    }
+                />
+                <Route
+                    path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER) + '/*'}
+                    element={
+                        <DocumentSelectOrderStage
+                            documents={documents}
+                            setDocuments={setDocuments}
+                            setMergedPdfBlob={setMergedPdfBlob}
+                        />
+                    }
+                />
+                <Route
+                    path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL) + '/*'}
+                    element={
+                        <DocumentUploadRemoveFilesStage
+                            documents={documents}
+                            setDocuments={setDocuments}
+                            documentType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                        />
+                    }
+                />
+                <Route
+                    path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION) + '/*'}
+                    element={
+                        <DocumentUploadConfirmStage
+                            documents={documents}
+                            startUpload={submitDocuments}
+                        />
+                    }
+                />
+                <Route
+                    path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_UPLOADING) + '/*'}
+                    element={<DocumentUploadingStage documents={documents} />}
+                />
+                <Route
+                    path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_COMPLETED) + '/*'}
+                    element={<DocumentUploadCompleteStage />}
+                />
+                <Route
+                    path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_INFECTED) + '/*'}
+                    element={<DocumentUploadInfectedStage />}
+                />
+            </Routes>
 
-                <Outlet />
-            </div>
-        </>
+            <Outlet />
+        </div>
     );
 }
 

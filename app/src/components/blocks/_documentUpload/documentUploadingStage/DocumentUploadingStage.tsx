@@ -7,7 +7,7 @@ import {
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { useNavigate } from 'react-router-dom';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { useEffect } from 'react';
 
 type Props = {
@@ -23,6 +23,9 @@ const DocumentUploadingStage = ({ documents }: Props) => {
     useEffect(() => {
         if (documents.length === 0) {
             navigate(routes.DOCUMENT_UPLOAD);
+        }
+        if (documents.some((doc) => doc.state === DOCUMENT_UPLOAD_STATE.INFECTED)) {
+            navigate(routeChildren.DOCUMENT_UPLOAD_INFECTED);
         }
     }, [navigate, documents]);
 

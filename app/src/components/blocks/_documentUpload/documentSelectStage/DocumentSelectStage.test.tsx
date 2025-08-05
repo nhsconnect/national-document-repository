@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import * as ReactRouter from 'react-router-dom';
 import { MemoryHistory, createMemoryHistory } from 'history';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
@@ -165,7 +165,7 @@ describe('DocumentSelectStage', () => {
             await userEvent.click(await screen.findByTestId('back-button'));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(-1);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
             });
         });
     });
