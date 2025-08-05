@@ -1,15 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import usePatient from '../../../../helpers/hooks/usePatient';
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
-import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import DocumentSelectOrderStage from './DocumentSelectOrderStage';
+import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 
 const mockNavigate = vi.fn();
 const mockSetDocuments = vi.fn();
@@ -31,6 +32,8 @@ vi.mock('../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview', 
         </div>
     ),
 }));
+
+const patientDetails = buildPatientDetails();
 
 describe('DocumentSelectOrderStage', () => {
     let documents: UploadDocument[] = [];
