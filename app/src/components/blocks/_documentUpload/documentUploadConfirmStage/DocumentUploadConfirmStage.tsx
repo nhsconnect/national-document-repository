@@ -1,12 +1,12 @@
 import { Button, Table } from 'nhsuk-react-components';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import { useState } from 'react';
 import Pagination from '../../../generic/pagination/Pagination';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 type Props = {
     documents: UploadDocument[];
@@ -38,8 +38,14 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
                 Files will be combined into a single PDF document to create a digital Lloyd George
                 record for:
             </p>
-            <PatientSimpleSummary />
-
+            <div className="nhsuk-inset-text">
+                <p>Make sure that all files uploaded are for this patient only:</p>
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                </PatientSummary>
+            </div>
             <div style={{ borderBottom: '1px solid black' }}>
                 <h4 style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                     <span>Files to be uploaded</span>
