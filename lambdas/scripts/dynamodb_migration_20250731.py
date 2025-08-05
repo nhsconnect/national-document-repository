@@ -39,9 +39,6 @@ class VersionMigration:
                 all_entries=all_entries, total_count=total_count
             )
             self.run_status_migration(all_entries=all_entries, total_count=total_count)
-            self.run_uploading_migration(
-                all_entries=all_entries, total_count=total_count
-            )
         except Exception as e:
             self.logger.error("Migration failed", exc_info=e)
             raise
@@ -144,14 +141,6 @@ class VersionMigration:
             all_entries,
             total_count,
             lambda e: {"Status": "current"} if e.get("Status") != "current" else None,
-        )
-
-    def run_uploading_migration(self, all_entries, total_count):
-        self.process_entries(
-            "Uploading",
-            all_entries,
-            total_count,
-            lambda e: {"Uploading": False} if e.get("Uploading") is not False else None,
         )
 
 
