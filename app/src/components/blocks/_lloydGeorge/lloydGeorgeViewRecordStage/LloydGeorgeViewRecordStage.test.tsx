@@ -123,7 +123,7 @@ describe('<LloydGeorgeViewRecordStage />', () => {
             expect(
                 screen.getByText(
                     'This patient does not have a Lloyd George record stored in this service.'
-                ),
+                )
             ).toBeInTheDocument();
         });
 
