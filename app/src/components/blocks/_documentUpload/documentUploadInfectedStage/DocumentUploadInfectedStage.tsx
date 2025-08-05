@@ -2,6 +2,7 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
 
+
 function DocumentUploadInfectedStage() {
     const navigate = useNavigate();
     const pageHeader = "We couldn't upload your files because we found a virus";
