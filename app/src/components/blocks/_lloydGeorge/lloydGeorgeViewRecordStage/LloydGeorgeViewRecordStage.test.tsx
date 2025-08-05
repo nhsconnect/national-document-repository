@@ -125,7 +125,7 @@ describe('<LloydGeorgeViewRecordStage />', () => {
         });
 
         it('shows full screen mode with patient info', async () => {
-            const patientName = `${mockPatientDetails.givenName}, ${mockPatientDetails.familyName}`;
+            const patientName = `${mockPatientDetails.familyName}, ${mockPatientDetails.givenName}`;
             const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
 
             renderComponent();
@@ -136,8 +136,15 @@ describe('<LloydGeorgeViewRecordStage />', () => {
             await screen.findByText('Exit full screen');
 
             expect(screen.getByText(patientName)).toBeInTheDocument();
-            expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
+            expect(screen.getByText(dob)).toBeInTheDocument();
             expect(screen.getByText(/NHS number/)).toBeInTheDocument();
+        });
+
+        it('shows deceased tag for deceased patients', async () => {
+            mockedUsePatient.mockReturnValue(buildPatientDetails({ deceased: true }));
+            renderComponent();
+
+            expect(screen.getByTestId('deceased-patient-tag')).toBeInTheDocument();
         });
 
         it('returns to regular view when exiting full screen', async () => {
