@@ -10,15 +10,14 @@ import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router-dom';
 import { routeChildren } from '../../../../types/generic/routes';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
-import { ReactComponent as FileSVG } from '../../../../styles/file-input.svg';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { getDocument } from 'pdfjs-dist';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
-type Props = {
+export type Props = {
     setDocuments: SetUploadDocuments;
     documents: Array<UploadDocument>;
     documentType: DOCUMENT_TYPE;
@@ -43,7 +42,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         e.stopPropagation();
 
         let fileArray: File[] = [];
-        if (e.dataTransfer.items) {
+        if (e.dataTransfer.items?.length > 0) {
             [...e.dataTransfer.items].forEach((item) => {
                 const file = item.getAsFile();
 
@@ -51,7 +50,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                     fileArray.push(file);
                 }
             });
-        } else if (e.dataTransfer.files) {
+        } else if (e.dataTransfer.files?.length > 0) {
             fileArray = [...e.dataTransfer.files];
         }
 
@@ -137,15 +136,15 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         return '';
     };
 
-    const documentsValid = () => {
-        return (
-            documents.length > 0 &&
-            documents.every((doc) => doc.state !== DOCUMENT_UPLOAD_STATE.FAILED)
-        );
-    };
+    // const documentsValid = () => {
+    //     return (
+    //         documents.length > 0 &&
+    //         documents.every((doc) => doc.state !== DOCUMENT_UPLOAD_STATE.FAILED)
+    //     );
+    // };
 
     const pageTitle = () => {
-        let title = 'file';
+        let title = 'files';
 
         switch (documentType) {
             case DOCUMENT_TYPE.LLOYD_GEORGE:
@@ -153,28 +152,41 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                 break;
         }
 
-        return `Select ${title} to upload`;
+        return `Choose ${title} to upload`;
     };
 
     useTitle({ pageTitle: pageTitle() });
 
     return (
         <>
-            <BackButton />
+            <BackButton dataTestid="back-button" />
             <h1>{pageTitle()}</h1>
 
             <div>
                 <h2 className="nhsuk-heading-m">Before you upload</h2>
+                <ul>
+                    <li>you can only upload PDF files</li>
+                    <li>only upload files that are part of this patient's Lloyd George record</li>
+                    <li>remove any passwords from files</li>
+                </ul>
                 <p>
-                    You can upload files for patients that do not currently have a Lloyd George
-                    record stored in this service.
+                    Uploading may take longer if there are many files or if individual files are
+                    larger
                 </p>
-                <p>Make sure that all files uploaded are for this patient only.</p>
-                <PatientSimpleSummary />
+
+                <div className="nhsuk-inset-text">
+                    <p>Make sure that all files uploaded are for this patient only:</p>
+                    <PatientSummary>
+                        <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                        <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                        <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                    </PatientSummary>
+                </div>
+
                 <p>You can only upload PDF files.</p>
             </div>
             <Fieldset.Legend id="upload-fieldset-legend" size="m">
-                Select files to upload
+                Choose PDF files to upload
             </Fieldset.Legend>
             <Fieldset>
                 <div
@@ -186,14 +198,11 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                         e.preventDefault();
                     }}
                     onDrop={onFileDrop}
-                    className={'lloydgeorge_drag-and-drop d-flex'}
+                    className={'lloydgeorge_drag-and-drop'}
                 >
                     <strong className="lg-input-bold">
                         Drag and drop a file or multiple files here
                     </strong>
-                    <div className="lg-input-svg-display">
-                        <FileSVG />
-                    </div>
                     <div>
                         <TextInput
                             data-testid={`button-input`}
@@ -219,14 +228,14 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                             }}
                             aria-labelledby="upload-fieldset-legend"
                         >
-                            Select files
+                            Choose PDF files
                         </Button>
                     </div>
                 </div>
             </Fieldset>
             {documents && documents.length > 0 && (
                 <>
-                    <Table caption="Chosen file(s)" id="selected-documents-table">
+                    <Table caption="Chosen files" id="selected-documents-table">
                         <Table.Head>
                             <Table.Row>
                                 <Table.Cell className="table-cell-lg-input-cell-border">
@@ -239,18 +248,11 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                                 </Table.Cell>
                             </Table.Row>
                             <Table.Row>
-                                <Table.Cell style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}>
-                                    Filename
-                                </Table.Cell>
-                                <Table.Cell
-                                    width="20%"
-                                    style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}
-                                >
+                                <Table.Cell className="word-break-keep-all">Filename</Table.Cell>
+                                <Table.Cell width="20%" className="word-break-keep-all">
                                     File size
                                 </Table.Cell>
-                                <Table.Cell style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}>
-                                    Remove file
-                                </Table.Cell>
+                                <Table.Cell className="word-break-keep-all">Remove file</Table.Cell>
                             </Table.Row>
                         </Table.Head>
 
@@ -259,9 +261,13 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                                 return (
                                     <Table.Row key={document.id} id={document.file.name}>
                                         <Table.Cell>
-                                            <div>{document.file.name}</div>
+                                            <div>
+                                                <strong>{document.file.name}</strong>
+                                            </div>
                                             {document.error && (
-                                                <div style={{ color: 'red' }}>{document.error}</div>
+                                                <div className="nhs-warning-color">
+                                                    {document.error}
+                                                </div>
                                             )}
                                         </Table.Cell>
                                         <Table.Cell>
@@ -287,17 +293,17 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                     <LinkButton
                         type="button"
                         className="remove-all-button mb-5"
+                        data-testid="remove-all-button"
                         onClick={() => {
                             navigate(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL);
                         }}
                     >
-                        Remove all
+                        Remove all files
                     </LinkButton>
                 </>
             )}
             <div className="lloydgeorge_upload-submission">
                 <Button
-                    disabled={!documentsValid()}
                     type="button"
                     id="upload-button"
                     onClick={() => navigate(routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER)}

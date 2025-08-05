@@ -1,6 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import usePatient from '../../../../helpers/hooks/usePatient';
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -39,6 +42,8 @@ describe('DocumentSelectOrderStage', () => {
     };
 
     beforeEach(() => {
+        vi.mocked(usePatient).mockReturnValue(patientDetails);
+
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
         documents = [
             {
@@ -58,14 +63,8 @@ describe('DocumentSelectOrderStage', () => {
     });
 
     describe('Rendering', () => {
-        it('renders the component with page title and instructions', async () => {
-            render(
-                <DocumentSelectOrderStage
-                    documents={documents}
-                    setDocuments={mockSetDocuments}
-                    setMergedPdfBlob={mockSetMergedPdfBlob}
-                />,
-            );
+        it('renders', async () => {
+            renderSut(documents);
 
             await waitFor(() => {
                 expect(
@@ -749,4 +748,35 @@ describe('DocumentSelectOrderStage', () => {
             expect(screen.getAllByText(errorMessage).length).toBe(3);
         });
     });
+
+    it('renders patient summary fields is inset', async () => {
+        renderSut(documents);
+
+        const insetText = screen
+            .getByText('Make sure that all files uploaded are for this patient only:')
+            .closest('.nhsuk-inset-text');
+        expect(insetText).toBeInTheDocument();
+
+        const expectedFullName = `${patientDetails.familyName}, ${patientDetails.givenName}`;
+        expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
+        expect(screen.getByText(expectedFullName)).toBeInTheDocument();
+
+        expect(screen.getByText(/NHS number/i)).toBeInTheDocument();
+        const expectedNhsNumber = formatNhsNumber(patientDetails.nhsNumber);
+        expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
+
+        expect(screen.getByText(/Date of birth/i)).toBeInTheDocument();
+        const expectedDob = getFormattedDate(new Date(patientDetails.birthDate));
+        expect(screen.getByText(expectedDob)).toBeInTheDocument();
+    });
 });
+
+function renderSut(documents: UploadDocument[]) {
+    render(
+        <DocumentSelectOrderStage
+            documents={documents}
+            setDocuments={() => {}}
+            setMergedPdfBlob={() => {}}
+        />,
+    );
+}

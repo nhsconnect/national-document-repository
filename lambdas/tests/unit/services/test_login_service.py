@@ -229,7 +229,7 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
         "OIDC_JWKS_URL": "https://jwks-url.com",
         "OIDC_CALLBACK_URL": "https://callback-url.com",
     }
-   
+
     login_service = LoginService(mock_service)
 
     with pytest.raises(LoginException) as actual:

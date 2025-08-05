@@ -16,7 +16,6 @@ import {
     UploadFilesErrors,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
 
@@ -192,7 +191,15 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         <>
             <BackButton />
             <h1>{pageTitle}</h1>
-            <PatientSimpleSummary />
+
+            <div className="nhsuk-inset-text">
+                <p>Make sure that all files uploaded are for this patient only:</p>
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                </PatientSummary>
+            </div>
 
             {Object.keys(formState.errors).length > 0 && (
                 <ErrorBox

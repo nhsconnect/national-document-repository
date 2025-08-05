@@ -216,7 +216,7 @@ def test_dynamo_error(mock_service, valid_fhir_doc_json):
         mock_service.process_fhir_document_reference(valid_fhir_doc_json)
 
     assert excinfo.value.status_code == 500
-    assert excinfo.value.error == LambdaError.CreateDocUpload
+    assert excinfo.value.error == LambdaError.CreateDocUploadInternalError
 
 
 def test_save_document_reference_to_dynamo_error(mock_service, mocker):
@@ -241,7 +241,7 @@ def test_save_document_reference_to_dynamo_error(mock_service, mocker):
         mock_service._save_document_reference_to_dynamo("test-table", document_ref)
 
     assert excinfo.value.status_code == 500
-    assert excinfo.value.error == LambdaError.CreateDocUpload
+    assert excinfo.value.error == LambdaError.CreateDocUploadInternalError
 
     mock_service.dynamo_service.create_item.assert_called_once()
 
@@ -290,7 +290,7 @@ def test_s3_presigned_url_error(mock_service, valid_fhir_doc_json):
         mock_service.process_fhir_document_reference(valid_fhir_doc_json)
 
     assert excinfo.value.status_code == 500
-    assert excinfo.value.error == LambdaError.CreateDocPresign
+    assert excinfo.value.error == LambdaError.InternalServerError
 
 
 def test_s3_upload_error(mock_service, valid_fhir_doc_with_binary):
