@@ -43,8 +43,6 @@ describe('DocumentSelectOrderStage', () => {
     };
 
     beforeEach(() => {
-        vi.mocked(usePatient).mockReturnValue(patientDetails);
-
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
         documents = [
             {
@@ -742,35 +740,4 @@ describe('DocumentSelectOrderStage', () => {
             });
         });
     });
-
-    it('renders patient summary fields is inset', async () => {
-        renderSut(documents);
-
-        const insetText = screen
-            .getByText('Make sure that all files uploaded are for this patient only:')
-            .closest('.nhsuk-inset-text');
-        expect(insetText).toBeInTheDocument();
-
-        const expectedFullName = `${patientDetails.familyName}, ${patientDetails.givenName}`;
-        expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
-        expect(screen.getByText(expectedFullName)).toBeInTheDocument();
-
-        expect(screen.getByText(/NHS number/i)).toBeInTheDocument();
-        const expectedNhsNumber = formatNhsNumber(patientDetails.nhsNumber);
-        expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
-
-        expect(screen.getByText(/Date of birth/i)).toBeInTheDocument();
-        const expectedDob = getFormattedDate(new Date(patientDetails.birthDate));
-        expect(screen.getByText(expectedDob)).toBeInTheDocument();
-    });
 });
-
-function renderSut(documents: UploadDocument[]) {
-    render(
-        <DocumentSelectOrderStage
-            documents={documents}
-            setDocuments={() => {}}
-            setMergedPdfBlob={() => {}}
-        />,
-    );
-}
