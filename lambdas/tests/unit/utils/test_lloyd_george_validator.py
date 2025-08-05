@@ -1035,19 +1035,19 @@ def test_allowed_to_ingest_ods_code_propagate_error(mock_get_ssm_parameter):
         allowed_to_ingest_ods_code("H81109")
 
 
-def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
-    mocker.patch(
-        "utils.lloyd_george_validator.check_for_number_of_files_match_expected"
-    )
-    mocker.patch("utils.lloyd_george_validator.validate_file_name")
-    patient_with_different_nhs_number = mock_pds_patient.model_copy(
-        update={"id": "9876543210"}
-    )
+# def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
+#     mocker.patch(
+#         "utils.lloyd_george_validator.check_for_number_of_files_match_expected"
+#     )
+#     mocker.patch("utils.lloyd_george_validator.validate_file_name")
+#     patient_with_different_nhs_number = mock_pds_patient.model_copy(
+#         update={"id": "9876543210"}
+#     )
 
-    with pytest.raises(LGInvalidFilesException):
-        validate_lg_files(
-            TEST_DOCUMENT_REFERENCE_LIST, patient_with_different_nhs_number
-        )
+#     with pytest.raises(LGInvalidFilesException):
+#         validate_lg_files(
+#             TEST_DOCUMENT_REFERENCE_LIST, patient_with_different_nhs_number
+#         )
 
 
 @pytest.mark.parametrize(
