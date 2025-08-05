@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import * as ReactRouter from 'react-router-dom';
 import { MemoryHistory, createMemoryHistory } from 'history';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 
 vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('react-router-dom', async () => {
@@ -132,7 +132,7 @@ describe('DocumentSelectStage', () => {
             await userEvent.click(await screen.findByTestId('back-button'));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(-1);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
             });
         });
     });

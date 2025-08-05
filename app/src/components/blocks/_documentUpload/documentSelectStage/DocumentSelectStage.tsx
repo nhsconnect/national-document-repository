@@ -9,7 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router-dom';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
@@ -159,7 +159,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
 
     return (
         <>
-            <BackButton dataTestid="back-button" />
+            <BackButton toLocation={routes.VERIFY_PATIENT} dataTestid="back-button" />
             <h1>{pageTitle()}</h1>
 
             <div>
