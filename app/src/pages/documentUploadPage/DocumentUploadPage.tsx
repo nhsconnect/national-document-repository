@@ -5,15 +5,12 @@ import {
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 import { S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
-import uploadDocuments, {
-    updateDocumentState,
-    uploadConfirmation,
-} from '../../helpers/requests/uploadDocuments';
+import { updateDocumentState } from '../../helpers/requests/uploadDocuments';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
-import { isLocal, isMock } from '../../helpers/utils/isLocal';
+import { isMock } from '../../helpers/utils/isLocal';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { errorToParams } from '../../helpers/utils/errorToParams';
