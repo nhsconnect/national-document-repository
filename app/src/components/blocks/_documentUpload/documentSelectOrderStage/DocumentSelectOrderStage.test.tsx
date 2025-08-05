@@ -6,9 +6,6 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import usePatient from '../../../../helpers/hooks/usePatient';
-import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 
 const mockNavigate = vi.fn();
 const mockSetDocuments = vi.fn();
