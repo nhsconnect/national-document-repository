@@ -1,12 +1,12 @@
 import { Button, Table } from 'nhsuk-react-components';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import { useState } from 'react';
 import Pagination from '../../../generic/pagination/Pagination';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 type Props = {
     documents: UploadDocument[];
@@ -32,38 +32,44 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
 
     return (
         <div className="document-upload-confirm">
-            <BackButton />
+            <BackButton dataTestid="go-back-link" />
             <h1>{pageTitle}</h1>
-            <p>
-                Files will be combined into a single PDF document to create a digital Lloyd George
-                record for:
-            </p>
-            <PatientSimpleSummary />
 
-            <div style={{ borderBottom: '1px solid black' }}>
-                <h4 style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Files to be uploaded</span>
-                    <button
-                        className="govuk-link"
-                        rel="change"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate(routes.DOCUMENT_UPLOAD);
-                        }}
-                    >
-                        <strong style={{ textDecoration: 'underline', cursor: 'pointer' }}>
-                            Change
-                        </strong>
-                    </button>
-                </h4>
+            <div className="nhsuk-inset-text">
+                <p>Make sure that all files uploaded are for this patient only:</p>
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                </PatientSummary>
             </div>
+
+            <p>
+                Files will be combined into a single PDF document to create a Lloyd George record
+                for this patient.
+            </p>
+
+            <h4>Files to be uploaded</h4>
 
             <Table id="selected-documents-table">
                 <Table.Head>
                     <Table.Row>
-                        <Table.Cell width="80%">Filename</Table.Cell>
-                        <Table.Cell style={{ whiteSpace: 'pre', wordBreak: 'keep-all' }}>
+                        <Table.Cell>Filename</Table.Cell>
+                        <Table.Cell width="25%" className="word-break-keep-all">
                             Position
+                        </Table.Cell>
+                        <Table.Cell width="10%" className="word-break-keep-all">
+                            <button
+                                className="govuk-link"
+                                rel="change"
+                                data-testid="change-files-button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(routes.DOCUMENT_UPLOAD);
+                                }}
+                            >
+                                Change files
+                            </button>
                         </Table.Cell>
                     </Table.Row>
                 </Table.Head>
@@ -73,7 +79,9 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
                         return (
                             <Table.Row key={document.id} id={document.file.name}>
                                 <Table.Cell>
-                                    <div>{document.file.name}</div>
+                                    <div>
+                                        <strong>{document.file.name}</strong>
+                                    </div>
                                 </Table.Cell>
                                 <Table.Cell>
                                     <div>
@@ -82,6 +90,7 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
                                             : 'N/A'}
                                     </div>
                                 </Table.Cell>
+                                <Table.Cell></Table.Cell>
                             </Table.Row>
                         );
                     })}
@@ -94,7 +103,9 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
                 setCurrentPage={setCurrentPage}
             />
 
-            <Button onClick={startUpload}>Upload files</Button>
+            <Button data-testid="confirm-button" onClick={startUpload}>
+                Confirm file order and upload files
+            </Button>
         </div>
     );
 };

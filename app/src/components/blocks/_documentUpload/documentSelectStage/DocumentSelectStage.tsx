@@ -9,13 +9,13 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router-dom';
-import { routeChildren } from '../../../../types/generic/routes';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { getDocument } from 'pdfjs-dist';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 export type Props = {
     setDocuments: SetUploadDocuments;
@@ -159,7 +159,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
 
     return (
         <>
-            <BackButton dataTestid="back-button" />
+            <BackButton toLocation={routes.VERIFY_PATIENT} dataTestid="back-button" />
             <h1>{pageTitle()}</h1>
 
             <div>
@@ -173,7 +173,17 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                     Uploading may take longer if there are many files or if individual files are
                     larger
                 </p>
-                <PatientSimpleSummary />
+
+                <div className="nhsuk-inset-text">
+                    <p>Make sure that all files uploaded are for this patient only:</p>
+                    <PatientSummary>
+                        <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                        <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                        <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                    </PatientSummary>
+                </div>
+
+                <p>You can only upload PDF files.</p>
             </div>
             <Fieldset.Legend id="upload-fieldset-legend" size="m">
                 Choose PDF files to upload
