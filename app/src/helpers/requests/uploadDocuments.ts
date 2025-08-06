@@ -1,28 +1,16 @@
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
-import {
-    DOCUMENT_TYPE,
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 
 import axios, { AxiosError } from 'axios';
-import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
-import { Dispatch, SetStateAction } from 'react';
-import waitForSeconds from '../utils/waitForSeconds';
 import {
-    DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS,
-    setSingleDocument,
-} from '../utils/uploadAndScanDocumentHelpers';
-import { getLastURLPath } from '../utils/urlManipulations';
-
-const VIRUS_SCAN_RETRY_LIMIT = 3;
-const TIMEOUT_ERROR_STATUS_CODE = 504;
-const TIMEOUT_ERROR = 'TIMEOUT_ERROR';
-
-type FileKeyBuilder = {
-    [key in DOCUMENT_TYPE]: string[];
-};
+    DocumentStatusResult,
+    S3Upload,
+    S3UploadFields,
+    UploadSession,
+} from '../../types/generic/uploadResult';
+import { Dispatch, SetStateAction } from 'react';
+import { setSingleDocument } from '../utils/uploadDocumentHelpers';
 
 type UploadDocumentsArgs = {
     documents: UploadDocument[];
@@ -35,111 +23,6 @@ type UploadDocumentsToS3Args = {
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
     document: UploadDocument;
     uploadSession: UploadSession;
-};
-
-type DocRefResponse = {
-    data: UploadSession;
-};
-
-export type UpdateStateArgs = {
-    documents: UploadDocument[];
-    uploadingState: boolean;
-    baseUrl: string;
-    baseHeaders: AuthHeaders;
-    nhsNumber: string;
-};
-
-type VirusScanArgs = {
-    documentReference: string;
-    baseUrl: string;
-    baseHeaders: AuthHeaders;
-    nhsNumber: string;
-};
-type UploadConfirmationArgs = {
-    baseUrl: string;
-    baseHeaders: AuthHeaders;
-    nhsNumber: string;
-    documents: Array<UploadDocument>;
-    uploadSession: UploadSession;
-};
-
-export const virusScan = async (virusScanArgs: VirusScanArgs) => {
-    for (let i = 0; i < VIRUS_SCAN_RETRY_LIMIT; i++) {
-        const scanResult = await requestVirusScan(virusScanArgs);
-        if (scanResult === TIMEOUT_ERROR) {
-            await waitForSeconds(DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS);
-            continue;
-        }
-        return scanResult;
-    }
-
-    throw new Error(`Virus scan api calls timed-out for ${VIRUS_SCAN_RETRY_LIMIT} attempts.`);
-};
-
-const requestVirusScan = async ({
-    documentReference,
-    baseUrl,
-    baseHeaders,
-    nhsNumber,
-}: VirusScanArgs) => {
-    const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
-    const body = { documentReference };
-    try {
-        await axios.post(virusScanGatewayUrl, body, {
-            headers: {
-                ...baseHeaders,
-            },
-            params: {
-                patientId: nhsNumber,
-            },
-        });
-        return DOCUMENT_UPLOAD_STATE.CLEAN;
-    } catch (e) {
-        const error = e as AxiosError;
-        if (error.response?.status === TIMEOUT_ERROR_STATUS_CODE) {
-            return TIMEOUT_ERROR;
-        }
-        return DOCUMENT_UPLOAD_STATE.INFECTED;
-    }
-};
-
-export const uploadConfirmation = async ({
-    baseUrl,
-    baseHeaders,
-    nhsNumber,
-    documents,
-    uploadSession,
-}: UploadConfirmationArgs) => {
-    const fileKeyBuilder = documents.reduce((acc, doc) => {
-        const documentMetadata = uploadSession[doc.id];
-        const fileReferenceUUID = getLastURLPath(documentMetadata.fields.key);
-        const previousKeys = acc[doc.docType] ?? [];
-
-        return {
-            ...acc,
-            [doc.docType]: [...previousKeys, fileReferenceUUID],
-        };
-    }, {} as FileKeyBuilder);
-
-    const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
-    const confirmationBody = {
-        patientId: nhsNumber,
-        documents: { ...fileKeyBuilder },
-    };
-    try {
-        await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
-            headers: {
-                ...baseHeaders,
-            },
-            params: {
-                patientId: nhsNumber,
-            },
-        });
-        return DOCUMENT_UPLOAD_STATE.SUCCEEDED;
-    } catch (e) {
-        const error = e as AxiosError;
-        throw error;
-    }
 };
 
 export const uploadDocumentToS3 = async ({
@@ -162,7 +45,10 @@ export const uploadDocumentToS3 = async ({
                 if (total) {
                     setSingleDocument(setDocuments, {
                         id: document.id,
-                        state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                        state:
+                            total >= 100
+                                ? DOCUMENT_UPLOAD_STATE.SCANNING
+                                : DOCUMENT_UPLOAD_STATE.UPLOADING,
                         progress: (loaded / total) * 100,
                     });
                 }
@@ -179,9 +65,9 @@ const uploadDocuments = async ({
     documents,
     baseUrl,
     baseHeaders,
-}: UploadDocumentsArgs) => {
+}: UploadDocumentsArgs): Promise<UploadSession> => {
     const requestBody = {
-        resourceType: 'DocumentReference',
+        resourceType: 'CreateDocumentReference',
         subject: {
             identifier: {
                 system: 'https://fhir.nhs.uk/Id/nhs-number',
@@ -212,7 +98,7 @@ const uploadDocuments = async ({
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_UPLOAD;
 
     try {
-        const { data }: DocRefResponse = await axios.post(gatewayUrl, JSON.stringify(requestBody), {
+        const { data } = await axios.post<UploadSession>(gatewayUrl, JSON.stringify(requestBody), {
             headers: {
                 ...baseHeaders,
             },
@@ -220,6 +106,7 @@ const uploadDocuments = async ({
                 patientId: nhsNumber,
             },
         });
+
         return data;
     } catch (e) {
         const error = e as AxiosError;
@@ -227,31 +114,30 @@ const uploadDocuments = async ({
     }
 };
 
-export const updateDocumentState = async ({
+export const getDocumentStatus = async ({
     documents,
-    uploadingState,
     baseUrl,
     baseHeaders,
     nhsNumber,
-}: UpdateStateArgs) => {
-    const updateUploadStateUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
-    const body = {
-        files: documents.map((document) => ({
-            reference: document.ref,
-            type: document.docType,
-            fields: { Uploading: uploadingState },
-        })),
-    };
+}: UploadDocumentsArgs): Promise<DocumentStatusResult> => {
+    const documentStatusUrl = baseUrl + endpoints.DOCUMENT_STATUS;
+
     try {
-        return await axios.post(updateUploadStateUrl, body, {
+        const { data } = await axios.get<DocumentStatusResult>(documentStatusUrl, {
             headers: {
                 ...baseHeaders,
             },
             params: {
                 patientId: nhsNumber,
+                docIds: documents.map((d) => d.ref).join(','),
             },
         });
-    } catch (e) {}
+
+        return data;
+    } catch (e) {
+        const error = e as AxiosError;
+        throw error;
+    }
 };
 
 export default uploadDocuments;

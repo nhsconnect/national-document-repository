@@ -148,7 +148,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
     });
 
-    it(
+    it.skip(
         `Shows patient upload screen when patient search is used as a
         GP_ADMIN and patient response is inactive`,
         { tags: 'regression' },

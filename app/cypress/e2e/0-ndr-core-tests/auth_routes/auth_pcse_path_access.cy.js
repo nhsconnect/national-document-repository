@@ -17,9 +17,8 @@ const patient = {
 const baseUrl = Cypress.config('baseUrl');
 const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
 const arfDownloadUrl = '/patient/arf';
-const arfUploadUrl = '/patient/arf/upload';
 
-const forbiddenRoutes = [lloydGeorgeViewUrl, arfUploadUrl];
+const forbiddenRoutes = [lloydGeorgeViewUrl];
 
 describe('PCSE user role has access to the expected GP_ADMIN workflow paths', () => {
     context('PCSE role has access to expected routes', () => {
