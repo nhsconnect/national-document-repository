@@ -111,7 +111,7 @@ class CreateDocumentReferenceService:
                 )
 
             if lg_documents:
-                validate_lg_files(lg_documents)
+                validate_lg_files(lg_documents, pds_patient_details)
                 self.check_existing_lloyd_george_records_and_remove_failed_upload(
                     nhs_number
                 )
