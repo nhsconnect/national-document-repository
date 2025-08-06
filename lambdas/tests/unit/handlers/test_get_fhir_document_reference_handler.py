@@ -167,7 +167,7 @@ def test_extract_document_parameters_invalid():
     with pytest.raises(GetFhirDocumentReferenceException) as e:
         extract_document_parameters(MOCK_INVALID_EVENT_ID_MALFORMED)
     assert e.value.status_code == 400
-    assert e.value.error == LambdaError.DocumentReferenceInvalidRequest
+    assert e.value.error == LambdaError.DocumentReferenceMissingParameters
 
 
 def test_verify_user_authorisation(
@@ -250,7 +250,7 @@ def test_lambda_handler_invalid_path_parameters(
     [
         (404, LambdaError.DocumentReferenceNotFound),
         (403, LambdaError.DocumentReferenceForbidden),
-        (400, LambdaError.DocumentReferenceInvalidRequest),
+        (400, LambdaError.DocumentReferenceMissingParameters),
         (500, LambdaError.DocumentReferenceGeneralError),
     ],
 )
@@ -274,11 +274,11 @@ def test_lambda_handler_service_errors(
     assert response_body["resourceType"] == "OperationOutcome"
     assert (
         response_body["issue"][0]["details"]["coding"][0]["code"]
-        == lambda_error.value.get("fhir_coding").code()
+        == lambda_error.value.get("fhir_coding").code
     )
     assert (
         response_body["issue"][0]["details"]["coding"][0]["display"]
-        == lambda_error.value.get("fhir_coding").display()
+        == lambda_error.value.get("fhir_coding").display
     )
     assert response_body["issue"][0]["diagnostics"] == lambda_error.value.get("message")
 
@@ -302,11 +302,11 @@ def test_lambda_handler_search_service_errors(
     assert response_body["resourceType"] == "OperationOutcome"
     assert (
         response_body["issue"][0]["details"]["coding"][0]["code"]
-        == LambdaError.MockError.value.get("fhir_coding").code()
+        == LambdaError.MockError.value.get("fhir_coding").code
     )
     assert (
         response_body["issue"][0]["details"]["coding"][0]["display"]
-        == LambdaError.MockError.value.get("fhir_coding").display()
+        == LambdaError.MockError.value.get("fhir_coding").display
     )
     assert response_body["issue"][0]["diagnostics"] == LambdaError.MockError.value.get(
         "message"

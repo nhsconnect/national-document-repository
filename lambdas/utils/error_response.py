@@ -28,7 +28,7 @@ class ErrorResponse:
                 {
                     "diagnostics": self.message,
                     "details": {
-                        "coding": [{"code": coding.code(), "display": coding.display()}]
+                        "coding": [{"code": coding.code, "display": coding.display}]
                     },
                 }
             ]

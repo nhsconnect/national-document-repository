@@ -8,8 +8,36 @@ class FhirIssueCoding(Enum):
     EXCEPTION = ("exception", "Exception")
     UNKNOWN = ("unknown", "Unknown User")
 
+    @property
     def code(self):
         return self.value[0]
 
+    @property
     def display(self):
         return self.value[1]
+
+    @property
+    def system(self):
+        return "http://hl7.org/fhir/issue-type"
+
+
+class UKCoreSpineError(Enum):
+    ACCESS_DENIED = ("ACCESS_DENIED", "Access has been denied to process this request")
+    RESOURCE_NOT_FOUND = ("RESOURCE_NOT_FOUND", "Resource not found")
+    INVALID_RESOURCE_ID = ("INVALID_RESOURCE_ID", "Invalid resource ID")
+    INVALID_SEARCH_DATA = ("INVALID_SEARCH_DATA", "Invalid search data")
+    MISSING_VALUE = ("MISSING_VALUE", "Missing value")
+    INVALID_VALUE = ("MISSING_VALUE", "Invalid value")
+    VALIDATION_ERROR = ("VALIDATION_ERROR", "Validation error")
+
+    @property
+    def code(self):
+        return self.value[0]
+
+    @property
+    def display(self):
+        return self.value[1]
+
+    @property
+    def system(self):
+        return "https://fhir.hl7.org.uk/CodeSystem/UKCore-SpineErrorOrWarningCode"
