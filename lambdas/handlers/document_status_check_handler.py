@@ -51,7 +51,7 @@ def lambda_handler(event, context):
         raise UploadConfirmResultException(
             400, LambdaError.UploadConfirmResultMissingParams
         )
-    documents_id_list = documents_list_query_string.split(",")
+    documents_id_list = set(documents_list_query_string.split(","))
 
     upload_confirm_result_service = GetDocumentUploadStatusService()
     results = upload_confirm_result_service.get_document_references_by_id(
