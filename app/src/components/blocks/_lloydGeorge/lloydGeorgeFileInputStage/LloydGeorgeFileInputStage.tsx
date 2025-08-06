@@ -9,13 +9,12 @@ import {
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
     UploadDocument,
-    UploadFilesErrors,
+    UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import { uploadLloydGeorgeDocumentValidation } from '../../../../helpers/utils/uploadDocumentValidation';
 import {
     fileUploadErrorMessages,
     getInlineErrorMessage,
@@ -37,13 +36,12 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
     let fileInputRef = useRef<HTMLInputElement | null>(null);
-    const [uploadFilesErrors, setUploadFilesErrors] = useState<Array<UploadFilesErrors>>([]);
+    const [uploadFilesErrors, setUploadFilesErrors] = useState<Array<UploadFilesError>>([]);
     const hasFileInput = !!documents.length;
     const [showNoFilesMessage, setShowNoFilesMessage] = useState<boolean>(false);
 
     const onSubmit = async () => {
         setShowNoFilesMessage(!hasFileInput);
-        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(documents, patientDetails));
         if (!hasFileInput || uploadFilesErrors.length > 0) {
             window.scrollTo(0, 0);
             return;
@@ -63,7 +61,6 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
         setShowNoFilesMessage(false);
-        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(updatedDocList, patientDetails));
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -94,11 +91,10 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
         setDocuments(updatedDocList);
-        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(updatedDocList, patientDetails));
     };
     const fileErrorMessage = (document: UploadDocument) => {
         const errorsForDocument = uploadFilesErrors.filter(
-            (errorFile) => document.file.name === errorFile.filename,
+            (errorFile) => document.file.name === errorFile.linkId,
         );
         return errorsForDocument.map((error, index) => (
             <div className="lloydgeorge_file_upload_error" key={document.file.name + index}>
