@@ -73,7 +73,7 @@ def mock_processing_event_details(mocker):
 
 
 @pytest.fixture
-def mock_cdrService(mocker):
+def mock_cdr_service(mocker):
     mock_cdrService = mocker.MagicMock()
     mocker.patch(
         "handlers.create_document_reference_handler.CreateDocumentReferenceService",
@@ -88,9 +88,9 @@ def mock_invalid_nhs_number_exception(mocker):
 
 
 def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
-    set_env, both_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+    set_env, both_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdrService.create_document_reference_request.return_value = (
+    mock_cdr_service.create_document_reference_request.return_value = (
         LG_AND_ARF_MOCK_RESPONSE
     )
     expected = ApiGatewayResponse(
@@ -103,9 +103,9 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
 
 
 def test_create_document_reference_valid_lg_type_returns_presigned_urls_and_200(
-    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+    set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdrService.create_document_reference_request.return_value = (
+    mock_cdr_service.create_document_reference_request.return_value = (
         LG_MOCK_RESPONSE
     )
     expected = ApiGatewayResponse(
@@ -116,9 +116,9 @@ def test_create_document_reference_valid_lg_type_returns_presigned_urls_and_200(
 
 
 def test_create_document_reference_with_nhs_number_not_in_pds_returns_404(
-    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+    set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdrService.create_document_reference_request.side_effect = SearchPatientException(
+    mock_cdr_service.create_document_reference_request.side_effect = SearchPatientException(
         404, LambdaError.SearchPatientNoPDS)
     
     expected_body = {
@@ -134,9 +134,9 @@ def test_create_document_reference_with_nhs_number_not_in_pds_returns_404(
     assert actual == expected
 
 def test_cdr_request_including_non_pdf_files_returns_400(
-    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+    set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
+    mock_cdr_service.create_document_reference_request.side_effect = CreateDocumentRefException(
         400, LambdaError.CreateDocFiles)
     
     expected_body = {
@@ -153,9 +153,9 @@ def test_cdr_request_including_non_pdf_files_returns_400(
     
 
 def test_cdr_request_when_lgr_already_exists_returns_422(
-    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+    set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
+    mock_cdr_service.create_document_reference_request.side_effect = CreateDocumentRefException(
         422, LambdaError.CreateDocRecordAlreadyInPlace)
     
     expected_body = {
@@ -170,13 +170,13 @@ def test_cdr_request_when_lgr_already_exists_returns_422(
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
 
-    mock_cdrService.create_document_reference_request.assert_called_once()
+    mock_cdr_service.create_document_reference_request.assert_called_once()
 
 
 def test_cdr_request_when_lgr_is_in_process_of_uploading_returns_423(
-    set_env, lg_type_event, context, mock_cdrService, mock_upload_lambda_enabled
+    set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
+    mock_cdr_service.create_document_reference_request.side_effect = CreateDocumentRefException(
         423, LambdaError.UploadInProgressError)
     
     expected_body = {
@@ -191,7 +191,7 @@ def test_cdr_request_when_lgr_is_in_process_of_uploading_returns_423(
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
 
-    mock_cdrService.create_document_reference_request.assert_called_once()
+    mock_cdr_service.create_document_reference_request.assert_called_once()
     
 
 @pytest.mark.parametrize("environment_variable", arf_environment_variables)
@@ -299,11 +299,11 @@ def test_lambda_handler_valid(
     set_env,
     mock_processing_event_details,
     mock_upload_lambda_enabled,
-    mock_cdrService,
+    mock_cdr_service,
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
 
-    mock_cdrService.create_document_reference_request.return_value = ARF_MOCK_RESPONSE
+    mock_cdr_service.create_document_reference_request.return_value = ARF_MOCK_RESPONSE
 
     expected = ApiGatewayResponse(
         200,
@@ -342,7 +342,7 @@ def test_invalid_nhs_number_returns_400(
     context, 
     mock_invalid_nhs_number_exception,
     mock_processing_event_details,
-    mock_cdrService
+    mock_cdr_service
 ):  
     
     expected = ApiGatewayResponse(
@@ -353,16 +353,16 @@ def test_invalid_nhs_number_returns_400(
     assert actual == expected
     
     mock_processing_event_details.assert_not_called()
-    mock_cdrService.assert_not_called()
+    mock_cdr_service.assert_not_called()
 
 def test_ods_code_not_in_pilot_returns_404(
     set_env,
     context,
     lg_type_event,
-    mock_cdrService,
+    mock_cdr_service,
     mock_upload_lambda_enabled
 ):
-    mock_cdrService.create_document_reference_request.side_effect = CreateDocumentRefException(
+    mock_cdr_service.create_document_reference_request.side_effect = CreateDocumentRefException(
         404, LambdaError.CreateDocRefOdsCodeNotAllowed)
     
     expected_body = {
@@ -378,4 +378,4 @@ def test_ods_code_not_in_pilot_returns_404(
 
     assert actual == expected
 
-    mock_cdrService.create_document_reference_request.create_document_reference.assert_not_called()
+    mock_cdr_service.create_document_reference_request.create_document_reference.assert_not_called()
