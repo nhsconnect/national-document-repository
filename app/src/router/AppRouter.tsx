@@ -27,6 +27,8 @@ import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/Feedback
 import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
 import NonAuthGuard from './guards/notAuthGuard/NonAuthGuard';
 import PatientAccessAuditPage from '../pages/patientAccessAuditPage/PatientAccessAuditPage';
+import MockLoginPage from '../pages/mockLoginPage/MockLoginPage';
+import DocumentUploadPage from '../pages/documentUploadPage/DocumentUploadPage';
 
 const {
     START,
@@ -56,6 +58,9 @@ const {
     REPORT_DOWNLOAD_WILDCARD,
     PATIENT_ACCESS_AUDIT,
     PATIENT_ACCESS_AUDIT_WILDCARD,
+    MOCK_LOGIN,
+    DOCUMENT_UPLOAD,
+    DOCUMENT_UPLOAD_WILDCARD,
 } = routes;
 
 type Routes = {
@@ -155,6 +160,30 @@ export const childRoutes = [
         route: routeChildren.PATIENT_ACCESS_AUDIT_DECEASED,
         parent: PATIENT_ACCESS_AUDIT,
     },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_CONFIRMATION,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_UPLOADING,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_COMPLETED,
+        parent: DOCUMENT_UPLOAD,
+    },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_INFECTED,
+        parent: DOCUMENT_UPLOAD,
+    },
 ];
 
 export const routeMap: Routes = {
@@ -202,6 +231,10 @@ export const routeMap: Routes = {
         page: <PrivacyPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
+    [MOCK_LOGIN]: {
+        page: <MockLoginPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
 
     // Auth guard routes
     [LOGOUT]: {
@@ -232,6 +265,7 @@ export const routeMap: Routes = {
         page: <ReportDownloadPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
+
     // App guard routes
     [VERIFY_PATIENT]: {
         page: <PatientResultPage />,
@@ -283,6 +317,15 @@ export const routeMap: Routes = {
     },
     [PATIENT_ACCESS_AUDIT_WILDCARD]: {
         page: <PatientAccessAuditPage />,
+        type: ROUTE_TYPE.PATIENT,
+    },
+
+    [DOCUMENT_UPLOAD]: {
+        page: <DocumentUploadPage />,
+        type: ROUTE_TYPE.PATIENT,
+    },
+    [DOCUMENT_UPLOAD_WILDCARD]: {
+        page: <DocumentUploadPage />,
         type: ROUTE_TYPE.PATIENT,
     },
 };

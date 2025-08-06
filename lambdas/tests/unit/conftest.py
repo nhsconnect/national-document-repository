@@ -195,8 +195,9 @@ def set_env(monkeypatch):
         "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME", MOCK_UNSTITCHED_LG_TABLE_NAME
     )
     monkeypatch.setenv(
-        "DOCUMENT_RETRIEVE_ENDPOINT_APIM", "https://api.gov.uk/DocumentReference"
+        "DOCUMENT_RETRIEVE_ENDPOINT_APIM", f"{APIM_API_URL}/DocumentReference"
     )
+    monkeypatch.setenv("VIRUS_SCAN_STUB", "True")
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(

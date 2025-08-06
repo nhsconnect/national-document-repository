@@ -1,4 +1,11 @@
+$govuk-compatibility-govukelements: true;
+@import 'govuk-frontend/dist/govuk/base';
+@import 'govuk-frontend/dist/govuk/core/index';
+@import 'govuk-frontend/dist/govuk/utilities/index';
+@import 'govuk-frontend/dist/govuk/components/phase-banner/phase-banner';
+@import 'govuk-frontend/dist/govuk/components/warning-text/warning-text';
 @import 'govuk-frontend/dist/govuk/components/notification-banner/notification-banner';
+@import 'govuk-frontend/dist/govuk/components/pagination/pagination';
 
 @import 'nhsuk-frontend/packages/nhsuk';
 
@@ -86,6 +93,10 @@ $hunit: '%';
 .mx-auto {
     margin-left: auto;
     margin-right: auto;
+}
+
+.d-flex {
+    display: flex;
 }
 
 .flex-center {
@@ -307,8 +318,6 @@ $hunit: '%';
                 }
 
                 &-no_record {
-                    text-align: right;
-
                     &-upload {
                         margin-bottom: 0;
                     }
@@ -536,8 +545,15 @@ $hunit: '%';
         padding: 32px;
         align-items: center;
         gap: 34px;
-        border: 1px dashed #212b32;
+        border: 2px dashed $nhsuk-secondary-button-text-color;
+        border-radius: 4px;
         background: #d8dde0;
+        display: flex;
+        flex-direction: column;
+
+        .nhsuk-button--secondary {
+            background-color: white;
+        }
     }
 
     &_link {
@@ -570,11 +586,7 @@ $hunit: '%';
     }
 
     &_upload-submission {
-        display: flex;
-        align-items: baseline;
-
         .lloydgeorge_link {
-            margin-left: 25px;
             padding: 0;
 
             &:focus {
@@ -833,6 +845,10 @@ $hunit: '%';
 
 #pdf-viewer {
     height: 75vh;
+
+    &.upload-preview {
+        height: 90vh;
+    }
 }
 
 @-moz-document url-prefix() {
@@ -1218,4 +1234,39 @@ $hunit: '%';
     .nhsuk-footer {
         margin-bottom: 0;
     }
+}
+
+.govuk-pagination__item:hover,
+.govuk-pagination__next:hover,
+.govuk-pagination__prev:hover {
+    background-color: #d3d3d2;
+}
+.govuk-pagination__item--ellipses:hover {
+    background-color: transparent;
+}
+
+.remove-all-button {
+    padding: 0;
+}
+
+button.govuk-link {
+    color: #005eb8;
+    background: 0;
+    border: 0;
+    font-size: 1.1875rem;
+    font-weight: 700;
+    padding: 0;
+    line-height: 1.3157894737;
+    cursor: pointer;
+}
+
+.govuk-pagination__item--current {
+    button.govuk-link {
+        color: white;
+    }
+}
+
+.word-break-keep-all {
+    white-space: pre;
+    word-break: keep-all;
 }

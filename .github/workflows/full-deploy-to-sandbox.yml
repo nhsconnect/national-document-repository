@@ -19,10 +19,15 @@ on:
         type: "string"
         default: "development"
       bulk_upload:
-        description: "Do you want to run a Bulk Upload on this sandbox?"
+        description: "Do you want to disable the PDS stub and run a Bulk Upload on this sandbox?"
         required: true
         type: boolean
         default: false
+      mock_login_enabled:
+        description: "Do you want to deploy with mock login enabled?"
+        required: true
+        type: boolean
+        default: true
 
 permissions:
   pull-requests: write
@@ -89,6 +94,7 @@ jobs:
       environment: ${{ inputs.environment }}
       python_version: "3.11"
       is_sandbox: true
+      mock_login_enabled: ${{ inputs.mock_login_enabled }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 

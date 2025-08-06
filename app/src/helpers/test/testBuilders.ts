@@ -60,7 +60,15 @@ const buildTextFile = (name: string, size?: number) => {
     return file;
 };
 
-const buildLgFile = (
+const buildLgFile = async (fileNumber: number) => {
+    const file = new File(['test'], `testFile${fileNumber}.pdf`, {
+        type: 'application/pdf',
+    });
+
+    return file;
+};
+
+const buildLgFileOld = (
     fileNumber: number,
     numberOfFiles: number,
     patientname: string,
@@ -195,6 +203,7 @@ export {
     buildLgSearchResult,
     buildUserAuth,
     buildLgFile,
+    buildLgFileOld,
     buildConfig,
     buildUploadSession,
     buildPatientAccessAudit,

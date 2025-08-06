@@ -43,12 +43,12 @@ describe('GP Workflow: View Lloyd George record', () => {
     };
 
     const assertPatientInfo = () => {
-        cy.getByTestId('patient-name').should(
+        cy.getByTestId('patient-summary-full-name').should(
             'have.text',
-            `${searchPatientPayload.givenName}, ${searchPatientPayload.familyName}`,
+            `${searchPatientPayload.familyName}, ${searchPatientPayload.givenName}`,
         );
-        cy.getByTestId('patient-nhs-number').should('have.text', `NHS number: 900 000 0009`);
-        cy.getByTestId('patient-dob').should('have.text', `Date of birth: 01 January 1970`);
+        cy.getByTestId('patient-summary-nhs-number').should('have.text', `900 000 0009`);
+        cy.getByTestId('patient-summary-date-of-birth').should('have.text', `01 January 1970`);
     };
 
     const beforeEachConfiguration = (role) => {
@@ -211,7 +211,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 assertPatientInfo();
                 cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
                 cy.getByTestId('no-records-title').should('be.visible');
-                cy.getByTestId('upload-patient-record-text').should('be.visible');
                 cy.getByTestId('upload-patient-record-button').should('be.visible');
             },
         );
@@ -264,8 +263,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('remove-btn').click();
                 cy.contains('Surname').should('be.visible');
                 cy.contains('GivenName').should('be.visible');
-                cy.contains('NHS number: 900 000 0009').should('be.visible');
-                cy.contains('Date of birth: 01 January 1970').should('be.visible');
+                cy.contains('900 000 0009').should('be.visible');
+                cy.contains('01 January 1970').should('be.visible');
 
                 cy.intercept(
                     'DELETE',
@@ -298,7 +297,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                 // Assert
                 cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
                 cy.getByTestId('no-records-title').should('be.visible');
-                cy.getByTestId('upload-patient-record-text').should('be.visible');
                 cy.getByTestId('upload-patient-record-button').should('be.visible');
             },
         );

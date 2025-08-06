@@ -20,8 +20,7 @@ const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
-const activePatient =
-    workspace === 'ndr-dev' ? pdsPatients.activeNoUpload : stubPatients.activeNoUpload;
+const activePatient = pdsPatients.activeNoUpload;
 
 describe('GP Workflow: Upload Lloyd George record', () => {
     context('Upload a Lloyd George document', () => {
@@ -51,13 +50,13 @@ describe('GP Workflow: Upload Lloyd George record', () => {
             });
         });
 
-        it(
+        it.skip(
             '[Smoke] GP ADMIN can upload and then view a Lloyd George record for an active patient with no record',
             //Temporarily disabled until Virus Scanner Reenabled on dev
             // { tags: 'smoke', defaultCommandTimeout: 20000 },
             { defaultCommandTimeout: 20000 },
             () => {
-                cy.smokeLogin(Roles.GP_ADMIN_BSOL);
+                cy.smokeLogin(Roles.SMOKE_GP_ADMIN);
 
                 cy.navigateToPatientSearchPage();
 
@@ -73,9 +72,9 @@ describe('GP Workflow: Upload Lloyd George record', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('contain', lloydGeorgeRecordUrl);
-                cy.getByTestId('upload-patient-record-text').should(
+                cy.getByTestId('no-records-text').should(
                     'include.text',
-                    'You can upload full or part of a patient record',
+                    'This patient does not have a Lloyd George record',
                 );
                 cy.getByTestId('upload-patient-record-button').should('exist');
                 cy.getByTestId('upload-patient-record-button').click();

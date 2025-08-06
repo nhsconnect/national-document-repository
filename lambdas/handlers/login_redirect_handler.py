@@ -30,6 +30,7 @@ def lambda_handler(event, context):
 
     configuration_service = DynamicConfigurationService()
     configuration_service.set_auth_ssm_prefix()
+
     login_redirect_service = LoginRedirectService()
     location_header = login_redirect_service.prepare_redirect_response()
     return ApiGatewayResponse(303, "", "GET").create_api_gateway_response(

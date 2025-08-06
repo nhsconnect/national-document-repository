@@ -19,9 +19,9 @@ on:
     secrets:
       AWS_ASSUME_ROLE:
         required: true
-      CYPRESS_USERNAME:
+      CYPRESS_ODSCODE:
         required: true
-      CYPRESS_PASSWORD:
+      CYPRESS_KEY:
         required: true
 
 permissions:
@@ -66,8 +66,8 @@ jobs:
           CYPRESS_BASE_URL: "https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk"
           CYPRESS_grepTags: "smoke"
           CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
-          CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
-          CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+          CYPRESS_ODSCODE: ${{ secrets.CYPRESS_ODSCODE }}
+          CYPRESS_KEY: ${{ secrets.CYPRESS_KEY }}
           CYPRESS_OUTPUT_VIDEO: true
 
       - uses: actions/upload-artifact@v4
