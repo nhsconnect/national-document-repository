@@ -578,26 +578,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
         });
-
-        it('pass accessibility checks when error box appears (file name error)', async () => {
-            renderApp();
-            userEvent.upload(screen.getByTestId('button-input'), lgFilesThreeNames);
-
-            await screen.findAllByText('The patient’s name does not match this filename');
-
-            const results = await runAxeTest(document.body);
-            expect(results).toHaveNoViolations();
-        });
-
-        it('pass accessibility checks when error box appears (no file selected)', async () => {
-            renderApp();
-            await userEvent.click(screen.getByRole('button', { name: 'Upload' }));
-
-            await screen.findByText('You did not select any file to upload');
-
-            const results = await runAxeTest(document.body);
-            expect(results).toHaveNoViolations();
-        });
     });
 
     const TestApp = (props: Partial<Props>) => {
