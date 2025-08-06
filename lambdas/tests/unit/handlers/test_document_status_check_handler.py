@@ -56,7 +56,7 @@ def test_document_status_check_handler_success(
     assert expected == actual
 
     mock_get_document_upload_status_service.get_document_references_by_id.assert_called_with(
-        document_ids=["doc-id-1", "doc-id-2"], nhs_number=TEST_NHS_NUMBER
+        document_ids=set(["doc-id-1", "doc-id-2"]), nhs_number=TEST_NHS_NUMBER
     )
 
 
@@ -73,7 +73,7 @@ def test_document_status_check_handler_empty_result(
 
     assert expected == actual
     mock_get_document_upload_status_service.get_document_references_by_id.assert_called_with(
-        document_ids=["doc-id-1", "doc-id-2"], nhs_number=TEST_NHS_NUMBER
+        document_ids=set(["doc-id-1", "doc-id-2"]), nhs_number=TEST_NHS_NUMBER
     )
 
 
@@ -149,7 +149,7 @@ def test_lambda_handler_service_raises_error(
     ).create_api_gateway_response()
     assert expected == actual
     mock_get_document_upload_status_service.get_document_references_by_id.assert_called_with(
-        document_ids=["doc-id-1", "doc-id-2"], nhs_number=TEST_NHS_NUMBER
+        document_ids=set(["doc-id-1", "doc-id-2"]), nhs_number=TEST_NHS_NUMBER
     )
 
 
