@@ -271,7 +271,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     )
 
     mock_create_reference_in_dynamodb.assert_called_once()
-    mock_validate_lg_files.assert_called_with(document_references)
+    mock_validate_lg_files.assert_called_with(document_references, mock_pds_patient)
     mock_check_existing_lloyd_george_records_and_remove_failed_upload.assert_called_with(TEST_NHS_NUMBER)
     
 
@@ -399,7 +399,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     )
 
     mock_create_reference_in_dynamodb.assert_not_called()
-    mock_validate_lg_files.assert_called_with(document_references)
+    mock_validate_lg_files.assert_called_with(document_references, mock_pds_patient)
 
 
 def test_create_document_reference_failed_to_parse_pds_response(
