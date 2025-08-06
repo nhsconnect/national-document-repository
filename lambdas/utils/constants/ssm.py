@@ -8,4 +8,4 @@ PCSE_ODS_CODE = "/auth/org/ods_code/pcse"
 ITOC_ODS_CODES = "/auth/org/ods_code/allowed_list_itoc"
 ALLOWED_ODS_CODES_LIST = "/auth/org/ods_code/allowed_list"
 
-ALLOWED_ODS_CODES_LIST_PILOT = "/auth/org/ods_code/ods_allowed_list_pilot"
+UPLOAD_PILOT_ODS_ALLOWED_LIST = "/upload_pilot/ods_allowed_list"

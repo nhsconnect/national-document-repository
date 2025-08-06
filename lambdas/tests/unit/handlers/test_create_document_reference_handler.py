@@ -15,11 +15,10 @@ from tests.unit.helpers.data.create_document_reference import (
     LG_MOCK_EVENT_BODY,
     ARF_MOCK_RESPONSE,
     LG_AND_ARF_MOCK_RESPONSE,
-    LG_MOCK_RESPONSE,
-    UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE
+    LG_MOCK_RESPONSE
 )
 from utils.exceptions import InvalidNhsNumberException
-from utils.lambda_exceptions import CreateDocumentRefException, SearchPatientException
+from utils.lambda_exceptions import CreateDocumentRefException, FeatureFlagsException, SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_STAGING_STORE_BUCKET}/{TEST_UUID}"
@@ -323,11 +322,15 @@ def test_no_event_processing_when_upload_lambda_flag_disabled(
     mock_processing_event_details,
     mock_upload_lambda_disabled,
 ):
-    
-    expected = ApiGatewayResponse(
-        404, json.dumps(UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE), "POST"
-    ).create_api_gateway_response()
+    expected_body = {
+        "message": "Feature is not enabled",
+        "err_code": "FFL_5003",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
+    expected = ApiGatewayResponse(
+        404, json.dumps(expected_body), "POST"
+    ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
 
     assert expected == actual
@@ -364,7 +367,7 @@ def test_ods_code_not_in_pilot_returns_404(
     
     expected_body = {
         "message": f"ODS code does not match any of the allowed.",
-        "err_code": "CDR_4012",
+        "err_code": "CDR_4009",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
     

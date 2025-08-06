@@ -226,9 +226,3 @@ LG_MOCK_RESPONSE = {
     f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_URL_RESPONSE,
     f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_URL_RESPONSE,
 }
-
-UPLOAD_FEATURE_FLAG_DISABLED_MOCK_RESPONSE = {
-    "message": "Feature is not enabled", 
-    "err_code": "FFL_5003", 
-    "interaction_id": "88888888-4444-4444-4444-121212121212"
-}

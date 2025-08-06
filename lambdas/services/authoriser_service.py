@@ -5,7 +5,6 @@ from services.manage_user_session_access import ManageUserSessionAccess
 from services.token_service import TokenService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
-from utils.lambda_exceptions import CreateDocumentRefException
 from utils.request_context import request_context
 from utils.utilities import redact_id_to_last_4_chars
 

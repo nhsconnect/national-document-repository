@@ -9,11 +9,13 @@ from models.document_reference import DocumentReference, UploadRequestDocument
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
+from services.base.ssm_service import SSMService
 from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadIncomplete
+from utils.constants.ssm import UPLOAD_PILOT_ODS_ALLOWED_LIST
 from utils.exceptions import InvalidNhsNumberException, PdsTooManyRequestsException, PatientNotFoundException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import (
@@ -42,6 +44,7 @@ class CreateDocumentReferenceService:
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
         self.document_deletion_service = DocumentDeletionService()
+        self.ssm_service = SSMService()
 
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
@@ -145,7 +148,7 @@ class CreateDocumentReferenceService:
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
 
     def check_if_ods_code_is_in_pilot(self, ods_code) -> bool:
-        pilot_ods_codes = token_handler_ssm_service.get_allowed_list_of_ods_codes_for_pilot()
+        pilot_ods_codes = self.get_allowed_list_of_ods_codes_for_upload_pilot()
         return ods_code in pilot_ods_codes
 
     def check_existing_arf_record_and_remove_failed_upload(self, nhs_number):
@@ -320,3 +323,10 @@ class CreateDocumentReferenceService:
             doc_type=SupportedDocumentTypes.ARF,
             query_filter=UploadIncomplete,
         )
+    
+    def get_allowed_list_of_ods_codes_for_upload_pilot(self) -> list[str]:
+        logger.info("Starting ssm request to retrieve allowed list of ODS codes for Upload Pilot")
+        response = self.ssm_service.get_ssm_parameter(UPLOAD_PILOT_ODS_ALLOWED_LIST)
+        if not response:
+            logger.warning("No ODS codes found in allowed list for Upload Pilot")
+        return response

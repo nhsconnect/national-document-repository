@@ -85,13 +85,10 @@ def validate_lg_files(file_list: list[DocumentReference]):
     files_name_list = []
 
     for doc in file_list:
-        # check_for_number_of_files_match_expected(doc.file_name, len(file_list))
         validate_lg_file_type(doc.content_type)
-        # checks_per_filename(doc.file_name, nhs_number)
         files_name_list.append(doc.file_name)
 
     check_for_duplicate_files(files_name_list)
-    # validate_filename_with_patient_details_strict(files_name_list, pds_patient_details)
 
 
 def validate_lg_file_names(file_name_list: list[str], nhs_number: str):

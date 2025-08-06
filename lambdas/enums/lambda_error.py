@@ -85,20 +85,8 @@ class LambdaError(Enum):
         "err_code": "CDR_4008",
         "message": "The patient already has a full set of record.",
     }
-    CreateDocPatientNotFound = {
-        "err_code": "CDR_4009",
-        "message": "Could not find the requested patient.",
-    }
-    CreateDocRefUserForbidden = {
-        "err_code": "CDR_4010",
-        "message": "User forbidden"
-    }
-    CreateDocRefPatientDeceased = {
-        "err_code": "CDR_4011",
-        "message": "Patient is deceased"
-    }
     CreateDocRefOdsCodeNotAllowed = {
-        "err_code": "CDR_4012",
+        "err_code": "CDR_4009",
         "message": "ODS code does not match any of the allowed."
     }
     CreateDocPresign = {
