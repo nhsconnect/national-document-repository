@@ -22,14 +22,6 @@ class LoggingService:
             self.__class__.audit_logger.addHandler(audit_handler)
             self.__class__.audit_logger.setLevel(logging.INFO)
 
-    def audit_splunk_info(self, msg, args: dict = None):
-        logging.getLogger("audit.{}".format(self.name))
-        self.audit_logger.info(msg, extra={"custom_args": args})
-
-    def audit_splunk_error(self, msg, custom_args: dict = None, **kwargs):
-        logging.getLogger("audit.{}".format(self.name))
-        self.audit_logger.error(msg, extra={"custom_args": custom_args})
-
     def info(self, message, custom_args: dict = None, *args, **kwargs):
         self.logger.info(message, extra={"custom_args": custom_args}, *args, **kwargs)
 
