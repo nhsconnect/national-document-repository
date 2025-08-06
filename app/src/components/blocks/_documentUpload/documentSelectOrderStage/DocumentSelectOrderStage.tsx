@@ -191,16 +191,6 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
     return (
         <>
             <BackButton />
-            <h1>{pageTitle}</h1>
-
-            <div className="nhsuk-inset-text">
-                <p>Make sure that all files uploaded are for this patient only:</p>
-                <PatientSummary>
-                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
-                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
-                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
-                </PatientSummary>
-            </div>
 
             {Object.keys(formState.errors).length > 0 && (
                 <ErrorBox
@@ -211,6 +201,17 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                     scrollToRef={scrollToRef}
                 />
             )}
+
+            <h1>{pageTitle}</h1>
+
+            <div className="nhsuk-inset-text">
+                <p>Make sure that all files uploaded are for this patient only:</p>
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                </PatientSummary>
+            </div>
 
             <p>When you upload your files, they will be combined into a single PDF document.</p>
 
