@@ -94,8 +94,7 @@
         "prettier": "^3.6.2",
         "prop-types": "^15.8.1",
         "typescript": "^5.8.3",
-        "vitest": "^3.2.4",
-        "webpack": "^5.100.2"
+        "vitest": "^3.2.4"
     },
     "browserslist": {
         "production": [
