@@ -7,7 +7,6 @@ from freezegun import freeze_time
 from models.document_reference import DocumentReference, UploadRequestDocument
 from services.create_document_reference_service import CreateDocumentReferenceService
 from services.document_service import DocumentService
-from services.token_handler_ssm_service import TokenHandlerSSMService
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
     LG_FILE_LIST,

@@ -12,7 +12,6 @@ from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
 from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
-from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadIncomplete
 from utils.constants.ssm import UPLOAD_PILOT_ODS_ALLOWED_LIST
@@ -34,7 +33,6 @@ PRESIGNED_URL_ERROR_MESSAGE = (
 )
 
 logger = LoggingService(__name__)
-token_handler_ssm_service = TokenHandlerSSMService()
 
 
 class CreateDocumentReferenceService:
