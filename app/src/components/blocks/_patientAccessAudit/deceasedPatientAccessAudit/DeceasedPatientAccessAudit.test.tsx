@@ -18,6 +18,8 @@ import PatientAccessAuditProvider from '../../../../providers/patientAccessAudit
 import ConfigProvider from '../../../../providers/configProvider/ConfigProvider';
 import PatientDetailsProvider from '../../../../providers/patientProvider/PatientProvider';
 import { beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 
 const mockedUseNavigate = vi.fn();
 vi.mock('react-router-dom', async () => ({
@@ -53,9 +55,11 @@ describe('DeceasedPatientAccessAudit', () => {
             renderDeceasedPatientAccessAudit();
 
             const title = screen.getByTestId('title');
+            const expectedNhsNumber = formatNhsNumber(mockPatientDetails.nhsNumber);
+
             expect(title).toBeInTheDocument();
             expect(title.innerHTML).toContain('Deceased patient record');
-            expect(screen.getByTestId('patient-nhs-number')).toBeInTheDocument();
+            expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
             expect(screen.queryByTestId('access-reason-error-box')).not.toBeInTheDocument();
 
             Object.values(DeceasedAccessAuditReasons).forEach((reason) => {
@@ -110,6 +114,22 @@ describe('DeceasedPatientAccessAudit', () => {
                     'Enter a reason why you need to access this record',
                 );
             });
+        });
+
+        it('renders patient summary fields', async () => {
+            renderDeceasedPatientAccessAudit();
+
+            const expectedFullName = `${mockPatientDetails.familyName}, ${mockPatientDetails.givenName}`;
+            expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
+            expect(screen.getByText(expectedFullName)).toBeInTheDocument();
+
+            expect(screen.getByText(/NHS number/i)).toBeInTheDocument();
+            const expectedNhsNumber = formatNhsNumber(mockPatientDetails.nhsNumber);
+            expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
+
+            expect(screen.getByText(/Date of birth/i)).toBeInTheDocument();
+            const expectedDob = getFormattedDate(new Date(mockPatientDetails.birthDate));
+            expect(screen.getByText(expectedDob)).toBeInTheDocument();
         });
     });
 

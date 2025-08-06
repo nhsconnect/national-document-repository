@@ -17,7 +17,9 @@
         "cypress-report-run": "cypress run --reporter mochawesome --env grepTags=regression",
         "cypress-report-merge": "npx mochawesome-merge \"cypress/results/*.json\" > mochawesomemerged.json",
         "cypress-report-generate": "npx marge mochawesomemerged.json",
-        "cypress-report": "rm -rf cypress/results/* && npm run cypress-report-run && npm run cypress-report-merge && npm run cypress-report-generate"
+        "cypress-report": "rm -rf cypress/results/* && npm run cypress-report-run && npm run cypress-report-merge && npm run cypress-report-generate",
+        "prettier:check": "prettier . --config .prettierrc --exclude-files .prettierignore -c",
+        "prettier:fix": "prettier . --config .prettierrc --exclude-files .prettierignore --write"
     },
     "dependencies": {
         "@cypress/grep": "^4.1.0",

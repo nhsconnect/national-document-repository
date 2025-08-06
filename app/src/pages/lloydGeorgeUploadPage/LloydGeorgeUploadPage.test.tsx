@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import usePatient from '../../helpers/hooks/usePatient';
 import {
-    buildLgFile,
+    buildLgFileOld,
     buildPatientDetails,
     buildUploadSession,
 } from '../../helpers/test/testBuilders';
@@ -38,7 +38,7 @@ Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
 const mockNavigate = vi.fn();
 const mockPatient = buildPatientDetails();
 
-const lgFile = buildLgFile(1, 1, 'John Doe');
+const lgFile = buildLgFileOld(1, 1, 'John Doe');
 
 /**
  * Update in other tests

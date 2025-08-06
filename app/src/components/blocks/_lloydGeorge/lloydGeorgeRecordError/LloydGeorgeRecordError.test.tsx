@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
 
 vi.mock('../../../../helpers/hooks/useRole');
 vi.mock('../../../../helpers/hooks/useConfig');
+vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
@@ -71,9 +72,58 @@ describe('LloydGeorgeRecordError', () => {
             ).not.toBeInTheDocument();
         });
 
-        it("renders a message and upload button when the document download status is 'No records', user is admin and upload flags are enabled", () => {
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "renders a message and upload button when the document download status is 'No records', user role is '%s' and upload flags are enabled",
+            (role) => {
+                const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
+                mockUseRole.mockReturnValue(role);
+                mockUseConfig.mockReturnValue(
+                    buildConfig(
+                        {},
+                        {
+                            uploadLloydGeorgeWorkflowEnabled: true,
+                            uploadLambdaEnabled: true,
+                        },
+                    ),
+                );
+
+                render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
+
+                expect(
+                    screen.getByText(
+                        /This patient does not have a Lloyd George record stored in this service/i,
+                    ),
+                ).toBeInTheDocument();
+                expect(
+                    screen.getByRole('button', { name: 'Upload files for this patient' }),
+                ).toBeInTheDocument();
+            },
+        );
+
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "renders a message but no upload button when the document download status is 'No records', user role is '%s' and upload flags are not enabled",
+            (role) => {
+                const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
+
+                mockUseRole.mockReturnValue(role);
+
+                render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
+
+                expect(
+                    screen.getByText(
+                        /This patient does not have a Lloyd George record stored in this service/i,
+                    ),
+                ).toBeInTheDocument();
+                expect(
+                    screen.queryByRole('button', { name: 'Upload files for this patient' }),
+                ).not.toBeInTheDocument();
+            },
+        );
+
+        it("renders a message but no upload button when the document download status is 'No records', user role is PCSE and upload flags are enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
-            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+
+            mockUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
             mockUseConfig.mockReturnValue(
                 buildConfig(
                     {},
@@ -83,23 +133,6 @@ describe('LloydGeorgeRecordError', () => {
                     },
                 ),
             );
-
-            render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
-
-            expect(
-                screen.getByText(
-                    /This patient does not have a Lloyd George record stored in this service/i,
-                ),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByRole('button', { name: 'Upload files for this patient' }),
-            ).toBeInTheDocument();
-        });
-
-        it("renders a message but no upload button when the document download status is 'No records', user is admin and upload flags are not enabled", () => {
-            const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
-
-            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
             render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
 
@@ -220,7 +253,7 @@ describe('LloydGeorgeRecordError', () => {
             expect(mockNavigate).toBeCalledWith(routes.UNAUTHORISED);
         });
 
-        it("navigates to upload page, when the document download status is 'No records', user is admin and upload flags are enabled", () => {
+        it("navigates to upload page, when the document download status is 'No records', user is gp user and upload flags are enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             mockUseConfig.mockReturnValue(

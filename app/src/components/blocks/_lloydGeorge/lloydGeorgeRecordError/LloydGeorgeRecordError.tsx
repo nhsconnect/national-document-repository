@@ -7,6 +7,7 @@ import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { ButtonLink } from 'nhsuk-react-components';
 import useConfig from '../../../../helpers/hooks/useConfig';
+import usePatient from '../../../../helpers/hooks/usePatient';
 
 type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -16,16 +17,20 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
     const role = useRole();
     const navigate = useNavigate();
     const { featureFlags } = useConfig();
+    const patient = usePatient();
 
-    const isAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
+    const isGpRole = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
     const uploadJourneyEnabled =
         featureFlags.uploadLloydGeorgeWorkflowEnabled && featureFlags.uploadLambdaEnabled;
 
     const renderTimeout = downloadStage === DOWNLOAD_STAGE.TIMEOUT;
     const renderUploadPath =
-        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && isAdmin && uploadJourneyEnabled;
+        downloadStage === DOWNLOAD_STAGE.NO_RECORDS &&
+        isGpRole &&
+        uploadJourneyEnabled &&
+        !patient?.deceased;
     const renderNoRecords =
-        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && (!isAdmin || !uploadJourneyEnabled);
+        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && (!isGpRole || !uploadJourneyEnabled);
     const renderUploadInProgress = downloadStage === DOWNLOAD_STAGE.UPLOADING;
 
     if (renderTimeout) {
@@ -64,7 +69,6 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
                         onClick={(e: MouseEvent<HTMLAnchorElement>) => {
                             e.preventDefault();
 
-                            //navigate(routes.LLOYD_GEORGE_UPLOAD);
                             navigate(routes.DOCUMENT_UPLOAD);
                         }}
                     >

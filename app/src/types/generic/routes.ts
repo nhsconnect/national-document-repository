@@ -64,6 +64,7 @@ export enum routeChildren {
     DOCUMENT_UPLOAD_CONFIRMATION = '/patient/document-upload/confirmation',
     DOCUMENT_UPLOAD_UPLOADING = '/patient/document-upload/in-progress',
     DOCUMENT_UPLOAD_COMPLETED = '/patient/document-upload/completed',
+    DOCUMENT_UPLOAD_INFECTED = '/patient/document-upload/infected',
 }
 
 export enum ROUTE_TYPE {

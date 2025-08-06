@@ -1,0 +1,8 @@
+public
+dist
+build
+coverage
+*.json
+*.html
+*.yml
+*.md
