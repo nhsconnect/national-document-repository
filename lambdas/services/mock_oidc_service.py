@@ -69,7 +69,7 @@ class MockOidcService(OidcService):
                             "role_code": role_code,
                         }
                     ],
-                    "nhsid_useruid": str(random.randint(10000, 99999)),
+                    "nhsid_useruid": str(random.randint(100000000000, 999999999999)),
                 }
 
                 logger.info(f"User info: {user_info}")
