@@ -22,7 +22,7 @@ class PatientSearch:
             return patient_details
 
         if response.status_code == 404:
-            raise PatientNotFoundException(404,
+            raise PatientNotFoundException(
                 "Patient does not exist for given NHS number"
             )
 
