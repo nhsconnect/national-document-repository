@@ -1,6 +1,6 @@
 import { ErrorSummary } from 'nhsuk-react-components';
 import { LegacyRef, MouseEvent } from 'react';
-import { UploadFilesErrors } from '../../../types/pages/UploadDocumentsPage/types';
+import { UploadFilesError } from '../../../types/pages/UploadDocumentsPage/types';
 import { groupUploadErrorsByType } from '../../../helpers/utils/fileUploadErrorMessages';
 
 type Props = {
@@ -12,12 +12,12 @@ type Props = {
     errorBody?: string;
     dataTestId?: string;
     errorOnClick?: () => void;
-    errorMessageList?: UploadFilesErrors[];
+    errorMessageList?: UploadFilesError[];
     scrollToRef?: LegacyRef<HTMLDivElement>;
 };
 
 type UploadErrorMessagesProps = {
-    errorMessageList: UploadFilesErrors[];
+    errorMessageList: UploadFilesError[];
 };
 
 function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesProps>) {
@@ -25,18 +25,18 @@ function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesP
 
     return (
         <>
-            {Object.entries(uploadErrorsGrouped).map(([errorType, { filenames, errorMessage }]) => (
-                <div key={errorType}>
-                    <p>{errorMessage}</p>
-                    <ErrorSummary.List>
-                        {filenames.map((filename) => (
-                            <ErrorSummary.Item href={'#' + filename} key={errorType + filename}>
-                                {filename}
+            {Object.entries(uploadErrorsGrouped).map(([errorType, { linkIds, errorMessage }]) => {
+                const firstFile = linkIds[0];
+                return (
+                    <div key={errorType}>
+                        <ErrorSummary.List>
+                            <ErrorSummary.Item href={'#' + linkIds} key={errorType + linkIds}>
+                                {errorMessage}
                             </ErrorSummary.Item>
-                        ))}
-                    </ErrorSummary.List>
-                </div>
-            ))}
+                        </ErrorSummary.List>
+                    </div>
+                );
+            })}
         </>
     );
 }
