@@ -180,6 +180,10 @@ export const childRoutes = [
         route: routeChildren.DOCUMENT_UPLOAD_COMPLETED,
         parent: DOCUMENT_UPLOAD,
     },
+    {
+        route: routeChildren.DOCUMENT_UPLOAD_INFECTED,
+        parent: DOCUMENT_UPLOAD,
+    },
 ];
 
 export const routeMap: Routes = {

@@ -545,7 +545,7 @@ $hunit: '%';
         padding: 32px;
         align-items: center;
         gap: 34px;
-        border: 2px dashed $nhsuk-secondary-button-text-color;
+        border: 3px dashed $nhsuk-secondary-button-text-color;
         border-radius: 4px;
         background: #d8dde0;
         display: flex;
@@ -960,8 +960,18 @@ $hunit: '%';
     width: '200px';
 }
 
-.nhsuk-form-group--error.margin {
-    margin-bottom: 50px;
+.nhsuk-form-group--error {
+    &.margin {
+        margin-bottom: 50px;
+    }
+
+    .lloydgeorge_drag-and-drop {
+        border-color: $nhsuk-error-color;
+    }
+
+    h3 {
+        margin-bottom: 8px;
+    }
 }
 
 .details-margin {
@@ -1269,4 +1279,20 @@ button.govuk-link {
 .word-break-keep-all {
     white-space: pre;
     word-break: keep-all;
+}
+
+.error-cell {
+    position: relative;
+    padding-left: 16px;
+    margin-left: -8px;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 8px;
+        bottom: 8px;
+        width: 4px;
+        background-color: #d4351c;
+    }
 }
