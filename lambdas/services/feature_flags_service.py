@@ -70,11 +70,10 @@ class FeatureFlagService:
             feature_flags = FeatureFlag(feature_flags=response)
             formatted_flags = feature_flags.format_flags()
 
-            upload_flags_value = self.get_upload_flags_value()
-
-            for flag in formatted_flags:
-                if flag in [FeatureFlags.UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED, FeatureFlags.UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED]:
-                    formatted_flags[flag] = upload_flags_value
+            if not self.check_if_ods_code_is_in_pilot():
+                for flag in formatted_flags:
+                    if flag in [FeatureFlags.UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED, FeatureFlags.UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED]:
+                        formatted_flags[flag] = False
 
             return formatted_flags
         except ValidationError as e:
@@ -99,8 +98,8 @@ class FeatureFlagService:
             feature_flag = FeatureFlag(feature_flags={flag: response})
             formatted_feature_flag = feature_flag.format_flags()
 
-            if flag in [FeatureFlags.UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED, FeatureFlags.UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED]:
-                formatted_feature_flag[flag] = self.get_upload_flags_value()
+            if not self.check_if_ods_code_is_in_pilot() and flag in [FeatureFlags.UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED, FeatureFlags.UPLOAD_LLOYD_GEORGE_WORKFLOW_ENABLED]:
+                formatted_feature_flag[flag] = False
 
             return formatted_feature_flag
         except ValidationError as e:
@@ -120,16 +119,15 @@ class FeatureFlagService:
             logger.warning("No ODS codes found in allowed list for Upload Pilot")
         return response
     
-    def check_if_ods_code_is_in_pilot(self, ods_code) -> bool:
-        pilot_ods_codes = self.get_allowed_list_of_ods_codes_for_upload_pilot()
-        return ods_code in pilot_ods_codes
-    
-    def get_upload_flags_value(self):
-        user_ods_code = ""
+    def check_if_ods_code_is_in_pilot(self) -> bool:
+        ods_code = ""
 
         if isinstance(request_context.authorization, dict):
-            user_ods_code = request_context.authorization.get(
+            ods_code = request_context.authorization.get(
                 "selected_organisation", {}
             ).get("org_ods_code", "")
-        
-        return self.check_if_ods_code_is_in_pilot(user_ods_code) if user_ods_code else False
+
+        # TODO: do we need to split these values?
+        pilot_ods_codes = self.get_allowed_list_of_ods_codes_for_upload_pilot()
+
+        return ods_code in pilot_ods_codes
