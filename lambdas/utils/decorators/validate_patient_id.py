@@ -41,7 +41,7 @@ def validate_patient_id(lambda_func: Callable):
             return ApiGatewayResponse(
                 400,
                 LambdaError.PatientIdInvalid.create_error_body({"number": nhs_number}),
-                event["httpMethod"],
+                event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
         except KeyError as e:
             logger.error(
@@ -51,7 +51,7 @@ def validate_patient_id(lambda_func: Callable):
             return ApiGatewayResponse(
                 400,
                 LambdaError.PatientIdNoKey.create_error_body(),
-                event["httpMethod"],
+                event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
 
         # Validation done. Return control flow to the original lambda handler
@@ -92,7 +92,7 @@ def validate_patient_id_fhir(lambda_func: Callable):
                 ).create_error_fhir_response(
                     LambdaError.PatientIdInvalid.value.get("fhir_coding")
                 ),
-                methods=event["httpMethod"],
+                methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
 
         except (KeyError, IndexError) as e:
@@ -105,7 +105,7 @@ def validate_patient_id_fhir(lambda_func: Callable):
                 body=LambdaError.PatientIdNoKey.create_error_response().create_error_fhir_response(
                     LambdaError.PatientIdNoKey.value.get("fhir_coding")
                 ),
-                methods=event["httpMethod"],
+                methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
         # Validation done. Return control flow to the original lambda handler
         return lambda_func(event, context)
