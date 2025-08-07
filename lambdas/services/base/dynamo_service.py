@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 
 import boto3
@@ -210,6 +211,40 @@ class DynamoDBService:
                 str(e), {"Result": f"Unable to write item to table: {table_name}"}
             )
             raise e
+
+    def batch_get_items(self, table_name: str, key_list: list[str]):
+        if len(key_list) > 100:
+            return DynamoServiceException("Cannot fetch more than 100 items at a time")
+
+        keys_to_get = [{"ID": item_id} for item_id in key_list]
+        request_items = {table_name: {"Keys": keys_to_get}}
+
+        all_fetched_items = []
+        retries = 0
+        max_retries = 3
+
+        while request_items[table_name]["Keys"] and retries < max_retries:
+            try:
+                response = self.dynamodb.batch_get_item(RequestItems=request_items)
+
+                table_responses = response.get("Responses", {}).get(table_name, [])
+                all_fetched_items.extend(table_responses)
+
+                unprocessed_keys = response.get("UnprocessedKeys", {})
+                if table_name in unprocessed_keys:
+                    logger.info(
+                        f"Retrying {len(unprocessed_keys[table_name]['Keys'])} unprocessed keys..."
+                    )
+                    request_items = unprocessed_keys
+                    retries += 1
+                    time.sleep((2**retries) * 0.1)
+                else:
+                    break
+
+            except Exception as e:
+                print(f"An error occurred during batch_get_item: {e}")
+                raise e
+        return all_fetched_items
 
     def get_item(self, table_name: str, key: dict):
         try:

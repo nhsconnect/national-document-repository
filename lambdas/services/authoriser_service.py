@@ -108,7 +108,7 @@ class AuthoriserService:
             case "/FeatureFlags":
                 deny_resource = False
 
-            case "/UploadConfirm":
+            case "/DocumentStatus":
                 deny_resource = (
                     not patient_access_is_allowed
                     or is_user_gp_clinical

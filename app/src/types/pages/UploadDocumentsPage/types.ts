@@ -38,11 +38,12 @@ export type UploadDocument = {
     key?: string;
     position?: number;
     numPages?: number;
-    error?: string;
+    error?: UPLOAD_FILE_ERROR_TYPE;
+    validated?: boolean;
 };
 
-export type UploadFilesErrors = {
-    filename?: string;
+export type UploadFilesError = {
+    linkId?: string;
     error: UPLOAD_FILE_ERROR_TYPE;
     details?: string;
 };
