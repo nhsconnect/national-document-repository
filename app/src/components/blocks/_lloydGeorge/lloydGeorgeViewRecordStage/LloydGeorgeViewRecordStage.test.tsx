@@ -168,6 +168,31 @@ describe('<LloydGeorgeViewRecordStage />', () => {
                 ).not.toBeInTheDocument();
             },
         );
+
+        it('renders cannot upload content when upload is enabled and patient already has a record', () => {
+            mockUseConfig.mockReturnValueOnce(
+                buildConfig({}, { uploadLloydGeorgeWorkflowEnabled: true }),
+            );
+
+            renderComponent({ downloadStage: DOWNLOAD_STAGE.SUCCEEDED });
+
+            expect(screen.getByText('Uploading files')).toBeInTheDocument();
+        });
+
+        it('does not render cannot upload content when upload is disabled and patient already has a record', () => {
+            renderComponent({ downloadStage: DOWNLOAD_STAGE.SUCCEEDED });
+
+            expect(screen.queryByText('Uploading files')).not.toBeInTheDocument();
+        });
+
+        it('does not render cannot upload content when upload is enabled and patient has no record', () => {
+            mockUseConfig.mockReturnValueOnce(
+                buildConfig({}, { uploadLloydGeorgeWorkflowEnabled: true }),
+            );
+            renderComponent({ downloadStage: DOWNLOAD_STAGE.NO_RECORDS });
+
+            expect(screen.queryByText('Uploading files')).not.toBeInTheDocument();
+        });
     });
 
     describe('Accessibility', () => {
