@@ -148,6 +148,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
     });
 
+    // skipped as arf journey is not viable at this point in time
     it.skip(
         `Shows patient upload screen when patient search is used as a
         GP_ADMIN and patient response is inactive`,
