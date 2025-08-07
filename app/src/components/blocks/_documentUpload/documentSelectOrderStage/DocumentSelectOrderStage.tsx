@@ -13,7 +13,7 @@ import {
     DOCUMENT_TYPE,
     SetUploadDocuments,
     UploadDocument,
-    UploadFilesErrors,
+    UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
@@ -173,7 +173,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         scrollToRef.current?.scrollIntoView();
     };
 
-    const errorMessageList = (formStateErrors: FieldErrors<FormData>): UploadFilesErrors[] =>
+    const errorMessageList = (formStateErrors: FieldErrors<FormData>): UploadFilesError[] =>
         Object.entries(formStateErrors)
             .map(([key, error]) => {
                 const document = documents.find((doc) => doc.id === key);
