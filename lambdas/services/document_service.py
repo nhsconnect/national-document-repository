@@ -198,3 +198,14 @@ class DocumentService:
             if document.uploading and not document.uploaded:
                 raise FileUploadInProgress(file_in_progress_message)
         return available_docs
+
+    def get_batch_document_references_by_id(
+        self, document_ids: list[str], doc_type: SupportedDocumentTypes
+    ) -> list[DocumentReference]:
+        table_name = doc_type.get_dynamodb_table_name()
+        response = self.dynamo_service.batch_get_items(
+            table_name=table_name, key_list=document_ids
+        )
+
+        found_docs = [DocumentReference.model_validate(item) for item in response]
+        return found_docs

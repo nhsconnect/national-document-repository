@@ -353,9 +353,9 @@ class LambdaError(Enum):
     """
        Errors for Upload Confirm Result lambda 
     """
-    UploadConfirmResultMissingBody = {
+    UploadConfirmResultMissingParams = {
         "err_code": "UC_4001",
-        "message": MISSING_POST,
+        "message": "Missing POST request body",
     }
     UploadConfirmResultPayload = {
         "err_code": "UC_4002",
