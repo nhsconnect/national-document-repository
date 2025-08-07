@@ -355,8 +355,9 @@ class LambdaError(Enum):
     """
     UploadConfirmResultMissingParams = {
         "err_code": "UC_4001",
-        "message": "Missing POST request body",
+        "message": "Missing GET request query parameters",
     }
+    
     UploadConfirmResultPayload = {
         "err_code": "UC_4002",
         "message": "Invalid json in body",
