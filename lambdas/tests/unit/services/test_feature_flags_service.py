@@ -188,9 +188,7 @@ def test_get_feature_flags_by_flag_invalid_raises_exception(
 
 def test_get_allowed_list_of_ods_codes_for_upload_pilot(mock_feature_flag_service):
     expected_codes = ["ODS1", "ODS2"]
-    mock_feature_flag_service.ssm_service.get_ssm_parameter.return_value = (
-        expected_codes
-    )
+    mock_feature_flag_service.ssm_service.get_ssm_parameter.return_value = "ODS1,ODS2"
 
     actual_codes = (
         mock_feature_flag_service.get_allowed_list_of_ods_codes_for_upload_pilot()
