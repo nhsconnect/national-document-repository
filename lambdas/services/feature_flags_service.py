@@ -1,6 +1,7 @@
 import os
 
 import requests
+from enums.feature_flags import FeatureFlags
 from enums.lambda_error import LambdaError
 from models.feature_flags import FeatureFlag
 from pydantic import ValidationError
@@ -10,8 +11,6 @@ from utils.audit_logging_setup import LoggingService
 from utils.constants.ssm import UPLOAD_PILOT_ODS_ALLOWED_LIST
 from utils.lambda_exceptions import FeatureFlagsException
 from utils.request_context import request_context
-
-from lambdas.enums.feature_flags import FeatureFlags
 
 logger = LoggingService(__name__)
 

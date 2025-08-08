@@ -1,13 +1,12 @@
 import pytest
 import requests_mock
+from enums.feature_flags import FeatureFlags
 from enums.lambda_error import LambdaError
 from services.feature_flags_service import FeatureFlagService
 from tests.unit.conftest import TEST_UUID
 from utils.constants.ssm import UPLOAD_PILOT_ODS_ALLOWED_LIST
 from utils.lambda_exceptions import FeatureFlagsException, LambdaException
 from utils.request_context import request_context
-
-from lambdas.enums.feature_flags import FeatureFlags
 
 test_url = (
     "http://localhost:2772/applications/A1234/environments/B1234/configurations/C1234"
