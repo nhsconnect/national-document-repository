@@ -5,6 +5,7 @@ export enum UPLOAD_FILE_ERROR_TYPE {
     passwordProtected = 'passwordProtected',
     invalidPdf = 'invalidPdf',
     emptyPdf = 'emptyPdf',
+    duplicatePositionError = 'duplicatePositionError',
 }
 
 export enum PDF_PARSING_ERROR_TYPE {
@@ -68,5 +69,9 @@ export const fileUploadErrorMessages: errorMessageType = {
     emptyPdf: {
         inline: 'The selected file is empty. Remove it to continue with upload.',
         errorBox: 'The selected file is empty. Remove it to continue with upload.',
+    },
+    duplicatePositionError: {
+        inline: 'You have selected the same position number for two or more files',
+        errorBox: 'You have selected the same position number for two or more files',
     },
 };
