@@ -71,7 +71,7 @@ def mock_jwt_decode(mocker):
         "/DocumentManifest",
         "/DocumentDelete",
         "/DocumentReference",
-        "/UploadConfirm",
+        "/DocumentStatus",
         "/UploadState",
         "/VirusScan",
     ],
@@ -160,7 +160,7 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
 @pytest.mark.parametrize(
     "test_path",
     [
-        "/UploadConfirm",
+        "/DocumentStatus",
         "/UploadState",
         "/DocumentReference",
         "/VirusScan",
