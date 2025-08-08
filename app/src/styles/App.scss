@@ -507,34 +507,6 @@ $hunit: '%';
 
     &_upload-complete {
         max-width: 711px;
-
-        &_card {
-            &_content {
-                padding: 95px 76px;
-                text-align: center;
-                background-color: $color_nhsuk-blue;
-                color: #fff;
-                font-weight: 400;
-                font-size: 1.5rem !important;
-                white-space: pre-wrap;
-                word-break: break-word;
-                overflow-wrap: break-word;
-
-                &_header {
-                    font-weight: 700;
-                    font-size: 3rem;
-                }
-
-                &_subheader {
-                    font-weight: 700;
-                    margin-top: 25px;
-                }
-
-                &_description {
-                    font-size: 1.5rem !important;
-                }
-            }
-        }
     }
 
     &_drag-and-drop {

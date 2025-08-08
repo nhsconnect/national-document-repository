@@ -109,7 +109,7 @@ function DocumentUploadPage() {
             virusReference.current = true;
             window.clearInterval(intervalTimer);
             navigate(routeChildren.DOCUMENT_UPLOAD_INFECTED);
-        } else if (hasNoVirus && !confirmedReference.current) {
+        } else if (hasNoVirus) {
             confirmedReference.current = true;
             void confirmUpload();
         }
