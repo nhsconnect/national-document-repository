@@ -201,7 +201,10 @@ def test_deny_cdr_for_deceased_patients(set_env, context, mocker):
     response = lambda_handler(test_event, context=context)
 
     mock_auth_service.assert_called_with(
-        "/CreateDocumentReference", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_token, TEST_NHS_NUMBER
+        "/CreateDocumentReference",
+        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY,
+        auth_token,
+        TEST_NHS_NUMBER,
     )
     assert response["policyDocument"] == expected_deny_policy
 
@@ -231,6 +234,9 @@ def test_deny_cdr_for_non_gp_admins_or_clinicians(set_env, context, mocker):
     pcse_response = lambda_handler(test_pcse_event, context=context)
 
     mock_auth_service.assert_called_with(
-        "/CreateDocumentReference", SSM_PARAM_JWT_TOKEN_PUBLIC_KEY, auth_pcse_token, TEST_NHS_NUMBER
+        "/CreateDocumentReference",
+        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY,
+        auth_pcse_token,
+        TEST_NHS_NUMBER,
     )
     assert pcse_response["policyDocument"] == expected_deny_policy

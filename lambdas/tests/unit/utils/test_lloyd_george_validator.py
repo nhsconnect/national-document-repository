@@ -1034,6 +1034,7 @@ def test_allowed_to_ingest_ods_code_propagate_error(mock_get_ssm_parameter):
     with pytest.raises(ClientError):
         allowed_to_ingest_ods_code("H81109")
 
+
 def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
     mocker.patch(
         "utils.lloyd_george_validator.check_for_number_of_files_match_expected"
@@ -1047,6 +1048,7 @@ def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
         validate_lg_files(
             TEST_DOCUMENT_REFERENCE_LIST, patient_with_different_nhs_number
         )
+
 
 @pytest.mark.parametrize(
     ["file_patient_name", "first_name_from_pds", "family_name_from_pds"],

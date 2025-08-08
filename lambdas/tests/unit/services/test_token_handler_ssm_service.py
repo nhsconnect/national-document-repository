@@ -10,7 +10,7 @@ from utils.constants.ssm import (
     GP_ORG_ROLE_CODE,
     ITOC_ODS_CODES,
     PCSE_ODS_CODE,
-    PCSE_USER_ROLE_CODE
+    PCSE_USER_ROLE_CODE,
 )
 from utils.lambda_exceptions import LoginException
 

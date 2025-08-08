@@ -91,7 +91,9 @@ class AuthoriserService:
 
             case "/CreateDocumentReference":
                 deny_resource = True
-                if (is_user_gp_admin or is_user_gp_clinical) and patient_access_is_allowed:
+                if (
+                    is_user_gp_admin or is_user_gp_clinical
+                ) and patient_access_is_allowed:
                     deny_resource = False
                 if patient_access_is_allowed and access_to_deceased_patient:
                     deny_resource = True
@@ -110,23 +112,17 @@ class AuthoriserService:
 
             case "/DocumentStatus":
                 deny_resource = (
-                    not patient_access_is_allowed
-                    or is_user_gp_clinical
-                    or is_user_pcse
+                    not patient_access_is_allowed or is_user_gp_clinical or is_user_pcse
                 )
 
             case "/UploadState":
                 deny_resource = (
-                    not patient_access_is_allowed
-                    or is_user_gp_clinical
-                    or is_user_pcse
+                    not patient_access_is_allowed or is_user_gp_clinical or is_user_pcse
                 )
 
             case "/VirusScan":
                 deny_resource = (
-                    not patient_access_is_allowed
-                    or is_user_gp_clinical
-                    or is_user_pcse
+                    not patient_access_is_allowed or is_user_gp_clinical or is_user_pcse
                 )
 
             case _:

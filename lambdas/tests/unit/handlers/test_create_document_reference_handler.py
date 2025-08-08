@@ -10,15 +10,15 @@ from handlers.create_document_reference_handler import (
 from tests.unit.conftest import MOCK_STAGING_STORE_BUCKET, TEST_NHS_NUMBER, TEST_UUID
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
-    MOCK_EVENT_BODY,
     ARF_MOCK_EVENT_BODY,
-    LG_MOCK_EVENT_BODY,
     ARF_MOCK_RESPONSE,
     LG_AND_ARF_MOCK_RESPONSE,
-    LG_MOCK_RESPONSE
+    LG_MOCK_EVENT_BODY,
+    LG_MOCK_RESPONSE,
+    MOCK_EVENT_BODY,
 )
 from utils.exceptions import InvalidNhsNumberException
-from utils.lambda_exceptions import CreateDocumentRefException, FeatureFlagsException, SearchPatientException
+from utils.lambda_exceptions import CreateDocumentRefException, SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_STAGING_STORE_BUCKET}/{TEST_UUID}"
@@ -28,6 +28,7 @@ INVALID_NHS_NUMBER = "12345"
 
 arf_environment_variables = ["STAGING_STORE_BUCKET_NAME"]
 lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_NAME"]
+
 
 class MockError(Enum):
     Error = {
@@ -81,10 +82,13 @@ def mock_cdr_service(mocker):
     )
     yield mock_cdrService
 
+
 @pytest.fixture
 def mock_invalid_nhs_number_exception(mocker):
-    mocker.patch("utils.decorators.validate_patient_id.validate_nhs_number", 
-                 side_effect = InvalidNhsNumberException())
+    mocker.patch(
+        "utils.decorators.validate_patient_id.validate_nhs_number",
+        side_effect=InvalidNhsNumberException(),
+    )
 
 
 def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
@@ -105,9 +109,7 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
 def test_create_document_reference_valid_lg_type_returns_presigned_urls_and_200(
     set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdr_service.create_document_reference_request.return_value = (
-        LG_MOCK_RESPONSE
-    )
+    mock_cdr_service.create_document_reference_request.return_value = LG_MOCK_RESPONSE
     expected = ApiGatewayResponse(
         200, json.dumps(LG_MOCK_RESPONSE), "POST"
     ).create_api_gateway_response()
@@ -118,13 +120,14 @@ def test_create_document_reference_valid_lg_type_returns_presigned_urls_and_200(
 def test_create_document_reference_with_nhs_number_not_in_pds_returns_404(
     set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdr_service.create_document_reference_request.side_effect = SearchPatientException(
-        404, LambdaError.SearchPatientNoPDS)
-    
+    mock_cdr_service.create_document_reference_request.side_effect = (
+        SearchPatientException(404, LambdaError.SearchPatientNoPDS)
+    )
+
     expected_body = {
-        "message": f"Patient does not exist for given NHS number",
+        "message": "Patient does not exist for given NHS number",
         "err_code": "SP_4002",
-        "interaction_id": "88888888-4444-4444-4444-121212121212"
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
 
     expected = ApiGatewayResponse(
@@ -133,37 +136,40 @@ def test_create_document_reference_with_nhs_number_not_in_pds_returns_404(
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
 
+
 def test_cdr_request_including_non_pdf_files_returns_400(
     set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdr_service.create_document_reference_request.side_effect = CreateDocumentRefException(
-        400, LambdaError.CreateDocFiles)
-    
+    mock_cdr_service.create_document_reference_request.side_effect = (
+        CreateDocumentRefException(400, LambdaError.CreateDocFiles)
+    )
+
     expected_body = {
-        "message": f"Invalid files or id",
+        "message": "Invalid files or id",
         "err_code": "CDR_4004",
-        "interaction_id": "88888888-4444-4444-4444-121212121212"
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
-    
+
     expected = ApiGatewayResponse(
         400, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
     assert actual == expected
-    
+
 
 def test_cdr_request_when_lgr_already_exists_returns_422(
     set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdr_service.create_document_reference_request.side_effect = CreateDocumentRefException(
-        422, LambdaError.CreateDocRecordAlreadyInPlace)
-    
+    mock_cdr_service.create_document_reference_request.side_effect = (
+        CreateDocumentRefException(422, LambdaError.CreateDocRecordAlreadyInPlace)
+    )
+
     expected_body = {
-        "message": f"The patient already has a full set of record.",
+        "message": "The patient already has a full set of record.",
         "err_code": "CDR_4008",
-        "interaction_id": "88888888-4444-4444-4444-121212121212"
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
-    
+
     expected = ApiGatewayResponse(
         422, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
@@ -176,15 +182,16 @@ def test_cdr_request_when_lgr_already_exists_returns_422(
 def test_cdr_request_when_lgr_is_in_process_of_uploading_returns_423(
     set_env, lg_type_event, context, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdr_service.create_document_reference_request.side_effect = CreateDocumentRefException(
-        423, LambdaError.UploadInProgressError)
-    
+    mock_cdr_service.create_document_reference_request.side_effect = (
+        CreateDocumentRefException(423, LambdaError.UploadInProgressError)
+    )
+
     expected_body = {
-        "message": f"Records are in the process of being uploaded",
+        "message": "Records are in the process of being uploaded",
         "err_code": "LGL_423",
-        "interaction_id": "88888888-4444-4444-4444-121212121212"
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
-    
+
     expected = ApiGatewayResponse(
         423, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
@@ -192,7 +199,7 @@ def test_cdr_request_when_lgr_is_in_process_of_uploading_returns_423(
     assert actual == expected
 
     mock_cdr_service.create_document_reference_request.assert_called_once()
-    
+
 
 @pytest.mark.parametrize("environment_variable", arf_environment_variables)
 def test_lambda_handler_missing_environment_variables_type_staging_returns_500(
@@ -210,7 +217,9 @@ def test_lambda_handler_missing_environment_variables_type_staging_returns_500(
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
     expected = ApiGatewayResponse(
-        500, json.dumps(expected_body), "POST",
+        500,
+        json.dumps(expected_body),
+        "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
     assert expected == actual
@@ -336,41 +345,42 @@ def test_no_event_processing_when_upload_lambda_flag_disabled(
     assert expected == actual
     mock_processing_event_details.assert_not_called()
 
+
 def test_invalid_nhs_number_returns_400(
-    set_env, 
-    lg_type_event, 
-    context, 
+    set_env,
+    lg_type_event,
+    context,
     mock_invalid_nhs_number_exception,
     mock_processing_event_details,
-    mock_cdr_service
-):  
-    
+    mock_cdr_service,
+):
+
     expected = ApiGatewayResponse(
-        400, LambdaError.PatientIdInvalid.create_error_body(
-                {"number": TEST_NHS_NUMBER}), "POST").create_api_gateway_response()
+        400,
+        LambdaError.PatientIdInvalid.create_error_body({"number": TEST_NHS_NUMBER}),
+        "POST",
+    ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
 
     assert actual == expected
-    
+
     mock_processing_event_details.assert_not_called()
     mock_cdr_service.assert_not_called()
 
+
 def test_ods_code_not_in_pilot_returns_404(
-    set_env,
-    context,
-    lg_type_event,
-    mock_cdr_service,
-    mock_upload_lambda_enabled
+    set_env, context, lg_type_event, mock_cdr_service, mock_upload_lambda_enabled
 ):
-    mock_cdr_service.create_document_reference_request.side_effect = CreateDocumentRefException(
-        404, LambdaError.CreateDocRefOdsCodeNotAllowed)
-    
+    mock_cdr_service.create_document_reference_request.side_effect = (
+        CreateDocumentRefException(404, LambdaError.CreateDocRefOdsCodeNotAllowed)
+    )
+
     expected_body = {
-        "message": f"ODS code does not match any of the allowed.",
+        "message": "ODS code does not match any of the allowed.",
         "err_code": "CDR_4009",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
-    
+
     expected = ApiGatewayResponse(
         404, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
