@@ -15,14 +15,18 @@ from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadIncomplete
 from utils.constants.ssm import UPLOAD_PILOT_ODS_ALLOWED_LIST
-from utils.exceptions import InvalidNhsNumberException, PdsTooManyRequestsException, PatientNotFoundException
+from utils.exceptions import (
+    InvalidNhsNumberException,
+    LGInvalidFilesException,
+    PatientNotFoundException,
+    PdsTooManyRequestsException,
+)
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import (
     getting_patient_info_from_pds,
     validate_lg_files,
 )
-from utils.utilities import create_reference_id, validate_nhs_number
-from utils.exceptions import LGInvalidFilesException
+from utils.utilities import create_reference_id
 
 FAILED_CREATE_REFERENCE_MESSAGE = "Create document reference failed"
 PROVIDED_DOCUMENT_SUPPORTED_MESSAGE = "Provided document is supported"
@@ -74,7 +78,9 @@ class CreateDocumentReferenceService:
                 )
                 ods_allowed = self.check_if_ods_code_is_in_pilot(current_gp_ods)
                 if not ods_allowed:
-                    raise CreateDocumentRefException(404, LambdaError.CreateDocRefOdsCodeNotAllowed)
+                    raise CreateDocumentRefException(
+                        404, LambdaError.CreateDocRefOdsCodeNotAllowed
+                    )
                 snomed_code_type = SnomedCodes.LLOYD_GEORGE.value.code
 
             for validated_doc in upload_request_documents:
@@ -129,11 +135,9 @@ class CreateDocumentReferenceService:
 
             return url_responses
 
-        except (
-            PatientNotFoundException
-        ) as e: 
+        except PatientNotFoundException:
             raise CreateDocumentRefException(404, LambdaError.SearchPatientNoPDS)
-        
+
         except (
             InvalidNhsNumberException,
             LGInvalidFilesException,
@@ -321,9 +325,11 @@ class CreateDocumentReferenceService:
             doc_type=SupportedDocumentTypes.ARF,
             query_filter=UploadIncomplete,
         )
-    
+
     def get_allowed_list_of_ods_codes_for_upload_pilot(self) -> list[str]:
-        logger.info("Starting ssm request to retrieve allowed list of ODS codes for Upload Pilot")
+        logger.info(
+            "Starting ssm request to retrieve allowed list of ODS codes for Upload Pilot"
+        )
         response = self.ssm_service.get_ssm_parameter(UPLOAD_PILOT_ODS_ALLOWED_LIST)
         if not response:
             logger.warning("No ODS codes found in allowed list for Upload Pilot")

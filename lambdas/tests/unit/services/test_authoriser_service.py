@@ -88,9 +88,7 @@ def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
     mock_auth_service.allowed_nhs_numbers = []
 
 
-@pytest.mark.parametrize(
-    "test_path", ["/DocumentManifest", "/DocumentDelete", "Any"]
-)
+@pytest.mark.parametrize("test_path", ["/DocumentManifest", "/DocumentDelete", "Any"])
 def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
     test_path,
     mock_auth_service: AuthoriserService,
@@ -104,9 +102,7 @@ def test_deny_access_policy_returns_true_for_nhs_number_not_in_allowed(
     mock_auth_service.allowed_nhs_numbers = []
 
 
-@pytest.mark.parametrize(
-    "test_path", ["/DocumentManifest", "/DocumentDelete", "Any"]
-)
+@pytest.mark.parametrize("test_path", ["/DocumentManifest", "/DocumentDelete", "Any"])
 def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
     test_path,
     mock_auth_service: AuthoriserService,
@@ -121,42 +117,39 @@ def test_deny_access_policy_returns_false_for_nhs_number_in_allowed(
 
 
 def test_deny_create_document_reference_as_gp_admin_or_clinical_returns_false(
-    mock_auth_service: AuthoriserService
+    mock_auth_service: AuthoriserService,
 ):
     mock_auth_service.allowed_nhs_numbers.append("122222222")
 
     expected = False
 
     actual_clinical = mock_auth_service.deny_access_policy(
-        "/CreateDocumentReference",
-        RepositoryRole.GP_CLINICAL.value,
-        "122222222")
+        "/CreateDocumentReference", RepositoryRole.GP_CLINICAL.value, "122222222"
+    )
     actual_admin = mock_auth_service.deny_access_policy(
-        "/CreateDocumentReference",
-        RepositoryRole.GP_ADMIN.value,
-        "122222222")
+        "/CreateDocumentReference", RepositoryRole.GP_ADMIN.value, "122222222"
+    )
 
     assert actual_clinical == expected
     assert actual_admin == expected
 
 
 def test_deny_create_document_reference_as_pcse_returns_true(
-    mock_auth_service: AuthoriserService
-):  
+    mock_auth_service: AuthoriserService,
+):
     mock_auth_service.allowed_nhs_numbers.append("122222222")
 
     expected = True
 
     actual = mock_auth_service.deny_access_policy(
-        "/CreateDocumentReference",
-        RepositoryRole.PCSE.value,
-        "122222222")
+        "/CreateDocumentReference", RepositoryRole.PCSE.value, "122222222"
+    )
 
     assert actual == expected
 
 
 def test_deny_create_document_reference_as_any_role_on_deceased_patient_returns_true(
-    mock_auth_service: AuthoriserService
+    mock_auth_service: AuthoriserService,
 ):
     expected = True
 
@@ -164,18 +157,15 @@ def test_deny_create_document_reference_as_any_role_on_deceased_patient_returns_
     mock_auth_service.deceased_nhs_numbers.append("122222222")
 
     actual_pcse = mock_auth_service.deny_access_policy(
-        "/CreateDocumentReference",
-        RepositoryRole.PCSE.value,
-        "122222222")
+        "/CreateDocumentReference", RepositoryRole.PCSE.value, "122222222"
+    )
     actual_clinical = mock_auth_service.deny_access_policy(
-        "/CreateDocumentReference",
-        RepositoryRole.GP_CLINICAL.value,
-        "122222222")
+        "/CreateDocumentReference", RepositoryRole.GP_CLINICAL.value, "122222222"
+    )
     actual_admin = mock_auth_service.deny_access_policy(
-        "/CreateDocumentReference",
-        RepositoryRole.GP_ADMIN.value,
-        "122222222")
-    
+        "/CreateDocumentReference", RepositoryRole.GP_ADMIN.value, "122222222"
+    )
+
     assert actual_pcse == expected
     assert actual_clinical == expected
     assert actual_admin == expected
@@ -216,7 +206,9 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
 
     mock_auth_service.allowed_nhs_numbers = ["122222222"]
 
-    actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.PCSE.value, "122222222")
+    actual = mock_auth_service.deny_access_policy(
+        test_path, RepositoryRole.PCSE.value, "122222222"
+    )
     assert expected == actual
 
 

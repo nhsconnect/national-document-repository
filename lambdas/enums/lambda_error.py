@@ -87,7 +87,7 @@ class LambdaError(Enum):
     }
     CreateDocRefOdsCodeNotAllowed = {
         "err_code": "CDR_4009",
-        "message": "ODS code does not match any of the allowed."
+        "message": "ODS code does not match any of the allowed.",
     }
     CreateDocPresign = {
         "err_code": "CDR_5001",

@@ -1,4 +1,5 @@
 from datetime import datetime
+
 import pytest
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -51,6 +52,7 @@ MOCK_ALLOWED_ODS_CODES_LIST_PILOT = {
     },
 }
 
+
 @pytest.fixture
 def mock_create_doc_ref_service(mocker, set_env):
     mocker.patch("services.base.s3_service.IAMService")
@@ -71,11 +73,10 @@ def mock_s3(mocker, mock_create_doc_ref_service):
     )
     yield mock_create_doc_ref_service.s3_service
 
+
 @pytest.fixture()
 def mock_ssm(mocker, mock_create_doc_ref_service):
-    mocker.patch.object(
-        mock_create_doc_ref_service.ssm_service, "get_ssm_parameter"
-    )
+    mocker.patch.object(mock_create_doc_ref_service.ssm_service, "get_ssm_parameter")
     yield mock_create_doc_ref_service.ssm_service
 
 
@@ -142,11 +143,13 @@ def undo_mocking_for_is_upload_in_process(mock_create_doc_ref_service):
         DocumentService.is_upload_in_process
     )
 
+
 @pytest.fixture
 def get_allowed_list_of_ods_codes_for_upload_pilot(mock_create_doc_ref_service, mocker):
     return mocker.patch.object(
         mock_create_doc_ref_service, "get_allowed_list_of_ods_codes_for_upload_pilot"
     )
+
 
 def test_create_document_reference_request_empty_list(
     mock_create_doc_ref_service,
@@ -224,7 +227,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     mock_check_existing_lloyd_george_records_and_remove_failed_upload,
     mock_fetch_document,
     mock_pds_patient,
-    get_allowed_list_of_ods_codes_for_upload_pilot
+    get_allowed_list_of_ods_codes_for_upload_pilot,
 ):
     document_references = []
     side_effects = []
@@ -272,8 +275,10 @@ def test_create_document_reference_request_with_lg_list_happy_path(
 
     mock_create_reference_in_dynamodb.assert_called_once()
     mock_validate_lg_files.assert_called_with(document_references, mock_pds_patient)
-    mock_check_existing_lloyd_george_records_and_remove_failed_upload.assert_called_with(TEST_NHS_NUMBER)
-    
+    mock_check_existing_lloyd_george_records_and_remove_failed_upload.assert_called_with(
+        TEST_NHS_NUMBER
+    )
+
 
 @freeze_time("2023-10-30T10:25:00")
 def test_create_document_reference_request_with_both_list(
@@ -285,7 +290,7 @@ def test_create_document_reference_request_with_both_list(
     mock_validate_lg_files,
     mock_fetch_document,
     undo_mocking_for_is_upload_in_process,
-    get_allowed_list_of_ods_codes_for_upload_pilot
+    get_allowed_list_of_ods_codes_for_upload_pilot,
 ):
     files_list = ARF_FILE_LIST + LG_FILE_LIST
     lg_file_names = [file["fileName"] for file in LG_FILE_LIST]
@@ -350,7 +355,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_create_reference_in_dynamodb,
     mock_validate_lg_files,
     mock_pds_patient,
-    get_allowed_list_of_ods_codes_for_upload_pilot
+    get_allowed_list_of_ods_codes_for_upload_pilot,
 ):
     document_references = []
     side_effects = []
@@ -409,7 +414,7 @@ def test_create_document_reference_failed_to_parse_pds_response(
     mock_create_reference_in_dynamodb,
     mock_getting_patient_info_from_pds,
 ):
-    
+
     mock_getting_patient_info_from_pds.side_effect = LGInvalidFilesException
 
     with pytest.raises(Exception) as exc_info:
@@ -432,7 +437,7 @@ def test_cdr_nhs_number_not_found_raises_search_patient_exception(
     mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
-    mock_getting_patient_info_from_pds
+    mock_getting_patient_info_from_pds,
 ):
     mock_getting_patient_info_from_pds.side_effect = PatientNotFoundException
 
@@ -455,7 +460,7 @@ def test_cdr_non_pdf_file_raises_exception(
     mock_create_doc_ref_service,
     mock_validate_lg_files,
     mock_create_reference_in_dynamodb,
-    get_allowed_list_of_ods_codes_for_upload_pilot
+    get_allowed_list_of_ods_codes_for_upload_pilot,
 ):
     mock_validate_lg_files.side_effect = LGInvalidFilesException
     get_allowed_list_of_ods_codes_for_upload_pilot.return_value = [TEST_CURRENT_GP_ODS]
@@ -479,7 +484,7 @@ def test_create_document_reference_request_lg_upload_throw_lambda_error_if_uploa
     mock_validate_lg_files,
     mock_fetch_document,
     mock_create_reference_in_dynamodb,
-    get_allowed_list_of_ods_codes_for_upload_pilot
+    get_allowed_list_of_ods_codes_for_upload_pilot,
 ):
     two_minutes_ago = 1698661380  # 2023-10-30T10:23:00
     mock_records_upload_in_process = create_test_lloyd_george_doc_store_refs(
@@ -502,7 +507,7 @@ def test_create_document_reference_request_lg_upload_throw_lambda_error_if_got_a
     mock_validate_lg_files,
     mock_fetch_document,
     mock_create_reference_in_dynamodb,
-    get_allowed_list_of_ods_codes_for_upload_pilot
+    get_allowed_list_of_ods_codes_for_upload_pilot,
 ):
     mock_fetch_document.return_value = create_test_lloyd_george_doc_store_refs()
     get_allowed_list_of_ods_codes_for_upload_pilot.return_value = [TEST_CURRENT_GP_ODS]
@@ -836,12 +841,12 @@ def test_remove_records_of_failed_upload(mock_create_doc_ref_service, mocker):
 
 
 def test_ods_code_not_in_pilot_raises_exception(
-    mocker, 
+    mocker,
     mock_create_doc_ref_service,
     mock_create_document_reference,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
-    get_allowed_list_of_ods_codes_for_upload_pilot
+    get_allowed_list_of_ods_codes_for_upload_pilot,
 ):
     get_allowed_list_of_ods_codes_for_upload_pilot.return_value = ["PI001"]
 
@@ -860,11 +865,17 @@ def test_ods_code_not_in_pilot_raises_exception(
     assert exception.message == "ODS code does not match any of the allowed."
 
 
-def test_get_allowed_list_of_ods_codes_for_upload_pilot(mock_create_doc_ref_service, mock_ssm):
-    mock_ssm.get_ssm_parameter.return_value = MOCK_ALLOWED_ODS_CODES_LIST_PILOT["Parameter"]["Value"]
+def test_get_allowed_list_of_ods_codes_for_upload_pilot(
+    mock_create_doc_ref_service, mock_ssm
+):
+    mock_ssm.get_ssm_parameter.return_value = MOCK_ALLOWED_ODS_CODES_LIST_PILOT[
+        "Parameter"
+    ]["Value"]
     expected = "PI001,PI002,PI003"
 
-    actual = mock_create_doc_ref_service.get_allowed_list_of_ods_codes_for_upload_pilot()
+    actual = (
+        mock_create_doc_ref_service.get_allowed_list_of_ods_codes_for_upload_pilot()
+    )
 
     mock_ssm.get_ssm_parameter.assert_called_once()
 
