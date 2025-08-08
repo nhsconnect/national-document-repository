@@ -2,7 +2,7 @@ import pytest
 import requests_mock
 from enums.lambda_error import LambdaError
 from services.feature_flags_service import FeatureFlagService
-from unit.conftest import TEST_UUID
+from tests.unit.conftest import TEST_UUID
 from utils.constants.ssm import UPLOAD_PILOT_ODS_ALLOWED_LIST
 from utils.lambda_exceptions import FeatureFlagsException, LambdaException
 from utils.request_context import request_context
