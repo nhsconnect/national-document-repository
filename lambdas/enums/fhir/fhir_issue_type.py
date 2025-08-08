@@ -27,7 +27,7 @@ class UKCoreSpineError(Enum):
     INVALID_RESOURCE_ID = ("INVALID_RESOURCE_ID", "Invalid resource ID")
     INVALID_SEARCH_DATA = ("INVALID_SEARCH_DATA", "Invalid search data")
     MISSING_VALUE = ("MISSING_VALUE", "Missing value")
-    INVALID_VALUE = ("MISSING_VALUE", "Invalid value")
+    INVALID_VALUE = ("INVALID_VALUE", "Invalid value")
     VALIDATION_ERROR = ("VALIDATION_ERROR", "Validation error")
 
     @property
