@@ -97,7 +97,7 @@ def test_make_weekly_summary(set_env, mocker):
     expected = EXPECTED_WEEKLY_SUMMARY
 
     assert_frame_equal(
-        actual, expected, check_row_order=False, check_dtype=False, check_exact=False
+        actual, expected, check_row_order=False, check_dtypes=False, check_exact=False
     )
 
 
@@ -142,7 +142,7 @@ def test_summarise_record_store_data(mock_service):
 
     expected = EXPECTED_SUMMARY_RECORD_STORE_DATA
 
-    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
+    assert_frame_equal(actual, expected, check_row_order=False, check_dtypes=False)
 
 
 def test_summarise_record_store_data_larger_mock_data(mock_service):
@@ -163,7 +163,7 @@ def test_summarise_record_store_data_larger_mock_data(mock_service):
 
     actual = mock_service.summarise_record_store_data(mock_record_store_data)
 
-    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
+    assert_frame_equal(actual, expected, check_row_order=False, check_dtypes=False)
 
 
 def test_summarise_record_store_data_can_handle_empty_input(mock_service):
@@ -181,7 +181,7 @@ def test_summarise_organisation_data(mock_service):
 
     expected = EXPECTED_SUMMARY_ORGANISATION_DATA
 
-    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
+    assert_frame_equal(actual, expected, check_row_order=False, check_dtypes=False)
 
 
 def test_summarise_organisation_data_larger_mock_data(mock_service):
@@ -260,7 +260,7 @@ def test_summarise_application_data(mock_service):
     assert_frame_equal(
         actual,
         expected,
-        check_dtype=False,
+        check_dtypes=False,
         check_row_order=False,
         check_column_order=False,
     )
@@ -298,7 +298,7 @@ def test_summarise_application_data_larger_mock_data(mock_service):
     assert_frame_equal(
         actual,
         expected,
-        check_dtype=False,
+        check_dtypes=False,
         check_row_order=False,
         check_column_order=False,
     )
@@ -336,7 +336,7 @@ def test_join_dataframes_by_ods_code(mock_service):
     )
     actual = mock_service.join_dataframes_by_ods_code([mock_data_1, mock_data_2])
 
-    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+    assert_frame_equal(actual, expected, check_dtypes=False, check_row_order=False)
 
 
 def test_join_dataframes_by_ods_code_can_handle_empty_dataframe(mock_service):
@@ -359,7 +359,7 @@ def test_join_dataframes_by_ods_code_can_handle_empty_dataframe(mock_service):
         [mock_data_1, mock_data_2, mock_data_3]
     )
 
-    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+    assert_frame_equal(actual, expected, check_dtypes=False, check_row_order=False)
 
 
 @freeze_time("20240512T07:00:00Z")

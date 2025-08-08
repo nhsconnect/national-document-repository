@@ -283,7 +283,7 @@ def test_extract_document_number_from_bulk_upload_file_name_with_no_document_num
             ("Lloyd_George_Record", "_lloyd_george_12342"),
         ),
         (
-            "]{\lloyd george?record///person_name",
+            r"]{\lloyd george?record///person_name",
             ("Lloyd_George_Record", "///person_name"),
         ),
         ("_Lloyd_George-Record_person_name", ("Lloyd_George_Record", "_person_name")),
@@ -352,8 +352,8 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
     ["input", "expected", "expected_exception"],
     [
         ("_-9991211234-12012024", ("9991211234", "-12012024"), None),
-        ("_-9-99/12?11\/234-12012024", ("9991211234", "-12012024"), None),
-        ("_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024"), None),
+        (r"_-9-99/12?11\/234-12012024", ("9991211234", "-12012024"), None),
+        (r"_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024"), None),
         (
             "12_12_12_12_12_12_12_2024.csv",
             "incorrect NHS number format",
