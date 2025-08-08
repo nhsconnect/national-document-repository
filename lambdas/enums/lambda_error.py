@@ -358,18 +358,6 @@ class LambdaError(Enum):
         "message": "Missing GET request query parameters",
     }
     
-    UploadConfirmResultPayload = {
-        "err_code": "UC_4002",
-        "message": "Invalid json in body",
-    }
-    UploadConfirmResultProps = {
-        "err_code": "UC_4003",
-        "message": "Request body missing some properties",
-    }
-    UploadConfirmResultBadRequest = {
-        "err_code": "UC_4004",
-        "message": "Number of document references not equal to number of documents in dynamo table for this nhs number",
-    }
     UploadConfirmResultFilesNotClean = {
         "err_code": "UC_4005",
         "message": "Some of the given document references are not referring to clean files",
