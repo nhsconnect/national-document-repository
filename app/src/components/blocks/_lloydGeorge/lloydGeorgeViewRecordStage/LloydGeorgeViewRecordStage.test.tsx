@@ -120,8 +120,11 @@ describe('<LloydGeorgeViewRecordStage />', () => {
 
         it('renders empty state when there is no LG record', async () => {
             renderComponent({ downloadStage: DOWNLOAD_STAGE.NO_RECORDS });
-
-            await screen.findByText(/This patient does not have a Lloyd George record/i);
+            expect(
+                screen.getByText(
+                    'This patient does not have a Lloyd George record stored in this service.'
+                )
+            ).toBeInTheDocument();
         });
 
         it('shows full screen mode with patient info', async () => {
@@ -153,7 +156,7 @@ describe('<LloydGeorgeViewRecordStage />', () => {
             await userEvent.click(await screen.findByText('View in full screen'));
             await userEvent.click(await screen.findByText('Exit full screen'));
 
-            await screen.findByText('View in full screen');
+            expect(screen.getByText('View in full screen')).toBeInTheDocument();
         });
 
         it.each([[REPOSITORY_ROLE.GP_ADMIN], [REPOSITORY_ROLE.GP_CLINICAL]])(
