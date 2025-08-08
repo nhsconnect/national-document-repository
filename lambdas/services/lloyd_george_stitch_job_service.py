@@ -102,7 +102,7 @@ class LloydGeorgeStitchJobService:
                 presigned_url = self.create_document_stitch_presigned_url(
                     stitch_trace.stitched_file_location
                 )
-                logger.audit_splunk_info(
+                logger.info(
                     "User has viewed Lloyd George records",
                     {"Result": "Successful Stitching"},
                 )
