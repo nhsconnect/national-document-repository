@@ -31,6 +31,7 @@ from tests.unit.helpers.data.pds.test_cases_for_patient_name_matching import (
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
 from utils.common_query_filters import NotDeleted
 from utils.exceptions import (
+    PatientNotFoundException,
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
 )
@@ -834,7 +835,7 @@ def test_patient_not_found_with_pds_service(mock_pds_call):
 
     mock_pds_call.return_value = response
 
-    with pytest.raises(LGInvalidFilesException) as e:
+    with pytest.raises(PatientNotFoundException) as e:
         getting_patient_info_from_pds("9000000009")
     assert str(e.value) == "Could not find the given patient on PDS"
 
@@ -874,11 +875,11 @@ def test_check_pds_response_429_status_raise_too_many_requests_exception():
         check_pds_response_status(response)
 
 
-def test_check_pds_response_404_status_raise_lg_invalid_files_exception():
+def test_check_pds_response_404_status_raises_patient_not_found_exception():
     response = Response()
     response.status_code = 404
 
-    with pytest.raises(LGInvalidFilesException):
+    with pytest.raises(PatientNotFoundException):
         check_pds_response_status(response)
 
 
@@ -1033,7 +1034,6 @@ def test_allowed_to_ingest_ods_code_propagate_error(mock_get_ssm_parameter):
     with pytest.raises(ClientError):
         allowed_to_ingest_ods_code("H81109")
 
-
 def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
     mocker.patch(
         "utils.lloyd_george_validator.check_for_number_of_files_match_expected"
@@ -1047,7 +1047,6 @@ def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
         validate_lg_files(
             TEST_DOCUMENT_REFERENCE_LIST, patient_with_different_nhs_number
         )
-
 
 @pytest.mark.parametrize(
     ["file_patient_name", "first_name_from_pds", "family_name_from_pds"],
