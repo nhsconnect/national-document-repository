@@ -32,7 +32,7 @@ function UploadErrorMessages({
                 return (
                     <div key={errorType}>
                         <ErrorSummary.List>
-                            <ErrorSummary.Item href={'#' + linkIds} key={errorType + linkIds}>
+                            <ErrorSummary.Item href={'#' + firstFile} key={errorType + firstFile}>
                                 {errorMessage}
                             </ErrorSummary.Item>
                         </ErrorSummary.List>
