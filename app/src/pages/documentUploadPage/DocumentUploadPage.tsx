@@ -11,6 +11,7 @@ import {
     UploadSession,
 } from '../../types/generic/uploadResult';
 import uploadDocuments, {
+    generateFileName,
     getDocumentStatus,
     uploadDocumentToS3,
 } from '../../helpers/requests/uploadDocuments';
@@ -37,6 +38,7 @@ import DocumentUploadRemoveFilesStage from '../../components/blocks/_documentUpl
 import useConfig from '../../helpers/hooks/useConfig';
 import DocumentUploadInfectedStage from '../../components/blocks/_documentUpload/documentUploadInfectedStage/DocumentUploadInfectedStage';
 import { formatDateWithDashes } from '../../helpers/utils/formatDate';
+import { PatientDetails } from '../../types/generic/patientDetails';
 
 function DocumentUploadPage() {
     const patientDetails = usePatient();
@@ -159,7 +161,7 @@ function DocumentUploadPage() {
                     (doc) => doc.docType !== DOCUMENT_TYPE.LLOYD_GEORGE,
                 );
 
-                const filename = `1of1_Lloyd_George_Record_[${patientDetails?.givenName} ${patientDetails?.familyName.toUpperCase()}]_[${patientDetails?.nhsNumber}]_[${formatDateWithDashes(new Date(patientDetails!.birthDate))}].pdf`;
+                const filename = generateFileName(patientDetails);
                 reducedDocuments.push({
                     id: uuidv4(),
                     file: new File([mergedPdfBlob], filename, { type: 'application/pdf' }),

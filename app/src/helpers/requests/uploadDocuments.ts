@@ -11,6 +11,8 @@ import {
 } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
 import { setSingleDocument } from '../utils/uploadDocumentHelpers';
+import { PatientDetails } from '../../types/generic/patientDetails';
+import { formatDateWithDashes } from '../utils/formatDate';
 
 type UploadDocumentsArgs = {
     documents: UploadDocument[];
@@ -59,6 +61,17 @@ export const uploadDocumentToS3 = async ({
         throw error;
     }
 };
+
+export function generateFileName(patientDetails: PatientDetails | null): string {
+    if (!patientDetails) {
+        throw new Error('Patient details are required to generate filename');
+    }
+
+    // replace commas and other characters unfriendly characters to file paths
+    const givenName = patientDetails.givenName.join(' ').replace(/[,/\\?%*:|"<>]/g, '-');
+    const filename = `1of1_Lloyd_George_Record_[${givenName} ${patientDetails.familyName.toUpperCase()}]_[${patientDetails.nhsNumber}]_[${formatDateWithDashes(new Date(patientDetails.birthDate))}].pdf`;
+    return filename;
+}
 
 const uploadDocuments = async ({
     nhsNumber,
