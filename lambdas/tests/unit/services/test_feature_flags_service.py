@@ -1,6 +1,5 @@
 import pytest
 import requests_mock
-from enums.feature_flags import FeatureFlags
 from enums.lambda_error import LambdaError
 from services.feature_flags_service import FeatureFlagService
 from tests.unit.conftest import TEST_UUID

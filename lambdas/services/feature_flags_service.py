@@ -1,7 +1,6 @@
 import os
 
 import requests
-from enums.feature_flags import FeatureFlags
 from enums.lambda_error import LambdaError
 from models.feature_flags import FeatureFlag
 from pydantic import ValidationError
