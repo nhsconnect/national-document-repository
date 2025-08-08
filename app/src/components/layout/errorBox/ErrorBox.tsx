@@ -1,5 +1,5 @@
 import { ErrorSummary } from 'nhsuk-react-components';
-import { Ref, MouseEvent, JSX } from 'react';
+import { LegacyRef, MouseEvent, JSX } from 'react';
 import { groupUploadErrorsByType } from '../../../helpers/utils/fileUploadErrorMessages';
 import { UploadFilesError } from '../../../types/pages/UploadDocumentsPage/types';
 
@@ -13,7 +13,7 @@ type Props = {
     dataTestId?: string;
     errorOnClick?: () => void;
     errorMessageList?: UploadFilesError[];
-    scrollToRef?: Ref<HTMLDivElement>;
+    scrollToRef?: LegacyRef<HTMLDivElement>;
 };
 
 type UploadErrorMessagesProps = {
@@ -32,7 +32,7 @@ function UploadErrorMessages({
                 return (
                     <div key={errorType}>
                         <ErrorSummary.List>
-                            <ErrorSummary.Item href={'#' + linkIds} key={errorType + linkIds}>
+                            <ErrorSummary.Item href={'#' + firstFile} key={errorType + firstFile}>
                                 {errorMessage}
                             </ErrorSummary.Item>
                         </ErrorSummary.List>
