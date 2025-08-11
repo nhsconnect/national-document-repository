@@ -81,7 +81,7 @@
     "overrides": [
           {
             "files": ["cypress/**/*.{ts,js}"],
-            "env": { "cypress": true },
+            "extends": ["plugin:cypress/recommended"],
             "rules": {
             "import/no-extraneous-dependencies": [
             "error",
