@@ -7,6 +7,8 @@ import type { PutItemCommandOutput, DeleteItemCommandOutput } from '@aws-sdk/cli
 declare global {
     namespace Cypress {
         interface Chainable {
+            login(role: RoleKey | RoleId | string, featureFlags?: any): Chainable<void>;
+
             addPdfFileToS3(
                 bucketName: string,
                 fileName: string,
