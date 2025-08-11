@@ -7,11 +7,11 @@ import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
-import {buildConfig, buildPatientDetails} from '../../../../helpers/test/testBuilders';
+import { buildConfig, buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
-import usePatient from "../../../../helpers/hooks/usePatient";
-import {PatientDetails} from "../../../../types/generic/patientDetails";
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { PatientDetails } from '../../../../types/generic/patientDetails';
 
 vi.mock('../../../../helpers/hooks/useRole');
 vi.mock('../../../../helpers/hooks/useConfig');
@@ -25,7 +25,7 @@ const mockUseRole = useRole as Mock;
 const mockUseConfig = useConfig as Mock;
 const mockNavigate = vi.fn();
 const mockPatient = usePatient as Mock;
-const mockDeceasedPatientDetails: PatientDetails = buildPatientDetails({deceased: true});
+const mockDeceasedPatientDetails: PatientDetails = buildPatientDetails({ deceased: true });
 
 describe('LloydGeorgeRecordError', () => {
     beforeEach(() => {

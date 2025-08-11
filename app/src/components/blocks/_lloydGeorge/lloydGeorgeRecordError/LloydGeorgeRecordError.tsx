@@ -30,7 +30,8 @@ function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
         uploadJourneyEnabled &&
         !patient?.deceased;
     const renderNoRecords =
-        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && (!isGpRole || !uploadJourneyEnabled || patient?.deceased);
+        downloadStage === DOWNLOAD_STAGE.NO_RECORDS &&
+        (!isGpRole || !uploadJourneyEnabled || patient?.deceased);
     const renderUploadInProgress = downloadStage === DOWNLOAD_STAGE.UPLOADING;
 
     if (renderTimeout) {
