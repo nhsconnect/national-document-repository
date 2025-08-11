@@ -1,3 +1,4 @@
+import os
 import random
 import re
 import string
@@ -24,8 +25,11 @@ class MockLoginRedirectService(LoginRedirectService):
 
         state = "".join(random.choices(string.ascii_letters + string.digits, k=30))
         self.save_state_in_dynamo_db(state)
+        if os.getenv("WORKSPACE") == "pre-prod":
+            clean_url = re.sub(r"^api.", "", host)
+        else:
+            clean_url = re.sub(r"^api-", "", host)
 
-        clean_url = re.sub(r"^api-", "", host)
         url = f"https://{clean_url}{MOCK_LOGIN_ROUTE}?state={state}"
 
         location_header = {"Location": url}
