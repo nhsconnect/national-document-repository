@@ -1,4 +1,5 @@
 import os
+import json
 from typing import List
 
 import boto3
@@ -6,6 +7,7 @@ from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from models.feedback_model import Feedback
 from pydantic import ValidationError
+from jinja2 import Template
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import SendFeedbackException
@@ -86,3 +88,41 @@ class SendFeedbackService:
                 {"Result": failure_msg},
             )
             raise SendFeedbackException(500, LambdaError.FeedbackSESFailure)
+
+    """
+        Sending ITOC Feedback
+        When ITOC test prod, they send a feedback via feedback form as 3 different personas,
+        the email that these feedbacks are generating is currently getting blocked by microsoft.
+        
+        We want to
+            Identify when it is ITOC test feedback
+            If is ITOC:
+                Compose slack message
+                Send slack message.
+                DO NOT SEND AN EMAIL
+    """
+
+    def send_itoc_feedback(self):
+        pass
+
+    def compose_slack_message(self, feedback: Feedback):
+        with open(f"./models/templates/itoc_slack_feedback_blocks.json", "r") as f:
+            template_content = f.read()
+
+        template = Template(template_content)
+
+        context = {
+            "name": feedback.respondent_name,
+            "experience": feedback.experience,
+            "feedback": feedback.feedback_content,
+        }
+
+        rendered_json = template.render(context)
+        return json.loads(rendered_json)
+
+    def send_slack_message(self):
+        pass
+
+    def is_itoc_test_feedback(self, email_address: str) -> bool:
+        pass
+

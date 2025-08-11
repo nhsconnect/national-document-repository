@@ -31,3 +31,8 @@ MOCK_PARSED_FEEDBACK_ANONYMOUS = Feedback.model_validate_json(
     MOCK_VALID_FEEDBACK_BODY_ANONYMOUS_JSON_STR
 )
 MOCK_EMAIL_BODY_ANONYMOUS = readfile("expected_email_body_anonymous.txt")
+
+MOCK_ITOC_FEEDBACK_BODY_JSON_STR = readfile("itoc_test_feedback.json")
+MOCK_ITOC_FEEDBACK_BODY = json.loads(MOCK_ITOC_FEEDBACK_BODY_JSON_STR)
+
+MOCK_ITOC_SLACK_MESSAGE_BLOCKS = readfile("mock_itoc_slack_message_blocks.json")
