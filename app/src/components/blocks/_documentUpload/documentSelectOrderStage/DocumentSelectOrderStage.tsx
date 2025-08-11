@@ -162,10 +162,10 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
 
     const submitDocuments = () => {
         updateDocumentPositions();
-        if (documents.length === 1) {
-            navigate(routeChildren.DOCUMENT_UPLOAD_UPLOADING);
-            return;
-        }
+        // if (documents.length === 1) {
+        //     navigate(routeChildren.DOCUMENT_UPLOAD_UPLOADING);
+        //     return;
+        // }
         navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
     };
 
@@ -181,7 +181,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                     return undefined;
                 }
                 return {
-                    filename: document.file.name,
+                    linkId: document.file.name,
                     error: UPLOAD_FILE_ERROR_TYPE.duplicatePositionError,
                     details: error.message,
                 };
