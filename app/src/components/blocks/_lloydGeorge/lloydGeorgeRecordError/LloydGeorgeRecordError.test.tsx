@@ -7,9 +7,11 @@ import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
-import { buildConfig } from '../../../../helpers/test/testBuilders';
+import {buildConfig, buildPatientDetails} from '../../../../helpers/test/testBuilders';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { afterEach, beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+import usePatient from "../../../../helpers/hooks/usePatient";
+import {PatientDetails} from "../../../../types/generic/patientDetails";
 
 vi.mock('../../../../helpers/hooks/useRole');
 vi.mock('../../../../helpers/hooks/useConfig');
@@ -22,6 +24,8 @@ vi.mock('react-router-dom', () => ({
 const mockUseRole = useRole as Mock;
 const mockUseConfig = useConfig as Mock;
 const mockNavigate = vi.fn();
+const mockPatient = usePatient as Mock;
+const mockDeceasedPatientDetails: PatientDetails = buildPatientDetails({deceased: true});
 
 describe('LloydGeorgeRecordError', () => {
     beforeEach(() => {
@@ -145,6 +149,35 @@ describe('LloydGeorgeRecordError', () => {
                 screen.queryByRole('button', { name: 'Upload files for this patient' }),
             ).not.toBeInTheDocument();
         });
+
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "renders a message but no upload button when the document download status is 'No records', user role is '%s' and upload flags are enabled and patient is deceased",
+            (role) => {
+                const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
+                mockPatient.mockReturnValue(mockDeceasedPatientDetails);
+                mockUseConfig.mockReturnValue(
+                    buildConfig(
+                        {},
+                        {
+                            uploadLloydGeorgeWorkflowEnabled: true,
+                            uploadLambdaEnabled: true,
+                        },
+                    ),
+                );
+                mockUseRole.mockReturnValue(role);
+
+                render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
+
+                expect(
+                    screen.getByText(
+                        /This patient does not have a Lloyd George record stored in this service/i,
+                    ),
+                ).toBeInTheDocument();
+                expect(
+                    screen.queryByRole('button', { name: 'Upload files for this patient' }),
+                ).not.toBeInTheDocument();
+            },
+        );
     });
 
     describe('Accessibility', () => {
