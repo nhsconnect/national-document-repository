@@ -1,4 +1,5 @@
 import boto3
+import json
 import pytest
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -18,6 +19,7 @@ from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_PARSED_FEEDBACK_ANONYMOUS,
     MOCK_VALID_FEEDBACK_BODY_ANONYMOUS_JSON_STR,
     MOCK_VALID_FEEDBACK_BODY_JSON_STR,
+    MOCK_ITOC_FEEDBACK_BODY, readfile
 )
 from utils.lambda_exceptions import SendFeedbackException
 
@@ -52,6 +54,15 @@ def mock_validator(mocker):
 @pytest.fixture
 def mock_ses_client(mocker):
     yield mocker.create_autospec(boto3.client("ses"))
+
+@pytest.fixture
+def mock_send_itoc_feedback_service(send_feedback_service, mocker):
+    service = send_feedback_service
+    mocker.patch.object(service, "send_itoc_feedback")
+    mocker.patch.object(service, "compose_slack_message")
+    mocker.patch.object(service, "send_slack_message")
+    mocker.patch.object(service, "is_itoc_test_feedback")
+    yield service
 
 
 def test_process_feedback_validate_feedback_content_and_send_email(
@@ -237,3 +248,29 @@ def test_get_email_recipients_list_raise_error_when_fail_to_fetch_from_ssm(
         SendFeedbackService.get_email_recipients_list()
 
     assert error.value == expected_lambda_error
+
+# Don't know what the itoc address looks like, do we want this as an SSM, is it public?
+def test_itoc_feedback_journey_happy_path(set_env, mock_send_itoc_feedback_service):
+    pass
+
+    # mock_send_itoc_feedback_service.process_feedback(MOCK_ITOC_FEEDBACK_BODY)
+    #
+    # mock_send_itoc_feedback_service.send_itoc_feedback.assert_called_with()
+
+def test_is_itoc_test_feedback():
+    # check if feedback is from itoc of legit
+    pass
+
+def test_compose_slack_message(set_env, send_feedback_service):
+    slack_block_json_str = readfile("mock_itoc_slack_message_blocks.json")
+    expected = json.loads(slack_block_json_str)
+    feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
+    actual = send_feedback_service.compose_slack_message(feedback)
+    assert actual == expected
+
+def test_send_slack_message():
+    # send message using slack apis, might need to mock out requests package.
+    pass
+
+def test_send_slack_message_raise_error_on_failure():
+    pass
