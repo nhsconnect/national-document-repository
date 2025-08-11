@@ -1,91 +1,104 @@
 /// <reference types="cypress" />
 
-import AWS from './aws.config';
-import { QueryOutput } from 'aws-sdk/clients/dynamodb';
+import aws from './aws.config';
+import './commands'; // if you put implementations there
+import {
+    S3Client,
+    PutObjectCommand,
+    DeleteObjectCommand,
+    PutObjectCommandInput,
+    DeleteObjectCommandInput,
+} from '@aws-sdk/client-s3';
+
+import {
+    DynamoDBClient,
+    PutItemCommand,
+    DeleteItemCommand,
+    QueryCommand,
+    BatchWriteItemCommand,
+    PutItemCommandInput,
+    DeleteItemCommandInput,
+    QueryCommandInput,
+    QueryCommandOutput,
+    BatchWriteItemCommandInput,
+} from '@aws-sdk/client-dynamodb';
+
+import { marshall } from '@aws-sdk/util-dynamodb';
+
+const s3: S3Client = aws.s3;
+const dynamo: DynamoDBClient = aws.dynamo;
 
 Cypress.Commands.add('addPdfFileToS3', (bucketName: string, fileName: string, filePath: string) => {
-    const s3 = new AWS.S3();
-
     return cy.fixture(filePath, null).then((fileContent) => {
-        const params: AWS.S3.Types.PutObjectRequest = {
+        // fixture with `null` returns an ArrayBuffer → convert to Buffer/Uint8Array
+        const body = Cypress.Buffer.from(new Uint8Array(fileContent as ArrayBuffer));
+
+        const params: PutObjectCommandInput = {
             Bucket: bucketName,
             Key: fileName,
-            Body: fileContent,
+            Body: body,
             ContentType: 'application/pdf',
         };
 
         return cy.wrap(
-            new Cypress.Promise((resolve, reject) => {
-                s3.upload(params, (err, data) => {
-                    if (err) {
-                        const message = 'Error uploading file to S3:' + err;
-                        console.error(message);
-                        reject(message);
-                    } else {
-                        console.log('File uploaded successfully to S3:', data.Location);
-                        resolve(data);
-                    }
-                });
-            }),
+            s3
+                .send(new PutObjectCommand(params))
+                .then((data) => {
+                    // v3 PutObject doesn't return Location; you can construct if needed
+                    // const location = `s3://${bucketName}/${fileName}`;
+                    // console.log('File uploaded successfully to S3:', location);
+                    return data;
+                })
+                .catch((err) => {
+                    const message = 'Error uploading file to S3: ' + err;
+                    // eslint-disable-next-line no-console
+                    console.error(message);
+                    throw new Error(message);
+                }),
         );
     });
 });
 
-Cypress.Commands.add(
-    'addItemToDynamoDb',
-    (tableName: string, item: AWS.DynamoDB.PutItemInputAttributeMap) => {
-        const dynamoDB = new AWS.DynamoDB();
+Cypress.Commands.add('addItemToDynamoDb', (tableName: string, item: Record<string, unknown>) => {
+    const params: PutItemCommandInput = {
+        TableName: tableName,
+        Item: marshall(item),
+    };
 
-        const params: AWS.DynamoDB.PutItemInput = {
-            TableName: tableName,
-            Item: AWS.DynamoDB.Converter.marshall(item),
-        };
-
-        return cy.wrap(
-            new Cypress.Promise((resolve, reject) => {
-                dynamoDB.putItem(params, (err, data) => {
-                    if (err) {
-                        const message = 'Error uploading to Dynamo:' + tableName;
-                        console.error(message);
-                        reject(message);
-                    } else {
-                        console.log('Upload to Dynamo success:', tableName);
-                        resolve(data);
-                    }
-                });
+    return cy.wrap(
+        dynamo
+            .send(new PutItemCommand(params))
+            .then((data) => data)
+            .catch((err) => {
+                const message = 'Error uploading to Dynamo: ' + tableName;
+                // eslint-disable-next-line no-console
+                console.error(message, err);
+                throw new Error(message);
             }),
-        );
-    },
-);
+    );
+});
 
 Cypress.Commands.add('deleteFileFromS3', (bucketName: string, fileName: string) => {
-    const s3 = new AWS.S3();
-
-    const params: AWS.S3.Types.DeleteObjectRequest = {
+    const params: DeleteObjectCommandInput = {
         Bucket: bucketName,
         Key: fileName,
     };
 
     return cy.wrap(
-        new Cypress.Promise((resolve, reject) => {
-            s3.deleteObject(params, (err, data) => {
-                if (err) {
-                    const message = 'Error deleting object from S3:' + bucketName;
-                    console.error(message);
-                    reject(message);
-                } else {
-                    console.log('Delete object from S3 success:', bucketName);
-                    resolve(data);
-                }
-            });
-        }),
+        s3
+            .send(new DeleteObjectCommand(params))
+            .then((data) => data)
+            .catch((err) => {
+                const message = 'Error deleting object from S3: ' + bucketName;
+                // eslint-disable-next-line no-console
+                console.error(message, err);
+                throw new Error(message);
+            }),
     );
 });
 
 Cypress.Commands.add('deleteItemFromDynamoDb', (tableName: string, itemId: string) => {
-    const dynamoDB = new AWS.DynamoDB();
-
-    const params: AWS.DynamoDB.Types.DeleteItemInput = {
+    const params: DeleteItemCommandInput = {
         TableName: tableName,
         Key: {
             ID: { S: itemId },
@@ -93,104 +106,63 @@ Cypress.Commands.add('deleteItemFromDynamoDb', (tableName: string, itemId: strin
     };
 
     return cy.wrap(
-        new Cypress.Promise((resolve, reject) => {
-            dynamoDB.deleteItem(params, (err, data) => {
-                if (err) {
-                    const message = 'Error deleting item from Dynamo:' + tableName;
-                    console.error(message);
-                    reject(message);
-                } else {
-                    console.log('Delete item from Dynamo success:', tableName);
-                    resolve(data);
-                }
-            });
-        }),
+        dynamo
+            .send(new DeleteItemCommand(params))
+            .then((data) => data)
+            .catch((err) => {
+                const message = 'Error deleting item from Dynamo: ' + tableName;
+                // eslint-disable-next-line no-console
+                console.error(message, err);
+                throw new Error(message);
+            }),
     );
 });
 
-function isEmpty(value: unknown) {
-    return value == null || (typeof value === 'string' && value.trim().length === 0);
-}
-
 Cypress.Commands.add(
     'deleteItemsBySecondaryKeyFromDynamoDb',
-    (tableName: string, index: string, attribute: string, value: string) => {
-        const dynamoDB = new AWS.DynamoDB();
-
-        const queryParams: AWS.DynamoDB.Types.QueryInput = {
+    (
+        tableName: string,
+        index: string,
+        attribute: string,
+        value: string,
+    ): Cypress.Chainable<void> => {
+        const queryParams: QueryCommandInput = {
             TableName: tableName,
             IndexName: index,
             KeyConditionExpression: `${attribute} = :v1`,
-            ExpressionAttributeValues: {
-                ':v1': {
-                    S: value,
-                },
-            },
+            ExpressionAttributeValues: { ':v1': { S: value } },
             ProjectionExpression: 'ID',
         };
 
-        //queries table with the index and specific value
-        return cy.wrap(
-            new Cypress.Promise((resolve, reject) => {
-                dynamoDB.query(queryParams, (err, data) => {
-                    if (err) {
-                        console.error(`Error querying Dynamo: ${tableName}`);
-                        reject('Error querying Dynamo:' + tableName);
-                    } else {
-                        console.log(`'Dynamo query success: ${tableName}`);
-                        resolve(data);
-                    }
+        // No subject passed -> avoids the .then overload mismatch
+        return cy.then(async (): Promise<void> => {
+            const data = (await dynamo.send(new QueryCommand(queryParams))) as QueryCommandOutput;
+
+            const items = data.Items ?? [];
+            if (items.length === 0) {
+                Cypress.log({
+                    name: 'deleteItemsBySecondaryKeyFromDynamoDb',
+                    displayName: 'WARNING: Delete items',
+                    message: 'itemsForDelete was empty, undefined or null',
                 });
-            }).then((value) => {
-                //uses the returned query response to form a batch write request and delete each item
-                const itemsForDelete = (value as QueryOutput).Items;
+                return; // resolves to void
+            }
 
-                if (
-                    itemsForDelete?.length === 0 ||
-                    itemsForDelete === undefined ||
-                    itemsForDelete === null
-                ) {
-                    Cypress.log({
-                        name: 'deleteItemBySecondaryKeyFromDynamoDb',
-                        displayName: 'WARNING: Delete items',
-                        message: `itemsForDelete was empty, undefined or null`,
-                    });
+            const itemIDs = items.map((el) => {
+                const id = el?.ID?.S?.trim();
+                if (!id) throw new Error(`ID missing/blank for ${JSON.stringify(el)}`);
+                return id;
+            });
 
-                    return;
-                }
+            const batchDeleteParams: BatchWriteItemCommandInput = {
+                RequestItems: {
+                    [tableName]: itemIDs.map((id) => ({
+                        DeleteRequest: { Key: { ID: { S: id } } },
+                    })),
+                },
+            };
 
-                const itemIDs: Array<string> = [];
-
-                itemsForDelete?.forEach((element) => {
-                    if (isEmpty(element.ID.S) || element.ID.S === undefined) {
-                        throw new Error(` ID is empty, blank, undefined or null for ${element}`);
-                    }
-
-                    itemIDs.push(element.ID.S);
-                });
-
-                const batchDeleteParams = {
-                    RequestItems: {
-                        [tableName]: itemIDs.map((item) => ({
-                            DeleteRequest: {
-                                Key: {
-                                    ID: { S: item },
-                                },
-                            },
-                        })),
-                    },
-                };
-
-                dynamoDB.batchWriteItem(batchDeleteParams, (err, data) => {
-                    if (err) {
-                        console.error(`Error during batch delete: ${tableName}`, err);
-                        throw err;
-                    } else {
-                        console.log('Dynamo batch delete success:', tableName, data);
-                        return data;
-                    }
-                });
-            }),
-        );
+            await dynamo.send(new BatchWriteItemCommand(batchDeleteParams));
+        });
     },
 );
