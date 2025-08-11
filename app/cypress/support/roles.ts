@@ -8,7 +8,11 @@ export enum Roles {
     'SMOKE_PCSE' = 'pcse',
 }
 
-export const roleIds = Object.values(Roles) as Array<Roles>;
-export const roleList = Object.keys(Roles) as Array<string>;
-export const roleName = (role: Roles) =>
-    roleList.find((roleName) => Roles[roleName] === role) ?? '';
+const isEnumKey = (k: string): k is keyof typeof Roles => Number.isNaN(Number(k));
+const isStringMember = (v: unknown): v is Roles => typeof v === 'string';
+export const roleList = Object.keys(Roles).filter(isEnumKey) as Array<keyof typeof Roles>;
+export const roleIds = roleList
+  .map((k) => Roles[k])
+  .filter(isStringMember) as Roles[];
+export const roleName = (role: Roles): keyof typeof Roles | '' =>
+  roleList.find((k) => isStringMember(Roles[k]) && Roles[k] === role) ?? '';

@@ -2,11 +2,7 @@
 /// <reference types="cypress" />
 
 import type { PutObjectCommandOutput, DeleteObjectCommandOutput } from '@aws-sdk/client-s3';
-import type {
-    PutItemCommandOutput,
-    DeleteItemCommandOutput,
-    BatchWriteItemCommandOutput,
-} from '@aws-sdk/client-dynamodb';
+import type { PutItemCommandOutput, DeleteItemCommandOutput } from '@aws-sdk/client-dynamodb';
 
 declare global {
     namespace Cypress {
@@ -32,7 +28,6 @@ declare global {
                 itemId: string,
             ): Chainable<DeleteItemCommandOutput>;
 
-            // This command first queries, then batch-deletes; you return void when nothing to delete.
             deleteItemsBySecondaryKeyFromDynamoDb(
                 tableName: string,
                 index: string,

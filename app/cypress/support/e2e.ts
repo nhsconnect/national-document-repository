@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 
 import {
     AttributeValue,
@@ -6,15 +7,13 @@ import {
     PutItemCommandOutput,
 } from '@aws-sdk/client-dynamodb';
 
-import { DeleteObjectCommandOutput, ManagedUpload } from '@aws-sdk/client-s3';
+import { DeleteObjectCommandOutput, PutObjectCommandOutput  } from '@aws-sdk/client-s3';
 import { Roles, roleIds, roleList } from './roles';
 import { routes } from './routes';
 import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
-import Bluebird from 'cypress/types/bluebird';
 import './aws.commands';
 import 'cypress-real-events';
 
-/// <reference types="cypress" />
 const registerCypressGrep = require('@cypress/grep');
 registerCypressGrep();
 
@@ -140,7 +139,7 @@ declare global {
                 bucketName: string,
                 fileName: string,
                 filePath: string,
-            ): Chainable<Bluebird<ManagedUpload.SendData>>;
+            ): Chainable<PutObjectCommandOutput>;
             /**
              * Add dynamoDB entry
              * @param {string} tableName - Name of the target dynamoDB table
@@ -150,7 +149,7 @@ declare global {
             addItemToDynamoDb(
                 tableName: string,
                 item: Record<string, AttributeValue>,
-            ): Chainable<Bluebird<PutItemCommandOutput>>;
+            ): Chainable<PutItemCommandOutput>;
             /**
              * Delete file from S3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
@@ -160,7 +159,7 @@ declare global {
             deleteFileFromS3(
                 bucketName: string,
                 fileName: string,
-            ): Chainable<Bluebird<DeleteObjectCommandOutput>>;
+            ): Chainable<DeleteObjectCommandOutput>;
             /**
              * Delete item from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
@@ -170,7 +169,7 @@ declare global {
             deleteItemFromDynamoDb(
                 tableName: string,
                 itemId: string,
-            ): Chainable<Bluebird<DeleteItemCommandOutput>>;
+            ): Chainable<DeleteItemCommandOutput>;
             /**
              * Delete items with a specific secondary key value from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
@@ -184,7 +183,7 @@ declare global {
                 index: string,
                 attribute: string,
                 value: string,
-            ): Chainable<Bluebird<BatchWriteItemCommandOutput>>;
+            ): Chainable<void>;
 
             navigateToHomePage(): Chainable<void>;
             navigateToPatientSearchPage(): Chainable<void>;

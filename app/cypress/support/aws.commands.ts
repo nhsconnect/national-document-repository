@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import aws from './aws.config';
-import './commands'; // if you put implementations there
+import './commands';
 import {
     S3Client,
     PutObjectCommand,
@@ -30,7 +30,6 @@ const dynamo: DynamoDBClient = aws.dynamo;
 
 Cypress.Commands.add('addPdfFileToS3', (bucketName: string, fileName: string, filePath: string) => {
     return cy.fixture(filePath, null).then((fileContent) => {
-        // fixture with `null` returns an ArrayBuffer → convert to Buffer/Uint8Array
         const body = Cypress.Buffer.from(new Uint8Array(fileContent as ArrayBuffer));
 
         const params: PutObjectCommandInput = {
@@ -44,9 +43,6 @@ Cypress.Commands.add('addPdfFileToS3', (bucketName: string, fileName: string, fi
             s3
                 .send(new PutObjectCommand(params))
                 .then((data) => {
-                    // v3 PutObject doesn't return Location; you can construct if needed
-                    // const location = `s3://${bucketName}/${fileName}`;
-                    // console.log('File uploaded successfully to S3:', location);
                     return data;
                 })
                 .catch((err) => {
@@ -134,7 +130,6 @@ Cypress.Commands.add(
             ProjectionExpression: 'ID',
         };
 
-        // No subject passed -> avoids the .then overload mismatch
         return cy.then(async (): Promise<void> => {
             const data = (await dynamo.send(new QueryCommand(queryParams))) as QueryCommandOutput;
 
@@ -145,7 +140,7 @@ Cypress.Commands.add(
                     displayName: 'WARNING: Delete items',
                     message: 'itemsForDelete was empty, undefined or null',
                 });
-                return; // resolves to void
+                return;
             }
 
             const itemIDs = items.map((el) => {

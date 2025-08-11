@@ -22,10 +22,6 @@
         "prettier:fix": "prettier . --config .prettierrc --exclude-files .prettierignore --write"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.864.0",
-        "@aws-sdk/client-s3": "^3.864.0",
-        "@aws-sdk/credential-providers": "^3.864.0",
-        "@aws-sdk/util-dynamodb": "^3.864.0",
         "@cypress/grep": "^4.1.0",
         "@testing-library/dom": "10.4.0",
         "@testing-library/jest-dom": "6.6.3",
@@ -68,6 +64,10 @@
         "web-vitals": "^5.0.3"
     },
     "devDependencies": {
+        "@aws-sdk/client-dynamodb": "^3.864.0",
+        "@aws-sdk/client-s3": "^3.864.0",
+        "@aws-sdk/credential-providers": "^3.864.0",
+        "@aws-sdk/util-dynamodb": "^3.864.0",
         "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
         "@types/jest-axe": "^3.5.9",
         "@types/node": "^24.0.12",
