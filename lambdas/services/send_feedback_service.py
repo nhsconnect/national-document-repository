@@ -1,14 +1,15 @@
-import os
 import json
-import requests
+import os
 from typing import List
 
 import boto3
+import requests
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from jinja2 import Template
 from models.feedback_model import Feedback
 from pydantic import ValidationError
-from jinja2 import Template
+from requests.exceptions import HTTPError
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import SendFeedbackException
@@ -107,7 +108,10 @@ class SendFeedbackService:
         pass
 
     def compose_slack_message(self, feedback: Feedback):
-        with open(f"./models/templates/itoc_slack_feedback_blocks.json", "r") as f:
+        print(os.getcwd())
+        with open(
+            "lambdas/models/templates/itoc_slack_feedback_blocks.json", "r"
+        ) as f:
             template_content = f.read()
 
         template = Template(template_content)
@@ -131,9 +135,16 @@ class SendFeedbackService:
             "blocks": self.compose_slack_message(feedback),
             "channel": os.environ["ITOC_TESTING_CHANNEL_ID"],
         }
-
-        requests.post(url="https://slack.com/api/chat.postMessage", json=body, headers=headers)
+        try:
+            response = requests.post(
+                url="https://slack.com/api/chat.postMessage", json=body, headers=headers
+            )
+            response.raise_for_status()
+        except HTTPError as e:
+            logger.error(e)
+            raise SendFeedbackException(
+                e.response.status_code, LambdaError.FeedbackITOCFailure
+            )
 
     def is_itoc_test_feedback(self, email_address: str) -> bool:
         pass
-
