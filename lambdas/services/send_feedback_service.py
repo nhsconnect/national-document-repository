@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from typing import List
 
 import boto3
@@ -120,8 +121,18 @@ class SendFeedbackService:
         rendered_json = template.render(context)
         return json.loads(rendered_json)
 
-    def send_slack_message(self):
-        pass
+    def send_slack_message(self, feedback: Feedback):
+        headers = {
+            "Content-type": "application/json; charset=utf-8",
+            "Authorization": "Bearer " + os.environ["ITOC_TESTING_SLACK_BOT_TOKEN"],
+        }
+
+        body = {
+            "blocks": self.compose_slack_message(feedback),
+            "channel": os.environ["ITOC_TESTING_CHANNEL_ID"],
+        }
+
+        requests.post(url="https://slack.com/api/chat.postMessage", json=body, headers=headers)
 
     def is_itoc_test_feedback(self, email_address: str) -> bool:
         pass
