@@ -17,6 +17,8 @@ const DocumentUploadCompleteStage = () => {
 
     useTitle({ pageTitle: 'Record upload complete' });
 
+    const patientName = `${patientDetails?.familyName}, ${patientDetails?.givenName}`
+
     return (
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
             <div className="nhsuk-panel" data-testid="upload-complete-card">
@@ -26,13 +28,13 @@ const DocumentUploadCompleteStage = () => {
                 </div>
                 <br />
                 <div className="nhsuk-panel__body">
-                    <strong>
-                        Patient name: {patientDetails?.familyName}, {patientDetails?.givenName}
+                    <strong data-testid="patient-name">
+                        Patient name: {patientName}
                     </strong>
                     <br />
-                    <span>NHS Number: {formattedNhsNumber}</span>
+                    <span data-testid="nhs-number">NHS Number: {formattedNhsNumber}</span>
                     <br />
-                    <span>Date of birth: {dob}</span>
+                    <span data-testid="dob">Date of birth: {dob}</span>
                 </div>
             </div>
 
