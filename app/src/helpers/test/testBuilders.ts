@@ -60,35 +60,10 @@ const buildTextFile = (name: string, size?: number) => {
     return file;
 };
 
-const buildLgFile = async (fileNumber: number) => {
+const buildLgFile = (fileNumber: number): File => {
     const file = new File(['test'], `testFile${fileNumber}.pdf`, {
         type: 'application/pdf',
     });
-
-    return file;
-};
-
-const buildLgFileOld = (
-    fileNumber: number,
-    numberOfFiles: number,
-    patientname: string,
-    size?: number,
-    nhs_number: string = '9000000009',
-    dob: string = '01-01-1970',
-) => {
-    const file = new File(
-        ['test'],
-        `${fileNumber}of${numberOfFiles}_Lloyd_George_Record_[${patientname}]_[${nhs_number}]_[${dob}].pdf`,
-        {
-            type: 'application/pdf',
-        },
-    );
-
-    if (size) {
-        Object.defineProperty(file, 'size', {
-            value: size,
-        });
-    }
 
     return file;
 };
@@ -203,7 +178,6 @@ export {
     buildLgSearchResult,
     buildUserAuth,
     buildLgFile,
-    buildLgFileOld,
     buildConfig,
     buildUploadSession,
     buildPatientAccessAudit,

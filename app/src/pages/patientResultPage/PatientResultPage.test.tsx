@@ -229,23 +229,6 @@ describe('PatientResultPage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to Upload docs page after user selects Inactive patient when role is GP Admin', async () => {
-            const patient = buildPatientDetails({ active: false });
-
-            mockedUsePatient.mockReturnValue(patient);
-            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-            render(<PatientResultPage />);
-            await userEvent.click(
-                screen.getByRole('button', {
-                    name: CONFIRM_BUTTON_TEXT,
-                }),
-            );
-
-            await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_UPLOAD_DOCUMENTS);
-            });
-        });
-
         it('navigates to patient search page after user selects Inactive patient when role is GP Clinical', async () => {
             const patient = buildPatientDetails({ active: false });
 

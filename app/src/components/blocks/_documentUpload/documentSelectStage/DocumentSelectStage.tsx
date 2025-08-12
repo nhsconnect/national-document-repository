@@ -1,21 +1,28 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
     SetUploadDocuments,
     UploadDocument,
+    UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router-dom';
-import { routeChildren } from '../../../../types/generic/routes';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { getDocument } from 'pdfjs-dist';
+import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
+import ErrorBox from '../../../layout/errorBox/ErrorBox';
+import {
+    fileUploadErrorMessages,
+    PDF_PARSING_ERROR_TYPE,
+    UPLOAD_FILE_ERROR_TYPE,
+} from '../../../../helpers/utils/fileUploadErrorMessages';
 
 export type Props = {
     setDocuments: SetUploadDocuments;
@@ -25,6 +32,8 @@ export type Props = {
 
 const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [noFilesSelected, setNoFilesSelected] = useState<boolean>(false);
+    const scrollToRef = useRef<HTMLDivElement>(null);
 
     const navigate = useNavigate();
 
@@ -37,7 +46,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         return true;
     };
 
-    const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    const onFileDrop = (e: React.DragEvent<HTMLDivElement>): void => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -59,13 +68,13 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         }
     };
 
-    const onInput = (e: FileInputEvent) => {
+    const onInput = (e: FileInputEvent): void => {
         const fileArray = Array.from(e.target.files ?? new FileList()).filter(validateFileType);
 
         void updateFileList(fileArray);
     };
 
-    const updateFileList = async (fileArray: File[]) => {
+    const updateFileList = async (fileArray: File[]): Promise<void> => {
         const documentMap = fileArray
             .filter((f) => !documents.some((d) => d.file.name === f.name))
             .map(async (file) => {
@@ -77,6 +86,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                     docType: documentType,
                     attempts: 0,
                     numPages: 0,
+                    validated: false,
                 };
 
                 const buffer = await file.arrayBuffer();
@@ -90,13 +100,13 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                     const error = e as Error;
                     document.state = DOCUMENT_UPLOAD_STATE.FAILED;
 
-                    let errorMessage = 'Failed to read PDF.';
-                    if (error.message.startsWith('Invalid PDF')) {
-                        errorMessage = 'PDF Invalid.';
-                    } else if (error.message.includes('password')) {
-                        errorMessage = 'PDF is password protected.';
+                    if (error.message === PDF_PARSING_ERROR_TYPE.INVALID_PDF_STRUCTURE) {
+                        document.error = UPLOAD_FILE_ERROR_TYPE.invalidPdf;
+                    } else if (error.message === PDF_PARSING_ERROR_TYPE.PASSWORD_MISSING) {
+                        document.error = UPLOAD_FILE_ERROR_TYPE.passwordProtected;
+                    } else if (error.message === PDF_PARSING_ERROR_TYPE.EMPTY_PDF) {
+                        document.error = UPLOAD_FILE_ERROR_TYPE.emptyPdf;
                     }
-                    document.error = `${errorMessage} Please remove this file to continue with the upload.`;
                 }
 
                 return document;
@@ -107,16 +117,14 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         updateDocuments([...docs, ...documents]);
     };
 
-    const onRemove = (index: number) => {
-        let updatedDocList: UploadDocument[] = [];
-        if (index >= 0) {
-            updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
-        }
+    const onRemove = (index: number): void => {
+        let updatedDocList: UploadDocument[] = [...documents];
+        updatedDocList.splice(index, 1);
 
         updateDocuments(updatedDocList);
     };
 
-    const updateDocuments = (docs: UploadDocument[]) => {
+    const updateDocuments = (docs: UploadDocument[]): void => {
         const sortedDocs = docs
             .sort((a, b) => a.file.lastModified - b.file.lastModified)
             .map((doc, index) => ({
@@ -124,10 +132,12 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                 position: index + 1,
             }));
 
+        setNoFilesSelected(sortedDocs.length === 0);
+
         setDocuments(sortedDocs);
     };
 
-    const allowedFileTypes = () => {
+    const allowedFileTypes = (): string => {
         switch (documentType) {
             case DOCUMENT_TYPE.LLOYD_GEORGE:
                 return '.pdf';
@@ -136,14 +146,60 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         return '';
     };
 
-    // const documentsValid = () => {
-    //     return (
-    //         documents.length > 0 &&
-    //         documents.every((doc) => doc.state !== DOCUMENT_UPLOAD_STATE.FAILED)
-    //     );
-    // };
+    const validateDocuments = (): boolean => {
+        setNoFilesSelected(documents.length === 0);
 
-    const pageTitle = () => {
+        documents?.forEach((doc) => (doc.validated = true));
+
+        setDocuments([...documents]);
+
+        return (
+            documents.length > 0 &&
+            documents.every((doc) => doc.state !== DOCUMENT_UPLOAD_STATE.FAILED)
+        );
+    };
+
+    const continueClicked = (): void => {
+        if (!validateDocuments()) {
+            scrollToRef.current?.scrollIntoView();
+            return;
+        }
+
+        navigate(routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER);
+    };
+
+    const DocumentRow = (document: UploadDocument, index: number) => {
+        return (
+            <Table.Row key={document.id} id={document.file.name}>
+                <Table.Cell className={document.error ? 'error-cell' : ''}>
+                    <strong>{document.file.name}</strong>
+                    {document.error && (
+                        <>
+                            <br />
+                            <span className="nhs-warning-color">
+                                <strong>{fileUploadErrorMessages[document.error!].inline}</strong>
+                            </span>
+                        </>
+                    )}
+                </Table.Cell>
+                <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
+                <Table.Cell>
+                    <button
+                        type="button"
+                        aria-label={`Remove ${document.file.name} from selection`}
+                        className="link-button"
+                        onClick={() => {
+                            onRemove(index);
+                        }}
+                    >
+                        Remove
+                    </button>
+                </Table.Cell>
+            </Table.Row>
+        );
+    };
+
+    const pageTitle = (): string => {
         let title = 'files';
 
         switch (documentType) {
@@ -157,69 +213,126 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
 
     useTitle({ pageTitle: pageTitle() });
 
+    const errorDocs = () => {
+        return documents.filter((doc) => doc.error && doc.validated);
+    };
+
+    const errorMessageList = (): UploadFilesError[] => {
+        const errors: UploadFilesError[] = [];
+
+        if (noFilesSelected) {
+            errors.push({
+                linkId: 'upload-files',
+                error: UPLOAD_FILE_ERROR_TYPE.noFiles,
+            });
+        } else {
+            errorDocs().forEach((doc) => {
+                errors.push({
+                    linkId: doc.file.name,
+                    error: doc.error!,
+                });
+            });
+        }
+
+        return errors;
+    };
+
     return (
         <>
-            <BackButton dataTestid="back-button" />
+            <BackButton toLocation={routes.VERIFY_PATIENT} dataTestid="back-button" />
+
+            {(errorDocs().length > 0 || noFilesSelected) && (
+                <ErrorBox
+                    dataTestId="error-box"
+                    errorBoxSummaryId="failed-document-uploads-summary-title"
+                    messageTitle="There is a problem"
+                    errorMessageList={errorMessageList()}
+                    scrollToRef={scrollToRef}
+                ></ErrorBox>
+            )}
+
             <h1>{pageTitle()}</h1>
+
+            <div className="nhsuk-inset-text">
+                <p>Make sure that all files uploaded are for this patient only:</p>
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.FULL_NAME} />
+                    <PatientSummary.Child item={PatientInfo.NHS_NUMBER} />
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                </PatientSummary>
+            </div>
 
             <div>
                 <h2 className="nhsuk-heading-m">Before you upload</h2>
                 <ul>
                     <li>you can only upload PDF files</li>
-                    <li>only upload files that are part of this patient's Lloyd George record</li>
+                    <li>
+                        upload all the Lloyd George files you have for this patient now - you won't
+                        be able to add more later
+                    </li>
+                    <li>
+                        if there's a problem with your files during upload, you'll need to fix these
+                        before continuing
+                    </li>
                     <li>remove any passwords from files</li>
                 </ul>
                 <p>
                     Uploading may take longer if there are many files or if individual files are
-                    larger
+                    large.
                 </p>
-                <PatientSimpleSummary />
             </div>
-            <Fieldset.Legend id="upload-fieldset-legend" size="m">
-                Choose PDF files to upload
-            </Fieldset.Legend>
+
             <Fieldset>
-                <div
-                    role="button"
-                    id="upload-lloyd-george"
-                    tabIndex={0}
-                    data-testid="dropzone"
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                    }}
-                    onDrop={onFileDrop}
-                    className={'lloydgeorge_drag-and-drop'}
-                >
-                    <strong className="lg-input-bold">
-                        Drag and drop a file or multiple files here
-                    </strong>
-                    <div>
-                        <TextInput
-                            data-testid={`button-input`}
-                            type="file"
-                            multiple={true}
-                            hidden
-                            accept={allowedFileTypes()}
-                            onChange={(e: FileInputEvent) => {
-                                onInput(e);
-                                e.target.value = '';
-                            }}
-                            // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
-                            inputRef={(e: HTMLInputElement) => {
-                                fileInputRef.current = e;
-                            }}
-                        />
-                        <Button
-                            data-testid={`upload-button-input`}
-                            type={'button'}
-                            className={'nhsuk-button nhsuk-button--secondary bottom-margin'}
-                            onClick={() => {
-                                fileInputRef.current?.click();
-                            }}
-                            aria-labelledby="upload-fieldset-legend"
-                        >
-                            Choose PDF files
-                        </Button>
+                <div className={`${noFilesSelected ? 'nhsuk-form-group--error' : ''}`}>
+                    <h3>Choose PDF files to upload</h3>
+                    {noFilesSelected && (
+                        <p className="nhsuk-error-message">
+                            {fileUploadErrorMessages.noFiles.inline}
+                        </p>
+                    )}
+
+                    <div
+                        role="button"
+                        id="upload-files"
+                        tabIndex={0}
+                        data-testid="dropzone"
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                        }}
+                        onDrop={onFileDrop}
+                        className={'lloydgeorge_drag-and-drop'}
+                    >
+                        <strong className="lg-input-bold">
+                            Drag and drop a file or multiple files here
+                        </strong>
+                        <div>
+                            <TextInput
+                                data-testid={`button-input`}
+                                type="file"
+                                multiple={true}
+                                hidden
+                                accept={allowedFileTypes()}
+                                onChange={(e: FileInputEvent) => {
+                                    onInput(e);
+                                    e.target.value = '';
+                                }}
+                                // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
+                                inputRef={(e: HTMLInputElement) => {
+                                    fileInputRef.current = e;
+                                }}
+                            />
+                            <Button
+                                data-testid={`upload-button-input`}
+                                type={'button'}
+                                className={'nhsuk-button nhsuk-button--secondary bottom-margin'}
+                                onClick={() => {
+                                    fileInputRef.current?.click();
+                                }}
+                                aria-labelledby="upload-fieldset-legend"
+                            >
+                                Choose PDF files
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </Fieldset>
@@ -246,39 +359,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                             </Table.Row>
                         </Table.Head>
 
-                        <Table.Body>
-                            {documents.map((document: UploadDocument, index: number) => {
-                                return (
-                                    <Table.Row key={document.id} id={document.file.name}>
-                                        <Table.Cell>
-                                            <div>
-                                                <strong>{document.file.name}</strong>
-                                            </div>
-                                            {document.error && (
-                                                <div className="nhs-warning-color">
-                                                    {document.error}
-                                                </div>
-                                            )}
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            {formatFileSize(document.file.size)}
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            <button
-                                                type="button"
-                                                aria-label={`Remove ${document.file.name} from selection`}
-                                                className="link-button"
-                                                onClick={() => {
-                                                    onRemove(index);
-                                                }}
-                                            >
-                                                Remove
-                                            </button>
-                                        </Table.Cell>
-                                    </Table.Row>
-                                );
-                            })}
-                        </Table.Body>
+                        <Table.Body>{documents.map(DocumentRow)}</Table.Body>
                     </Table>
                     <LinkButton
                         type="button"
@@ -295,8 +376,9 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
             <div className="lloydgeorge_upload-submission">
                 <Button
                     type="button"
-                    id="upload-button"
-                    onClick={() => navigate(routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER)}
+                    id="continue-button"
+                    data-testid="continue-button"
+                    onClick={continueClicked}
                 >
                     Continue
                 </Button>
