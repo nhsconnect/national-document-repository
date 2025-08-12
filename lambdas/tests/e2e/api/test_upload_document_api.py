@@ -96,6 +96,7 @@ def test_create_document_base64(test_data, snapshot):
 
     del upload_response["id"]
     del upload_response["date"]
+
     attachment_url = upload_response["content"][0]["attachment"]["url"]
     assert (
         f"https://{APIM_ENDPOINT}/national-document-repository/DocumentReference/{LLOYD_GEORGE_SNOMED}~"
@@ -103,8 +104,12 @@ def test_create_document_base64(test_data, snapshot):
     )
     del upload_response["content"][0]["attachment"]["url"]
 
+    base64_data = retrieve_response["content"][0]["attachment"]["data"]
+    assert base64.b64decode(base64_data, validate=True)
+
     del retrieve_response["id"]
     del retrieve_response["date"]
+    del retrieve_response["content"][0]["attachment"]["data"]
 
     assert upload_response == snapshot
     assert retrieve_response == snapshot
