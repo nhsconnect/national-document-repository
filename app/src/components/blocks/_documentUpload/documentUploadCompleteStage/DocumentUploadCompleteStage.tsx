@@ -3,10 +3,17 @@ import { routes } from '../../../../types/generic/routes';
 import { Link, useNavigate } from 'react-router-dom';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import usePatient from '../../../../helpers/hooks/usePatient';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 
 const DocumentUploadCompleteStage = () => {
     const navigate = useNavigate();
     const patientDetails = usePatient();
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
+    const formattedNhsNumber = formatNhsNumber(nhsNumber);
+    const dob: string = patientDetails?.birthDate
+        ? getFormattedDate(new Date(patientDetails.birthDate))
+        : '';
 
     useTitle({ pageTitle: 'Record upload complete' });
 
@@ -23,9 +30,9 @@ const DocumentUploadCompleteStage = () => {
                         Patient name: {patientDetails?.familyName}, {patientDetails?.givenName}
                     </strong>
                     <br />
-                    <span>NHS Number: {patientDetails?.nhsNumber}</span>
+                    <span>NHS Number: {formattedNhsNumber}</span>
                     <br />
-                    <span>Date of birth: {patientDetails?.birthDate}</span>
+                    <span>Date of birth: {dob}</span>
                 </div>
             </div>
 
