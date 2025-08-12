@@ -6,14 +6,20 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
+import { useEffect } from 'react';
 
 type Props = {
     documents: UploadDocument[];
+    startUpload: () => Promise<void>;
 };
 
-const DocumentUploadingStage = ({ documents }: Props) => {
+const DocumentUploadingStage = ({ documents, startUpload }: Props) => {
     const pageHeader = 'Your documents are uploading';
     useTitle({ pageTitle: 'Uploading documents' });
+
+    useEffect(() => {
+        startUpload();
+    }, []);
 
     return (
         <>
