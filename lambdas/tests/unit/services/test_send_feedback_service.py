@@ -1,6 +1,7 @@
 import boto3
 import json
 import pytest
+import requests
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from models.feedback_model import Feedback
@@ -9,7 +10,7 @@ from services.send_feedback_service import SendFeedbackService
 from tests.unit.conftest import (
     MOCK_FEEDBACK_EMAIL_SUBJECT,
     MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
-    MOCK_FEEDBACK_SENDER_EMAIL,
+    MOCK_FEEDBACK_SENDER_EMAIL, MOCK_SLACK_BOT_TOKEN, MOCK_ITOC_SLACK_CHANNEL_ID,
 )
 from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_BAD_FEEDBACK_BODY_WITH_XSS_INJECTION,
@@ -268,9 +269,25 @@ def test_compose_slack_message(set_env, send_feedback_service):
     actual = send_feedback_service.compose_slack_message(feedback)
     assert actual == expected
 
-def test_send_slack_message():
-    # send message using slack apis, might need to mock out requests package.
-    pass
+def test_send_slack_message(mocker, set_env, send_feedback_service):
+    slack_block_json_str = readfile("mock_itoc_slack_message_blocks.json")
+    slack_blocks = json.loads(slack_block_json_str)
+    feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
+    mock_post = mocker.patch("requests.post")
 
-def test_send_slack_message_raise_error_on_failure():
+    headers = {
+            "Authorization": "Bearer " + MOCK_SLACK_BOT_TOKEN,
+            "Content-type": "application/json; charset=utf-8",
+        }
+
+    body = {
+        "blocks": slack_blocks,
+        "channel": MOCK_ITOC_SLACK_CHANNEL_ID
+    }
+
+    send_feedback_service.send_slack_message(feedback)
+
+    mock_post.assert_called_with(url="https://slack.com/api/chat.postMessage", json=body, headers=headers)
+
+def test_send_slack_message_raise_error_on_failure(set_env, ):
     pass
