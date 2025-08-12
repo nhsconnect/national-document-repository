@@ -265,9 +265,22 @@ def test_itoc_feedback_journey_happy_path(set_env, mock_send_itoc_feedback_servi
     # mock_send_itoc_feedback_service.send_itoc_feedback.assert_called_with()
 
 
-def test_is_itoc_test_feedback():
-    # check if feedback is from itoc of legit
-    pass
+def test_is_itoc_test_feedback_itoc_email(
+    set_env, send_feedback_service, mock_get_ssm_parameter
+):
+    mock_get_ssm_parameter.return_value = "itoc_testing@localhost"
+
+    assert send_feedback_service.is_itoc_test_feedback("itoc_testing@localhost")
+
+
+def test_is_itoc_test_feedback_non_itoc_email(
+    set_env, send_feedback_service, mock_get_ssm_parameter
+):
+    mock_get_ssm_parameter.return_value = "itoc_testing@localhost"
+
+    assert (
+        send_feedback_service.is_itoc_test_feedback("jane_smith@test-email.com") is False
+    )
 
 
 def test_compose_slack_message(set_env, send_feedback_service):

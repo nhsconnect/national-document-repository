@@ -108,10 +108,7 @@ class SendFeedbackService:
         pass
 
     def compose_slack_message(self, feedback: Feedback):
-        print(os.getcwd())
-        with open(
-            "lambdas/models/templates/itoc_slack_feedback_blocks.json", "r"
-        ) as f:
+        with open("./models/templates/itoc_slack_feedback_blocks.json", "r") as f:
             template_content = f.read()
 
         template = Template(template_content)
@@ -147,4 +144,8 @@ class SendFeedbackService:
             )
 
     def is_itoc_test_feedback(self, email_address: str) -> bool:
-        pass
+        ssm_service = SSMService()
+        itoc_test_email_address = ssm_service.get_ssm_parameter(
+            os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
+        )
+        return email_address == itoc_test_email_address
