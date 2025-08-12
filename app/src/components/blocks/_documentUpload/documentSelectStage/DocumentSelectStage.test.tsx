@@ -8,11 +8,16 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import * as ReactRouter from 'react-router-dom';
 import { MemoryHistory, createMemoryHistory } from 'history';
-import { routeChildren } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { getDocument } from 'pdfjs-dist';
+import {
+    fileUploadErrorMessages,
+    PDF_PARSING_ERROR_TYPE,
+} from '../../../../helpers/utils/fileUploadErrorMessages';
 
 vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('react-router-dom', async () => {
@@ -141,6 +146,87 @@ describe('DocumentSelectStage', () => {
             const expectedDob = getFormattedDate(new Date(patientDetails.birthDate));
             expect(screen.getByText(expectedDob)).toBeInTheDocument();
         });
+
+        it('should error when the user selects a file that is password protected', async () => {
+            renderApp(history);
+
+            vi.mocked(getDocument).mockImplementation(() => {
+                throw new Error(PDF_PARSING_ERROR_TYPE.PASSWORD_MISSING);
+            });
+
+            const dropzone = screen.getByTestId('dropzone');
+            fireEvent.drop(dropzone, { dataTransfer: { files: [lgDocumentOne] } });
+
+            const file1 = await screen.findByText(lgDocumentOne.name);
+            expect(file1).toBeInTheDocument();
+
+            expect(file1.nextElementSibling?.nextElementSibling).toHaveTextContent(
+                fileUploadErrorMessages.passwordProtected.inline,
+            );
+
+            userEvent.click(await screen.findByTestId('continue-button'));
+
+            await waitFor(async () => {
+                expect(screen.getByTestId('error-box')).toHaveTextContent(
+                    fileUploadErrorMessages.passwordProtected.errorBox,
+                );
+                expect(mockedUseNavigate).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should error when the user selects a file that is corrupt', async () => {
+            renderApp(history);
+
+            vi.mocked(getDocument).mockImplementation(() => {
+                throw new Error(PDF_PARSING_ERROR_TYPE.INVALID_PDF_STRUCTURE);
+            });
+
+            const dropzone = screen.getByTestId('dropzone');
+            fireEvent.drop(dropzone, { dataTransfer: { files: [lgDocumentOne] } });
+
+            const file1 = await screen.findByText(lgDocumentOne.name);
+            expect(file1).toBeInTheDocument();
+
+            expect(file1.nextElementSibling?.nextElementSibling).toHaveTextContent(
+                fileUploadErrorMessages.invalidPdf.inline,
+            );
+
+            userEvent.click(await screen.findByTestId('continue-button'));
+
+            await waitFor(async () => {
+                expect(screen.getByTestId('error-box')).toHaveTextContent(
+                    fileUploadErrorMessages.invalidPdf.errorBox,
+                );
+                expect(mockedUseNavigate).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should error when the user selects a file that is empty', async () => {
+            renderApp(history);
+
+            vi.mocked(getDocument).mockImplementation(() => {
+                throw new Error(PDF_PARSING_ERROR_TYPE.EMPTY_PDF);
+            });
+
+            const dropzone = screen.getByTestId('dropzone');
+            fireEvent.drop(dropzone, { dataTransfer: { files: [lgDocumentOne] } });
+
+            const file1 = await screen.findByText(lgDocumentOne.name);
+            expect(file1).toBeInTheDocument();
+
+            expect(file1.nextElementSibling?.nextElementSibling).toHaveTextContent(
+                fileUploadErrorMessages.emptyPdf.inline,
+            );
+
+            userEvent.click(await screen.findByTestId('continue-button'));
+
+            await waitFor(async () => {
+                expect(screen.getByTestId('error-box')).toHaveTextContent(
+                    fileUploadErrorMessages.emptyPdf.errorBox,
+                );
+                expect(mockedUseNavigate).not.toHaveBeenCalled();
+            });
+        });
     });
 
     describe('Navigation', () => {
@@ -165,7 +251,7 @@ describe('DocumentSelectStage', () => {
             await userEvent.click(await screen.findByTestId('back-button'));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(-1);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
             });
         });
     });

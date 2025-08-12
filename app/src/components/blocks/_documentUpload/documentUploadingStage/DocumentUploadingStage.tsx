@@ -1,30 +1,19 @@
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { getUploadMessage } from '../../../../helpers/utils/uploadAndScanDocumentHelpers';
+import { getUploadMessage } from '../../../../helpers/utils/uploadDocumentHelpers';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import { useNavigate } from 'react-router-dom';
-import { routes } from '../../../../types/generic/routes';
-import { useEffect } from 'react';
 
 type Props = {
     documents: UploadDocument[];
 };
 
 const DocumentUploadingStage = ({ documents }: Props) => {
-    const navigate = useNavigate();
-
     const pageHeader = 'Your documents are uploading';
     useTitle({ pageTitle: 'Uploading documents' });
-
-    useEffect(() => {
-        if (documents.length === 0) {
-            navigate(routes.DOCUMENT_UPLOAD);
-        }
-    }, [navigate, documents]);
 
     return (
         <>
@@ -50,32 +39,40 @@ const DocumentUploadingStage = ({ documents }: Props) => {
             >
                 <Table.Head>
                     <Table.Row>
-                        <Table.Cell>Filename</Table.Cell>
+                        <Table.Cell width="63%">Filename</Table.Cell>
                         <Table.Cell>Upload progress</Table.Cell>
                     </Table.Row>
                 </Table.Head>
                 <Table.Body>
-                    {documents.map((document) => {
-                        const isScanning = document.state === DOCUMENT_UPLOAD_STATE.SCANNING;
-                        return (
-                            <Table.Row key={document.id}>
-                                <Table.Cell>{document.file.name}</Table.Cell>
-                                <Table.Cell className="table-cell-uploading-cell-wide">
-                                    <progress
-                                        aria-label={`Uploading ${document.file.name}`}
-                                        max="100"
-                                        value={isScanning ? undefined : document.progress}
-                                    ></progress>
-                                    <br />
-                                    <output aria-label={`${document.file.name} upload status`}>
-                                        {getUploadMessage(document)}
-                                    </output>
-                                </Table.Cell>
-                            </Table.Row>
-                        );
-                    })}
+                    {documents.map((document) => (
+                        <Table.Row key={document.id}>
+                            <Table.Cell>{document.file.name}</Table.Cell>
+                            <Table.Cell className="table-cell-uploading-cell-wide">
+                                <progress
+                                    aria-label={`Uploading ${document.file.name}`}
+                                    max="100"
+                                    value={document.progress}
+                                    className={`${document.progress === 100 ? 'complete' : ''}`}
+                                ></progress>
+                                <output
+                                    className="ml-4"
+                                    aria-label={`${document.file.name} upload status`}
+                                >
+                                    {`${Math.round(document.progress!)}% uploaded`}
+                                </output>
+                            </Table.Cell>
+                        </Table.Row>
+                    ))}
                 </Table.Body>
             </Table>
+            {documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.SCANNING) && (
+                <div id="virus-scan-status">
+                    <div className="nhsuk-inset-text">
+                        <span className="nhsuk-u-visually-hidden">Information: </span>
+                        <p>Virus scan in progress...</p>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

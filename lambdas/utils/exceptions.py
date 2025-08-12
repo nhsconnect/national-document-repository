@@ -68,6 +68,10 @@ class LGFileTypeException(ValueError):
     pass
 
 
+class LGInvalidFilesException(Exception):
+    pass
+
+
 class InvalidMessageException(Exception):
     pass
 

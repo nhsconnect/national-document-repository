@@ -85,6 +85,10 @@ class LambdaError(Enum):
         "err_code": "CDR_4008",
         "message": "The patient already has a full set of record.",
     }
+    CreateDocRefOdsCodeNotAllowed = {
+        "err_code": "CDR_4009",
+        "message": "ODS code does not match any of the allowed.",
+    }
     CreateDocPresign = {
         "err_code": "CDR_5001",
         "message": "An error occurred when creating pre-signed url for document reference",
@@ -349,21 +353,9 @@ class LambdaError(Enum):
     """
        Errors for Upload Confirm Result lambda 
     """
-    UploadConfirmResultMissingBody = {
+    UploadConfirmResultMissingParams = {
         "err_code": "UC_4001",
-        "message": "Missing POST request body",
-    }
-    UploadConfirmResultPayload = {
-        "err_code": "UC_4002",
-        "message": "Invalid json in body",
-    }
-    UploadConfirmResultProps = {
-        "err_code": "UC_4003",
-        "message": "Request body missing some properties",
-    }
-    UploadConfirmResultBadRequest = {
-        "err_code": "UC_4004",
-        "message": "Number of document references not equal to number of documents in dynamo table for this nhs number",
+        "message": "Missing GET request query parameters",
     }
     UploadConfirmResultFilesNotClean = {
         "err_code": "UC_4005",

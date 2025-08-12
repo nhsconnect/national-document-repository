@@ -8,3 +8,8 @@ export const errorToParams = (error: AxiosError) => {
     const params = JSON.stringify([err_code, interaction_id]);
     return '?encodedError=' + btoa(params);
 };
+
+export const errorCodeToParams = (error_code: string) => {
+    const params = JSON.stringify([error_code, unixTimestamp().toString()]);
+    return '?encodedError=' + btoa(params);
+};
