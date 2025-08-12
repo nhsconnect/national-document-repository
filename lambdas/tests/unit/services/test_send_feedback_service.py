@@ -1,26 +1,30 @@
-import boto3
 import json
+
+import boto3
 import pytest
-import requests
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from models.feedback_model import Feedback
+from requests import Response
 from services.base.ssm_service import SSMService
 from services.send_feedback_service import SendFeedbackService
 from tests.unit.conftest import (
     MOCK_FEEDBACK_EMAIL_SUBJECT,
     MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
-    MOCK_FEEDBACK_SENDER_EMAIL, MOCK_SLACK_BOT_TOKEN, MOCK_ITOC_SLACK_CHANNEL_ID,
+    MOCK_FEEDBACK_SENDER_EMAIL,
+    MOCK_ITOC_SLACK_CHANNEL_ID,
+    MOCK_SLACK_BOT_TOKEN,
 )
 from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_BAD_FEEDBACK_BODY_WITH_XSS_INJECTION,
     MOCK_EMAIL_BODY,
     MOCK_EMAIL_BODY_ANONYMOUS,
+    MOCK_ITOC_FEEDBACK_BODY,
     MOCK_PARSED_FEEDBACK,
     MOCK_PARSED_FEEDBACK_ANONYMOUS,
     MOCK_VALID_FEEDBACK_BODY_ANONYMOUS_JSON_STR,
     MOCK_VALID_FEEDBACK_BODY_JSON_STR,
-    MOCK_ITOC_FEEDBACK_BODY, readfile
+    readfile,
 )
 from utils.lambda_exceptions import SendFeedbackException
 
@@ -55,6 +59,7 @@ def mock_validator(mocker):
 @pytest.fixture
 def mock_ses_client(mocker):
     yield mocker.create_autospec(boto3.client("ses"))
+
 
 @pytest.fixture
 def mock_send_itoc_feedback_service(send_feedback_service, mocker):
@@ -250,6 +255,7 @@ def test_get_email_recipients_list_raise_error_when_fail_to_fetch_from_ssm(
 
     assert error.value == expected_lambda_error
 
+
 # Don't know what the itoc address looks like, do we want this as an SSM, is it public?
 def test_itoc_feedback_journey_happy_path(set_env, mock_send_itoc_feedback_service):
     pass
@@ -258,9 +264,11 @@ def test_itoc_feedback_journey_happy_path(set_env, mock_send_itoc_feedback_servi
     #
     # mock_send_itoc_feedback_service.send_itoc_feedback.assert_called_with()
 
+
 def test_is_itoc_test_feedback():
     # check if feedback is from itoc of legit
     pass
+
 
 def test_compose_slack_message(set_env, send_feedback_service):
     slack_block_json_str = readfile("mock_itoc_slack_message_blocks.json")
@@ -269,6 +277,7 @@ def test_compose_slack_message(set_env, send_feedback_service):
     actual = send_feedback_service.compose_slack_message(feedback)
     assert actual == expected
 
+
 def test_send_slack_message(mocker, set_env, send_feedback_service):
     slack_block_json_str = readfile("mock_itoc_slack_message_blocks.json")
     slack_blocks = json.loads(slack_block_json_str)
@@ -276,18 +285,30 @@ def test_send_slack_message(mocker, set_env, send_feedback_service):
     mock_post = mocker.patch("requests.post")
 
     headers = {
-            "Authorization": "Bearer " + MOCK_SLACK_BOT_TOKEN,
-            "Content-type": "application/json; charset=utf-8",
-        }
-
-    body = {
-        "blocks": slack_blocks,
-        "channel": MOCK_ITOC_SLACK_CHANNEL_ID
+        "Authorization": "Bearer " + MOCK_SLACK_BOT_TOKEN,
+        "Content-type": "application/json; charset=utf-8",
     }
+
+    body = {"blocks": slack_blocks, "channel": MOCK_ITOC_SLACK_CHANNEL_ID}
 
     send_feedback_service.send_slack_message(feedback)
 
-    mock_post.assert_called_with(url="https://slack.com/api/chat.postMessage", json=body, headers=headers)
+    mock_post.assert_called_with(
+        url="https://slack.com/api/chat.postMessage", json=body, headers=headers
+    )
 
-def test_send_slack_message_raise_error_on_failure(set_env, ):
-    pass
+
+def test_send_slack_message_raise_error_on_failure(
+    set_env, mocker, send_feedback_service
+):
+    feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
+    response = Response()
+    response.status_code = 403
+    mocker.patch("requests.post").return_value = response
+
+    expected_error = SendFeedbackException(403, LambdaError.FeedbackITOCFailure)
+
+    with pytest.raises(SendFeedbackException) as error:
+        send_feedback_service.send_slack_message(feedback)
+
+    assert error.value == expected_error
