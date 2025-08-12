@@ -124,7 +124,7 @@ TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 MOCK_SLACK_BOT_TOKEN = f"xoxb-{TEST_UUID}"
 MOCK_ITOC_SLACK_CHANNEL_ID = "slack_channel_id"
-MOCK_ITOC_TEST_EMAIL_ADDRESS = "itoc_testing@localhost"
+MOCK_ITOC_TEST_EMAIL_ADDRESS = "itoc_testing@testing.com"
 
 
 @pytest.fixture

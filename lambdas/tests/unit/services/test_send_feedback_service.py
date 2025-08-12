@@ -13,6 +13,7 @@ from tests.unit.conftest import (
     MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
     MOCK_FEEDBACK_SENDER_EMAIL,
     MOCK_ITOC_SLACK_CHANNEL_ID,
+    MOCK_ITOC_TEST_EMAIL_ADDRESS,
     MOCK_SLACK_BOT_TOKEN,
 )
 from tests.unit.helpers.data.feedback.mock_data import (
@@ -20,6 +21,7 @@ from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_EMAIL_BODY,
     MOCK_EMAIL_BODY_ANONYMOUS,
     MOCK_ITOC_FEEDBACK_BODY,
+    MOCK_ITOC_FEEDBACK_BODY_JSON_STR,
     MOCK_PARSED_FEEDBACK,
     MOCK_PARSED_FEEDBACK_ANONYMOUS,
     MOCK_VALID_FEEDBACK_BODY_ANONYMOUS_JSON_STR,
@@ -64,15 +66,22 @@ def mock_ses_client(mocker):
 @pytest.fixture
 def mock_send_itoc_feedback_service(send_feedback_service, mocker):
     service = send_feedback_service
-    mocker.patch.object(service, "send_itoc_feedback")
     mocker.patch.object(service, "compose_slack_message")
-    mocker.patch.object(service, "send_slack_message")
-    mocker.patch.object(service, "is_itoc_test_feedback")
+    mocker.patch.object(service, "send_itoc_feedback_via_slack")
+    mocker.patch.object(service, "send_feedback_by_email")
     yield service
 
 
+@pytest.fixture
+def mock_post(mocker):
+    yield mocker.patch("requests.post")
+
+
 def test_process_feedback_validate_feedback_content_and_send_email(
-    send_feedback_service, mock_send_feedback_by_email, mock_validator
+    send_feedback_service,
+    mock_send_feedback_by_email,
+    mock_validator,
+    mock_get_ssm_parameter,
 ):
     mock_event_body = MOCK_VALID_FEEDBACK_BODY_JSON_STR
     expected_email_body = MOCK_EMAIL_BODY
@@ -84,7 +93,7 @@ def test_process_feedback_validate_feedback_content_and_send_email(
 
 
 def test_process_feedback_allow_respondent_email_and_name_to_be_blank(
-    send_feedback_service, mock_send_feedback_by_email
+    send_feedback_service, mock_send_feedback_by_email, mock_get_ssm_parameter
 ):
     mock_event_body = MOCK_VALID_FEEDBACK_BODY_ANONYMOUS_JSON_STR
     expected_email_body = MOCK_EMAIL_BODY_ANONYMOUS
@@ -95,7 +104,7 @@ def test_process_feedback_allow_respondent_email_and_name_to_be_blank(
 
 
 def test_process_feedback_sanitise_html_tags_before_send_out_email(
-    send_feedback_service, mock_send_feedback_by_email
+    send_feedback_service, mock_send_feedback_by_email, mock_get_ssm_parameter
 ):
     mock_event_body = MOCK_BAD_FEEDBACK_BODY_WITH_XSS_INJECTION
     bad_code = (
@@ -129,7 +138,7 @@ def test_process_feedback_raise_error_when_given_invalid_data(
 
 
 def test_process_feedback_raise_error_when_fail_to_send_email_by_ses(
-    send_feedback_service, mock_ses_client
+    send_feedback_service, mock_ses_client, mock_get_ssm_parameter
 ):
     mock_error = ClientError(
         {
@@ -180,7 +189,12 @@ def test_build_email_body_skip_name_and_email_if_not_given(send_feedback_service
     assert actual == expected
 
 
-def test_send_feedback_by_email_happy_path(send_feedback_service, mock_ses_client):
+def test_send_feedback_by_email_happy_path(
+    send_feedback_service, mock_ses_client, mocker
+):
+    mock_send_itoc_feedback = mocker.patch.object(
+        send_feedback_service, "send_itoc_feedback_via_slack"
+    )
     send_feedback_service.ses_client = mock_ses_client
 
     send_feedback_service.send_feedback_by_email(MOCK_EMAIL_BODY)
@@ -193,6 +207,8 @@ def test_send_feedback_by_email_happy_path(send_feedback_service, mock_ses_clien
             "Body": {"Html": {"Data": MOCK_EMAIL_BODY}},
         },
     )
+
+    mock_send_itoc_feedback.assert_not_called()
 
 
 def test_send_feedback_by_email_raise_error_on_failure(
@@ -257,33 +273,37 @@ def test_get_email_recipients_list_raise_error_when_fail_to_fetch_from_ssm(
 
 
 # Don't know what the itoc address looks like, do we want this as an SSM, is it public?
-def test_itoc_feedback_journey_happy_path(set_env, mock_send_itoc_feedback_service):
-    pass
+def test_itoc_feedback_journey(
+    mock_send_itoc_feedback_service, mock_post, mock_get_ssm_parameter
+):
+    mock_get_ssm_parameter.return_value = "itoc_testing@testing.com"
 
-    # mock_send_itoc_feedback_service.process_feedback(MOCK_ITOC_FEEDBACK_BODY)
-    #
-    # mock_send_itoc_feedback_service.send_itoc_feedback.assert_called_with()
+    mock_send_itoc_feedback_service.process_feedback(MOCK_ITOC_FEEDBACK_BODY_JSON_STR)
+
+    mock_send_itoc_feedback_service.send_itoc_feedback_via_slack.assert_called()
+    mock_send_itoc_feedback_service.send_feedback_by_email.assert_not_called()
 
 
 def test_is_itoc_test_feedback_itoc_email(
     set_env, send_feedback_service, mock_get_ssm_parameter
 ):
-    mock_get_ssm_parameter.return_value = "itoc_testing@localhost"
+    mock_get_ssm_parameter.return_value = MOCK_ITOC_TEST_EMAIL_ADDRESS
 
-    assert send_feedback_service.is_itoc_test_feedback("itoc_testing@localhost")
+    assert send_feedback_service.is_itoc_test_feedback(MOCK_ITOC_TEST_EMAIL_ADDRESS)
 
 
 def test_is_itoc_test_feedback_non_itoc_email(
     set_env, send_feedback_service, mock_get_ssm_parameter
 ):
-    mock_get_ssm_parameter.return_value = "itoc_testing@localhost"
+    mock_get_ssm_parameter.return_value = MOCK_ITOC_TEST_EMAIL_ADDRESS
 
     assert (
-        send_feedback_service.is_itoc_test_feedback("jane_smith@test-email.com") is False
+        send_feedback_service.is_itoc_test_feedback("jane_smith@test-email.com")
+        is False
     )
 
 
-def test_compose_slack_message(set_env, send_feedback_service):
+def test_compose_slack_message(send_feedback_service):
     slack_block_json_str = readfile("mock_itoc_slack_message_blocks.json")
     expected = json.loads(slack_block_json_str)
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
@@ -291,11 +311,10 @@ def test_compose_slack_message(set_env, send_feedback_service):
     assert actual == expected
 
 
-def test_send_slack_message(mocker, set_env, send_feedback_service):
+def test_send_slack_message(send_feedback_service, mock_post):
     slack_block_json_str = readfile("mock_itoc_slack_message_blocks.json")
     slack_blocks = json.loads(slack_block_json_str)
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
-    mock_post = mocker.patch("requests.post")
 
     headers = {
         "Authorization": "Bearer " + MOCK_SLACK_BOT_TOKEN,
@@ -304,24 +323,22 @@ def test_send_slack_message(mocker, set_env, send_feedback_service):
 
     body = {"blocks": slack_blocks, "channel": MOCK_ITOC_SLACK_CHANNEL_ID}
 
-    send_feedback_service.send_slack_message(feedback)
+    send_feedback_service.send_itoc_feedback_via_slack(feedback)
 
     mock_post.assert_called_with(
         url="https://slack.com/api/chat.postMessage", json=body, headers=headers
     )
 
 
-def test_send_slack_message_raise_error_on_failure(
-    set_env, mocker, send_feedback_service
-):
+def test_send_slack_message_raise_error_on_failure(send_feedback_service, mock_post):
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
     response = Response()
     response.status_code = 403
-    mocker.patch("requests.post").return_value = response
+    mock_post.return_value = response
 
     expected_error = SendFeedbackException(403, LambdaError.FeedbackITOCFailure)
 
     with pytest.raises(SendFeedbackException) as error:
-        send_feedback_service.send_slack_message(feedback)
+        send_feedback_service.send_itoc_feedback_via_slack(feedback)
 
     assert error.value == expected_error
