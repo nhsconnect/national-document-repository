@@ -5,7 +5,10 @@ from enums.lambda_error import LambdaError
 from handlers.send_feedback_handler import lambda_handler
 from services.send_feedback_service import SendFeedbackService
 from tests.unit.conftest import MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST, MOCK_INTERACTION_ID
-from tests.unit.helpers.data.feedback.mock_data import MOCK_VALID_SEND_FEEDBACK_EVENT
+from tests.unit.helpers.data.feedback.mock_data import (
+    MOCK_ITOC_FEEDBACK_EVENT,
+    MOCK_VALID_SEND_FEEDBACK_EVENT,
+)
 from utils.lambda_exceptions import SendFeedbackException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -134,6 +137,43 @@ def test_lambda_handler_respond_with_500_when_failed_to_send_email(
             {
                 "message": "Error occur when sending email by SES",
                 "err_code": "SFB_5001",
+                "interaction_id": MOCK_INTERACTION_ID,
+            }
+        ),
+        methods="POST",
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(test_event, context)
+    assert actual == expected
+
+
+def test_lambda_handler_respond_with_200_when_itoc_feedback_sent(
+    set_env, context, mock_feedback_service
+):
+    test_event = MOCK_ITOC_FEEDBACK_EVENT
+    expected = ApiGatewayResponse(
+        status_code=200, body="Feedback email processed", methods="POST"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(test_event, context)
+
+    assert actual == expected
+
+
+def test_lambda_handler_respond_with_500_when_failed_to_send_itoc_feedback(
+    set_env, context, mock_feedback_service
+):
+    test_event = MOCK_ITOC_FEEDBACK_EVENT
+
+    mock_feedback_service.process_feedback.side_effect = SendFeedbackException(
+        500, LambdaError.FeedbackITOCFailure
+    )
+    expected = ApiGatewayResponse(
+        status_code=500,
+        body=json.dumps(
+            {
+                "message": LambdaError.FeedbackITOCFailure.value["message"],
+                "err_code": LambdaError.FeedbackITOCFailure.value["err_code"],
                 "interaction_id": MOCK_INTERACTION_ID,
             }
         ),
