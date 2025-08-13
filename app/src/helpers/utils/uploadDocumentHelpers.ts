@@ -2,15 +2,10 @@ import { Dispatch, SetStateAction } from 'react';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import { UploadSession } from '../../types/generic/uploadResult';
 import { isRunningInCypress } from './isLocal';
-import { AuthHeaders } from '../../types/blocks/authHeaders';
-import { uploadDocumentToS3, virusScan } from '../requests/uploadDocuments';
-import waitForSeconds from './waitForSeconds';
 import { getLastURLPath } from './urlManipulations';
 
 export const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = isRunningInCypress() ? 0 : 3;
 export const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = isRunningInCypress() ? 0 : 5;
-
-export const FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD = 2000; // 2 minutes
 
 type UpdateDocumentArgs = {
     id: string;
@@ -53,42 +48,6 @@ export const markDocumentsAsUploading = (
         };
     });
 };
-
-type UploadAndScanSingleDocumentArgs = {
-    setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
-    document: UploadDocument;
-    uploadSession: UploadSession;
-    baseUrl: string;
-    baseHeaders: AuthHeaders;
-    nhsNumber: string;
-};
-
-export async function uploadAndScanSingleDocument({
-    document,
-    uploadSession,
-    setDocuments,
-    baseUrl,
-    baseHeaders,
-    nhsNumber,
-}: UploadAndScanSingleDocumentArgs): Promise<void> {
-    await uploadDocumentToS3({ setDocuments, document, uploadSession });
-    setSingleDocument(setDocuments, {
-        id: document.id,
-        state: DOCUMENT_UPLOAD_STATE.SCANNING,
-    });
-    await waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS);
-    const virusDocumentState = await virusScan({
-        documentReference: document.key ?? '',
-        baseUrl,
-        baseHeaders,
-        nhsNumber,
-    });
-    setSingleDocument(setDocuments, {
-        id: document.id,
-        state: virusDocumentState,
-        progress: 100,
-    });
-}
 
 export const getUploadMessage = ({ state, progress }: UploadDocument) => {
     const showProgress = state === DOCUMENT_UPLOAD_STATE.UPLOADING && progress !== undefined;

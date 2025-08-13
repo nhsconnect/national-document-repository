@@ -1,7 +1,7 @@
 import { ErrorSummary } from 'nhsuk-react-components';
-import { LegacyRef, MouseEvent } from 'react';
-import { UploadFilesError } from '../../../types/pages/UploadDocumentsPage/types';
+import { Ref, MouseEvent, JSX } from 'react';
 import { groupUploadErrorsByType } from '../../../helpers/utils/fileUploadErrorMessages';
+import { UploadFilesError } from '../../../types/pages/UploadDocumentsPage/types';
 
 type Props = {
     errorBoxSummaryId: string;
@@ -13,14 +13,16 @@ type Props = {
     dataTestId?: string;
     errorOnClick?: () => void;
     errorMessageList?: UploadFilesError[];
-    scrollToRef?: LegacyRef<HTMLDivElement>;
+    scrollToRef?: Ref<HTMLDivElement>;
 };
 
 type UploadErrorMessagesProps = {
     errorMessageList: UploadFilesError[];
 };
 
-function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesProps>) {
+function UploadErrorMessages({
+    errorMessageList,
+}: Readonly<UploadErrorMessagesProps>): JSX.Element {
     const uploadErrorsGrouped = groupUploadErrorsByType(errorMessageList);
 
     return (
@@ -30,7 +32,7 @@ function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesP
                 return (
                     <div key={errorType}>
                         <ErrorSummary.List>
-                            <ErrorSummary.Item href={'#' + linkIds} key={errorType + linkIds}>
+                            <ErrorSummary.Item href={'#' + firstFile} key={errorType + firstFile}>
                                 {errorMessage}
                             </ErrorSummary.Item>
                         </ErrorSummary.List>
@@ -41,19 +43,18 @@ function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesP
     );
 }
 
-// @ts-ignore
 const ErrorBox = ({
     errorBoxSummaryId,
-    errorInputLink,
     messageTitle,
     messageBody,
     messageLinkBody,
+    errorInputLink,
     errorBody,
-    errorMessageList,
-    errorOnClick,
     dataTestId,
+    errorOnClick,
+    errorMessageList,
     scrollToRef,
-}: Props) => {
+}: Props): JSX.Element => {
     const hasInputLink = errorInputLink && messageLinkBody;
     const hasOnClick = errorOnClick && messageLinkBody;
 
@@ -66,7 +67,7 @@ const ErrorBox = ({
                         {errorBody && (
                             <ErrorSummary.Item
                                 href="#"
-                                onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                                onClick={(e: MouseEvent<HTMLAnchorElement>): void => {
                                     e.preventDefault();
                                 }}
                             >
@@ -84,7 +85,7 @@ const ErrorBox = ({
                             <ErrorSummary.Item
                                 data-testid="error-box-link"
                                 href={'#'}
-                                onClick={(e) => {
+                                onClick={(e): void => {
                                     e.preventDefault();
                                     errorOnClick();
                                 }}
