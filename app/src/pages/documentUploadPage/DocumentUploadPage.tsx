@@ -47,6 +47,7 @@ function DocumentUploadPage() {
     const baseHeaders = useBaseAPIHeaders();
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
+    const completeRef = useRef(false);
     const virusReference = useRef(false);
     const navigate = useNavigate();
     const [intervalTimer, setIntervalTimer] = useState(0);
@@ -71,12 +72,14 @@ function DocumentUploadPage() {
             documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED);
 
         if (hasVirus && !virusReference.current) {
+            virusReference.current = true;
             window.clearInterval(intervalTimer);
             navigate(routeChildren.DOCUMENT_UPLOAD_INFECTED);
         } else if (docWithError) {
             const errorParams = docWithError.error ? errorCodeToParams(docWithError.error) : '';
             navigate(routes.SERVER_ERROR + errorParams);
-        } else if (allFinished) {
+        } else if (allFinished && !completeRef.current) {
+            completeRef.current = true;
             window.clearInterval(intervalTimer);
             navigate(routeChildren.DOCUMENT_UPLOAD_COMPLETED);
         }

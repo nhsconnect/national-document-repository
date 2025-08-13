@@ -24,10 +24,10 @@ function DocumentUploadInfectedStage() {
                     className="govuk-link"
                     onClick={(e) => {
                         e.preventDefault();
-                        navigate(routes.DOCUMENT_UPLOAD, { replace: true });
+                        navigate(routes.HOME, { replace: true });
                     }}
                 >
-                    Go back to choose Lloyd George files to upload
+                    Go to home
                 </button>
             </p>
         </>
