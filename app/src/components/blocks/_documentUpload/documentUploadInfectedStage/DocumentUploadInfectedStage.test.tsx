@@ -19,7 +19,7 @@ describe('DocumentUploadInfectedStage', () => {
                 'One or more of your files has a virus.',
                 "To keep patient information safe and our systems secure, we've stopped the upload.",
                 'Contact your local IT support desk for help.',
-                'Go back to choose Lloyd George files to upload',
+                'Go to home',
             ];
 
             render(
@@ -35,7 +35,7 @@ describe('DocumentUploadInfectedStage', () => {
 
             expect(
                 screen.getByRole('button', {
-                    name: 'Go back to choose Lloyd George files to upload',
+                    name: 'Go to home',
                 }),
             ).toBeInTheDocument();
         });
@@ -54,21 +54,21 @@ describe('DocumentUploadInfectedStage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to Lloyd George upload page when button is clicked', async () => {
+        it('navigates to home page when button is clicked', async () => {
             render(
                 <MemoryRouter>
                     <DocumentUploadInfectedStage />
                 </MemoryRouter>,
             );
 
-            const backButton = screen.getByRole('button', {
-                name: 'Go back to choose Lloyd George files to upload',
+            const homeButton = screen.getByRole('button', {
+                name: 'Go to home',
             });
-            expect(backButton).toBeInTheDocument();
+            expect(homeButton).toBeInTheDocument();
 
-            await userEvent.click(backButton);
+            await userEvent.click(homeButton);
 
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.DOCUMENT_UPLOAD, {
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME, {
                 replace: true,
             });
         });
