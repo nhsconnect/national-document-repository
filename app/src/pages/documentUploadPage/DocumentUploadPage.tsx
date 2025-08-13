@@ -37,8 +37,6 @@ import DocumentUploadCompleteStage from '../../components/blocks/_documentUpload
 import DocumentUploadRemoveFilesStage from '../../components/blocks/_documentUpload/documentUploadRemoveFilesStage/DocumentUploadRemoveFilesStage';
 import useConfig from '../../helpers/hooks/useConfig';
 import DocumentUploadInfectedStage from '../../components/blocks/_documentUpload/documentUploadInfectedStage/DocumentUploadInfectedStage';
-import { formatDateWithDashes } from '../../helpers/utils/formatDate';
-import { PatientDetails } from '../../types/generic/patientDetails';
 
 function DocumentUploadPage() {
     const patientDetails = usePatient();
@@ -152,7 +150,7 @@ function DocumentUploadPage() {
         return session;
     };
 
-    const submitDocuments = async () => {
+    const startUpload = async () => {
         try {
             let reducedDocuments = documents;
 
@@ -194,8 +192,6 @@ function DocumentUploadPage() {
 
             const updateStateInterval = startIntervalTimer(uploadingDocuments);
             setIntervalTimer(updateStateInterval);
-
-            navigate(routeChildren.DOCUMENT_UPLOAD_UPLOADING);
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
@@ -207,6 +203,7 @@ function DocumentUploadPage() {
                         state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                     })),
                 );
+                window.clearInterval(intervalTimer);
                 navigate(routeChildren.DOCUMENT_UPLOAD_COMPLETED);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
@@ -336,15 +333,12 @@ function DocumentUploadPage() {
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION) + '/*'}
                     element={
-                        <DocumentUploadConfirmStage
-                            documents={documents}
-                            startUpload={submitDocuments}
-                        />
+                        <DocumentUploadConfirmStage documents={documents} />
                     }
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_UPLOADING) + '/*'}
-                    element={<DocumentUploadingStage documents={documents} />}
+                    element={<DocumentUploadingStage documents={documents} startUpload={startUpload} />}
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_COMPLETED) + '/*'}
