@@ -16,3 +16,12 @@ export type S3UploadFields = {
     policy: string;
     'x-amz-signature': string;
 };
+
+export type DocumentStatusResult = {
+    [documentId: string]: DocumentStatus;
+};
+
+export type DocumentStatus = {
+    status: string;
+    error_code?: string;
+};

@@ -507,34 +507,6 @@ $hunit: '%';
 
     &_upload-complete {
         max-width: 711px;
-
-        &_card {
-            &_content {
-                padding: 95px 76px;
-                text-align: center;
-                background-color: $color_nhsuk-blue;
-                color: #fff;
-                font-weight: 400;
-                font-size: 1.5rem !important;
-                white-space: pre-wrap;
-                word-break: break-word;
-                overflow-wrap: break-word;
-
-                &_header {
-                    font-weight: 700;
-                    font-size: 3rem;
-                }
-
-                &_subheader {
-                    font-weight: 700;
-                    margin-top: 25px;
-                }
-
-                &_description {
-                    font-size: 1.5rem !important;
-                }
-            }
-        }
     }
 
     &_drag-and-drop {
@@ -1294,5 +1266,37 @@ button.govuk-link {
         bottom: 8px;
         width: 4px;
         background-color: #d4351c;
+    }
+}
+
+progress:not(.continuous-progress-bar) {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    height: 22px;
+    transition: width 0.5s;
+
+    &::-webkit-progress-bar {
+        background-color: transparent;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+    }
+
+    &::-webkit-progress-value {
+        background-color: $color_nhsuk-blue;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+        transition: width 0.5s;
+    }
+
+    &.complete {
+        &::-webkit-progress-bar {
+            background-color: transparent;
+            border-radius: 4px;
+        }
+
+        &::-webkit-progress-value {
+            background-color: $color_nhsuk-green;
+            border-radius: 4px;
+        }
     }
 }
