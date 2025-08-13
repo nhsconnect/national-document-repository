@@ -1,6 +1,5 @@
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { getUploadMessage } from '../../../../helpers/utils/uploadDocumentHelpers';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
