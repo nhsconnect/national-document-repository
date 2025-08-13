@@ -3,12 +3,19 @@ import { routes } from '../../../../types/generic/routes';
 import { Link, useNavigate } from 'react-router-dom';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import usePatient from '../../../../helpers/hooks/usePatient';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
+import { getFormattedDateFromString } from '../../../../helpers/utils/formatDate';
 
 const DocumentUploadCompleteStage = () => {
     const navigate = useNavigate();
     const patientDetails = usePatient();
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
+    const formattedNhsNumber = formatNhsNumber(nhsNumber);
+    const dob: string = getFormattedDateFromString(patientDetails?.birthDate)
 
     useTitle({ pageTitle: 'Record upload complete' });
+
+    const patientName = `${patientDetails?.familyName}, ${patientDetails?.givenName}`
 
     return (
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
@@ -19,13 +26,13 @@ const DocumentUploadCompleteStage = () => {
                 </div>
                 <br />
                 <div className="nhsuk-panel__body">
-                    <strong>
-                        Patient name: {patientDetails?.familyName}, {patientDetails?.givenName}
+                    <strong data-testid="patient-name">
+                        Patient name: {patientName}
                     </strong>
                     <br />
-                    <span>NHS Number: {patientDetails?.nhsNumber}</span>
+                    <span data-testid="nhs-number">NHS Number: {formattedNhsNumber}</span>
                     <br />
-                    <span>Date of birth: {patientDetails?.birthDate}</span>
+                    <span data-testid="dob">Date of birth: {dob}</span>
                 </div>
             </div>
 
