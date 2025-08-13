@@ -272,7 +272,6 @@ def test_get_email_recipients_list_raise_error_when_fail_to_fetch_from_ssm(
     assert error.value == expected_lambda_error
 
 
-# Don't know what the itoc address looks like, do we want this as an SSM, is it public?
 def test_itoc_feedback_journey(
     mock_send_itoc_feedback_service, mock_post, mock_get_ssm_parameter
 ):
