@@ -34,5 +34,9 @@ MOCK_EMAIL_BODY_ANONYMOUS = readfile("expected_email_body_anonymous.txt")
 
 MOCK_ITOC_FEEDBACK_BODY_JSON_STR = readfile("itoc_test_feedback.json")
 MOCK_ITOC_FEEDBACK_BODY = json.loads(MOCK_ITOC_FEEDBACK_BODY_JSON_STR)
+MOCK_ITOC_FEEDBACK_EVENT = {
+    "body": MOCK_ITOC_FEEDBACK_BODY_JSON_STR,
+    "httpMethod": "POST",
+}
 
 MOCK_ITOC_SLACK_MESSAGE_BLOCKS = readfile("mock_itoc_slack_message_blocks.json")
