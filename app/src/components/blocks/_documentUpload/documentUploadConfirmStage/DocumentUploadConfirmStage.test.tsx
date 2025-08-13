@@ -12,7 +12,7 @@ import {
 import * as ReactRouter from 'react-router-dom';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 
 const mockedUseNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -34,8 +34,6 @@ let history = createMemoryHistory({
 });
 
 describe('DocumentUploadCompleteStage', () => {
-    const mockStartUpload = vi.fn();
-
     beforeEach(() => {
         vi.mocked(usePatient).mockReturnValue(patientDetails);
 
@@ -54,13 +52,13 @@ describe('DocumentUploadCompleteStage', () => {
         });
     });
 
-    it('should trigger start upload when confirm button is clicked', async () => {
+    it('should navigate to next screen when confirm button is clicked', async () => {
         renderApp(history, 1);
 
         userEvent.click(await screen.findByTestId('confirm-button'));
 
         await waitFor(() => {
-            expect(mockStartUpload).toHaveBeenCalled();
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.DOCUMENT_UPLOAD_UPLOADING);
         });
     });
 
@@ -130,7 +128,7 @@ describe('DocumentUploadCompleteStage', () => {
 
         return render(
             <ReactRouter.Router navigator={history} location={history.location}>
-                <DocumentUploadConfirmStage documents={documents} startUpload={mockStartUpload} />
+                <DocumentUploadConfirmStage documents={documents} />
             </ReactRouter.Router>,
         );
     };
