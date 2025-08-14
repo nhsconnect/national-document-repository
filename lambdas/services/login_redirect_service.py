@@ -25,7 +25,7 @@ class LoginRedirectService:
             client_id=self.oidc_parameters[self.ssm_prefix + "OIDC_CLIENT_ID"],
         )
 
-    def prepare_redirect_response(self):
+    def prepare_redirect_response(self, *args, **kwargs):
         try:
             self.oidc_parameters = self.ssm_service.get_ssm_parameters(
                 [

@@ -181,7 +181,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                     return undefined;
                 }
                 return {
-                    filename: document.file.name,
+                    linkId: document.file.name,
                     error: UPLOAD_FILE_ERROR_TYPE.duplicatePositionError,
                     details: error.message,
                 };

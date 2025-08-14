@@ -603,7 +603,6 @@ jobs:
 
   deploy_document_reference_virus_scan_lambda:
     name: Deploy Document References FHIR virus scanner check Lambda
-    if: inputs.environment == 'development' || inputs.environment == 'test'
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
