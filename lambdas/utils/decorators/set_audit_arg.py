@@ -21,7 +21,7 @@ def set_request_context_for_logging(lambda_func: Callable) -> Callable:
                     pass
             correlation_id = headers.get("X-Correlation-Id")
             if correlation_id:
-                request_context.correlation_id = correlation_id
+                request_context.nhs_correlation_id = correlation_id
         return lambda_func(event, context)
 
     return interceptor
