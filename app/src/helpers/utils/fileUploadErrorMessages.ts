@@ -67,8 +67,8 @@ export const fileUploadErrorMessages: errorMessageType = {
         errorBox: 'The selected file is password protected. Remove password and upload again.',
     },
     emptyPdf: {
-        inline: 'The selected file is empty. Remove it to continue with upload.',
-        errorBox: 'The selected file is empty. Remove it to continue with upload.',
+        inline: 'The selected file is empty. Check it to continue with upload.',
+        errorBox: 'The selected file is empty. Check it to continue with upload.',
     },
     duplicatePositionError: {
         inline: 'You have selected the same position number for two or more files',
