@@ -12,11 +12,11 @@ const env = (k: string): string => {
     return String(v);
 };
 
-const region = env('AWS_REGION');
+const region = Cypress.env('AWS_REGION');
 
 const credentials: AwsCredentialIdentity = {
-    accessKeyId: env('AWS_ACCESS_KEY_ID'),
-    secretAccessKey: env('AWS_SECRET_ACCESS_KEY'),
+    accessKeyId: Cypress.env('AWS_ACCESS_KEY_ID'),
+    secretAccessKey: Cypress.env('AWS_SECRET_ACCESS_KEY'),
     sessionToken: Cypress.env('AWS_SESSION_TOKEN')
         ? String(Cypress.env('AWS_SESSION_TOKEN'))
         : undefined,
