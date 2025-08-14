@@ -9,3 +9,10 @@ export const formatDateWithDashes = (date: Date): string => {
 
     return `${day}-${month}-${year}`;
 };
+
+export const getFormattedDateFromString = (dateString: string | undefined): string => {
+  if (!dateString) {
+    return '';
+  }
+  return getFormattedDate(new Date(dateString));
+};
