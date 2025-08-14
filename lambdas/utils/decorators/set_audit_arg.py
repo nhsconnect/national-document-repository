@@ -8,10 +8,8 @@ def set_request_context_for_logging(lambda_func: Callable) -> Callable:
     def interceptor(event, context):
         request_context.request_id = context.aws_request_id or None
         request_context.authorization = None
-        headers = event.get("headers")
-        if headers:
-            token = headers.get("Authorization")
-            if token:
+        if headers := event.get("headers"):
+            if token := headers.get("Authorization"):
                 try:
                     decoded_token = jwt.decode(
                         token, algorithms=["RS256"], options={"verify_signature": False}
@@ -19,8 +17,7 @@ def set_request_context_for_logging(lambda_func: Callable) -> Callable:
                     request_context.authorization = decoded_token
                 except jwt.PyJWTError:
                     pass
-            correlation_id = headers.get("X-Correlation-Id")
-            if correlation_id:
+            if correlation_id := headers.get("X-Correlation-Id"):
                 request_context.nhs_correlation_id = correlation_id
         return lambda_func(event, context)
 
