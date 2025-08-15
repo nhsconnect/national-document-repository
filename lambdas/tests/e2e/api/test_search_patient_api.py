@@ -25,7 +25,11 @@ def test_search_patient_details(test_data, snapshot):
     data_helper.create_resource(lloyd_george_record)
 
     url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    headers = {
+        "Authorization": "Bearer 123",
+        "X-Api-Key": api_key,
+        "X-Correlation-ID": "1234",
+    }
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
     logging.info(bundle)
@@ -67,7 +71,11 @@ def test_multiple_cancelled_search_patient_details(test_data, snapshot):
     data_helper.create_resource(second_lloyd_george_record)
 
     url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    headers = {
+        "Authorization": "Bearer 123",
+        "X-Api-Key": api_key,
+        "X-Correlation-ID": "1234",
+    }
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
@@ -88,7 +96,11 @@ def test_no_records(snapshot):
     lloyd_george_record["nhs_number"] = "9449305943"
 
     url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    headers = {
+        "Authorization": "Bearer 123",
+        "X-Api-Key": api_key,
+        "X-Correlation-ID": "1234",
+    }
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
@@ -100,7 +112,11 @@ def test_invalid_patient(snapshot):
     lloyd_george_record["nhs_number"] = "9999999993"
 
     url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    headers = {
+        "Authorization": "Bearer 123",
+        "X-Api-Key": api_key,
+        "X-Correlation-ID": "1234",
+    }
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
