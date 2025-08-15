@@ -16,7 +16,14 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @override_error_check
 @ensure_environment_variables(
-    ["FROM_EMAIL_ADDRESS", "EMAIL_SUBJECT", "EMAIL_RECIPIENT_SSM_PARAM_KEY"]
+    [
+        "FROM_EMAIL_ADDRESS",
+        "EMAIL_SUBJECT",
+        "EMAIL_RECIPIENT_SSM_PARAM_KEY",
+        "ITOC_TESTING_SLACK_BOT_TOKEN",
+        "ITOC_TESTING_CHANNEL_ID",
+        "ITOC_TESTING_EMAIL_ADDRESS",
+    ]
 )
 @handle_lambda_exceptions
 def lambda_handler(event, context):

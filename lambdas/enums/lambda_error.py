@@ -298,6 +298,11 @@ class LambdaError(Enum):
         "message": "Failed to fetch parameters for sending email from SSM param store",
     }
 
+    FeedbackITOCFailure = {
+        "err_code": "SFB_5003",
+        "message": "Failed to send ITOC feedback",
+    }
+
     """
        Errors for Feature Flags lambda 
     """
