@@ -187,9 +187,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
 
 
 @freeze_time("2023-10-1 13:00:00")
-def test_delete_documents_soft_delete(
-    mock_service, mock_dynamo_service, mock_s3_service
-):
+def test_delete_documents_soft_delete(mock_service, mock_dynamo_service):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_date = datetime.now()
@@ -199,7 +197,6 @@ def test_delete_documents_soft_delete(
         "Deleted": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "TTL": int(ttl_date.timestamp()),
         "DocStatus": "deprecated",
-        "Status": "superseded",
     }
 
     mock_service.delete_document_references(
@@ -214,9 +211,7 @@ def test_delete_documents_soft_delete(
 
 
 @freeze_time("2023-10-1 13:00:00")
-def test_delete_documents_death_delete(
-    mock_service, mock_dynamo_service, mock_s3_service
-):
+def test_delete_documents_death_delete(mock_service, mock_dynamo_service):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_date = datetime.now()
@@ -226,7 +221,6 @@ def test_delete_documents_death_delete(
         "Deleted": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "TTL": int(ttl_date.timestamp()),
         "DocStatus": "deprecated",
-        "Status": "superseded",
     }
 
     mock_service.delete_document_references(
