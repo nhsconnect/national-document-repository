@@ -1,13 +1,14 @@
 from typing import List, Literal, Optional
 
+from enums.fhir.fhir_issue_type import FhirIssueCoding
 from models.fhir.R4.base_models import CodeableConcept, Coding
 from pydantic import BaseModel
 
 
 class OperationOutcomeCoding(Coding):
-    system: Optional[str] = "http://hl7.org/fhir/issue-type"
-    code: Optional[str] = None
-    display: Optional[str] = None
+    system: Optional[str] = FhirIssueCoding.EXCEPTION.system
+    code: Optional[str] = FhirIssueCoding.EXCEPTION.code
+    display: Optional[str] = FhirIssueCoding.EXCEPTION.display
 
 
 class OperationOutcomeCodeableConcept(CodeableConcept):
