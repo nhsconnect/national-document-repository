@@ -7,8 +7,8 @@
         'details': dict({
           'coding': list([
             dict({
-              'code': 'invalid',
-              'display': 'Invalid Content',
+              'code': 'INVALID_SEARCH_DATA',
+              'display': 'Invalid search data',
               'system': 'http://hl7.org/fhir/issue-type',
             }),
           ]),
@@ -124,8 +124,8 @@
         'details': dict({
           'coding': list([
             dict({
-              'code': 'not-found',
-              'display': 'Not Found',
+              'code': 'RESOURCE_NOT_FOUND',
+              'display': 'Resource not found',
               'system': 'http://hl7.org/fhir/issue-type',
             }),
           ]),

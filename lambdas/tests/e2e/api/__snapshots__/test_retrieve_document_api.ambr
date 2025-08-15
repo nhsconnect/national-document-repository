@@ -54,8 +54,8 @@
         'details': dict({
           'coding': list([
             dict({
-              'code': 'not-found',
-              'display': 'Not Found',
+              'code': 'RESOURCE_NOT_FOUND',
+              'display': 'Resource not found',
               'system': 'http://hl7.org/fhir/issue-type',
             }),
           ]),
