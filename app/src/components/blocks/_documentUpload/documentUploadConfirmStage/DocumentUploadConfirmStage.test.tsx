@@ -13,6 +13,7 @@ import * as ReactRouter from 'react-router-dom';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { routeChildren, routes } from '../../../../types/generic/routes';
+import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
 
 const mockedUseNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -100,7 +101,7 @@ describe('DocumentUploadCompleteStage', () => {
                 .closest('.nhsuk-inset-text');
             expect(insetText).toBeInTheDocument();
 
-            const expectedFullName = `${patientDetails.familyName}, ${patientDetails.givenName}`;
+            const expectedFullName = getFormattedPatientFullName(patientDetails);
             expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
             expect(screen.getByText(expectedFullName)).toBeInTheDocument();
 
