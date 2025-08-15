@@ -5,6 +5,7 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { getFormattedDateFromString } from '../../../../helpers/utils/formatDate';
+import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
 
 const DocumentUploadCompleteStage = () => {
     const navigate = useNavigate();
@@ -12,10 +13,10 @@ const DocumentUploadCompleteStage = () => {
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const dob: string = getFormattedDateFromString(patientDetails?.birthDate)
+    const patientName = getFormattedPatientFullName(patientDetails);
 
     useTitle({ pageTitle: 'Record upload complete' });
 
-    const patientName = `${patientDetails?.familyName}, ${patientDetails?.givenName}`
 
     return (
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
