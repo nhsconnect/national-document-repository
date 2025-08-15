@@ -4,6 +4,7 @@ import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { SummaryList, Tag } from 'nhsuk-react-components';
 import type { PatientDetails } from '../../../types/generic/patientDetails';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
+import { getFormattedPatientFullName } from '../../../helpers/utils/formatPatientFullName';
 
 /**
  * Props for the PatientSummary component.
@@ -79,7 +80,7 @@ const Details: React.FC<{ item: PatientInfo }> = ({ item }) => {
         case PatientInfo.FULL_NAME:
             key = 'Patient name';
             elementId = 'patient-summary-full-name';
-            value = `${patientDetails?.familyName}, ${patientDetails?.givenName?.join(' ')}`;
+            value = getFormattedPatientFullName(patientDetails)
             break;
         case PatientInfo.NHS_NUMBER:
             key = 'NHS number';
