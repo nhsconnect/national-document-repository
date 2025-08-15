@@ -1,11 +1,29 @@
-import AWS from 'aws-sdk';
+// cypress/support/commands.d.ts
+/// <reference types="cypress" />
 
-// need to get from env vars
-AWS.config.update({
+import { S3Client } from '@aws-sdk/client-s3';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+
+import type { AwsCredentialIdentity } from '@aws-sdk/types';
+
+const env = (k: string): string => {
+    const v = Cypress.env(k);
+    if (!v) throw new Error(`Missing ${k} in Cypress.env`);
+    return String(v);
+};
+
+const region = Cypress.env('AWS_REGION');
+
+const credentials: AwsCredentialIdentity = {
     accessKeyId: Cypress.env('AWS_ACCESS_KEY_ID'),
     secretAccessKey: Cypress.env('AWS_SECRET_ACCESS_KEY'),
-    region: Cypress.env('AWS_REGION'),
-    sessionToken: Cypress.env('AWS_SESSION_TOKEN'),
-});
+    sessionToken: Cypress.env('AWS_SESSION_TOKEN')
+        ? String(Cypress.env('AWS_SESSION_TOKEN'))
+        : undefined,
+};
 
-export default AWS;
+export const s3 = new S3Client({ region, credentials });
+export const dynamo = new DynamoDBClient({ region, credentials });
+
+const awsClients = { s3, dynamo };
+export default awsClients;

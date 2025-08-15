@@ -79,6 +79,16 @@
         "@typescript-eslint/explicit-function-return-type": "warn"
     },
     "overrides": [
+          {
+            "files": ["cypress/**/*.{ts,js}"],
+            "extends": ["plugin:cypress/recommended"],
+            "rules": {
+            "import/no-extraneous-dependencies": [
+            "error",
+                { "devDependencies": true },
+            ],
+            },
+        },
         {
             "files": ["**/*.test.tsx", "**/*.test.ts"],
             "rules": {
