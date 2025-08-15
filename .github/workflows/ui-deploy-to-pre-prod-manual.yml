@@ -45,7 +45,7 @@ jobs:
     steps:
     - name: Checkout main
       if: ${{ github.event.inputs.branch_or_tag == 'main' }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: main
         fetch-depth: '0'
