@@ -9,7 +9,7 @@
             dict({
               'code': 'INVALID_SEARCH_DATA',
               'display': 'Invalid search data',
-              'system': 'http://hl7.org/fhir/issue-type',
+              'system': 'https://fhir.hl7.org.uk/CodeSystem/UKCore-SpineErrorOrWarningCode',
             }),
           ]),
         }),
@@ -126,7 +126,7 @@
             dict({
               'code': 'RESOURCE_NOT_FOUND',
               'display': 'Resource not found',
-              'system': 'http://hl7.org/fhir/issue-type',
+              'system': 'https://fhir.hl7.org.uk/CodeSystem/UKCore-SpineErrorOrWarningCode',
             }),
           ]),
         }),
