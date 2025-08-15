@@ -11,6 +11,7 @@ from services.base.sqs_service import SQSService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import PdsErrorException
+from utils.ods_utils import PCSE_ODS_CODE
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -24,7 +25,7 @@ class MNSNotificationService:
         self.sqs_service = SQSService()
         self.queue = os.getenv("MNS_NOTIFICATION_QUEUE_URL")
         self.DOCUMENT_UPDATE_FIELDS = {"current_gp_ods", "custodian", "last_updated"}
-        self.PCSE_ODS = "X4S4L"
+        self.PCSE_ODS = PCSE_ODS_CODE
 
     def handle_mns_notification(self, message: MNSSQSMessage):
         try:

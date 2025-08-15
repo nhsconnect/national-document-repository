@@ -38,6 +38,7 @@ from utils.lloyd_george_validator import (
     validate_filename_with_patient_details_strict,
     validate_lg_file_names,
 )
+from utils.ods_utils import PCSE_ODS_CODE
 from utils.request_context import request_context
 from utils.unicode_utils import (
     contains_accent_char,
@@ -395,13 +396,17 @@ class BulkUploadService:
             ).strftime("%Y-%m-%d")
         else:
             scan_date_formatted = None
+        if current_gp_ods in PatientOdsInactiveStatus.list():
+            custodian = PCSE_ODS_CODE
+        else:
+            custodian = current_gp_ods
         document_reference = DocumentReference(
             id=str(uuid.uuid4()),
             nhs_number=nhs_number,
             file_name=file_name,
             s3_bucket_name=s3_bucket_name,
             current_gp_ods=current_gp_ods,
-            custodian=current_gp_ods,
+            custodian=custodian,
             author=file_metadata.gp_practice_code,
             document_scan_creation=scan_date_formatted,
             doc_status="preliminary",
