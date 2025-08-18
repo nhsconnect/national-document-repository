@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
@@ -27,6 +27,9 @@ import sendEmail from '../../helpers/requests/sendEmail';
 import { isMock } from '../../helpers/utils/isLocal';
 import { routes } from '../../types/generic/routes';
 import { errorToParams } from '../../helpers/utils/errorToParams';
+import ErrorBox from '../../components/layout/errorBox/ErrorBox';
+import { UPLOAD_FILE_ERROR_TYPE } from '../../helpers/utils/fileUploadErrorMessages';
+import { UploadFilesError } from '../../types/pages/UploadDocumentsPage/types';
 
 function FeedbackPage() {
     const baseUrl = useBaseAPIUrl();
@@ -69,12 +72,12 @@ function FeedbackPage() {
 
     const feedbackContentProps = renameRefKey(
         register(FORM_FIELDS.FeedbackContent, {
-            required: 'Please enter your feedback',
+            required: 'Enter your feedback',
         }),
         'textareaRef',
     );
     const howSatisfiedProps = renameRefKey(
-        register(FORM_FIELDS.HowSatisfied, { required: 'Please select an option' }),
+        register(FORM_FIELDS.HowSatisfied, { required: 'Select an option' }),
         'inputRef',
     );
     const respondentNameProps = renameRefKey(register(FORM_FIELDS.RespondentName), 'inputRef');
@@ -91,9 +94,55 @@ function FeedbackPage() {
     );
     useTitle({ pageTitle: 'Give feedback on this service' });
 
+    const scrollToRef = useRef<HTMLDivElement>(null);
+
+    const errorMessageList = (): UploadFilesError[] => {
+        const errorsList: UploadFilesError[] = [];
+
+        if (errors.howSatisfied) {
+            errorsList.push({
+                linkId: 'select-how-satisfied',
+                error: UPLOAD_FILE_ERROR_TYPE.feedbackSatisfaction,
+                details: errors.howSatisfied.message,
+            });
+        }
+
+        if (errors.feedbackContent) {
+            errorsList.push({
+                linkId: "feedback_textbox",
+                error: UPLOAD_FILE_ERROR_TYPE.feedbackTextbox,
+                details: errors.feedbackContent.message,
+            });
+        }
+
+        if (errors.respondentEmail) {
+            errorsList.push({
+                linkId: "email-text-input",
+                error: UPLOAD_FILE_ERROR_TYPE.emailTextInput,
+                details: errors.respondentEmail.message,
+            });
+        }
+
+        return errorsList;
+    };
+
+
+
+
     return (
         <div id="feedback-form">
             <h1 data-testid="feedback-page-header">Give feedback on this service</h1>
+
+            {Object.keys(errors).length > 0 && (
+            <ErrorBox
+                dataTestId="feedback-error-box"
+                errorBoxSummaryId="feedback-errors"
+                messageTitle="There is a problem"
+                errorMessageList={errorMessageList()}
+                scrollToRef={scrollToRef}
+            />
+           )}
+
 
             <form onSubmit={handleSubmit(submit)}>
                 <Fieldset data-testid="feedback-radio-section">
@@ -114,6 +163,7 @@ function FeedbackPage() {
                         <h2>Can you tell us why you selected that option?</h2>
                     </Fieldset.Legend>
                     <Textarea
+                        id="feedback_textbox"
                         data-testid={FORM_FIELDS.FeedbackContent}
                         label="You can give details about specific pages or parts of the service here."
                         rows={7}
@@ -157,6 +207,7 @@ function FeedbackPage() {
                     />
 
                     <TextInput
+                        id="email-text-input"
                         label="Your email address"
                         hint="We’ll only use this to reply to your message"
                         data-testid={FORM_FIELDS.RespondentEmail}
