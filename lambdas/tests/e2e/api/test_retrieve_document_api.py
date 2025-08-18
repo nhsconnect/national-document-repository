@@ -24,7 +24,11 @@ def test_small_file(test_data, snapshot):
     data_helper.create_resource(lloyd_george_record)
 
     url = f"https://{api_endpoint}/FhirDocumentReference/{LLOYD_GEORGE_SNOMED}~{lloyd_george_record['id']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    headers = {
+        "Authorization": "Bearer 123",
+        "X-Api-Key": api_key,
+        "X-Correlation-Id": "1234",
+    }
     response = requests.request("GET", url, headers=headers)
     json = response.json()
 
@@ -49,7 +53,11 @@ def test_large_file(test_data, snapshot):
     data_helper.create_resource(lloyd_george_record)
 
     url = f"https://{api_endpoint}/FhirDocumentReference/{LLOYD_GEORGE_SNOMED}~{lloyd_george_record['id']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    headers = {
+        "Authorization": "Bearer 123",
+        "X-Api-Key": api_key,
+        "X-Correlation-Id": "1234",
+    }
     response = requests.request("GET", url, headers=headers)
     json = response.json()
 
@@ -68,7 +76,11 @@ def test_no_file_found(snapshot):
     lloyd_george_record["id"] = str(uuid.uuid4())
 
     url = f"https://{api_endpoint}/FhirDocumentReference/{LLOYD_GEORGE_SNOMED}~{lloyd_george_record['id']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    headers = {
+        "Authorization": "Bearer 123",
+        "X-Api-Key": api_key,
+        "X-Correlation-Id": "1234",
+    }
     response = requests.request("GET", url, headers=headers)
     json = response.json()
 
@@ -88,7 +100,11 @@ def test_preliminary_file(test_data, snapshot):
     data_helper.create_resource(lloyd_george_record)
 
     url = f"https://{api_endpoint}/FhirDocumentReference/{LLOYD_GEORGE_SNOMED}~{lloyd_george_record['id']}"
-    headers = {"Authorization": "Bearer 123", "X-Api-Key": api_key}
+    headers = {
+        "Authorization": "Bearer 123",
+        "X-Api-Key": api_key,
+        "X-Correlation-Id": "1234",
+    }
     response = requests.request("GET", url, headers=headers)
     json = response.json()
 
