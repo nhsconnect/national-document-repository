@@ -9,7 +9,7 @@ In addition the following AWS Environment Variables need to be set in order to u
 | Environment Variable | Description                                                   |
 | -------------------- | ------------------------------------------------------------- |
 | `NDR_API_KEY`        | The API key required to authenticate requests to the NDR API. |
-| `NDR_API_ENDPOINT`   | The URI string used to connect to the NDR API.                |
+| `NDR_API_ENDPOINT`   | The URI string usedhto connect to the NDR API.                |
 | `NDR_S3_BUCKET`      | The name of the Lloyd George Store.                           |
 | `NDR_DYNAMO_STORE`   | The name of the Lloyd George Reference Data Store.            |
 

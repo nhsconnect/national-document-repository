@@ -166,8 +166,6 @@ def test_create_document_presign(test_data, snapshot):
 def test_create_document_virus(test_data, snapshot):
     lloyd_george_record = {}
     lloyd_george_record["ods"] = "H81109"
-
-    # The usage of the following NHS Number will trigger a virus
     lloyd_george_record["nhs_number"] = "9730154260"
 
     payload = create_upload_payload(lloyd_george_record)

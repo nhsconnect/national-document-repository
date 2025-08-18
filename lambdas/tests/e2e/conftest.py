@@ -1,4 +1,5 @@
 import os
+import random
 import time
 
 import pytest
@@ -32,3 +33,33 @@ def fetch_with_retry(url, condition_func, max_retries=5, delay=10):
         time.sleep(delay)
         retries += 1
     raise Exception("Condition not met within retry limit")
+
+
+def calculate_check_digit(nhs_number_9_digits: str) -> int:
+    total = sum(
+        int(digit) * weight
+        for digit, weight in zip(nhs_number_9_digits, range(10, 1, -1))
+    )
+    remainder = total % 11
+    check_digit = 11 - remainder
+
+    if check_digit == 11:
+        return 0
+    elif check_digit == 10:
+        # Invalid check digit, caller must retry
+        raise ValueError("Invalid check digit (10)")
+    else:
+        return check_digit
+
+
+def generate_nhs_number() -> str:
+    while True:
+        nine_digits = "9" + "".join(
+            str(random.randint(0, 9)) for _ in range(8)
+        )  # Force first digit = 9
+        try:
+            check_digit = calculate_check_digit(nine_digits)
+            return nine_digits + str(check_digit)
+        except ValueError:
+            # Retry if we hit an invalid check digit (10)
+            continue
