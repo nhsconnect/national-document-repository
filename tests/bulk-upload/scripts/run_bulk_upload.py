@@ -35,4 +35,4 @@ if __name__ == "__main__":
     if args.start_bulk_upload or input(
         "Would you like to start the Bulk Upload Process:"
     ):
-        invoke_lambda(f"{args.environment}_BulkUploadMetadataLambda")
+        invoke_lambda(f"{args.environment}_V2BulkUploadMetadataLambda")
