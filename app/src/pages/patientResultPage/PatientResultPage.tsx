@@ -41,11 +41,6 @@ function PatientResultPage() {
                 return;
             }
 
-            if (userIsGPAdmin) {
-                navigate(routes.ARF_UPLOAD_DOCUMENTS);
-                return;
-            }
-
             navigate(routes.SEARCH_PATIENT);
         }
     };

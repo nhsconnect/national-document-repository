@@ -1,31 +1,31 @@
 // need to use happy-dom for this test file as jsdom doesn't support DOMMatrix https://github.com/jsdom/jsdom/issues/2647
 // @vitest-environment happy-dom
-import { render, waitFor, screen, fireEvent } from '@testing-library/react';
-import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
-import DocumentSelectStage, { Props } from './DocumentSelectStage';
-import { buildLgFile } from '../../../../helpers/test/testBuilders';
+import { fireEvent, render, RenderResult, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
-import * as ReactRouter from 'react-router-dom';
-import { MemoryHistory, createMemoryHistory } from 'history';
-import { routeChildren, routes } from '../../../../types/generic/routes';
-import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
-import usePatient from '../../../../helpers/hooks/usePatient';
-import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
-import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { createMemoryHistory, MemoryHistory } from 'history';
 import { getDocument } from 'pdfjs-dist';
+import { JSX, useState } from 'react';
+import * as ReactRouter from 'react-router-dom';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { buildLgFile, buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import {
     fileUploadErrorMessages,
     PDF_PARSING_ERROR_TYPE,
 } from '../../../../helpers/utils/fileUploadErrorMessages';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
+import { routeChildren, routes } from '../../../../types/generic/routes';
+import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
+import DocumentSelectStage, { Props } from './DocumentSelectStage';
+import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
 
 vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual('react-router-dom');
     return {
         ...actual,
-        Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
-        useNavigate: () => mockedUseNavigate,
+        Link: (props: ReactRouter.LinkProps): JSX.Element => <a {...props} role="link" />,
+        useNavigate: (): typeof mockedUseNavigate => mockedUseNavigate,
     };
 });
 vi.mock('pdfjs-dist');
@@ -134,7 +134,7 @@ describe('DocumentSelectStage', () => {
                 .closest('.nhsuk-inset-text');
             expect(insetText).toBeInTheDocument();
 
-            const expectedFullName = `${patientDetails.familyName}, ${patientDetails.givenName}`;
+            const expectedFullName = getFormattedPatientFullName(patientDetails);
             expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
             expect(screen.getByText(expectedFullName)).toBeInTheDocument();
 
@@ -256,7 +256,7 @@ describe('DocumentSelectStage', () => {
         });
     });
 
-    const TestApp = (props: Partial<Props>) => {
+    const TestApp = (props: Partial<Props>): JSX.Element => {
         const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
 
         return (
@@ -271,7 +271,7 @@ describe('DocumentSelectStage', () => {
     const renderApp = (
         history: MemoryHistory,
         docType: DOCUMENT_TYPE = DOCUMENT_TYPE.LLOYD_GEORGE,
-    ) => {
+    ): RenderResult => {
         return render(
             <ReactRouter.Router navigator={history} location={history.location}>
                 <TestApp documentType={docType} />

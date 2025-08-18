@@ -37,19 +37,6 @@ const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
 describe('Feature flags - ARF Workflow', () => {
     it(
-        'for GP admin it displays the page when both feature flags are enabled',
-        { tags: 'regression' },
-        () => {
-            cy.login(Roles.GP_ADMIN);
-            navigateToUploadPage();
-            cy.get('#verify-submit').click();
-
-            cy.url().should('eq', baseUrl + arfUploadUrl);
-            cy.get('h1').should('not.have.text', 'Unauthorised access');
-        },
-    );
-
-    it(
         'for GP clinical role it does not find patient when both feature flags are enabled',
         { tags: 'regression' },
         () => {

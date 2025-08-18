@@ -2,7 +2,6 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
 
-
 function DocumentUploadInfectedStage() {
     const navigate = useNavigate();
     const pageHeader = "We couldn't upload your files because we found a virus";
@@ -25,10 +24,10 @@ function DocumentUploadInfectedStage() {
                     className="govuk-link"
                     onClick={(e) => {
                         e.preventDefault();
-                        navigate(routes.DOCUMENT_UPLOAD, { replace: true });
+                        navigate(routes.HOME, { replace: true });
                     }}
                 >
-                    Go back to choose Lloyd George files to upload
+                    Go to home
                 </button>
             </p>
         </>

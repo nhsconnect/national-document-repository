@@ -9,7 +9,6 @@ import UnauthorisedPage from '../pages/unauthorisedPage/UnauthorisedPage';
 import LogoutPage from '../pages/logoutPage/LogoutPage';
 import PatientSearchPage from '../pages/patientSearchPage/PatientSearchPage';
 import PatientResultPage from '../pages/patientResultPage/PatientResultPage';
-import ArfUploadDocumentsPage from '../pages/uploadDocumentsPage/UploadDocumentsPage';
 import ArfSearchResultsPage from '../pages/documentSearchResultsPage/DocumentSearchResultsPage';
 import LloydGeorgeRecordPage from '../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import AuthGuard from './guards/authGuard/AuthGuard';
@@ -21,7 +20,6 @@ import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLo
 import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
-import LloydGeorgeUploadPage from '../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import SessionExpiredErrorPage from '../pages/sessionExpiredErrorPage/SessionExpiredErrorPage';
 import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/FeedbackConfirmationPage';
 import ReportDownloadPage from '../pages/reportDownloadPage/ReportDownloadPage';
@@ -48,12 +46,8 @@ const {
     PRIVACY_POLICY,
     LLOYD_GEORGE,
     LLOYD_GEORGE_WILDCARD,
-    LLOYD_GEORGE_UPLOAD,
-    LLOYD_GEORGE_UPLOAD_WILDCARD,
     ARF_OVERVIEW,
     ARF_OVERVIEW_WILDCARD,
-    ARF_UPLOAD_DOCUMENTS,
-    ARF_UPLOAD_DOCUMENTS_WILDCARD,
     REPORT_DOWNLOAD,
     REPORT_DOWNLOAD_WILDCARD,
     PATIENT_ACCESS_AUDIT,
@@ -97,30 +91,6 @@ export const childRoutes = [
         parent: LLOYD_GEORGE,
     },
     {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING,
-        parent: LLOYD_GEORGE_UPLOAD,
-    },
-    {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED,
-        parent: LLOYD_GEORGE_UPLOAD,
-    },
-    {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION,
-        parent: LLOYD_GEORGE_UPLOAD,
-    },
-    {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED,
-        parent: LLOYD_GEORGE_UPLOAD,
-    },
-    {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_FAILED,
-        parent: LLOYD_GEORGE_UPLOAD,
-    },
-    {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_RETRY,
-        parent: LLOYD_GEORGE_UPLOAD,
-    },
-    {
         route: routeChildren.ARF_DELETE,
         parent: ARF_OVERVIEW,
     },
@@ -131,26 +101,6 @@ export const childRoutes = [
     {
         route: routeChildren.ARF_DELETE_COMPLETE,
         parent: ARF_OVERVIEW,
-    },
-    {
-        route: routeChildren.ARF_UPLOAD_UPLOADING,
-        parent: ARF_UPLOAD_DOCUMENTS,
-    },
-    {
-        route: routeChildren.ARF_UPLOAD_COMPLETED,
-        parent: ARF_UPLOAD_DOCUMENTS,
-    },
-    {
-        route: routeChildren.ARF_UPLOAD_FAILED,
-        parent: ARF_UPLOAD_DOCUMENTS,
-    },
-    {
-        route: routeChildren.ARF_UPLOAD_CONFIRMATION,
-        parent: ARF_UPLOAD_DOCUMENTS,
-    },
-    {
-        route: routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED,
-        parent: ARF_UPLOAD_DOCUMENTS,
     },
     {
         route: routeChildren.REPORT_DOWNLOAD_COMPLETE,
@@ -281,16 +231,6 @@ export const routeMap: Routes = {
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],
     },
-    [LLOYD_GEORGE_UPLOAD]: {
-        page: <LloydGeorgeUploadPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
-    },
-    [LLOYD_GEORGE_UPLOAD_WILDCARD]: {
-        page: <LloydGeorgeUploadPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
-    },
     [ARF_OVERVIEW]: {
         page: <ArfSearchResultsPage />,
         type: ROUTE_TYPE.PATIENT,
@@ -301,16 +241,6 @@ export const routeMap: Routes = {
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
-    [ARF_UPLOAD_DOCUMENTS]: {
-        page: <ArfUploadDocumentsPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
-    },
-    [ARF_UPLOAD_DOCUMENTS_WILDCARD]: {
-        page: <ArfUploadDocumentsPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
-    },
     [PATIENT_ACCESS_AUDIT]: {
         page: <PatientAccessAuditPage />,
         type: ROUTE_TYPE.PATIENT,
@@ -319,7 +249,6 @@ export const routeMap: Routes = {
         page: <PatientAccessAuditPage />,
         type: ROUTE_TYPE.PATIENT,
     },
-
     [DOCUMENT_UPLOAD]: {
         page: <DocumentUploadPage />,
         type: ROUTE_TYPE.PATIENT,
