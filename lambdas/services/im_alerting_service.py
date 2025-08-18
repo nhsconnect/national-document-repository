@@ -416,6 +416,11 @@ class IMAlertingService:
     def create_action_url(self, base_url: str, alarm_name: str) -> str:
         search_query = "#:~:text="
 
+        prefixes = [f"{os.environ['WORKSPACE']}_", f"{os.environ['WORKSPACE']}-"]
+
+        for prefix in prefixes:
+            alarm_name = alarm_name.replace(prefix, "")
+
         url_extension = (
             alarm_name.replace(" ", "%20")
             .replace("-", "%20")
