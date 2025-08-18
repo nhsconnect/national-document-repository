@@ -17,6 +17,7 @@ import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import DocumentSelectStage, { Props } from './DocumentSelectStage';
+import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
 
 vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('react-router-dom', async () => {
@@ -133,7 +134,7 @@ describe('DocumentSelectStage', () => {
                 .closest('.nhsuk-inset-text');
             expect(insetText).toBeInTheDocument();
 
-            const expectedFullName = `${patientDetails.familyName}, ${patientDetails.givenName}`;
+            const expectedFullName = getFormattedPatientFullName(patientDetails);
             expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
             expect(screen.getByText(expectedFullName)).toBeInTheDocument();
 
