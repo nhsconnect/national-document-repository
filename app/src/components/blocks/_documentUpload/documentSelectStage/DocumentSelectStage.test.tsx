@@ -1,25 +1,36 @@
 // need to use happy-dom for this test file as jsdom doesn't support DOMMatrix https://github.com/jsdom/jsdom/issues/2647
 // @vitest-environment happy-dom
-import { render, waitFor, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, RenderResult, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { createMemoryHistory, MemoryHistory } from 'history';
+import { getDocument } from 'pdfjs-dist';
+import { JSX, useState } from 'react';
+import * as ReactRouter from 'react-router-dom';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { buildLgFile, buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import {
+    fileUploadErrorMessages,
+    PDF_PARSING_ERROR_TYPE,
+} from '../../../../helpers/utils/fileUploadErrorMessages';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import DocumentSelectStage, { Props } from './DocumentSelectStage';
-import { buildLgFile } from '../../../../helpers/test/testBuilders';
-import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
-import * as ReactRouter from 'react-router-dom';
-import { MemoryHistory, createMemoryHistory } from 'history';
-import { routeChildren } from '../../../../types/generic/routes';
+import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
 
 vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual('react-router-dom');
     return {
         ...actual,
-        Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
-        useNavigate: () => mockedUseNavigate,
+        Link: (props: ReactRouter.LinkProps): JSX.Element => <a {...props} role="link" />,
+        useNavigate: (): typeof mockedUseNavigate => mockedUseNavigate,
     };
 });
 vi.mock('pdfjs-dist');
+
+const patientDetails = buildPatientDetails();
 
 URL.createObjectURL = vi.fn();
 const mockedUseNavigate = vi.fn();
@@ -31,6 +42,8 @@ let history = createMemoryHistory({
 
 describe('DocumentSelectStage', () => {
     beforeEach(() => {
+        vi.mocked(usePatient).mockReturnValue(patientDetails);
+
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
         history = createMemoryHistory({ initialEntries: ['/'], initialIndex: 0 });
     });
@@ -107,6 +120,112 @@ describe('DocumentSelectStage', () => {
                 expect(screen.getByText(lgDocumentOne.name)).toBeInTheDocument();
                 expect(screen.queryByText(lgDocumentTwo.name)).not.toBeInTheDocument();
             });
+
+            expect(
+                screen.getByRole('heading', { level: 2, name: 'Before you upload' }),
+            ).toBeInTheDocument();
+        });
+
+        it('renders patient summary fields is inset', async () => {
+            renderApp(history);
+
+            const insetText = screen
+                .getByText('Make sure that all files uploaded are for this patient only:')
+                .closest('.nhsuk-inset-text');
+            expect(insetText).toBeInTheDocument();
+
+            const expectedFullName = getFormattedPatientFullName(patientDetails);
+            expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
+            expect(screen.getByText(expectedFullName)).toBeInTheDocument();
+
+            expect(screen.getByText(/NHS number/i)).toBeInTheDocument();
+            const expectedNhsNumber = formatNhsNumber(patientDetails.nhsNumber);
+            expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
+
+            expect(screen.getByText(/Date of birth/i)).toBeInTheDocument();
+            const expectedDob = getFormattedDate(new Date(patientDetails.birthDate));
+            expect(screen.getByText(expectedDob)).toBeInTheDocument();
+        });
+
+        it('should error when the user selects a file that is password protected', async () => {
+            renderApp(history);
+
+            vi.mocked(getDocument).mockImplementation(() => {
+                throw new Error(PDF_PARSING_ERROR_TYPE.PASSWORD_MISSING);
+            });
+
+            const dropzone = screen.getByTestId('dropzone');
+            fireEvent.drop(dropzone, { dataTransfer: { files: [lgDocumentOne] } });
+
+            const file1 = await screen.findByText(lgDocumentOne.name);
+            expect(file1).toBeInTheDocument();
+
+            expect(file1.nextElementSibling?.nextElementSibling).toHaveTextContent(
+                fileUploadErrorMessages.passwordProtected.inline,
+            );
+
+            userEvent.click(await screen.findByTestId('continue-button'));
+
+            await waitFor(async () => {
+                expect(screen.getByTestId('error-box')).toHaveTextContent(
+                    fileUploadErrorMessages.passwordProtected.errorBox,
+                );
+                expect(mockedUseNavigate).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should error when the user selects a file that is corrupt', async () => {
+            renderApp(history);
+
+            vi.mocked(getDocument).mockImplementation(() => {
+                throw new Error(PDF_PARSING_ERROR_TYPE.INVALID_PDF_STRUCTURE);
+            });
+
+            const dropzone = screen.getByTestId('dropzone');
+            fireEvent.drop(dropzone, { dataTransfer: { files: [lgDocumentOne] } });
+
+            const file1 = await screen.findByText(lgDocumentOne.name);
+            expect(file1).toBeInTheDocument();
+
+            expect(file1.nextElementSibling?.nextElementSibling).toHaveTextContent(
+                fileUploadErrorMessages.invalidPdf.inline,
+            );
+
+            userEvent.click(await screen.findByTestId('continue-button'));
+
+            await waitFor(async () => {
+                expect(screen.getByTestId('error-box')).toHaveTextContent(
+                    fileUploadErrorMessages.invalidPdf.errorBox,
+                );
+                expect(mockedUseNavigate).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should error when the user selects a file that is empty', async () => {
+            renderApp(history);
+
+            vi.mocked(getDocument).mockImplementation(() => {
+                throw new Error(PDF_PARSING_ERROR_TYPE.EMPTY_PDF);
+            });
+
+            const dropzone = screen.getByTestId('dropzone');
+            fireEvent.drop(dropzone, { dataTransfer: { files: [lgDocumentOne] } });
+
+            const file1 = await screen.findByText(lgDocumentOne.name);
+            expect(file1).toBeInTheDocument();
+
+            expect(file1.nextElementSibling?.nextElementSibling).toHaveTextContent(
+                fileUploadErrorMessages.emptyPdf.inline,
+            );
+
+            userEvent.click(await screen.findByTestId('continue-button'));
+
+            await waitFor(async () => {
+                expect(screen.getByTestId('error-box')).toHaveTextContent(
+                    fileUploadErrorMessages.emptyPdf.errorBox,
+                );
+                expect(mockedUseNavigate).not.toHaveBeenCalled();
+            });
         });
     });
 
@@ -132,12 +251,12 @@ describe('DocumentSelectStage', () => {
             await userEvent.click(await screen.findByTestId('back-button'));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(-1);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.VERIFY_PATIENT);
             });
         });
     });
 
-    const TestApp = (props: Partial<Props>) => {
+    const TestApp = (props: Partial<Props>): JSX.Element => {
         const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
 
         return (
@@ -152,7 +271,7 @@ describe('DocumentSelectStage', () => {
     const renderApp = (
         history: MemoryHistory,
         docType: DOCUMENT_TYPE = DOCUMENT_TYPE.LLOYD_GEORGE,
-    ) => {
+    ): RenderResult => {
         return render(
             <ReactRouter.Router navigator={history} location={history.location}>
                 <TestApp documentType={docType} />

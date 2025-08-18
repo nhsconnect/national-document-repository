@@ -1,7 +1,7 @@
 import { ErrorSummary } from 'nhsuk-react-components';
-import { LegacyRef, MouseEvent } from 'react';
-import { UploadFilesErrors } from '../../../types/pages/UploadDocumentsPage/types';
+import { Ref, MouseEvent, JSX } from 'react';
 import { groupUploadErrorsByType } from '../../../helpers/utils/fileUploadErrorMessages';
+import { UploadFilesError } from '../../../types/pages/UploadDocumentsPage/types';
 
 type Props = {
     errorBoxSummaryId: string;
@@ -12,48 +12,49 @@ type Props = {
     errorBody?: string;
     dataTestId?: string;
     errorOnClick?: () => void;
-    errorMessageList?: UploadFilesErrors[];
-    scrollToRef?: LegacyRef<HTMLDivElement>;
+    errorMessageList?: UploadFilesError[];
+    scrollToRef?: Ref<HTMLDivElement>;
 };
 
 type UploadErrorMessagesProps = {
-    errorMessageList: UploadFilesErrors[];
+    errorMessageList: UploadFilesError[];
 };
 
-function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesProps>) {
+function UploadErrorMessages({
+    errorMessageList,
+}: Readonly<UploadErrorMessagesProps>): JSX.Element {
     const uploadErrorsGrouped = groupUploadErrorsByType(errorMessageList);
 
     return (
         <>
-            {Object.entries(uploadErrorsGrouped).map(([errorType, { filenames, errorMessage }]) => (
-                <div key={errorType}>
-                    <p>{errorMessage}</p>
-                    <ErrorSummary.List>
-                        {filenames.map((filename) => (
-                            <ErrorSummary.Item href={'#' + filename} key={errorType + filename}>
-                                {filename}
+            {Object.entries(uploadErrorsGrouped).map(([errorType, { linkIds, errorMessage }]) => {
+                const firstFile = linkIds[0];
+                return (
+                    <div key={errorType}>
+                        <ErrorSummary.List>
+                            <ErrorSummary.Item href={'#' + firstFile} key={errorType + firstFile}>
+                                {errorMessage}
                             </ErrorSummary.Item>
-                        ))}
-                    </ErrorSummary.List>
-                </div>
-            ))}
+                        </ErrorSummary.List>
+                    </div>
+                );
+            })}
         </>
     );
 }
 
-// @ts-ignore
 const ErrorBox = ({
     errorBoxSummaryId,
-    errorInputLink,
     messageTitle,
     messageBody,
     messageLinkBody,
+    errorInputLink,
     errorBody,
-    errorMessageList,
-    errorOnClick,
     dataTestId,
+    errorOnClick,
+    errorMessageList,
     scrollToRef,
-}: Props) => {
+}: Props): JSX.Element => {
     const hasInputLink = errorInputLink && messageLinkBody;
     const hasOnClick = errorOnClick && messageLinkBody;
 
@@ -66,7 +67,7 @@ const ErrorBox = ({
                         {errorBody && (
                             <ErrorSummary.Item
                                 href="#"
-                                onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                                onClick={(e: MouseEvent<HTMLAnchorElement>): void => {
                                     e.preventDefault();
                                 }}
                             >
@@ -84,7 +85,7 @@ const ErrorBox = ({
                             <ErrorSummary.Item
                                 data-testid="error-box-link"
                                 href={'#'}
-                                onClick={(e) => {
+                                onClick={(e): void => {
                                     e.preventDefault();
                                     errorOnClick();
                                 }}

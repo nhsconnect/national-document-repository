@@ -6,7 +6,7 @@ import {
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { getUploadMessage } from '../../../../helpers/utils/uploadAndScanDocumentHelpers';
+import { getUploadMessage } from '../../../../helpers/utils/uploadDocumentHelpers';
 
 interface Props {
     documents: Array<UploadDocument>;

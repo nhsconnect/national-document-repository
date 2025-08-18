@@ -52,7 +52,6 @@ describe('Authentication & Authorisation', () => {
             '/patient/verify',
             '/patient/arf',
             '/patient/lloyd-george-record',
-            '/patient/lloyd-george-record/upload',
             routes.createReport,
             routes.createReportComplete,
         ];

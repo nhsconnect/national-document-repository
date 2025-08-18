@@ -21,10 +21,17 @@ export enum DOCUMENT_UPLOAD_STATE {
     UPLOADING = 'UPLOADING',
     SUCCEEDED = 'SUCCEEDED',
     FAILED = 'FAILED',
-    UNAUTHORISED = 'UNAUTHORISED',
+    ERROR = 'ERROR',
     SCANNING = 'SCANNING',
     CLEAN = 'CLEAN',
     INFECTED = 'INFECTED',
+}
+
+export enum DOCUMENT_STATUS {
+    FINAL = 'final',
+    CANCELLED = 'cancelled',
+    INFECTED = 'infected',
+    NOT_FOUND = 'not-found',
 }
 
 export type UploadDocument = {
@@ -38,11 +45,13 @@ export type UploadDocument = {
     key?: string;
     position?: number;
     numPages?: number;
-    error?: string;
+    error?: UPLOAD_FILE_ERROR_TYPE;
+    errorCode?: string;
+    validated?: boolean;
 };
 
-export type UploadFilesErrors = {
-    filename?: string;
+export type UploadFilesError = {
+    linkId?: string;
     error: UPLOAD_FILE_ERROR_TYPE;
     details?: string;
 };

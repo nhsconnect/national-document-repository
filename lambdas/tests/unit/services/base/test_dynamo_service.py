@@ -284,6 +284,84 @@ def test_get_item_client_error_raises_exception(mock_service, mock_table):
     assert expected_response == actual_response.value
 
 
+def test_batch_get_items_success(mock_service, mock_dynamo_service):
+    key_list = ["id1", "id2", "id3"]
+    mock_response = {
+        "Responses": {
+            MOCK_TABLE_NAME: [
+                {"ID": "id1", "data": "value1"},
+                {"ID": "id2", "data": "value2"},
+                {"ID": "id3", "data": "value3"},
+            ]
+        }
+    }
+    mock_dynamo_service.batch_get_item.return_value = mock_response
+
+    results = mock_service.batch_get_items(MOCK_TABLE_NAME, key_list)
+
+    expected_request_items = {
+        MOCK_TABLE_NAME: {"Keys": [{"ID": "id1"}, {"ID": "id2"}, {"ID": "id3"}]}
+    }
+    mock_dynamo_service.batch_get_item.assert_called_once_with(
+        RequestItems=expected_request_items
+    )
+    assert len(results) == 3
+    assert results[0]["ID"] == "id1"
+    assert results[1]["ID"] == "id2"
+    assert results[2]["ID"] == "id3"
+
+
+def test_batch_get_items_with_unprocessed_keys(mock_service, mock_dynamo_service):
+    key_list = ["id1", "id2", "id3"]
+
+    first_response = {
+        "Responses": {MOCK_TABLE_NAME: [{"ID": "id1", "data": "value1"}]},
+        "UnprocessedKeys": {MOCK_TABLE_NAME: {"Keys": [{"ID": "id2"}, {"ID": "id3"}]}},
+    }
+
+    second_response = {
+        "Responses": {
+            MOCK_TABLE_NAME: [
+                {"ID": "id2", "data": "value2"},
+                {"ID": "id3", "data": "value3"},
+            ]
+        }
+    }
+
+    mock_dynamo_service.batch_get_item.side_effect = [first_response, second_response]
+
+    result = mock_service.batch_get_items(MOCK_TABLE_NAME, key_list)
+
+    assert mock_dynamo_service.batch_get_item.call_count == 2
+    assert len(result) == 3
+    assert [item["ID"] for item in result] == ["id1", "id2", "id3"]
+
+
+def test_batch_get_items_with_too_many_keys(mock_service, mock_dynamo_service):
+    key_list = [f"id{i}" for i in range(101)]
+
+    result = mock_service.batch_get_items(MOCK_TABLE_NAME, key_list)
+
+    assert isinstance(result, DynamoServiceException)
+    assert str(result) == "Cannot fetch more than 100 items at a time"
+    mock_dynamo_service.batch_get_item.assert_not_called()
+
+
+def test_batch_get_items_with_exception(mock_service, mock_dynamo_service):
+    key_list = ["id1", "id2"]
+    mock_dynamo_service.batch_get_item.side_effect = Exception("Test exception")
+
+    with pytest.raises(Exception) as excinfo:
+        mock_service.batch_get_items(MOCK_TABLE_NAME, key_list)
+
+    assert str(excinfo.value) == "Test exception"
+
+    expected_request_items = {MOCK_TABLE_NAME: {"Keys": [{"ID": "id1"}, {"ID": "id2"}]}}
+    mock_dynamo_service.batch_get_item.assert_called_once_with(
+        RequestItems=expected_request_items
+    )
+
+
 def test_update_item_is_called_with_correct_parameters(mock_service, mock_table):
     update_key = {"ID": "9000000009"}
     expected_update_expression = (
