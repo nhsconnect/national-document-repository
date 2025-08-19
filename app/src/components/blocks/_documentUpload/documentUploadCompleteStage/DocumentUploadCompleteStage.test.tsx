@@ -3,6 +3,11 @@ import DocumentUploadCompleteStage from './DocumentUploadCompleteStage';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
 import { LinkProps } from 'react-router-dom';
+import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -13,8 +18,11 @@ vi.mock('react-router-dom', () => ({
 
 URL.createObjectURL = vi.fn();
 
+const patientDetails = buildPatientDetails();
+
 describe('DocumentUploadCompleteStage', () => {
     beforeEach(() => {
+        vi.mocked(usePatient).mockReturnValue(patientDetails);
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {
@@ -24,13 +32,21 @@ describe('DocumentUploadCompleteStage', () => {
     it('renders', async () => {
         render(<DocumentUploadCompleteStage />);
 
-        await waitFor(async () => {
-            expect(
-                screen.getByText(
-                    'You have successfully uploaded a digital Lloyd George record for:',
-                ),
-            ).toBeInTheDocument();
-        });
+        expect(
+            screen.getByText(
+                'You have successfully uploaded a digital Lloyd George record for:',
+            ),
+        ).toBeInTheDocument();
+
+        const expectedFullName = getFormattedPatientFullName(patientDetails);
+        expect(screen.getByTestId("patient-name").textContent).toEqual("Patient name: " + expectedFullName)
+
+        const expectedNhsNumber = formatNhsNumber(patientDetails.nhsNumber);
+        expect(screen.getByTestId("nhs-number").textContent).toEqual("NHS Number: " + expectedNhsNumber)
+
+        const expectedDob = getFormattedDate(new Date(patientDetails.birthDate));
+        expect(screen.getByTestId("dob").textContent).toEqual("Date of birth: " + expectedDob)
+
     });
 
     it('should navigate to search when clicking the search link', async () => {
