@@ -136,15 +136,15 @@ function FeedbackPage() {
             <h1 data-testid="feedback-page-header">Give feedback on this service</h1>
 
             {Object.keys(errors).length > 0 && (
-            <ErrorBox<FEEDBACK_ERROR_TYPE>
-                dataTestId="feedback-error-box"
-                errorBoxSummaryId="feedback-errors"
-                messageTitle="There is a problem"
-                errorMessageList={errorMessageList()}
-                groupErrorsFn={groupFeedbackErrorsByType}
-                scrollToRef={scrollToRef}
-            />
-           )}
+                <ErrorBox<FEEDBACK_ERROR_TYPE>
+                    dataTestId="feedback-error-box"
+                    errorBoxSummaryId="feedback-errors"
+                    messageTitle="There is a problem"
+                    errorMessageList={errorMessageList()}
+                    groupErrorsFn={groupFeedbackErrorsByType}
+                    scrollToRef={scrollToRef}
+                />
+            )}
 
 
             <form onSubmit={handleSubmit(submit)}>

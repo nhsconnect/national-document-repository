@@ -4,18 +4,18 @@ import { getGenericErrorBoxErrorMessage, groupErrorsByType } from "./genericErro
 type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
 
 export enum FEEDBACK_ERROR_TYPE {
-  feedbackSatisfaction = 'feedbackSatisfaction',
-  feedbackTextbox = 'feedbackTextbox',
-  emailTextInput = 'emailTextInput',
+    feedbackSatisfaction = 'feedbackSatisfaction',
+    feedbackTextbox = 'feedbackTextbox',
+    emailTextInput = 'emailTextInput',
 }
 
 export type FeedbackErrorMessageType = {
-  inline: string;
-  errorBox: string;
+    inline: string;
+    errorBox: string;
 };
 
 export const getFeedbackErrorBoxErrorMessage = (error: FeedbackError): string =>
-  getGenericErrorBoxErrorMessage(error, feedbackErrorMessages);
+    getGenericErrorBoxErrorMessage(error, feedbackErrorMessages);
 
 export const groupFeedbackErrorsByType = (
     errors: FeedbackError[]

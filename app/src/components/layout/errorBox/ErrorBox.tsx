@@ -17,106 +17,106 @@ type ErrorBoxProps<T extends string> = {
 };
 
 type ErrorMessagesProps<T extends string> = {
-  errorMessageList: GenericError<T>[];
-  groupErrorsFn?: GroupErrors<T>;
+    errorMessageList: GenericError<T>[];
+    groupErrorsFn?: GroupErrors<T>;
 };
 
 function ErrorMessages<T extends string>({
     errorMessageList,
     groupErrorsFn,
 }: Readonly<ErrorMessagesProps<T>>): JSX.Element {
-    if (!groupErrorsFn) return <></>; 
+    if (!groupErrorsFn) return <></>;
 
     const groupedErrors = groupErrorsFn(errorMessageList);
 
     return (
-    <>
-        {Object.entries(groupedErrors).map(([errorType, value]) => {
-        const { linkIds, errorMessage } = value as {
-            linkIds: string[];
-            errorMessage: string;
-        };
+        <>
+            {Object.entries(groupedErrors).map(([errorType, value]) => {
+                const { linkIds, errorMessage } = value as {
+                    linkIds: string[];
+                    errorMessage: string;
+                };
 
-        const firstFile = linkIds[0];
+                const firstFile = linkIds[0];
 
-        return (
-            <div key={errorType}>
-            <ErrorSummary.List>
-                <ErrorSummary.Item href={'#' + firstFile} key={errorType + firstFile}>
-                {errorMessage}
-                </ErrorSummary.Item>
-            </ErrorSummary.List>
-            </div>
-        );
-        })}
-    </>
+                return (
+                    <div key={errorType}>
+                        <ErrorSummary.List>
+                            <ErrorSummary.Item href={'#' + firstFile} key={errorType + firstFile}>
+                                {errorMessage}
+                            </ErrorSummary.Item>
+                        </ErrorSummary.List>
+                    </div>
+                );
+            })}
+        </>
     );
 }
 
 
 const ErrorBox = <T extends string>({
-  errorBoxSummaryId,
-  messageTitle,
-  messageBody,
-  messageLinkBody,
-  errorInputLink,
-  errorBody,
-  dataTestId,
-  errorOnClick,
-  errorMessageList,
-  scrollToRef,
-  groupErrorsFn,
+    errorBoxSummaryId,
+    messageTitle,
+    messageBody,
+    messageLinkBody,
+    errorInputLink,
+    errorBody,
+    dataTestId,
+    errorOnClick,
+    errorMessageList,
+    scrollToRef,
+    groupErrorsFn,
 }: ErrorBoxProps<T>): JSX.Element => {
-  const hasInputLink = errorInputLink && messageLinkBody;
-  const hasOnClick = errorOnClick && messageLinkBody;
+    const hasInputLink = errorInputLink && messageLinkBody;
+    const hasOnClick = errorOnClick && messageLinkBody;
 
-  return (
-    <div id="error-box" data-testid={dataTestId} ref={scrollToRef}>
-      <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
-        <ErrorSummary.Title id={errorBoxSummaryId}>{messageTitle}</ErrorSummary.Title>
-        <ErrorSummary.Body>
-          <ErrorSummary.List>
-            {errorBody && (
-              <ErrorSummary.Item
-                href="#"
-                onClick={(e: MouseEvent<HTMLAnchorElement>): void => {
-                  e.preventDefault();
-                }}
-              >
-                {errorBody}
-              </ErrorSummary.Item>
-            )}
+    return (
+        <div id="error-box" data-testid={dataTestId} ref={scrollToRef}>
+            <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
+                <ErrorSummary.Title id={errorBoxSummaryId}>{messageTitle}</ErrorSummary.Title>
+                <ErrorSummary.Body>
+                    <ErrorSummary.List>
+                        {errorBody && (
+                            <ErrorSummary.Item
+                                href="#"
+                                onClick={(e: MouseEvent<HTMLAnchorElement>): void => {
+                                    e.preventDefault();
+                                }}
+                            >
+                                {errorBody}
+                            </ErrorSummary.Item>
+                        )}
 
-            {messageBody && <p>{messageBody}</p>}
-            {hasInputLink && (
-              <ErrorSummary.Item href={errorInputLink}>
-                <p>{messageLinkBody}</p>
-              </ErrorSummary.Item>
-            )}
-            {hasOnClick && (
-              <ErrorSummary.Item
-                data-testid="error-box-link"
+                        {messageBody && <p>{messageBody}</p>}
+                        {hasInputLink && (
+                            <ErrorSummary.Item href={errorInputLink}>
+                                <p>{messageLinkBody}</p>
+                            </ErrorSummary.Item>
+                        )}
+                        {hasOnClick && (
+                            <ErrorSummary.Item
+                                data-testid="error-box-link"
                                 href={'#'}
-                onClick={(e): void => {
-                  e.preventDefault();
-                  errorOnClick();
-                }}
-              >
-                <p>{messageLinkBody}</p>
-              </ErrorSummary.Item>
-            )}
-          </ErrorSummary.List>
+                                onClick={(e): void => {
+                                    e.preventDefault();
+                                    errorOnClick();
+                                }}
+                            >
+                                <p>{messageLinkBody}</p>
+                            </ErrorSummary.Item>
+                        )}
+                    </ErrorSummary.List>
 
-          {errorMessageList && (
-            <ErrorMessages<T>
-              errorMessageList={errorMessageList}
-              groupErrorsFn={groupErrorsFn}
-            />
-          )}
-        </ErrorSummary.Body>
-      </ErrorSummary>
-    </div>
-  );
+                    {errorMessageList && (
+                        <ErrorMessages<T>
+                            errorMessageList={errorMessageList}
+                            groupErrorsFn={groupErrorsFn}
+                        />
+                    )}
+                </ErrorSummary.Body>
+            </ErrorSummary>
+        </div>
+    );
 };
 
 export default ErrorBox;

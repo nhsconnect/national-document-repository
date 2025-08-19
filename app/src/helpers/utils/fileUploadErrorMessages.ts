@@ -23,12 +23,12 @@ export type fileUploadErrorMessageType = {
 };
 
 export const getUploadErrorBoxErrorMessage = (error: UploadFilesError): string =>
-  getGenericErrorBoxErrorMessage(error, fileUploadErrorMessages);
+    getGenericErrorBoxErrorMessage(error, fileUploadErrorMessages);
 
 export const groupUploadErrorsByType = (
-  errors: UploadFilesError[]
+    errors: UploadFilesError[]
 ) => groupErrorsByType(
-    errors, 
+    errors,
     getUploadErrorBoxErrorMessage
 );
 
