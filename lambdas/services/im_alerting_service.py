@@ -397,10 +397,6 @@ class IMAlertingService:
         dt = datetime.fromtimestamp(time_stamp, tz=timezone.utc)
         return dt.strftime("%H:%M:%S %d-%m-%Y %Z")
 
-    def format_alarm_name(self, alarm_name: str) -> str:
-        underscore_stripped_string = alarm_name.replace("_", " ")
-        return underscore_stripped_string.rsplit(" ", 1)[0].title()
-
     def unpack_alarm_history_unicode(self, alarm_history: list[AlarmSeverity]) -> str:
         alarm_history_unicodes = [severity.value for severity in alarm_history]
         return " ".join(alarm_history_unicodes)
