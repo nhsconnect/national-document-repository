@@ -99,37 +99,36 @@ function FeedbackPage() {
     const scrollToRef = useRef<HTMLDivElement>(null);
 
     const errorMessageList = (): FeedbackError[] => {
-        const errorsList: FeedbackError[] = [];
+        const errorConfig: {
+            key: keyof typeof errors;
+            linkId: string;
+            error: FEEDBACK_ERROR_TYPE;
+        }[] = [
+                {
+                    key: FORM_FIELDS.HowSatisfied,
+                    linkId: 'select-how-satisfied',
+                    error: FEEDBACK_ERROR_TYPE.feedbackSatisfaction,
+                },
+                {
+                    key: FORM_FIELDS.FeedbackContent,
+                    linkId: 'feedback_textbox',
+                    error: FEEDBACK_ERROR_TYPE.feedbackTextbox,
+                },
+                {
+                    key: FORM_FIELDS.RespondentEmail,
+                    linkId: 'email-text-input',
+                    error: FEEDBACK_ERROR_TYPE.emailTextInput,
+                },
+            ];
 
-        if (errors.howSatisfied) {
-            errorsList.push({
-                linkId: 'select-how-satisfied',
-                error: FEEDBACK_ERROR_TYPE.feedbackSatisfaction,
-                details: errors.howSatisfied.message,
-            });
-        }
-
-        if (errors.feedbackContent) {
-            errorsList.push({
-                linkId: "feedback_textbox",
-                error: FEEDBACK_ERROR_TYPE.feedbackTextbox,
-                details: errors.feedbackContent.message,
-            });
-        }
-
-        if (errors.respondentEmail) {
-            errorsList.push({
-                linkId: "email-text-input",
-                error: FEEDBACK_ERROR_TYPE.emailTextInput,
-                details: errors.respondentEmail.message,
-            });
-        }
-
-        return errorsList;
+        return errorConfig
+            .filter(({ key }) => errors[key])
+            .map(({ key, linkId, error }) => ({
+                linkId,
+                error,
+                details: errors[key]!.message,
+            }));
     };
-
-
-
 
     return (
         <div id="feedback-form">
