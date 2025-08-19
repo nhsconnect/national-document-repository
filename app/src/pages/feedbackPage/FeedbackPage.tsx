@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
@@ -29,7 +29,7 @@ import { routes } from '../../types/generic/routes';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 // import { FeedbackError } from '../../types/pages/UploadDocumentsPage/types';
-import { FEEDBACK_ERROR_TYPE } from '../../helpers/utils/feedbackErrorMessages';
+import { FEEDBACK_ERROR_TYPE, groupFeedbackErrorsByType } from '../../helpers/utils/feedbackErrorMessages';
 import { GenericError } from '../../types/pages/UploadDocumentsPage/types';
 
 type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
@@ -142,6 +142,7 @@ function FeedbackPage() {
                 errorBoxSummaryId="feedback-errors"
                 messageTitle="There is a problem"
                 errorMessageList={errorMessageList()}
+                groupErrorsFn={groupFeedbackErrorsByType}
                 scrollToRef={scrollToRef}
             />
            )}

@@ -1,4 +1,5 @@
 import { GenericError } from "../../types/pages/UploadDocumentsPage/types";
+import { getGenericErrorBoxErrorMessage, groupErrorsByType } from "./genericErrorMessages";
 
 type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;
 
@@ -16,45 +17,23 @@ export enum PDF_PARSING_ERROR_TYPE {
     EMPTY_PDF = 'The PDF file is empty, i.e. its size is zero bytes.',
 }
 
-export function getInlineErrorMessage(uploadFileError: UploadFilesError): string {
-    const errorMessage = fileUploadErrorMessages[uploadFileError.error].inline;
-    if (uploadFileError.details) {
-        return `${errorMessage} ${uploadFileError.details}`;
-    }
-    return errorMessage;
-}
-
-export function getErrorBoxErrorMessage(uploadFileError: UploadFilesError): string {
-    return fileUploadErrorMessages[uploadFileError.error].errorBox;
-}
-
-type UploadFilesErrorBoxMessages = Partial<
-    Record<UPLOAD_FILE_ERROR_TYPE, { linkIds: string[]; errorMessage: string }>
->;
-export function groupUploadErrorsByType(
-    uploadFileErrors: UploadFilesError[],
-): UploadFilesErrorBoxMessages {
-    const result: UploadFilesErrorBoxMessages = {};
-
-    uploadFileErrors.forEach((errorItem) => {
-        const { error, linkId = '' } = errorItem;
-        const errorMessage = getErrorBoxErrorMessage(errorItem);
-        if (!(error in result)) {
-            result[error] = { linkIds: [linkId], errorMessage };
-        } else {
-            result[error]?.linkIds?.push(linkId);
-        }
-    });
-
-    return result;
-}
-
 export type fileUploadErrorMessageType = {
     inline: string;
     errorBox: string;
 };
 
+export const getUploadErrorBoxErrorMessage = (error: UploadFilesError): string =>
+  getGenericErrorBoxErrorMessage(error, fileUploadErrorMessages);
+
+export const groupUploadErrorsByType = (
+  errors: UploadFilesError[]
+) => groupErrorsByType(
+    errors, 
+    getUploadErrorBoxErrorMessage
+);
+
 type errorMessageType = { [errorType in UPLOAD_FILE_ERROR_TYPE]: fileUploadErrorMessageType };
+
 export const fileUploadErrorMessages: errorMessageType = {
     noFiles: {
         inline: 'Select a file to upload',

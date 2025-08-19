@@ -104,7 +104,8 @@ describe('<FeedbackPage />', () => {
             await clickSubmitButton();
 
             await waitFor(() => {
-                expect(screen.getByText('Enter your feedback')).toBeInTheDocument();
+                const errorCount = screen.getAllByText('Enter your feedback')
+                expect(errorCount.length).toBe(2)
             });
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
@@ -123,8 +124,10 @@ describe('<FeedbackPage />', () => {
             await clickSubmitButton();
 
             await waitFor(() => {
-                expect(screen.getByText('Select an option')).toBeInTheDocument();
+                const errorCount = screen.getAllByText('Select an option')
+                expect(errorCount.length).toBe(2)
             });
+
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
@@ -143,7 +146,8 @@ describe('<FeedbackPage />', () => {
             await clickSubmitButton();
 
             await waitFor(() => {
-                expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
+                const errorCount = screen.getAllByText('Enter a valid email address')
+                expect(errorCount.length).toBe(2)
             });
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
