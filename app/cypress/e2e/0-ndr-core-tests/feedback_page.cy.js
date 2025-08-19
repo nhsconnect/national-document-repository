@@ -136,10 +136,21 @@ describe('Feedback Page', () => {
                             .as('errors');
                         cy.get('@errors')
                             .eq(1)
-                            .should('have.text', 'Error: Please enter your feedback');
+                            .should('have.text', 'Error: Enter your feedback');
                         cy.get('@errors')
                             .first()
-                            .should('have.text', 'Error: Please select an option');
+                            .should('have.text', 'Error: Select an option');
+
+                        cy.get('.nhsuk-error-summary__list > li > a')
+                            .should('be.visible')
+                            .and('have.length', 2)
+                            .as('errorBox');
+                        cy.get('@errorBox')
+                            .first()
+                            .should('have.text', 'Select an option')
+                        cy.get('@errorBox')
+                            .eq(1)
+                            .should('have.text', 'Enter your feedback')
                     },
                 );
 
@@ -161,6 +172,53 @@ describe('Feedback Page', () => {
                         cy.get('.nhsuk-error-message')
                             .should('be.visible')
                             .and('have.text', 'Error: Enter a valid email address');
+
+                        cy.get('.nhsuk-error-summary__list > li > a')
+                            .should('be.visible')
+                            .and('have.length', 1)
+                            .as('errorBox');
+                        cy.get('@errorBox')
+                            .first()
+                            .should('have.text', 'Enter a valid email address')
+                    },
+                );
+
+                it(
+                    'should scroll to corresponding error element when clicking an error link from the error box',
+                    { tags: 'regression' },
+                    () => {
+                        const mockInputData = {
+                            respondentName: 'Jane Smith',
+                            respondentEmail: 'some_random_string_which_is_not_valid_email',
+                        };
+
+                        loginAndVisitFeedbackPage(role);
+                        fillInForm(mockInputData);
+                        cy.get('#submit-feedback').click();
+
+                        cy.get('.nhsuk-error-summary__list > li > a')
+                            .should('be.visible')
+                            .and('have.length', 3)
+                            .as('errorBox');
+
+                        cy.get('@errorBox').eq(0).then(($link) => {
+                            const href = $link.attr('href');
+                            expect(href).to.eq('#select-how-satisfied');
+                            cy.wrap($link).click();
+                            cy.get(href).should('be.visible');
+                        });
+                        cy.get('@errorBox').eq(1).then(($link) => {
+                            const href = $link.attr('href');
+                            expect(href).to.eq('#feedback_textbox');
+                            cy.wrap($link).click();
+                            cy.get(href).should('be.visible');
+                        });
+                        cy.get('@errorBox').eq(2).then(($link) => {
+                            const href = $link.attr('href');
+                            expect(href).to.eq('#email-text-input');
+                            cy.wrap($link).click();
+                            cy.get(href).should('be.visible');
+                        });
                     },
                 );
             });

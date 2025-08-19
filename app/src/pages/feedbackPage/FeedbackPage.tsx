@@ -148,11 +148,11 @@ function FeedbackPage() {
 
 
             <form onSubmit={handleSubmit(submit)}>
-                <Fieldset data-testid="feedback-radio-section">
+                <Fieldset id="select-how-satisfied" data-testid="feedback-radio-section">
                     <Fieldset.Legend>
                         <h2>Overall, how satisfied with the service are you?</h2>
                     </Fieldset.Legend>
-                    <Radios id="select-how-satisfied" error={errors.howSatisfied?.message}>
+                    <Radios error={errors.howSatisfied?.message}>
                         {Object.values(SATISFACTION_CHOICES).map((choice) => (
                             <Radios.Radio key={choice} value={choice} {...howSatisfiedProps}>
                                 {choice}
@@ -161,12 +161,11 @@ function FeedbackPage() {
                     </Radios>
                 </Fieldset>
 
-                <Fieldset data-testid="feedback-text-section">
+                <Fieldset id="feedback_textbox" data-testid="feedback-text-section">
                     <Fieldset.Legend>
                         <h2>Can you tell us why you selected that option?</h2>
                     </Fieldset.Legend>
                     <Textarea
-                        id="feedback_textbox"
                         data-testid={FORM_FIELDS.FeedbackContent}
                         label="You can give details about specific pages or parts of the service here."
                         rows={7}
