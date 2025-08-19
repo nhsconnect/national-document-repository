@@ -31,7 +31,7 @@ jobs:
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: "nhsconnect/national-document-repository"
           ref: ${{ inputs.build_branch }}
@@ -67,6 +67,12 @@ jobs:
           echo "NDR_API_KEY=$API_KEY" >> $GITHUB_ENV
         env:
           SANDBOX: ${{ inputs.sandbox }}
+
+      - name: Get MockCIS2 Token
+        run: |
+          MOCK_CIS2_KEY=$(aws ssm get-parameter --name "/auth/password/MOCK_KEY" --with-decryption --query "Parameter.Value" --output text)
+          echo "::add-mask::$MOCK_CIS2_KEY"
+          echo "MOCK_CIS2_KEY=$MOCK_CIS2_KEY" >> $GITHUB_ENV
 
       - name: Get E2e Test Variables
         run: |

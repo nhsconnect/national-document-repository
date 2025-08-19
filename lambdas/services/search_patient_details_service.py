@@ -46,7 +46,7 @@ class SearchPatientDetailsService:
             if not patient_details.deceased:
                 self._check_authorization(patient_details.general_practice_ods)
 
-            logger.audit_splunk_info(
+            logger.info(
                 "Searched for patient details", {"Result": "Patient found"}
             )
 
