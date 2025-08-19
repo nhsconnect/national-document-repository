@@ -1,4 +1,4 @@
-import { GenericError } from "../../types/pages/UploadDocumentsPage/types";
+import { GenericError } from "../../types/pages/genericPageErrors";
 import { getGenericErrorBoxErrorMessage, groupErrorsByType } from "./genericErrorMessages";
 
 type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;

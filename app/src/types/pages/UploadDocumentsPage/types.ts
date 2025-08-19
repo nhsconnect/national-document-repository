@@ -1,7 +1,5 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { UPLOAD_FILE_ERROR_TYPE } from '../../../helpers/utils/fileUploadErrorMessages';
-import { FEEDBACK_ERROR_TYPE } from '../../../helpers/utils/feedbackErrorMessages';
-
 export type SetUploadStage = Dispatch<SetStateAction<UPLOAD_STAGE>>;
 export type SetUploadDocuments = Dispatch<SetStateAction<Array<UploadDocument>>>;
 
@@ -51,18 +49,6 @@ export type UploadDocument = {
     validated?: boolean;
 };
 
-// export type UploadFilesError = {
-//     linkId?: string;
-//     error: UPLOAD_FILE_ERROR_TYPE;
-//     details?: string;
-// };
-
-// export type FeedbackError = {
-//     linkId?: string;
-//     error: FEEDBACK_ERROR_TYPE;
-//     details?: string;
-// };
-
 export type SearchResult = {
     id: string;
     description: string;
@@ -74,18 +60,3 @@ export type SearchResult = {
 export interface FileInputEvent extends FormEvent<HTMLInputElement> {
     target: HTMLInputElement & EventTarget;
 }
-
-export type GenericError<T extends string> = {
-  error: T;
-  linkId?: string;
-  details?: string;
-};
-
-export type GroupedErrors<T extends string> = Partial<
-  Record<T, { linkIds: string[]; errorMessage: string }>
->;
-
-export type GroupErrors<T extends string> = (
-  errors: GenericError<T>[]
-) => GroupedErrors<T>;
-

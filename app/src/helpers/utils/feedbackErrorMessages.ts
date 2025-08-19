@@ -1,4 +1,4 @@
-import { GenericError } from "../../types/pages/UploadDocumentsPage/types";
+import { GenericError } from "../../types/pages/genericPageErrors";
 import { getGenericErrorBoxErrorMessage, groupErrorsByType } from "./genericErrorMessages";
 
 type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
@@ -21,7 +21,7 @@ export const groupFeedbackErrorsByType = (
     errors: FeedbackError[]
 ) => groupErrorsByType(
     errors,
-    getFeedbackErrorBoxErrorMessage // from your feedback utils
+    getFeedbackErrorBoxErrorMessage
 );
 
 type errorMessageType = { [errorType in FEEDBACK_ERROR_TYPE]: FeedbackErrorMessageType };

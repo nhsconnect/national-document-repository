@@ -16,15 +16,14 @@ import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
-    GenericError,
     SetUploadDocuments,
     UploadDocument,
-    // UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
+import { GenericError } from '../../../../types/pages/genericPageErrors';
 
 export type Props = {
     setDocuments: SetUploadDocuments;

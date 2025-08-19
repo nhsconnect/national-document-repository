@@ -1,16 +1,8 @@
-import { GenericError } from "../../types/pages/UploadDocumentsPage/types";
-
-export type ErrorMessageMap<T extends string> = Record<
-  T,
-  {
-    inline: string;
-    errorBox: string;
-  }
->;
+import { GenericError, GenericErrorMessageMap } from "../../types/pages/genericPageErrors";
 
 export function getGenericErrorBoxErrorMessage<T extends string>(
   error: GenericError<T>,
-  messageMap: ErrorMessageMap<T>
+  messageMap: GenericErrorMessageMap<T>
 ): string {
   return messageMap[error.error].errorBox;
 }

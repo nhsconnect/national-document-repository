@@ -1,6 +1,6 @@
 import { ErrorSummary } from 'nhsuk-react-components';
 import { Ref, MouseEvent, JSX } from 'react';
-import { GenericError, GroupErrors } from '../../../types/pages/UploadDocumentsPage/types';
+import { GenericError, GroupErrors } from '../../../types/pages/genericPageErrors';
 
 type ErrorBoxProps<T extends string> = {
     errorBoxSummaryId: string;

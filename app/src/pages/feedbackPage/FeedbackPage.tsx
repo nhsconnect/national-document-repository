@@ -28,9 +28,8 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { routes } from '../../types/generic/routes';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
-// import { FeedbackError } from '../../types/pages/UploadDocumentsPage/types';
 import { FEEDBACK_ERROR_TYPE, groupFeedbackErrorsByType } from '../../helpers/utils/feedbackErrorMessages';
-import { GenericError } from '../../types/pages/UploadDocumentsPage/types';
+import { GenericError } from '../../types/pages/genericPageErrors';
 
 type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
 

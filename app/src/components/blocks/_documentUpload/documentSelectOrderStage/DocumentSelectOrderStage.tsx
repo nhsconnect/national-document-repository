@@ -12,15 +12,14 @@ import { routeChildren, routes } from '../../../../types/generic/routes';
 import { SelectRef } from '../../../../types/generic/selectRef';
 import {
     DOCUMENT_TYPE,
-    GenericError,
     SetUploadDocuments,
-    UploadDocument,
-    // UploadFilesError,
+    UploadDocument
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
+import { GenericError } from '../../../../types/pages/genericPageErrors';
 
 type Props = {
     documents: UploadDocument[];
