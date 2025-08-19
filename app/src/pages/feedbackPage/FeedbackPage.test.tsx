@@ -81,6 +81,10 @@ describe('<FeedbackPage />', () => {
             await fillInForm(mockInputData);
             await clickSubmitButton();
 
+            await waitFor(() => {
+                expect(document.querySelector('#error-box')).toBeNull();
+            });
+
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(baseURL + '/Feedback', mockInputData, {
                     headers: {},
@@ -107,6 +111,12 @@ describe('<FeedbackPage />', () => {
                 const errorCount = screen.getAllByText('Enter your feedback')
                 expect(errorCount.length).toBe(2)
             });
+
+            await waitFor(() => {
+                const errorBox = document.querySelector('#error-box');
+                expect(errorBox).toBeVisible();
+            });
+
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
@@ -126,6 +136,11 @@ describe('<FeedbackPage />', () => {
             await waitFor(() => {
                 const errorCount = screen.getAllByText('Select an option')
                 expect(errorCount.length).toBe(2)
+            });
+
+            await waitFor(() => {
+                const errorBox = document.querySelector('#error-box');
+                expect(errorBox).toBeVisible();
             });
 
             expect(mockedAxios).not.toBeCalled();
@@ -149,6 +164,12 @@ describe('<FeedbackPage />', () => {
                 const errorCount = screen.getAllByText('Enter a valid email address')
                 expect(errorCount.length).toBe(2)
             });
+
+            await waitFor(() => {
+                const errorBox = document.querySelector('#error-box');
+                expect(errorBox).toBeVisible();
+            });
+
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
@@ -171,6 +192,10 @@ describe('<FeedbackPage />', () => {
 
             await fillInForm(mockInputData);
             await clickSubmitButton();
+
+            await waitFor(() => {
+                expect(document.querySelector('#error-box')).toBeNull();
+            });
 
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(
