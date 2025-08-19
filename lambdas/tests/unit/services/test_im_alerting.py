@@ -1,3 +1,5 @@
+import json
+import os
 from copy import deepcopy
 from datetime import datetime
 
@@ -66,6 +68,11 @@ lambda_alert_message = {
     },
 }
 
+def read_json(filename: str) -> str:
+    filepath = os.path.join(os.path.dirname(__file__), filename)
+    with open(filepath, "r") as file:
+        file_content = file.read()
+    return json.loads(file_content)
 
 @pytest.fixture
 def alerting_service(mocker, set_env):
@@ -330,12 +337,36 @@ def test_unpacking_state_history_unicode(alerting_service):
     assert actual == expected
 
 
-def test_compose_teams_message():
-    pass
+def test_compose_teams_message(alerting_service):
+    alarm_entry = AlarmEntry(
+        alarm_name_metric=ALARM_METRIC_NAME,
+        time_created=ALERT_TIMESTAMP,
+        last_updated=ALERT_TIMESTAMP,
+        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
+        history=[AlarmSeverity.HIGH],
+    )
+    expected = read_json("../helpers/data/mock_teams_alert.json")
+    actual = json.loads(alerting_service.compose_teams_message(alarm_entry))
+
+    assert actual == expected
 
 
-def test_compose_slack_message_blocks():
-    pass
+def test_compose_slack_message_blocks(alerting_service):
+
+    alarm_entry = AlarmEntry(
+        alarm_name_metric=ALARM_METRIC_NAME,
+        time_created=ALERT_TIMESTAMP,
+        last_updated=ALERT_TIMESTAMP,
+        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
+        history=[AlarmSeverity.HIGH],
+    )
+    expected = read_json("../helpers/data/mock_slack_alert.json")
+
+    actual = alerting_service.compose_slack_message_blocks(alarm_entry)
+
+    assert actual == expected
+
+
 
 
 def test_format_time_string(alerting_service):
