@@ -1,4 +1,16 @@
-import { useRef, useState } from 'react';
+import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
+import { getDocument } from 'pdfjs-dist';
+import { JSX, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+import useTitle from '../../../../helpers/hooks/useTitle';
+import {
+    fileUploadErrorMessages,
+    PDF_PARSING_ERROR_TYPE,
+    UPLOAD_FILE_ERROR_TYPE,
+} from '../../../../helpers/utils/fileUploadErrorMessages';
+import formatFileSize from '../../../../helpers/utils/formatFileSize';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -7,22 +19,10 @@ import {
     UploadDocument,
     UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
-import { useNavigate } from 'react-router-dom';
-import { routeChildren, routes } from '../../../../types/generic/routes';
-import useTitle from '../../../../helpers/hooks/useTitle';
-import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
-import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import LinkButton from '../../../generic/linkButton/LinkButton';
-import { getDocument } from 'pdfjs-dist';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import {
-    fileUploadErrorMessages,
-    PDF_PARSING_ERROR_TYPE,
-    UPLOAD_FILE_ERROR_TYPE,
-} from '../../../../helpers/utils/fileUploadErrorMessages';
 
 export type Props = {
     setDocuments: SetUploadDocuments;
@@ -30,7 +30,7 @@ export type Props = {
     documentType: DOCUMENT_TYPE;
 };
 
-const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) => {
+const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props): JSX.Element => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [noFilesSelected, setNoFilesSelected] = useState<boolean>(false);
     const scrollToRef = useRef<HTMLDivElement>(null);
@@ -168,7 +168,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
         navigate(routeChildren.DOCUMENT_UPLOAD_SELECT_ORDER);
     };
 
-    const DocumentRow = (document: UploadDocument, index: number) => {
+    const DocumentRow = (document: UploadDocument, index: number): JSX.Element => {
         return (
             <Table.Row key={document.id} id={document.file.name}>
                 <Table.Cell className={document.error ? 'error-cell' : ''}>
@@ -188,7 +188,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                         type="button"
                         aria-label={`Remove ${document.file.name} from selection`}
                         className="link-button"
-                        onClick={() => {
+                        onClick={(): void => {
                             onRemove(index);
                         }}
                     >
@@ -213,7 +213,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
 
     useTitle({ pageTitle: pageTitle() });
 
-    const errorDocs = () => {
+    const errorDocs = (): UploadDocument[] => {
         return documents.filter((doc) => doc.error && doc.validated);
     };
 
@@ -296,7 +296,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                         id="upload-files"
                         tabIndex={0}
                         data-testid="dropzone"
-                        onDragOver={(e) => {
+                        onDragOver={(e): void => {
                             e.preventDefault();
                         }}
                         onDrop={onFileDrop}
@@ -312,12 +312,12 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                                 multiple={true}
                                 hidden
                                 accept={allowedFileTypes()}
-                                onChange={(e: FileInputEvent) => {
+                                onChange={(e: FileInputEvent): void => {
                                     onInput(e);
                                     e.target.value = '';
                                 }}
                                 // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
-                                inputRef={(e: HTMLInputElement) => {
+                                inputRef={(e: HTMLInputElement): void => {
                                     fileInputRef.current = e;
                                 }}
                             />
@@ -325,7 +325,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                                 data-testid={`upload-button-input`}
                                 type={'button'}
                                 className={'nhsuk-button nhsuk-button--secondary bottom-margin'}
-                                onClick={() => {
+                                onClick={(): void => {
                                     fileInputRef.current?.click();
                                 }}
                                 aria-labelledby="upload-fieldset-legend"
@@ -365,7 +365,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props) =
                         type="button"
                         className="remove-all-button mb-5"
                         data-testid="remove-all-button"
-                        onClick={() => {
+                        onClick={(): void => {
                             navigate(routeChildren.DOCUMENT_UPLOAD_REMOVE_ALL);
                         }}
                     >

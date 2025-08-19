@@ -3,17 +3,16 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import { DOCUMENT_TYPE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import { useNavigate } from 'react-router-dom';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { useState } from 'react';
 import Pagination from '../../../generic/pagination/Pagination';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 
 type Props = {
     documents: UploadDocument[];
-    startUpload: () => Promise<void>;
 };
 
-const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
+const DocumentUploadConfirmStage = ({ documents }: Props) => {
     const [currentPage, setCurrentPage] = useState<number>(0);
     const navigate = useNavigate();
     const pageSize = 10;
@@ -103,7 +102,10 @@ const DocumentUploadConfirmStage = ({ documents, startUpload }: Props) => {
                 setCurrentPage={setCurrentPage}
             />
 
-            <Button data-testid="confirm-button" onClick={startUpload}>
+            <Button 
+                data-testid="confirm-button" 
+                onClick={() => navigate(routeChildren.DOCUMENT_UPLOAD_UPLOADING)}
+            >
                 Confirm file order and upload files
             </Button>
         </div>
