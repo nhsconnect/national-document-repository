@@ -113,12 +113,11 @@ class DocumentService:
             reference.doc_status = "deprecated"
             reference.deleted = deletion_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             reference.ttl = document_reference_ttl
-            reference.status = "superseded"
 
             update_fields = reference.model_dump(
                 by_alias=True,
                 exclude_none=True,
-                include={"doc_status", "deleted", "ttl", "status"},
+                include={"doc_status", "deleted", "ttl"},
             )
             self.dynamo_service.update_item(
                 table_name=table_name,
