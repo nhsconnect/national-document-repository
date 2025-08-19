@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,
+    groupUploadErrorsByType,
     PDF_PARSING_ERROR_TYPE,
     UPLOAD_FILE_ERROR_TYPE,
 } from '../../../../helpers/utils/fileUploadErrorMessages';
@@ -15,9 +16,10 @@ import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
+    GenericError,
     SetUploadDocuments,
     UploadDocument,
-    UploadFilesError,
+    // UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import LinkButton from '../../../generic/linkButton/LinkButton';
@@ -29,6 +31,8 @@ export type Props = {
     documents: Array<UploadDocument>;
     documentType: DOCUMENT_TYPE;
 };
+
+type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;
 
 const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props): JSX.Element => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -247,6 +251,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props): 
                     errorBoxSummaryId="failed-document-uploads-summary-title"
                     messageTitle="There is a problem"
                     errorMessageList={errorMessageList()}
+                    groupErrorsFn={groupUploadErrorsByType}
                     scrollToRef={scrollToRef}
                 ></ErrorBox>
             )}

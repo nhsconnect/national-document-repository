@@ -28,8 +28,11 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { routes } from '../../types/generic/routes';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
-import { UPLOAD_FILE_ERROR_TYPE } from '../../helpers/utils/fileUploadErrorMessages';
-import { UploadFilesError } from '../../types/pages/UploadDocumentsPage/types';
+// import { FeedbackError } from '../../types/pages/UploadDocumentsPage/types';
+import { FEEDBACK_ERROR_TYPE } from '../../helpers/utils/feedbackErrorMessages';
+import { GenericError } from '../../types/pages/UploadDocumentsPage/types';
+
+type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
 
 function FeedbackPage() {
     const baseUrl = useBaseAPIUrl();
@@ -96,13 +99,13 @@ function FeedbackPage() {
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
-    const errorMessageList = (): UploadFilesError[] => {
-        const errorsList: UploadFilesError[] = [];
+    const errorMessageList = (): FeedbackError[] => {
+        const errorsList: FeedbackError[] = [];
 
         if (errors.howSatisfied) {
             errorsList.push({
                 linkId: 'select-how-satisfied',
-                error: UPLOAD_FILE_ERROR_TYPE.feedbackSatisfaction,
+                error: FEEDBACK_ERROR_TYPE.feedbackSatisfaction,
                 details: errors.howSatisfied.message,
             });
         }
@@ -110,7 +113,7 @@ function FeedbackPage() {
         if (errors.feedbackContent) {
             errorsList.push({
                 linkId: "feedback_textbox",
-                error: UPLOAD_FILE_ERROR_TYPE.feedbackTextbox,
+                error: FEEDBACK_ERROR_TYPE.feedbackTextbox,
                 details: errors.feedbackContent.message,
             });
         }
@@ -118,7 +121,7 @@ function FeedbackPage() {
         if (errors.respondentEmail) {
             errorsList.push({
                 linkId: "email-text-input",
-                error: UPLOAD_FILE_ERROR_TYPE.emailTextInput,
+                error: FEEDBACK_ERROR_TYPE.emailTextInput,
                 details: errors.respondentEmail.message,
             });
         }
@@ -134,7 +137,7 @@ function FeedbackPage() {
             <h1 data-testid="feedback-page-header">Give feedback on this service</h1>
 
             {Object.keys(errors).length > 0 && (
-            <ErrorBox
+            <ErrorBox<FEEDBACK_ERROR_TYPE>
                 dataTestId="feedback-error-box"
                 errorBoxSummaryId="feedback-errors"
                 messageTitle="There is a problem"

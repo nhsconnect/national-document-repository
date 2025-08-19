@@ -5,15 +5,17 @@ import { useNavigate } from 'react-router';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,
+    groupUploadErrorsByType,
     UPLOAD_FILE_ERROR_TYPE,
 } from '../../../../helpers/utils/fileUploadErrorMessages';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { SelectRef } from '../../../../types/generic/selectRef';
 import {
     DOCUMENT_TYPE,
+    GenericError,
     SetUploadDocuments,
     UploadDocument,
-    UploadFilesError,
+    // UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
@@ -28,6 +30,7 @@ type Props = {
 type FormData = {
     [key: string]: number | null;
 };
+type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;
 
 const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props) => {
     const navigate = useNavigate();
@@ -198,6 +201,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                     errorBoxSummaryId="document-positions"
                     messageTitle="There is a problem"
                     errorMessageList={errorMessageList(formState.errors)}
+                    groupErrorsFn={groupUploadErrorsByType}
                     scrollToRef={scrollToRef}
                 />
             )}

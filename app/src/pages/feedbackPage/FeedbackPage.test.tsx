@@ -104,7 +104,7 @@ describe('<FeedbackPage />', () => {
             await clickSubmitButton();
 
             await waitFor(() => {
-                expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
+                expect(screen.getByText('Enter your feedback')).toBeInTheDocument();
             });
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
@@ -123,7 +123,7 @@ describe('<FeedbackPage />', () => {
             await clickSubmitButton();
 
             await waitFor(() => {
-                expect(screen.getByText('Please select an option')).toBeInTheDocument();
+                expect(screen.getByText('Select an option')).toBeInTheDocument();
             });
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();

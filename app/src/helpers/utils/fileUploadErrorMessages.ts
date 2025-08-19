@@ -1,4 +1,6 @@
-import { UploadFilesError } from '../../types/pages/UploadDocumentsPage/types';
+import { GenericError } from "../../types/pages/UploadDocumentsPage/types";
+
+type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;
 
 export enum UPLOAD_FILE_ERROR_TYPE {
     noFiles = 'noFiles',
@@ -6,9 +8,6 @@ export enum UPLOAD_FILE_ERROR_TYPE {
     invalidPdf = 'invalidPdf',
     emptyPdf = 'emptyPdf',
     duplicatePositionError = 'duplicatePositionError',
-    feedbackSatisfaction = 'feedbackSatisfaction',
-    feedbackTextbox = 'feedbackTextbox',
-    emailTextInput = "emailTextInput",
 }
 
 export enum PDF_PARSING_ERROR_TYPE {
@@ -76,17 +75,5 @@ export const fileUploadErrorMessages: errorMessageType = {
     duplicatePositionError: {
         inline: 'You have selected the same position number for two or more files',
         errorBox: 'You have selected the same position number for two or more files',
-    },
-    feedbackSatisfaction: {
-        inline: 'Select an option',
-        errorBox: 'Select an option',
-    },
-    feedbackTextbox: {
-        inline: 'Enter your feedback',
-        errorBox: 'Enter your feedback',
-    },
-    emailTextInput: {
-        inline: 'Enter a valid email address',
-        errorBox: 'Enter a valid email address'
     }
 };
