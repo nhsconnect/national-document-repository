@@ -20,10 +20,10 @@ def test_search_patient_details(test_data, snapshot):
     data_helper.create_metadata(lloyd_george_record)
     data_helper.create_resource(lloyd_george_record)
 
-    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
     headers = {
         "Authorization": "Bearer 123",
-        "X-Api-Key": api_key,
+        "X-Api-Key": API_KEY,
         "X-Correlation-Id": "1234",
     }
     response = requests.request("GET", url, headers=headers)
@@ -66,11 +66,10 @@ def test_multiple_cancelled_search_patient_details(test_data, snapshot):
     data_helper.create_metadata(second_lloyd_george_record)
     data_helper.create_resource(second_lloyd_george_record)
 
-
-    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
     headers = {
         "Authorization": "Bearer 123",
-        "X-Api-Key": api_key,
+        "X-Api-Key": API_KEY,
         "X-Correlation-Id": "1234",
     }
     response = requests.request("GET", url, headers=headers)
@@ -92,10 +91,10 @@ def test_no_records(snapshot):
     lloyd_george_record = {}  # Initialize the dictionary
     lloyd_george_record["nhs_number"] = "9449305943"
 
-    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
     headers = {
         "Authorization": "Bearer 123",
-        "X-Api-Key": api_key,
+        "X-Api-Key": API_KEY,
         "X-Correlation-Id": "1234",
     }
     response = requests.request("GET", url, headers=headers)
@@ -108,10 +107,10 @@ def test_invalid_patient(snapshot):
     lloyd_george_record = {}
     lloyd_george_record["nhs_number"] = "9999999993"
 
-    url = f"https://{api_endpoint}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
+    url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
     headers = {
         "Authorization": "Bearer 123",
-        "X-Api-Key": api_key,
+        "X-Api-Key": API_KEY,
         "X-Correlation-Id": "1234",
     }
     response = requests.request("GET", url, headers=headers)
