@@ -305,9 +305,9 @@ class IMAlertingService:
                 },
                 updated_fields=fields_to_update,
             )
-        except HTTPError as e:
+        except ClientError as e:
             logger.error(
-                f"Updating alarm table entry returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+                f"Updating alarm table entry returned client error for alarm {alarm_entry.alarm_name_metric}: {e}"
             )
         except Exception as e:
             logger.error(
