@@ -61,7 +61,7 @@ jobs:
           mask-aws-account-id: true
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5

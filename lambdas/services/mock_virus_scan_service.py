@@ -13,6 +13,7 @@ NHS_NUMBERS_INFECTED_FILES = [
     "9730154341",
     "9730154066",
     "9730154708",
+    # Following used in e2e automation testing
     "9730154260",
 ]
 

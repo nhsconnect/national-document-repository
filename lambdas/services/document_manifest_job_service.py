@@ -139,7 +139,7 @@ class DocumentManifestJobService:
                 presigned_url = self.create_document_manifest_presigned_url(
                     zip_trace.zip_file_location
                 )
-                logger.audit_splunk_info(
+                logger.info(
                     "User has downloaded Lloyd George records",
                     {"Result": "Successful download"},
                 )
