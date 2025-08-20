@@ -79,7 +79,7 @@ class LloydGeorgeStitchService:
 
                 self.stitch_trace_object.stitched_file_location = destination_key
 
-                logger.audit_splunk_info(
+                logger.info(
                     "User has viewed Lloyd George records",
                     {"Result": "Successful viewing LG"},
                 )
