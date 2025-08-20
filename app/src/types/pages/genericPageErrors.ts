@@ -16,6 +16,4 @@ export type GroupedErrorRecords<T extends string> = Partial<
     Record<T, { linkIds: string[]; errorMessage: string }>
 >;
 
-export type GroupErrors<T extends string> = (
-    errors: GenericError<T>[]
-) => GroupedErrorRecords<T>;
+export type GroupErrors<T extends string> = (errors: GenericError<T>[]) => GroupedErrorRecords<T>;

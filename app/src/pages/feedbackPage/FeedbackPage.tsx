@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { JSX, useRef, useState } from 'react';
 
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
@@ -28,12 +28,15 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { routes } from '../../types/generic/routes';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
-import { FEEDBACK_ERROR_TYPE, groupFeedbackErrorsByType } from '../../helpers/utils/feedbackErrorMessages';
+import {
+    FEEDBACK_ERROR_TYPE,
+    groupFeedbackErrorsByType,
+} from '../../helpers/utils/feedbackErrorMessages';
 import { GenericError } from '../../types/pages/genericPageErrors';
 
 type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
 
-function FeedbackPage() {
+function FeedbackPage(): JSX.Element {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const {
@@ -104,22 +107,22 @@ function FeedbackPage() {
             linkId: string;
             error: FEEDBACK_ERROR_TYPE;
         }[] = [
-                {
-                    key: FORM_FIELDS.HowSatisfied,
-                    linkId: 'select-how-satisfied',
-                    error: FEEDBACK_ERROR_TYPE.feedbackSatisfaction,
-                },
-                {
-                    key: FORM_FIELDS.FeedbackContent,
-                    linkId: 'feedback_textbox',
-                    error: FEEDBACK_ERROR_TYPE.feedbackTextbox,
-                },
-                {
-                    key: FORM_FIELDS.RespondentEmail,
-                    linkId: 'email-text-input',
-                    error: FEEDBACK_ERROR_TYPE.emailTextInput,
-                },
-            ];
+            {
+                key: FORM_FIELDS.HowSatisfied,
+                linkId: 'select-how-satisfied',
+                error: FEEDBACK_ERROR_TYPE.feedbackSatisfaction,
+            },
+            {
+                key: FORM_FIELDS.FeedbackContent,
+                linkId: 'feedback_textbox',
+                error: FEEDBACK_ERROR_TYPE.feedbackTextbox,
+            },
+            {
+                key: FORM_FIELDS.RespondentEmail,
+                linkId: 'email-text-input',
+                error: FEEDBACK_ERROR_TYPE.emailTextInput,
+            },
+        ];
 
         return errorConfig
             .filter(({ key }) => errors[key])
@@ -144,7 +147,6 @@ function FeedbackPage() {
                     scrollToRef={scrollToRef}
                 />
             )}
-
 
             <form onSubmit={handleSubmit(submit)}>
                 <Fieldset id="select-how-satisfied" data-testid="feedback-radio-section">

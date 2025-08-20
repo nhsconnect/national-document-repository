@@ -1,5 +1,5 @@
-import { GenericError } from "../../types/pages/genericPageErrors";
-import { getGenericErrorBoxErrorMessage, groupErrorsByType } from "./genericErrorMessages";
+import { GenericError } from '../../types/pages/genericPageErrors';
+import { getGenericErrorBoxErrorMessage, groupErrorsByType } from './genericErrorMessages';
 
 type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;
 
@@ -26,11 +26,9 @@ export const getUploadErrorBoxErrorMessage = (error: UploadFilesError): string =
     getGenericErrorBoxErrorMessage(error, fileUploadErrorMessages);
 
 export const groupUploadErrorsByType = (
-    errors: UploadFilesError[]
-) => groupErrorsByType(
-    errors,
-    getUploadErrorBoxErrorMessage
-);
+    errors: UploadFilesError[],
+): Partial<Record<UPLOAD_FILE_ERROR_TYPE, { linkIds: string[]; errorMessage: string }>> =>
+    groupErrorsByType(errors, getUploadErrorBoxErrorMessage);
 
 type errorMessageType = { [errorType in UPLOAD_FILE_ERROR_TYPE]: fileUploadErrorMessageType };
 
@@ -54,5 +52,5 @@ export const fileUploadErrorMessages: errorMessageType = {
     duplicatePositionError: {
         inline: 'You have selected the same position number for two or more files',
         errorBox: 'You have selected the same position number for two or more files',
-    }
+    },
 };

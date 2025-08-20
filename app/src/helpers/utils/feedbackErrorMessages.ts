@@ -1,5 +1,5 @@
-import { GenericError } from "../../types/pages/genericPageErrors";
-import { getGenericErrorBoxErrorMessage, groupErrorsByType } from "./genericErrorMessages";
+import { GenericError } from '../../types/pages/genericPageErrors';
+import { getGenericErrorBoxErrorMessage, groupErrorsByType } from './genericErrorMessages';
 
 type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
 
@@ -18,11 +18,9 @@ export const getFeedbackErrorBoxErrorMessage = (error: FeedbackError): string =>
     getGenericErrorBoxErrorMessage(error, feedbackErrorMessages);
 
 export const groupFeedbackErrorsByType = (
-    errors: FeedbackError[]
-) => groupErrorsByType(
-    errors,
-    getFeedbackErrorBoxErrorMessage
-);
+    errors: FeedbackError[],
+): Partial<Record<FEEDBACK_ERROR_TYPE, { linkIds: string[]; errorMessage: string }>> =>
+    groupErrorsByType(errors, getFeedbackErrorBoxErrorMessage);
 
 type errorMessageType = { [errorType in FEEDBACK_ERROR_TYPE]: FeedbackErrorMessageType };
 
@@ -39,4 +37,4 @@ export const feedbackErrorMessages: errorMessageType = {
         inline: 'Enter a valid email address',
         errorBox: 'Enter a valid email address',
     },
-}
+};

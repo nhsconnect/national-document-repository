@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, RenderResult, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -16,17 +16,17 @@ const mockedUseNavigate = vi.fn();
 const mockedAxios = axios as Mocked<typeof axios>;
 const mockedBaseURL = useBaseAPIUrl as Mock;
 const baseURL = 'http://test';
-Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
+Date.now = (): number => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 vi.mock('react-router-dom', () => ({
-    useNavigate: () => mockedUseNavigate,
+    useNavigate: (): Mock => mockedUseNavigate,
 }));
 
-const clickSubmitButton = async () => {
+const clickSubmitButton = async (): Promise<void> => {
     await userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
 };
 
-const renderComponent = () => {
+const renderComponent = (): RenderResult => {
     return render(<FeedbackPage />);
 };
 
@@ -108,8 +108,8 @@ describe('<FeedbackPage />', () => {
             await clickSubmitButton();
 
             await waitFor(() => {
-                const errorCount = screen.getAllByText('Enter your feedback')
-                expect(errorCount.length).toBe(2)
+                const errorCount = screen.getAllByText('Enter your feedback');
+                expect(errorCount.length).toBe(2);
             });
 
             await waitFor(() => {
@@ -134,8 +134,8 @@ describe('<FeedbackPage />', () => {
             await clickSubmitButton();
 
             await waitFor(() => {
-                const errorCount = screen.getAllByText('Select an option')
-                expect(errorCount.length).toBe(2)
+                const errorCount = screen.getAllByText('Select an option');
+                expect(errorCount.length).toBe(2);
             });
 
             await waitFor(() => {
@@ -161,8 +161,8 @@ describe('<FeedbackPage />', () => {
             await clickSubmitButton();
 
             await waitFor(() => {
-                const errorCount = screen.getAllByText('Enter a valid email address')
-                expect(errorCount.length).toBe(2)
+                const errorCount = screen.getAllByText('Enter a valid email address');
+                expect(errorCount.length).toBe(2);
             });
 
             await waitFor(() => {
