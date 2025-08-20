@@ -448,7 +448,6 @@ jobs:
 
   deploy_get_document_reference_lambda:
     name: Deploy get fhir document reference lambda
-    if: inputs.environment == 'development' || inputs.environment == 'test'
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -587,6 +586,7 @@ jobs:
       lambda_layer_names: 'alerting_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_bulk_upload_toggle_lambda:
     name: Deploy bulk upload toggle lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
