@@ -32,7 +32,10 @@ if __name__ == "__main__":
     if not args.environment:
         args.environment = input("Please enter the name of the environment: ")
 
-    if args.start_bulk_upload or input(
-        "Would you like to start the Bulk Upload Process:"
-    ):
-        invoke_lambda(f"{args.environment}_V2BulkUploadMetadataLambda")
+    if args.start_bulk_upload or input("Would you like to start the Bulk Upload Process:"):
+        if args.use_v2_process:
+            print("Using the V2 Process")
+            invoke_lambda(f"{args.environment}_V2BulkUploadMetadataLambda")
+        else:
+            print("Using the Bulk Upload Process")
+            invoke_lambda(f"{args.environment}_BulkUploadMetadataLambda")
