@@ -3,13 +3,17 @@ import DocumentUploadInfectedStage from './DocumentUploadInfectedStage';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, Mock, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 
 const mockedUseNavigate = vi.fn();
-vi.mock('react-router', () => ({
-    useNavigate: () => mockedUseNavigate,
-}));
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: (): Mock => mockedUseNavigate,
+    };
+});
 
 describe('DocumentUploadInfectedStage', () => {
     describe('Rendering', () => {

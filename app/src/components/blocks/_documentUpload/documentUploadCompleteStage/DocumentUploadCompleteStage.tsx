@@ -6,9 +6,18 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { getFormattedDateFromString } from '../../../../helpers/utils/formatDate';
 import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
-import { JSX } from 'react';
+import {
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import { useEffect } from 'react';
+import { allDocsHaveState } from '../../../../helpers/utils/uploadDocumentHelpers';
 
-const DocumentUploadCompleteStage = (): JSX.Element => {
+type Props = {
+    documents: UploadDocument[];
+};
+
+const DocumentUploadCompleteStage = ({ documents }: Props): React.JSX.Element => {
     const navigate = useNavigate();
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
@@ -17,6 +26,16 @@ const DocumentUploadCompleteStage = (): JSX.Element => {
     const patientName = getFormattedPatientFullName(patientDetails);
 
     useTitle({ pageTitle: 'Record upload complete' });
+
+    useEffect(() => {
+        if (!allDocsHaveState(documents, DOCUMENT_UPLOAD_STATE.SUCCEEDED)) {
+            navigate(routes.HOME);
+        }
+    }, [navigate]);
+
+    if (!allDocsHaveState(documents, DOCUMENT_UPLOAD_STATE.SUCCEEDED)) {
+        return <></>;
+    }
 
     return (
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
@@ -42,7 +61,7 @@ const DocumentUploadCompleteStage = (): JSX.Element => {
                     to=""
                     onClick={(e): void => {
                         e.preventDefault();
-                        navigate(routes.SEARCH_PATIENT);
+                        navigate(routes.SEARCH_PATIENT, { replace: true });
                     }}
                     data-testid="search-patient-link"
                 >
@@ -69,7 +88,7 @@ const DocumentUploadCompleteStage = (): JSX.Element => {
                 href="#"
                 onClick={(e): void => {
                     e.preventDefault();
-                    navigate(routes.HOME);
+                    navigate(routes.HOME, { replace: true });
                 }}
             >
                 Go to home
