@@ -1,0 +1,278 @@
+# serializer version: 1
+# name: test_create_document_base64
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'language': 'en-GB',
+          'title': '1of1_Lloyd_George_Record_[Paula Esme VESEY]_[9730153973]_[22-01-1960].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'preliminary',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9449303304',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---
+# name: test_create_document_base64.1
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'language': 'en-GB',
+          'size': 59315,
+          'title': '1of1_Lloyd_George_Record_[Paula Esme VESEY]_[9730153973]_[22-01-1960].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'final',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9449303304',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---
+# name: test_create_document_presign
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'language': 'en-GB',
+          'title': '1of1_Lloyd_George_Record_[Paula Esme VESEY]_[9730153973]_[22-01-1960].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'preliminary',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9449303304',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---
+# name: test_create_document_presign.1
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'language': 'en-GB',
+          'title': '1of1_Lloyd_George_Record_[Paula Esme VESEY]_[9730153973]_[22-01-1960].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'final',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9449303304',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---
+# name: test_create_document_virus
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'language': 'en-GB',
+          'title': '1of1_Lloyd_George_Record_[Paula Esme VESEY]_[9730153973]_[22-01-1960].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'preliminary',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9730154260',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---
+# name: test_create_document_virus.1
+  dict({
+    'author': list([
+      dict({
+        'identifier': dict({
+          'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+          'value': 'H81109',
+        }),
+      }),
+    ]),
+    'content': list([
+      dict({
+        'attachment': dict({
+          'contentType': 'application/pdf',
+          'creation': '2023-01-01',
+          'language': 'en-GB',
+          'title': '1of1_Lloyd_George_Record_[Paula Esme VESEY]_[9730153973]_[22-01-1960].pdf',
+        }),
+      }),
+    ]),
+    'custodian': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/ods-organization-code',
+        'value': 'H81109',
+      }),
+    }),
+    'docStatus': 'cancelled',
+    'resourceType': 'DocumentReference',
+    'status': 'current',
+    'subject': dict({
+      'identifier': dict({
+        'system': 'https://fhir.nhs.uk/Id/nhs-number',
+        'value': '9730154260',
+      }),
+    }),
+    'type': dict({
+      'coding': list([
+        dict({
+          'code': '16521000000101',
+          'display': 'Lloyd George record folder',
+          'system': 'http://snomed.info/sct',
+        }),
+      ]),
+    }),
+  })
+# ---
