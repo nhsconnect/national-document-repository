@@ -13,8 +13,9 @@ from tests.unit.conftest import (
     MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
     MOCK_FEEDBACK_SENDER_EMAIL,
     MOCK_ITOC_SLACK_CHANNEL_ID,
+    MOCK_ITOC_TEAMS_WEBHOOK,
     MOCK_ITOC_TEST_EMAIL_ADDRESS,
-    MOCK_SLACK_BOT_TOKEN, MOCK_ITOC_TEAMS_WEBHOOK,
+    MOCK_SLACK_BOT_TOKEN,
 )
 from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_BAD_FEEDBACK_BODY_WITH_XSS_INJECTION,
@@ -345,6 +346,7 @@ def test_send_slack_message_raise_error_on_failure(send_feedback_service, mock_p
 
     assert error.value == expected_error
 
+
 def test_compose_teams_message(send_feedback_service):
     teams_message_json_str = readfile("mock_itoc_teams_message.json")
     expected = json.loads(teams_message_json_str)
@@ -358,15 +360,14 @@ def test_send_itoc_feedback_via_teams(send_feedback_service, mock_post):
     teams_message = json.loads(teams_message_json_str)
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
 
-    headers = {
-        "Content-type": "application/json"
-    }
+    headers = {"Content-type": "application/json"}
 
     send_feedback_service.send_itoc_feedback_via_teams(feedback)
 
     mock_post.assert_called_with(
         url=MOCK_ITOC_TEAMS_WEBHOOK, json=teams_message, headers=headers
     )
+
 
 def test_send_teams_message_raise_error_on_failure(send_feedback_service, mock_post):
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
@@ -380,7 +381,3 @@ def test_send_teams_message_raise_error_on_failure(send_feedback_service, mock_p
         send_feedback_service.send_itoc_feedback_via_teams(feedback)
 
     assert error.value == expected_error
-
-
-
-
