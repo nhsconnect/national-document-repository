@@ -32,6 +32,7 @@ class SendFeedbackService:
             if self.is_itoc_test_feedback(feedback.respondent_email):
                 logger.info("Feedback is from ITOC testing...")
                 self.send_itoc_feedback_via_slack(feedback)
+                self.send_itoc_feedback_via_teams(feedback)
             else:
                 email_body_html = self.build_email_body(feedback)
                 self.send_feedback_by_email(email_body_html)
@@ -94,6 +95,15 @@ class SendFeedbackService:
             )
             raise SendFeedbackException(500, LambdaError.FeedbackSESFailure)
 
+
+    def is_itoc_test_feedback(self, email_address: str) -> bool:
+        ssm_service = SSMService()
+        itoc_test_email_address = ssm_service.get_ssm_parameter(
+            os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
+        )
+        return email_address == itoc_test_email_address
+
+
     def compose_slack_message(self, feedback: Feedback):
         logger.info("Composing ITOC test feedback message...")
         with open("./models/templates/itoc_slack_feedback_blocks.json", "r") as f:
@@ -132,9 +142,44 @@ class SendFeedbackService:
                 e.response.status_code, LambdaError.FeedbackITOCFailure
             )
 
-    def is_itoc_test_feedback(self, email_address: str) -> bool:
-        ssm_service = SSMService()
-        itoc_test_email_address = ssm_service.get_ssm_parameter(
-            os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
-        )
-        return email_address == itoc_test_email_address
+
+    def compose_teams_message(self, feedback: Feedback):
+        logger.info("Composing ITOC test feedback message...")
+        with open("./models/templates/itoc_feedback_teams_message.json", "r") as f:
+            template_content = f.read()
+
+        template = Template(template_content)
+
+        context = {
+            "name": feedback.respondent_name,
+            "experience": feedback.experience,
+            "feedback": feedback.feedback_content,
+        }
+
+        rendered_json = template.render(context)
+        return json.loads(rendered_json)
+
+
+    def send_itoc_feedback_via_teams(self, feedback: Feedback):
+        logger.info("Sending ITOC test feedback via teams")
+        try:
+            payload = self.compose_teams_message(feedback)
+
+            headers = {"Content-type": "application/json"}
+
+            response = requests.post(
+                url=os.environ["ITOC_TESTING_TEAMS_WEBHOOK"],
+                headers=headers,
+                json=payload,
+            )
+            response.raise_for_status()
+            logger.info(
+                f"ITOC test feedback successfully sent via teams"
+            )
+        except HTTPError as e:
+            logger.error(e)
+            raise SendFeedbackException(
+             e.response.status_code, LambdaError.FeedbackITOCFailure
+            )
+
+

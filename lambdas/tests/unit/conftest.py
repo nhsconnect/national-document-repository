@@ -125,6 +125,7 @@ TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 MOCK_SLACK_BOT_TOKEN = f"xoxb-{TEST_UUID}"
 MOCK_ITOC_SLACK_CHANNEL_ID = "slack_channel_id"
 MOCK_ITOC_TEST_EMAIL_ADDRESS = "itoc_testing@testing.com"
+MOCK_ITOC_TEAMS_WEBHOOK = "https://webhook.team"
 
 
 @pytest.fixture
@@ -205,6 +206,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv("ITOC_TESTING_SLACK_BOT_TOKEN", MOCK_SLACK_BOT_TOKEN)
     monkeypatch.setenv("ITOC_TESTING_CHANNEL_ID", MOCK_ITOC_SLACK_CHANNEL_ID)
     monkeypatch.setenv("ITOC_TESTING_EMAIL_ADDRESS", MOCK_ITOC_TEST_EMAIL_ADDRESS)
+    monkeypatch.setenv("ITOC_TESTING_TEAMS_WEBHOOK", MOCK_ITOC_TEAMS_WEBHOOK)
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(

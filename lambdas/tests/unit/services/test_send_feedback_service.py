@@ -14,7 +14,7 @@ from tests.unit.conftest import (
     MOCK_FEEDBACK_SENDER_EMAIL,
     MOCK_ITOC_SLACK_CHANNEL_ID,
     MOCK_ITOC_TEST_EMAIL_ADDRESS,
-    MOCK_SLACK_BOT_TOKEN,
+    MOCK_SLACK_BOT_TOKEN, MOCK_ITOC_TEAMS_WEBHOOK,
 )
 from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_BAD_FEEDBACK_BODY_WITH_XSS_INJECTION,
@@ -67,7 +67,9 @@ def mock_ses_client(mocker):
 def mock_send_itoc_feedback_service(send_feedback_service, mocker):
     service = send_feedback_service
     mocker.patch.object(service, "compose_slack_message")
+    mocker.patch.object(service, "compose_teams_message")
     mocker.patch.object(service, "send_itoc_feedback_via_slack")
+    mocker.patch.object(service, "send_itoc_feedback_via_teams")
     mocker.patch.object(service, "send_feedback_by_email")
     yield service
 
@@ -280,6 +282,7 @@ def test_itoc_feedback_journey(
     mock_send_itoc_feedback_service.process_feedback(MOCK_ITOC_FEEDBACK_BODY_JSON_STR)
 
     mock_send_itoc_feedback_service.send_itoc_feedback_via_slack.assert_called()
+    mock_send_itoc_feedback_service.send_itoc_feedback_via_teams.assert_called()
     mock_send_itoc_feedback_service.send_feedback_by_email.assert_not_called()
 
 
@@ -341,3 +344,30 @@ def test_send_slack_message_raise_error_on_failure(send_feedback_service, mock_p
         send_feedback_service.send_itoc_feedback_via_slack(feedback)
 
     assert error.value == expected_error
+
+def test_compose_teams_message(send_feedback_service):
+    teams_message_json_str = readfile("mock_itoc_teams_message.json")
+    expected = json.loads(teams_message_json_str)
+    feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
+    actual = send_feedback_service.compose_teams_message(feedback)
+    assert actual == expected
+
+
+def test_send_itoc_feedback_via_teams(send_feedback_service, mock_post):
+    teams_message_json_str = readfile("mock_itoc_teams_message.json")
+    teams_message = json.loads(teams_message_json_str)
+    feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
+
+    headers = {
+        "Content-type": "application/json"
+    }
+
+    send_feedback_service.send_itoc_feedback_via_teams(feedback)
+
+    mock_post.assert_called_with(
+        url=MOCK_ITOC_TEAMS_WEBHOOK, json=teams_message, headers=headers
+    )
+
+
+
+
