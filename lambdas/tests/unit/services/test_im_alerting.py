@@ -51,7 +51,7 @@ QUEUE_ALERT_MESSAGE = {
 QUEUE_ALERT_TAGS = {
     "alarm_group": f"dev-{MOCK_LG_METADATA_SQS_QUEUE}",
     "alarm_metric": "ApproximateAgeOfOldestMessage",
-    "severity": "high",
+    "severity": "medium",
 }
 
 
@@ -117,10 +117,29 @@ def ok_alerting_service(mocker, set_env):
     yield service
 
 
+@pytest.fixture
+def existing_alarm_alerting_service(alerting_service, mocker):
+    mocker.patch.object(alerting_service, "find_active_alarm_entries")
+    mocker.patch.object(alerting_service, "handle_current_alarm_episode")
+    mocker.patch.object(alerting_service, "handle_new_alarm_episode")
+    yield alerting_service
+
+
 ALARM_METRIC_NAME = (
     f'{QUEUE_ALERT_MESSAGE["Trigger"]["Dimensions"][0]["QueueName"]}'
     f' {QUEUE_ALERT_MESSAGE["Trigger"]["MetricName"]}'
 )
+
+
+@pytest.fixture
+def existing_alarm_entry():
+    return AlarmEntry(
+        alarm_name_metric=ALARM_METRIC_NAME,
+        time_created=ALERT_TIMESTAMP,
+        last_updated=ALERT_TIMESTAMP,
+        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
+        history=[AlarmSeverity.MEDIUM],
+    )
 
 
 @freeze_time(ALERT_TIME)
@@ -133,7 +152,7 @@ def test_handle_new_alert_happy_path(alerting_service):
         time_created=ALERT_TIMESTAMP,
         last_updated=ALERT_TIMESTAMP,
         channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.HIGH],
+        history=[AlarmSeverity.MEDIUM],
     )
 
     alerting_service.handle_alarm_alert()
@@ -146,14 +165,7 @@ def test_handle_new_alert_happy_path(alerting_service):
 
 
 @freeze_time(ALERT_TIME)
-def test_handle_existing_alarm_entry_happy_path(alerting_service):
-    existing_alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.MEDIUM],
-    )
+def test_handle_existing_alarm_entry_happy_path(alerting_service, existing_alarm_entry):
     alerting_service.get_alarm_history.return_value = [existing_alarm_entry]
     alerting_service.get_all_alarm_tags.return_value = QUEUE_ALERT_TAGS
 
@@ -162,7 +174,7 @@ def test_handle_existing_alarm_entry_happy_path(alerting_service):
         time_created=ALERT_TIMESTAMP,
         last_updated=ALERT_TIMESTAMP,
         channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.MEDIUM, AlarmSeverity.HIGH],
+        history=[AlarmSeverity.MEDIUM, AlarmSeverity.MEDIUM],
     )
 
     updated_fields = {
@@ -190,17 +202,10 @@ def test_handle_existing_alarm_entry_happy_path(alerting_service):
 
 
 @freeze_time(ALERT_TIME)
-def test_handle_ok_action_happy_path(ok_alerting_service):
+def test_handle_ok_action_happy_path(ok_alerting_service, existing_alarm_entry):
     ok_alerting_service.all_alarm_state_ok.return_value = True
     ok_alerting_service.is_last_updated.return_value = True
     ok_alerting_service.get_all_alarm_tags.return_value = QUEUE_ALERT_TAGS
-    existing_alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.MEDIUM],
-    )
     ok_alerting_service.get_alarm_history.return_value = [existing_alarm_entry]
 
     updated_alarm_entry = AlarmEntry(
@@ -240,18 +245,13 @@ def test_handle_ok_action_happy_path(ok_alerting_service):
 
 
 @freeze_time(ALERT_TIME)
-def test_handle_ok_action_not_all_alarms_ok(mocker, ok_alerting_service):
+def test_handle_ok_action_not_all_alarms_ok(
+    mocker, ok_alerting_service, existing_alarm_entry
+):
     ok_alerting_service.all_alarm_state_ok.return_value = False
     ok_alerting_service.is_last_updated.return_value = True
     ok_alerting_service.get_all_alarm_tags.return_value = QUEUE_ALERT_TAGS
     mocker.patch.object(ok_alerting_service, "add_ttl_to_alarm_entry")
-    existing_alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.MEDIUM],
-    )
     ok_alerting_service.get_alarm_history.return_value = [existing_alarm_entry]
 
     ok_alerting_service.handle_alarm_alert()
@@ -266,19 +266,14 @@ def test_handle_ok_action_not_all_alarms_ok(mocker, ok_alerting_service):
 
 
 @freeze_time(ALERT_TIME)
-def test_handle_ok_action_not_last_updated(mocker, ok_alerting_service):
+def test_handle_ok_action_not_last_updated(
+    mocker, ok_alerting_service, existing_alarm_entry
+):
     ok_alerting_service.all_alarm_state_ok.return_value = True
     ok_alerting_service.is_last_updated.return_value = False
     ok_alerting_service.get_all_alarm_tags.return_value = QUEUE_ALERT_TAGS
     mocker.patch.object(ok_alerting_service, "add_ttl_to_alarm_entry")
 
-    existing_alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.MEDIUM],
-    )
     ok_alerting_service.get_alarm_history.return_value = [existing_alarm_entry]
 
     ok_alerting_service.handle_alarm_alert()
@@ -292,15 +287,7 @@ def test_handle_ok_action_not_last_updated(mocker, ok_alerting_service):
     ok_alerting_service.dynamo_service.update_item.assert_not_called()
 
 
-def test_find_active_alarms_entries(alerting_service):
-    existing_alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.MEDIUM],
-        time_to_exist=None
-    )
+def test_find_active_alarms_entries(alerting_service, existing_alarm_entry):
     expected = [existing_alarm_entry]
     alerting_service.get_alarm_history.return_value = expected
     alerting_service.get_all_alarm_tags.return_value = QUEUE_ALERT_TAGS
@@ -309,6 +296,117 @@ def test_find_active_alarms_entries(alerting_service):
 
     assert actual == expected
 
+
+def test_handle_existing_alarm_history_active_alarm_current_episode_handled(
+    existing_alarm_alerting_service, existing_alarm_entry
+):
+    alarm_history = [existing_alarm_entry]
+    existing_alarm_alerting_service.find_active_alarm_entries.return_value = (
+        alarm_history
+    )
+
+    existing_alarm_alerting_service.handle_existing_alarm_history(
+        alarm_history=alarm_history,
+        alarm_state=QUEUE_ALERT_MESSAGE["NewStateValue"],
+        alarm_name=ALARM_METRIC_NAME,
+        alarm_time=ALERT_TIMESTAMP,
+        alarm_tags=QUEUE_ALERT_TAGS,
+    )
+
+    existing_alarm_alerting_service.handle_current_alarm_episode.assert_called()
+    existing_alarm_alerting_service.handle_new_alarm_episode.assert_not_called()
+
+
+def test_handle_existing_alarm_history_no_active_alarm_new_episode_created(
+    existing_alarm_alerting_service, existing_alarm_entry
+):
+    alarm_history = [existing_alarm_entry]
+    existing_alarm_alerting_service.find_active_alarm_entries.return_value = []
+
+    existing_alarm_alerting_service.handle_existing_alarm_history(
+        alarm_history=alarm_history,
+        alarm_state=QUEUE_ALERT_MESSAGE["NewStateValue"],
+        alarm_name=ALARM_METRIC_NAME,
+        alarm_time=ALERT_TIMESTAMP,
+        alarm_tags=QUEUE_ALERT_TAGS,
+    )
+
+    existing_alarm_alerting_service.handle_current_alarm_episode.assert_not_called()
+    existing_alarm_alerting_service.handle_new_alarm_episode.assert_called()
+
+
+def test_handle_existing_alarm_history_ok_action_trigger_alert_ignored(
+    existing_alarm_alerting_service, existing_alarm_entry
+):
+    alarm_history = [existing_alarm_entry]
+    existing_alarm_alerting_service.find_active_alarm_entries.return_value = []
+
+    existing_alarm_alerting_service.handle_existing_alarm_history(
+        alarm_history=alarm_history,
+        alarm_state=QUEUE_ALERT_MESSAGE["OldStateValue"],
+        alarm_name=ALARM_METRIC_NAME,
+        alarm_time=ALERT_TIMESTAMP,
+        alarm_tags=QUEUE_ALERT_TAGS,
+    )
+
+    existing_alarm_alerting_service.handle_current_alarm_episode.assert_not_called()
+    existing_alarm_alerting_service.handle_new_alarm_episode.assert_not_called()
+
+
+def test_handle_empty_alarm_history_ok_alarm_state_no_action_taken(
+    existing_alarm_alerting_service,
+):
+    existing_alarm_alerting_service.handle_empty_alarm_history(
+        alarm_state=QUEUE_ALERT_MESSAGE["OldStateValue"],
+        alarm_name=ALARM_METRIC_NAME,
+        alarm_time=ALERT_TIMESTAMP,
+        alarm_tags=QUEUE_ALERT_TAGS,
+    )
+
+    existing_alarm_alerting_service.handle_new_alarm_episode.assert_not_called()
+
+
+def test_handle_empty_alarm_history_alarm_state_handles_new_alarm_episode(
+    existing_alarm_alerting_service,
+):
+    existing_alarm_alerting_service.handle_empty_alarm_history(
+        alarm_state=QUEUE_ALERT_MESSAGE["NewStateValue"],
+        alarm_name=ALARM_METRIC_NAME,
+        alarm_time=ALERT_TIMESTAMP,
+        alarm_tags=QUEUE_ALERT_TAGS,
+    )
+
+    existing_alarm_alerting_service.handle_new_alarm_episode.assert_called()
+
+
+@freeze_time(ALERT_TIME)
+def test_update_alarm_state_history_adds_new_history_to_alarm_entry(
+    alerting_service, existing_alarm_entry
+):
+    tags = QUEUE_ALERT_TAGS
+    alerting_service.get_all_alarm_tags.return_value = tags
+    expected = AlarmEntry(
+        alarm_name_metric=ALARM_METRIC_NAME,
+        time_created=ALERT_TIMESTAMP,
+        last_updated=ALERT_TIMESTAMP,
+        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
+        history=[AlarmSeverity.MEDIUM, AlarmSeverity.MEDIUM],
+    )
+
+    entry_to_update = existing_alarm_entry
+    alerting_service.update_alarm_state_history(entry_to_update, tags)
+
+    assert entry_to_update == expected
+
+
+def test_create_alarm_entry_creates_dynamo_entry(
+    alerting_service, existing_alarm_entry
+):
+    alerting_service.create_alarm_entry(existing_alarm_entry)
+
+    alerting_service.dynamo_service.create_item.assert_called_with(
+        table_name=MOCK_ALARM_HISTORY_TABLE, item=existing_alarm_entry.to_dynamo()
+    )
 
 
 def test_create_action_url_with_lambda_alert(alerting_service):
@@ -326,7 +424,6 @@ def test_create_action_url_with_lambda_alert(alerting_service):
 
 
 def test_create_action_url_with_queue_alert(alerting_service):
-
     expected = "https://confluence.example.com#:~:text=test%20bulk%20upload%20metadata%20queue%20ApproximateAgeOfOldestMessage"
     alarm_metric_name = (
         f'{QUEUE_ALERT_MESSAGE["Trigger"]["Dimensions"][0]["QueueName"]}'
@@ -334,6 +431,7 @@ def test_create_action_url_with_queue_alert(alerting_service):
     )
 
     actual = alerting_service.create_action_url(BASE_URL, alarm_metric_name)
+
     assert actual == expected
 
 
@@ -376,7 +474,6 @@ def test_compose_teams_message(alerting_service):
 
 
 def test_compose_slack_message_blocks(alerting_service):
-
     alarm_entry = AlarmEntry(
         alarm_name_metric=ALARM_METRIC_NAME,
         time_created=ALERT_TIMESTAMP,
@@ -409,19 +506,10 @@ def test_build_tags_filter(alerting_service):
 
 
 @freeze_time(ALERT_TIME)
-def test_add_ttl_to_alarm_entry(alerting_service):
+def test_add_ttl_to_alarm_entry(alerting_service, existing_alarm_entry):
+    alerting_service.add_ttl_to_alarm_entry(existing_alarm_entry)
 
-    alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.HIGH],
-    )
-
-    alerting_service.add_ttl_to_alarm_entry(alarm_entry)
-
-    assert alarm_entry.time_to_exist == ALERT_TIMESTAMP + TTL_IN_SECONDS
+    assert existing_alarm_entry.time_to_exist == ALERT_TIMESTAMP + TTL_IN_SECONDS
 
 
 def test_extract_alarm_names_from_arns(alerting_service):
@@ -434,22 +522,13 @@ def test_extract_alarm_names_from_arns(alerting_service):
     assert actual == expected
 
 
-
 @freeze_time(ALERT_TIME)
-def test_is_last_updated(alerting_service):
-    old_alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.HIGH],
-    )
-
+def test_is_last_updated(alerting_service, existing_alarm_entry):
     alerting_service.dynamo_service.get_item.return_value = {
-        "Item": old_alarm_entry.to_dynamo()
+        "Item": existing_alarm_entry.to_dynamo()
     }
 
-    updated_alarm_entry = deepcopy(old_alarm_entry)
+    updated_alarm_entry = deepcopy(existing_alarm_entry)
     updated_alarm_entry.last_updated = updated_alarm_entry.last_updated + TTL_IN_SECONDS
 
     assert alerting_service.is_last_updated(updated_alarm_entry)
@@ -457,20 +536,12 @@ def test_is_last_updated(alerting_service):
     alerting_service.dynamo_service.get_item.return_value = {
         "Item": updated_alarm_entry.to_dynamo()
     }
-    assert alerting_service.is_last_updated(old_alarm_entry) is False
+    assert alerting_service.is_last_updated(existing_alarm_entry) is False
 
 
-def test_is_last_updated_returns_false_on_error(alerting_service):
-    alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.HIGH],
-    )
-
+def test_is_last_updated_returns_false_on_error(alerting_service, existing_alarm_entry):
     alerting_service.dynamo_service.get_item.side_effect = Exception
-    assert alerting_service.is_last_updated(alarm_entry) is False
+    assert alerting_service.is_last_updated(existing_alarm_entry) is False
 
 
 @freeze_time(ALERT_TIME)
@@ -502,16 +573,11 @@ def test_update_alarm_history_table(alerting_service):
     )
 
 
-def test_is_episode_expired_no_TTL_returns_false(alerting_service):
-    alarm_entry = AlarmEntry(
-        alarm_name_metric=ALARM_METRIC_NAME,
-        time_created=ALERT_TIMESTAMP,
-        last_updated=ALERT_TIMESTAMP,
-        channel_id=MOCK_ALERTING_SLACK_CHANNEL_ID,
-        history=[AlarmSeverity.HIGH],
-    )
+def test_is_episode_expired_no_TTL_returns_false(
+    alerting_service, existing_alarm_entry
+):
 
-    assert alerting_service.is_episode_expired(alarm_entry) is False
+    assert alerting_service.is_episode_expired(existing_alarm_entry) is False
 
 
 @freeze_time(ALERT_TIME)
