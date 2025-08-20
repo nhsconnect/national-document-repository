@@ -368,6 +368,19 @@ def test_send_itoc_feedback_via_teams(send_feedback_service, mock_post):
         url=MOCK_ITOC_TEAMS_WEBHOOK, json=teams_message, headers=headers
     )
 
+def test_send_teams_message_raise_error_on_failure(send_feedback_service, mock_post):
+    feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
+    response = Response()
+    response.status_code = 500
+    mock_post.return_value = response
+
+    expected_error = SendFeedbackException(500, LambdaError.FeedbackITOCFailure)
+
+    with pytest.raises(SendFeedbackException) as error:
+        send_feedback_service.send_itoc_feedback_via_teams(feedback)
+
+    assert error.value == expected_error
+
 
 
 
