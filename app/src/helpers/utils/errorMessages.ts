@@ -1,15 +1,15 @@
-import { GenericError, GenericErrorMessageMap } from '../../types/pages/genericPageErrors';
+import { ErrorMessageListItem, ErrorMessageMap } from '../../types/pages/genericPageErrors';
 
-export function getGenericErrorBoxErrorMessage<T extends string>(
-    error: GenericError<T>,
-    messageMap: GenericErrorMessageMap<T>,
+export function getMappedErrorMessage<T extends string>(
+    error: ErrorMessageListItem<T>,
+    messageMap: ErrorMessageMap<T>,
 ): string {
     return messageMap[error.error].errorBox;
 }
 
 export function groupErrorsByType<T extends string>(
-    errors: GenericError<T>[],
-    getMessage: (error: GenericError<T>) => string,
+    errors: ErrorMessageListItem<T>[],
+    getMessage: (error: ErrorMessageListItem<T>) => string,
 ): Partial<Record<T, { linkIds: string[]; errorMessage: string }>> {
     const result: Partial<Record<T, { linkIds: string[]; errorMessage: string }>> = {};
 

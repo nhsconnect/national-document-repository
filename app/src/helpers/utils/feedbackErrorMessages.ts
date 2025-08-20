@@ -1,7 +1,7 @@
-import { GenericError } from '../../types/pages/genericPageErrors';
-import { getGenericErrorBoxErrorMessage, groupErrorsByType } from './genericErrorMessages';
+import { ErrorMessageListItem } from '../../types/pages/genericPageErrors';
+import { getMappedErrorMessage, groupErrorsByType } from './errorMessages';
 
-type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
+type FeedbackError = ErrorMessageListItem<FEEDBACK_ERROR_TYPE>;
 
 export enum FEEDBACK_ERROR_TYPE {
     feedbackSatisfaction = 'feedbackSatisfaction',
@@ -15,16 +15,16 @@ export type FeedbackErrorMessageType = {
 };
 
 export const getFeedbackErrorBoxErrorMessage = (error: FeedbackError): string =>
-    getGenericErrorBoxErrorMessage(error, feedbackErrorMessages);
+    getMappedErrorMessage(error, feedbackErrorMessages);
 
 export const groupFeedbackErrorsByType = (
     errors: FeedbackError[],
 ): Partial<Record<FEEDBACK_ERROR_TYPE, { linkIds: string[]; errorMessage: string }>> =>
     groupErrorsByType(errors, getFeedbackErrorBoxErrorMessage);
 
-type errorMessageType = { [errorType in FEEDBACK_ERROR_TYPE]: FeedbackErrorMessageType };
+type ErrorMessageType = { [errorType in FEEDBACK_ERROR_TYPE]: FeedbackErrorMessageType };
 
-export const feedbackErrorMessages: errorMessageType = {
+export const feedbackErrorMessages: ErrorMessageType = {
     feedbackSatisfaction: {
         inline: 'Select an option',
         errorBox: 'Select an option',

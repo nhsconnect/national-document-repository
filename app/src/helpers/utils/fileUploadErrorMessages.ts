@@ -1,7 +1,7 @@
-import { GenericError } from '../../types/pages/genericPageErrors';
-import { getGenericErrorBoxErrorMessage, groupErrorsByType } from './genericErrorMessages';
+import { ErrorMessageListItem } from '../../types/pages/genericPageErrors';
+import { getMappedErrorMessage, groupErrorsByType } from './errorMessages';
 
-type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;
+type UploadFilesError = ErrorMessageListItem<UPLOAD_FILE_ERROR_TYPE>;
 
 export enum UPLOAD_FILE_ERROR_TYPE {
     noFiles = 'noFiles',
@@ -23,16 +23,16 @@ export type fileUploadErrorMessageType = {
 };
 
 export const getUploadErrorBoxErrorMessage = (error: UploadFilesError): string =>
-    getGenericErrorBoxErrorMessage(error, fileUploadErrorMessages);
+    getMappedErrorMessage(error, fileUploadErrorMessages);
 
 export const groupUploadErrorsByType = (
     errors: UploadFilesError[],
 ): Partial<Record<UPLOAD_FILE_ERROR_TYPE, { linkIds: string[]; errorMessage: string }>> =>
     groupErrorsByType(errors, getUploadErrorBoxErrorMessage);
 
-type errorMessageType = { [errorType in UPLOAD_FILE_ERROR_TYPE]: fileUploadErrorMessageType };
+type ErrorMessageType = { [errorType in UPLOAD_FILE_ERROR_TYPE]: fileUploadErrorMessageType };
 
-export const fileUploadErrorMessages: errorMessageType = {
+export const fileUploadErrorMessages: ErrorMessageType = {
     noFiles: {
         inline: 'Select a file to upload',
         errorBox: 'Select a file to upload',

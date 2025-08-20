@@ -19,7 +19,7 @@ import BackButton from '../../../generic/backButton/BackButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
-import { GenericError } from '../../../../types/pages/genericPageErrors';
+import { ErrorMessageListItem } from '../../../../types/pages/genericPageErrors';
 
 type Props = {
     documents: UploadDocument[];
@@ -29,7 +29,7 @@ type Props = {
 type FormData = {
     [key: string]: number | null;
 };
-type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;
+type UploadFilesError = ErrorMessageListItem<UPLOAD_FILE_ERROR_TYPE>;
 
 const DocumentSelectOrderStage = ({
     documents,

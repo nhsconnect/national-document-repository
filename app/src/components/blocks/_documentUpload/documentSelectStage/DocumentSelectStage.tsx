@@ -23,7 +23,7 @@ import BackButton from '../../../generic/backButton/BackButton';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import { GenericError } from '../../../../types/pages/genericPageErrors';
+import { ErrorMessageListItem } from '../../../../types/pages/genericPageErrors';
 
 export type Props = {
     setDocuments: SetUploadDocuments;
@@ -31,7 +31,7 @@ export type Props = {
     documentType: DOCUMENT_TYPE;
 };
 
-type UploadFilesError = GenericError<UPLOAD_FILE_ERROR_TYPE>;
+type UploadFilesError = ErrorMessageListItem<UPLOAD_FILE_ERROR_TYPE>;
 
 const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props): JSX.Element => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);

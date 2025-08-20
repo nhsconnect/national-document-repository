@@ -32,9 +32,9 @@ import {
     FEEDBACK_ERROR_TYPE,
     groupFeedbackErrorsByType,
 } from '../../helpers/utils/feedbackErrorMessages';
-import { GenericError } from '../../types/pages/genericPageErrors';
+import { ErrorMessageListItem } from '../../types/pages/genericPageErrors';
 
-type FeedbackError = GenericError<FEEDBACK_ERROR_TYPE>;
+type FeedbackError = ErrorMessageListItem<FEEDBACK_ERROR_TYPE>;
 
 function FeedbackPage(): JSX.Element {
     const baseUrl = useBaseAPIUrl();
@@ -138,7 +138,7 @@ function FeedbackPage(): JSX.Element {
             <h1 data-testid="feedback-page-header">Give feedback on this service</h1>
 
             {Object.keys(errors).length > 0 && (
-                <ErrorBox<FEEDBACK_ERROR_TYPE>
+                <ErrorBox
                     dataTestId="feedback-error-box"
                     errorBoxSummaryId="feedback-errors"
                     messageTitle="There is a problem"

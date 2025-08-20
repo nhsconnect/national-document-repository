@@ -1,6 +1,6 @@
 import { ErrorSummary } from 'nhsuk-react-components';
 import { Ref, MouseEvent, JSX } from 'react';
-import { GenericError, GroupErrors } from '../../../types/pages/genericPageErrors';
+import { ErrorMessageListItem, GroupErrors } from '../../../types/pages/genericPageErrors';
 
 type ErrorBoxProps<T extends string> = {
     errorBoxSummaryId: string;
@@ -11,13 +11,13 @@ type ErrorBoxProps<T extends string> = {
     errorBody?: string;
     dataTestId?: string;
     errorOnClick?: () => void;
-    errorMessageList?: GenericError<T>[];
+    errorMessageList?: ErrorMessageListItem<T>[];
     scrollToRef?: Ref<HTMLDivElement>;
     groupErrorsFn?: GroupErrors<T>;
 };
 
 type ErrorMessagesProps<T extends string> = {
-    errorMessageList: GenericError<T>[];
+    errorMessageList: ErrorMessageListItem<T>[];
     groupErrorsFn?: GroupErrors<T>;
 };
 
