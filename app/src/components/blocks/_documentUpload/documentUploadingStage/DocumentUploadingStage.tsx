@@ -5,19 +5,31 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '../../../../types/generic/routes';
 
 type Props = {
     documents: UploadDocument[];
     startUpload: () => Promise<void>;
 };
 
-const DocumentUploadingStage = ({ documents, startUpload }: Props) => {
+const DocumentUploadingStage = ({ documents, startUpload }: Props): React.JSX.Element => {
     const pageHeader = 'Your documents are uploading';
     useTitle({ pageTitle: 'Uploading documents' });
+    const navigate = useNavigate();
+    const uploadStartedRef = useRef<boolean>(false);
 
     useEffect(() => {
-        startUpload();
+        if (!uploadStartedRef.current) {
+            if (documents.some((doc) => doc.state !== DOCUMENT_UPLOAD_STATE.SELECTED)) {
+                navigate(routes.HOME);
+                return;
+            }
+            
+            uploadStartedRef.current = true;
+            startUpload();
+        }
     }, []);
 
     return (

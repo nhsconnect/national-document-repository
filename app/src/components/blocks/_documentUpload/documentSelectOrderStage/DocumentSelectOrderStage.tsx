@@ -1,7 +1,7 @@
 import { Button, Select, Table } from 'nhsuk-react-components';
 import { Dispatch, JSX, SetStateAction, useEffect, useRef } from 'react';
 import { FieldErrors, FieldValues, useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,

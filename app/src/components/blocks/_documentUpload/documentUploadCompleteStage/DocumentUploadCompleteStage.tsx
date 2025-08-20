@@ -6,8 +6,13 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { getFormattedDateFromString } from '../../../../helpers/utils/formatDate';
 import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
+import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 
-const DocumentUploadCompleteStage = () => {
+type Props = {
+    documents: UploadDocument[];
+};
+
+const DocumentUploadCompleteStage = ({documents}: Props): React.JSX.Element => {
     const navigate = useNavigate();
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
@@ -17,6 +22,10 @@ const DocumentUploadCompleteStage = () => {
 
     useTitle({ pageTitle: 'Record upload complete' });
 
+    if (documents.some((doc) => doc.state !== DOCUMENT_UPLOAD_STATE.SUCCEEDED)) {
+        navigate(routes.HOME);
+        return <></>;
+    }
 
     return (
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
@@ -44,7 +53,7 @@ const DocumentUploadCompleteStage = () => {
                     to=""
                     onClick={(e) => {
                         e.preventDefault();
-                        navigate(routes.SEARCH_PATIENT);
+                        navigate(routes.SEARCH_PATIENT, { replace: true });
                     }}
                     data-testid="search-patient-link"
                 >
@@ -71,7 +80,7 @@ const DocumentUploadCompleteStage = () => {
                 href="#"
                 onClick={(e) => {
                     e.preventDefault();
-                    navigate(routes.HOME);
+                    navigate(routes.HOME, { replace: true });
                 }}
             >
                 Go to home

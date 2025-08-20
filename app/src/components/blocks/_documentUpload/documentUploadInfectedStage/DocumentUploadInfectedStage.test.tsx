@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 
 const mockedUseNavigate = vi.fn();
-vi.mock('react-router', () => ({
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 

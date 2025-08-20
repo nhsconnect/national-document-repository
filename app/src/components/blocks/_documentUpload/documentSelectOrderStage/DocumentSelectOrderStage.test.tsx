@@ -6,8 +6,9 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter } from 'react-router-dom';
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
+import { buildLgFile } from '../../../../helpers/test/testBuilders';
 
 const mockNavigate = vi.fn();
 const mockSetDocuments = vi.fn();
@@ -35,19 +36,13 @@ vi.mock('../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview', 
 describe('DocumentSelectOrderStage', () => {
     let documents: UploadDocument[] = [];
 
-    const createMockFile = (name: string, id: string): File => {
-        const file = new File(['content'], name, { type: 'application/pdf' });
-        Object.defineProperty(file, 'name', { value: name, writable: false });
-        return file;
-    };
-
     beforeEach(() => {
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
         documents = [
             {
                 docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                 id: '1',
-                file: createMockFile('test-document-1.pdf', '1'),
+                file: buildLgFile(1),
                 attempts: 0,
                 state: DOCUMENT_UPLOAD_STATE.SELECTED,
                 numPages: 5,
@@ -94,7 +89,7 @@ describe('DocumentSelectOrderStage', () => {
         it('displays document information in the table', () => {
             renderSut(documents);
 
-            expect(screen.getByText('test-document-1.pdf')).toBeInTheDocument();
+            expect(screen.getByText('testFile1.pdf')).toBeInTheDocument();
             expect(screen.getByText('5')).toBeInTheDocument();
             expect(screen.getByText('View')).toBeInTheDocument();
             expect(screen.getByText('Remove')).toBeInTheDocument();
@@ -136,7 +131,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '2',
-                    file: createMockFile('test-document-2.pdf', '2'),
+                    file: buildLgFile(2),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 3,
@@ -156,7 +151,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '1',
-                    file: createMockFile('test-document-1.pdf', '1'),
+                    file: buildLgFile(1),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 5,
@@ -165,7 +160,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '2',
-                    file: createMockFile('test-document-2.pdf', '2'),
+                    file: buildLgFile(2),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 3,
@@ -189,7 +184,7 @@ describe('DocumentSelectOrderStage', () => {
             renderSut(documents);
 
             const removeButton = screen.getByRole('button', {
-                name: /Remove test-document-1.pdf from selection/,
+                name: /Remove testFile1.pdf from selection/,
             });
             await user.click(removeButton);
 
@@ -202,7 +197,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '1',
-                    file: createMockFile('test-document-1.pdf', '1'),
+                    file: buildLgFile(1),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 5,
@@ -211,7 +206,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '2',
-                    file: createMockFile('test-document-2.pdf', '2'),
+                    file: buildLgFile(2),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 3,
@@ -220,7 +215,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '3',
-                    file: createMockFile('test-document-3.pdf', '3'),
+                    file: buildLgFile(3),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 2,
@@ -232,7 +227,7 @@ describe('DocumentSelectOrderStage', () => {
 
             // Remove the middle document (position 2)
             const removeButton = screen.getByRole('button', {
-                name: /Remove test-document-2.pdf from selection/,
+                name: /Remove testFile2.pdf from selection/,
             });
             await user.click(removeButton);
 
@@ -255,7 +250,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '1',
-                    file: createMockFile('test-document-1.pdf', '1'),
+                    file: buildLgFile(1),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 5,
@@ -264,7 +259,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '2',
-                    file: createMockFile('test-document-2.pdf', '2'),
+                    file: buildLgFile(2),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 3,
@@ -273,7 +268,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '3',
-                    file: createMockFile('test-document-3.pdf', '3'),
+                    file: buildLgFile(3),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 2,
@@ -285,7 +280,7 @@ describe('DocumentSelectOrderStage', () => {
 
             // Remove the last document (position 3)
             const removeButton = screen.getByRole('button', {
-                name: /Remove test-document-3.pdf from selection/,
+                name: /Remove testFile3.pdf from selection/,
             });
             await user.click(removeButton);
 
@@ -308,7 +303,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '1',
-                    file: createMockFile('test-document-1.pdf', '1'),
+                    file: buildLgFile(1),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 5,
@@ -317,7 +312,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '2',
-                    file: createMockFile('test-document-2.pdf', '2'),
+                    file: buildLgFile(2),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 3,
@@ -328,7 +323,7 @@ describe('DocumentSelectOrderStage', () => {
             renderSut(documentsWithoutPosition);
 
             const removeButton = screen.getByRole('button', {
-                name: /Remove test-document-1.pdf from selection/,
+                name: /Remove testFile1.pdf from selection/,
             });
             await user.click(removeButton);
 
@@ -346,7 +341,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '1',
-                    file: createMockFile('document-one.pdf', '1'),
+                    file: buildLgFile(1),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 5,
@@ -355,7 +350,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '2',
-                    file: createMockFile('document-two.pdf', '2'),
+                    file: buildLgFile(2),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 3,
@@ -367,12 +362,12 @@ describe('DocumentSelectOrderStage', () => {
 
             expect(
                 screen.getByRole('button', {
-                    name: 'Remove document-one.pdf from selection',
+                    name: 'Remove testFile1.pdf from selection',
                 }),
             ).toBeInTheDocument();
             expect(
                 screen.getByRole('button', {
-                    name: 'Remove document-two.pdf from selection',
+                    name: 'Remove testFile2.pdf from selection',
                 }),
             ).toBeInTheDocument();
         });
@@ -392,7 +387,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '1',
-                    file: createMockFile('test-document-1.pdf', '1'),
+                    file: buildLgFile(1),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 5,
@@ -401,7 +396,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '2',
-                    file: createMockFile('test-document-2.pdf', '2'),
+                    file: buildLgFile(2),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 3,
@@ -438,7 +433,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '1',
-                    file: createMockFile('test-document-1.pdf', '1'),
+                    file: buildLgFile(1),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 5,
@@ -447,7 +442,7 @@ describe('DocumentSelectOrderStage', () => {
                 {
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     id: '2',
-                    file: createMockFile('test-document-2.pdf', '2'),
+                    file: buildLgFile(2),
                     attempts: 0,
                     state: DOCUMENT_UPLOAD_STATE.SELECTED,
                     numPages: 3,
