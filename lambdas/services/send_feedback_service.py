@@ -95,14 +95,12 @@ class SendFeedbackService:
             )
             raise SendFeedbackException(500, LambdaError.FeedbackSESFailure)
 
-
     def is_itoc_test_feedback(self, email_address: str) -> bool:
         ssm_service = SSMService()
         itoc_test_email_address = ssm_service.get_ssm_parameter(
             os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
         )
         return email_address == itoc_test_email_address
-
 
     def compose_slack_message(self, feedback: Feedback):
         logger.info("Composing ITOC test feedback message...")
@@ -142,7 +140,6 @@ class SendFeedbackService:
                 e.response.status_code, LambdaError.FeedbackITOCFailure
             )
 
-
     def compose_teams_message(self, feedback: Feedback):
         logger.info("Composing ITOC test feedback message...")
         with open("./models/templates/itoc_feedback_teams_message.json", "r") as f:
@@ -159,7 +156,6 @@ class SendFeedbackService:
         rendered_json = template.render(context)
         return json.loads(rendered_json)
 
-
     def send_itoc_feedback_via_teams(self, feedback: Feedback):
         logger.info("Sending ITOC test feedback via teams")
         try:
@@ -173,13 +169,9 @@ class SendFeedbackService:
                 json=payload,
             )
             response.raise_for_status()
-            logger.info(
-                f"ITOC test feedback successfully sent via teams"
-            )
+            logger.info("ITOC test feedback successfully sent via teams")
         except HTTPError as e:
             logger.error(e)
             raise SendFeedbackException(
-             e.response.status_code, LambdaError.FeedbackITOCFailure
+                e.response.status_code, LambdaError.FeedbackITOCFailure
             )
-
-

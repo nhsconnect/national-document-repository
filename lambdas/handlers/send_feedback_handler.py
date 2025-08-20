@@ -23,7 +23,7 @@ logger = LoggingService(__name__)
         "ITOC_TESTING_SLACK_BOT_TOKEN",
         "ITOC_TESTING_CHANNEL_ID",
         "ITOC_TESTING_EMAIL_ADDRESS",
-        "ITOC_TESTING_TEAMS_WEBHOOK"
+        "ITOC_TESTING_TEAMS_WEBHOOK",
     ]
 )
 @handle_lambda_exceptions
