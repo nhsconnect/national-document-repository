@@ -7,6 +7,7 @@ import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import usePatient from '../../../../helpers/hooks/usePatient';
+import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -37,7 +38,7 @@ describe('DocumentUploadCompleteStage', () => {
             ),
         ).toBeInTheDocument();
 
-        const expectedFullName = `${patientDetails.familyName}, ${patientDetails.givenName}`;
+        const expectedFullName = getFormattedPatientFullName(patientDetails);
         expect(screen.getByTestId("patient-name").textContent).toEqual("Patient name: " + expectedFullName)
 
         const expectedNhsNumber = formatNhsNumber(patientDetails.nhsNumber);
