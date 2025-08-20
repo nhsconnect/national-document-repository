@@ -90,7 +90,7 @@ jobs:
 
       - name: Run Bulk Upload
         run: |
-          if [[ "${{inputs.use_v2_process}}" == "true ]]; then
+          if [[ "${{inputs.use_v2_process}}" == "true" ]]; then
             V2_FLAG="--use-v2-process"
           else
             V2_FLAG=""
