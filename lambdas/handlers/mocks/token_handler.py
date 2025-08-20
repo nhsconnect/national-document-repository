@@ -38,7 +38,7 @@ def lambda_handler(event, context):
         login_service = LoginService(oidc_service=MockOidcService())
 
         response = login_service.generate_session(state, auth_code)
-        logger.audit_splunk_info(
+        logger.info(
             "User logged in successfully", {"Result": "Successful login"}
         )
         return ApiGatewayResponse(
