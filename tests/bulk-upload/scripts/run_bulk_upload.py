@@ -27,6 +27,12 @@ if __name__ == "__main__":
         help="Start the Bulk Upload",
     )
 
+    parser.add_argument(
+        "--use-v2-process",
+        action="store_true",
+        help="Use the V2 process",
+    )
+
     args = parser.parse_args()
 
     if not args.environment:
