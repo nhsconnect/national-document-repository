@@ -146,6 +146,20 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
+  deploy_v2_bulk_upload_metadata_lambda:
+    name: Deploy v2_bulk_upload_metadata_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: bulk_upload_metadata_handler
+      lambda_aws_name: V2BulkUploadMetadataLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_token_request_lambda:
     name: Deploy TokenRequestHandler
     if: ${{ !inputs.mock_login_enabled }}
@@ -274,6 +288,20 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: bulk_upload_handler
       lambda_aws_name: BulkUploadLambda
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_v2_bulk_upload_lambda:
+    name: Deploy v2_bulk_upload_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: bulk_upload_handler
+      lambda_aws_name: V2BulkUploadLambda
       lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
