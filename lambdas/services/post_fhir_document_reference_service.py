@@ -5,6 +5,7 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.snomed_codes import SnomedCode, SnomedCodes
 from models.document_reference import DocumentReference
 from models.fhir.R4.fhir_document_reference import SNOMED_URL, Attachment
@@ -24,6 +25,7 @@ from utils.exceptions import (
     PdsErrorException,
 )
 from utils.lambda_exceptions import CreateDocumentRefException
+from utils.ods_utils import PCSE_ODS_CODE
 from utils.utilities import create_reference_id, get_pds_service, validate_nhs_number
 
 logger = LoggingService(__name__)
@@ -140,15 +142,19 @@ class PostFhirDocumentReferenceService:
     ) -> DocumentReference:
         """Create a document reference model"""
         document_id = create_reference_id()
+
+        custodian = fhir_doc.custodian.identifier.value if fhir_doc.custodian else None
+        if not custodian:
+            custodian = (
+                current_gp_ods
+                if current_gp_ods not in PatientOdsInactiveStatus.list()
+                else PCSE_ODS_CODE
+            )
         document_reference = DocumentReference(
             id=document_id,
             nhs_number=nhs_number,
             current_gp_ods=current_gp_ods,
-            custodian=(
-                fhir_doc.custodian.identifier.value
-                if fhir_doc.custodian
-                else current_gp_ods
-            ),
+            custodian=custodian,
             s3_bucket_name=self.staging_bucket_name,
             author=fhir_doc.author[0].identifier.value,
             content_type=fhir_doc.content[0].attachment.contentType,
