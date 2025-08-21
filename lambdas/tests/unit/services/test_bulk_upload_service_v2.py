@@ -1598,3 +1598,10 @@ def test_virus_scan_file_not_found(repo_under_test, mocker):
         "One or more of the files is not accessible from staging bucket",
         "ODS123",
     )
+
+
+def test_initiate_transactions_calls_repos(repo_under_test):
+    repo_under_test.initiate_transactions()
+
+    repo_under_test.bulk_upload_s3_repository.init_transaction.assert_called_once()
+    repo_under_test.dynamo_repository.init_transaction.assert_called_once()

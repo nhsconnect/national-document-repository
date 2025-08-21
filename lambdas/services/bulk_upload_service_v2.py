@@ -273,6 +273,11 @@ class BulkUploadService:
             )
             return False
 
+    def initiate_transactions(self):
+        self.bulk_upload_s3_repository.init_transaction()
+        self.dynamo_repository.init_transaction()
+        logger.info("Transaction initialised.")
+
     # def handle_sqs_message_v2(self, message: dict):
     #     logger.info("validate SQS event")
     #     staging_metadata = self.build_staging_metadata_from_message(message)
@@ -329,12 +334,7 @@ class BulkUploadService:
             return
         logger.info("Virus result validation complete. Initialising transaction")
 
-        self.bulk_upload_s3_repository.init_transaction()
-        self.dynamo_repository.init_transaction()
-
-        logger.info(
-            "Transaction initialised. Transferring files to main S3 bucket and creating metadata"
-        )
+        self.initiate_transactions()
 
         try:
             self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
