@@ -1,7 +1,11 @@
 import json
 
-from enums.fhir.fhir_issue_type import FhirIssueCoding
-from models.fhir.R4.operation_outcome import OperationOutcome
+from models.fhir.R4.operation_outcome import (
+    OperationOutcome,
+    OperationOutcomeCodeableConcept,
+    OperationOutcomeCoding,
+    OperationOutcomeIssue,
+)
 
 
 class ErrorResponse:
@@ -22,17 +26,17 @@ class ErrorResponse:
         }
         return json.dumps(response)
 
-    def create_error_fhir_response(self, coding: FhirIssueCoding) -> str:
-        operation_outcome = OperationOutcome(
-            issue=[
-                {
-                    "diagnostics": self.message,
-                    "details": {
-                        "coding": [{"code": coding.code(), "display": coding.display()}]
-                    },
-                }
-            ]
+    def create_error_fhir_response(self, coding) -> str:
+        operation_outcome_coding = OperationOutcomeCoding(
+            code=coding.code, display=coding.display, system=coding.system
         )
+        operation_outcome_coding_concept = OperationOutcomeCodeableConcept(
+            coding=[operation_outcome_coding]
+        )
+        operation_outcome_issue = OperationOutcomeIssue(
+            diagnostics=self.message, details=operation_outcome_coding_concept
+        )
+        operation_outcome = OperationOutcome(issue=[operation_outcome_issue])
         return operation_outcome.model_dump_json()
 
     def __eq__(self, other):

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from enums.fhir.fhir_issue_type import FhirIssueCoding
+from enums.fhir.fhir_issue_type import FhirIssueCoding, UKCoreSpineError
 from utils.error_response import ErrorResponse
 from utils.request_context import request_context
 
@@ -37,17 +37,17 @@ class LambdaError(Enum):
     SearchPatientMissing = {
         "err_code": "SP_4001",
         "message": "Missing user details",
-        "fhir_coding": FhirIssueCoding.EXCEPTION,
+        "fhir_coding": UKCoreSpineError.MISSING_VALUE,
     }
     SearchPatientNoPDS = {
         "err_code": "SP_4002",
         "message": "Patient does not exist for given NHS number",
-        "fhir_coding": FhirIssueCoding.NOT_FOUND,
+        "fhir_coding": UKCoreSpineError.RESOURCE_NOT_FOUND,
     }
     SearchPatientNoAuth = {
         "err_code": "SP_4003",
         "message": "You do not have access to this patient's record",
-        "fhir_coding": FhirIssueCoding.FORBIDDEN,
+        "fhir_coding": UKCoreSpineError.ACCESS_DENIED,
     }
     SearchPatientNoId = {
         "err_code": "SP_4004",
@@ -57,7 +57,7 @@ class LambdaError(Enum):
     SearchPatientNoParse = {
         "err_code": "SP_4005",
         "message": "Failed to parse PDS data",
-        "fhir_coding": FhirIssueCoding.EXCEPTION,
+        "fhir_coding": UKCoreSpineError.VALIDATION_ERROR,
     }
 
     """
@@ -73,17 +73,17 @@ class LambdaError(Enum):
     CreateDocNoParse = {
         "err_code": "CDR_4005",
         "message": "Failed to parse document upload request data",
-        "fhir_coding": FhirIssueCoding.INVALID,
+        "fhir_coding": UKCoreSpineError.VALIDATION_ERROR,
     }
     CreateDocNoType = {
         "err_code": "CDR_4006",
         "message": "Failed to parse document upload request data due to missing document type",
-        "fhir_coding": FhirIssueCoding.INVALID,
+        "fhir_coding": UKCoreSpineError.MISSING_VALUE,
     }
     CreateDocInvalidType = {
         "err_code": "CDR_4007",
         "message": "Failed to parse document upload request data due to invalid document type",
-        "fhir_coding": FhirIssueCoding.INVALID,
+        "fhir_coding": UKCoreSpineError.INVALID_VALUE,
     }
     CreateDocRecordAlreadyInPlace = {
         "err_code": "CDR_4008",
@@ -104,7 +104,7 @@ class LambdaError(Enum):
     CreatePatientSearchInvalid = {
         "err_code": "CDR_5003",
         "message": "Failed to validate patient",
-        "fhir_coding": FhirIssueCoding.EXCEPTION,
+        "fhir_coding": UKCoreSpineError.VALIDATION_ERROR,
     }
 
     """
@@ -427,7 +427,7 @@ class LambdaError(Enum):
     DocumentReferenceNotFound = {
         "err_code": "NRL_DR_4041",
         "message": "Document reference not found",
-        "fhir_coding": FhirIssueCoding.NOT_FOUND,
+        "fhir_coding": UKCoreSpineError.RESOURCE_NOT_FOUND,
     }
     DocumentReferenceGeneralError = {
         "err_code": "NRL_DR_4002",
@@ -437,18 +437,18 @@ class LambdaError(Enum):
     DocumentReferenceUnauthorised = {
         "err_code": "NRL_DR_4011",
         "message": "The user was not able to be authenticated",
-        "fhir_coding": FhirIssueCoding.UNKNOWN,
+        "fhir_coding": UKCoreSpineError.ACCESS_DENIED,
     }
-    DocumentReferenceInvalidRequest = {
+    DocumentReferenceMissingParameters = {
         "err_code": "NRL_DR_4001",
-        "message": "Invalid request",
-        "fhir_coding": FhirIssueCoding.INVALID,
+        "message": "Missing request parameters",
+        "fhir_coding": UKCoreSpineError.MISSING_VALUE,
     }
 
     DocumentReferenceForbidden = {
         "err_code": "NRL_DR_4031",
         "message": "User is unauthorised to view record",
-        "fhir_coding": FhirIssueCoding.FORBIDDEN,
+        "fhir_coding": UKCoreSpineError.ACCESS_DENIED,
     }
     """
        Errors for get ods report lambda 
@@ -545,12 +545,12 @@ class LambdaError(Enum):
     PatientIdInvalid = {
         "err_code": "PN_4001",
         "message": "Invalid patient number %(number)s",
-        "fhir_coding": FhirIssueCoding.INVALID,
+        "fhir_coding": UKCoreSpineError.INVALID_SEARCH_DATA,
     }
     PatientIdNoKey = {
         "err_code": "PN_4002",
         "message": MISSING_KEY,
-        "fhir_coding": FhirIssueCoding.INVALID,
+        "fhir_coding": UKCoreSpineError.MISSING_VALUE,
     }
     PatientIdMismatch = {
         "err_code": "PN_4003",
@@ -560,7 +560,6 @@ class LambdaError(Enum):
         "err_code": "GWY_5001",
         "message": "Failed to utilise AWS client/resource",
     }
-
     UploadInProgressError = {
         "err_code": "LGL_423",
         "message": "Records are in the process of being uploaded",
