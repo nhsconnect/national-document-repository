@@ -1,4 +1,4 @@
-name: Performance Run Bulk Upload - Test
+name: Updated Run Bulk Upload - Test
 
 permissions:
   pull-requests: write
