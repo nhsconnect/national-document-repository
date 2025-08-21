@@ -36,7 +36,7 @@ on:
 
 jobs:
   bulk_upload:
-    uses: updated-base-run-bulk-upload.yml
+    uses: updated-base-run-bulk-upload.yml@PRMT-574
     with:
       environment: development
       sandbox: "${{ inputs.sandbox }}"
