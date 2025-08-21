@@ -96,11 +96,7 @@ class SendFeedbackService:
             raise SendFeedbackException(500, LambdaError.FeedbackSESFailure)
 
     def is_itoc_test_feedback(self, email_address: str) -> bool:
-        ssm_service = SSMService()
-        itoc_test_email_address = ssm_service.get_ssm_parameter(
-            os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
-        )
-        return email_address == itoc_test_email_address
+        return email_address == os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
 
     def compose_slack_message(self, feedback: Feedback):
         logger.info("Composing ITOC test feedback message...")
