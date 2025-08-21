@@ -76,7 +76,7 @@ jobs:
 
       - name: Setup Bulk Upload
         run: |
-          python performance_setup_bulk_upload.py \
+          python updated_setup_bulk_upload.py \
             --environment "${{ inputs.sandbox }}" \
             --delete-table \
             --download-data \
