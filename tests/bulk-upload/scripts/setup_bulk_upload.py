@@ -415,14 +415,11 @@ def upload_lg_files_to_staging():
 def removing_previous_uploads():
     dynamodb = boto3.resource("dynamodb")
 
-    bulk_table = dynamodb.Table(BULK_UPLOAD_TABLE_NAME)
-    scan_and_remove_items(bulk_table)
+    tables_to_truncate = [BULK_UPLOAD_TABLE_NAME, LG_TABLE_NAME, LG_STITCH_TABLE_NAME]
 
-    bulk_table = dynamodb.Table(LG_TABLE_NAME)
-    scan_and_remove_items(bulk_table)
-
-    bulk_table = dynamodb.Table(LG_STITCH_TABLE_NAME)
-    scan_and_remove_items(bulk_table)
+    for table_name in tables_to_truncate:
+        table = dynamodb.Table(table_name)
+        scan_and_remove_items(table)
 
 
 def create_previous_uploads():
