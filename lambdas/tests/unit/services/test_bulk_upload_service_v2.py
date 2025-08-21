@@ -1,4 +1,5 @@
 import json
+import os
 from copy import copy
 
 import pytest
@@ -46,12 +47,15 @@ from utils.exceptions import (
     BulkUploadException,
     DocumentInfectedException,
     InvalidMessageException,
+    InvalidNhsNumberException,
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
     S3FileNotFoundException,
     VirusScanNoResultException,
 )
 from utils.lloyd_george_validator import LGInvalidFilesException
+
+from lambdas.models.staging_metadata import MetadataFile, StagingMetadata
 
 
 @pytest.fixture
@@ -1188,3 +1192,296 @@ def test_build_staging_metadata_from_message_with_invalid_json(repo_under_test):
     bad_message = {"body": '{"invalid_json": }'}
     with pytest.raises(InvalidMessageException):
         repo_under_test.build_staging_metadata_from_message(bad_message)
+
+
+def test_validate_filenames(repo_under_test, mocker):
+    test_file_path = "/9730787212/1of20_Lloyd_George_Record_[Brad Edmond Avery]_[9730787212]_[13-09-2006].pdf"
+    test_nhs_number = "9730787212"
+
+    metadata_file_data = {
+        "FILEPATH": test_file_path,
+        "PAGE COUNT": "20",
+        "NHS-NO": test_nhs_number,
+        "GP-PRACTICE-CODE": "Y12345",
+        "SECTION": "SectionA",
+        "SUB-SECTION": None,
+        "SCAN-DATE": "13-09-2006",
+        "SCAN-ID": "SCAN123",
+        "USER-ID": "USER456",
+        "UPLOAD": "UPLOAD789",
+    }
+    metadata_file = MetadataFile.parse_obj(metadata_file_data)
+
+    staging_metadata_data = {
+        "nhs_number": test_nhs_number,
+        "files": [metadata_file],
+        "retries": 0,
+    }
+    staging_metadata = StagingMetadata.parse_obj(staging_metadata_data)
+
+    mock_validate_nhs = mocker.patch(
+        "services.bulk_upload_service_v2.validate_nhs_number"
+    )
+    mock_validate_lg = mocker.patch(
+        "services.bulk_upload_service_v2.validate_lg_file_names"
+    )
+
+    repo_under_test.validate_filenames(staging_metadata)
+
+    mock_validate_nhs.assert_called_once_with(test_nhs_number)
+    mock_validate_lg.assert_called_once_with(
+        [os.path.basename(test_file_path)],
+        test_nhs_number,
+    )
+
+
+@pytest.fixture
+def mock_patient(mocker):
+    patient = mocker.Mock()
+    patient.get_death_notification_status.return_value = None
+    return patient
+
+
+def test_validate_entry_happy_path(mocker, repo_under_test, mock_patient):
+    staging_metadata = TEST_STAGING_METADATA
+
+    mock_validate_filenames = mocker.patch.object(repo_under_test, "validate_filenames")
+    mock_getting_patient_info_from_pds = mocker.patch(
+        "services.bulk_upload_service_v2.getting_patient_info_from_pds"
+    )
+    mock_patient = mocker.Mock()
+    mock_patient.get_ods_code_or_inactive_status_for_gp.return_value = "Y12345"
+    mock_getting_patient_info_from_pds.return_value = mock_patient
+
+    mock_validate_accessing_patient_data = mocker.patch.object(
+        repo_under_test, "validate_accessing_patient_data", return_value="some reason"
+    )
+
+    accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
+
+    mock_validate_filenames.assert_called_once_with(staging_metadata)
+    mock_getting_patient_info_from_pds.assert_called_once_with(
+        staging_metadata.nhs_number
+    )
+    mock_validate_accessing_patient_data.assert_called_once_with(
+        [os.path.basename(f.file_path) for f in staging_metadata.files],
+        mock_patient,
+        "Y12345",
+    )
+
+    assert accepted_reason == "some reason"
+    assert patient_ods_code == "Y12345"
+
+
+def test_validate_entry_invalid_file_exception_triggers_write_to_dynamo(
+    mocker, repo_under_test
+):
+    staging_metadata = TEST_STAGING_METADATA
+
+    mocker.patch.object(
+        repo_under_test,
+        "validate_filenames",
+        side_effect=LGInvalidFilesException("invalid file"),
+    )
+    mock_write_report = mocker.patch.object(
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+
+    accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
+
+    mock_write_report.assert_called_once()
+    args, kwargs = mock_write_report.call_args
+    assert args[1] == UploadStatus.FAILED
+    assert "invalid file" in args[2]
+
+    assert accepted_reason is None
+    assert patient_ods_code is None
+
+
+def test_validate_entry_patient_record_exists_exception(mocker, repo_under_test):
+    staging_metadata = TEST_STAGING_METADATA
+
+    mocker.patch.object(
+        repo_under_test,
+        "validate_filenames",
+        side_effect=PatientRecordAlreadyExistException("record exists"),
+    )
+    mock_write_report = mocker.patch.object(
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+
+    accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
+
+    mock_write_report.assert_called_once()
+    args, kwargs = mock_write_report.call_args
+    assert args[1] == UploadStatus.FAILED
+    assert "record exists" in args[2]
+
+    assert accepted_reason is None
+    assert patient_ods_code is None
+
+
+def test_validate_entry_invalid_nhs_number_exception(mocker, repo_under_test):
+    staging_metadata = TEST_STAGING_METADATA
+
+    mocker.patch.object(
+        repo_under_test,
+        "validate_filenames",
+        side_effect=InvalidNhsNumberException("bad nhs"),
+    )
+    mock_write_report = mocker.patch.object(
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+
+    accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
+
+    mock_write_report.assert_called_once()
+    args, kwargs = mock_write_report.call_args
+    assert "bad nhs" in args[2]
+
+    assert accepted_reason is None
+    assert patient_ods_code is None
+
+
+def test_validate_accessing_patient_data_returns_none_when_pds_fhir_always_true(
+    repo_under_test, mock_patient
+):
+    repo_under_test.pds_fhir_always_true = True
+
+    result = repo_under_test.validate_accessing_patient_data(
+        ["file.pdf"], mock_patient, "A1234"
+    )
+
+    assert result is None
+
+
+def test_validate_accessing_patient_data_strict_mode_calls_strict_validation(
+    mocker, repo_under_test, mock_patient
+):
+    mock_validate = mocker.patch(
+        "services.bulk_upload_service_v2.validate_filename_with_patient_details_strict",
+        return_value=False,
+    )
+    mock_allowed = mocker.patch(
+        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code",
+        return_value=True,
+    )
+
+    result = repo_under_test.validate_accessing_patient_data(
+        ["file.pdf"], mock_patient, "A1234"
+    )
+
+    mock_validate.assert_called_once()
+    mock_allowed.assert_called_once()
+    assert result is None
+
+
+@pytest.fixture
+def lenient_repo(set_env, mocker):  # 👈 include set_env
+    service = BulkUploadService(strict_mode=False)
+    mocker.patch.object(service, "dynamo_repository")
+    mocker.patch.object(service, "sqs_repository")
+    mocker.patch.object(service, "bulk_upload_s3_repository")
+    return service
+
+
+def test_validate_accessing_patient_data_lenient_mode_calls_lenient_validation(
+    mocker, lenient_repo, mock_patient
+):
+    mock_validate = mocker.patch(
+        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
+        return_value=("some reason", False),
+    )
+    mock_allowed = mocker.patch(
+        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code",
+        return_value=True,
+    )
+
+    result = lenient_repo.validate_accessing_patient_data(
+        ["file.pdf"], mock_patient, "A1234"
+    )
+
+    mock_validate.assert_called_once()
+    mock_allowed.assert_called_once()
+    assert "some reason" in result
+
+
+def test_validate_accessing_patient_data_adds_historic_name_reason_when_flag_true(
+    mocker, lenient_repo, mock_patient
+):
+    mocker.patch(
+        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
+        return_value=("some reason", True),
+    )
+    mocker.patch(
+        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code", return_value=True
+    )
+
+    result = lenient_repo.validate_accessing_patient_data(
+        ["file.pdf"], mock_patient, "A1234"
+    )
+
+    assert "some reason" in result
+    assert "Patient matched on historical name" in result
+
+
+def test_validate_accessing_patient_data_raises_exception_when_ods_code_not_allowed(
+    mocker, lenient_repo, mock_patient
+):
+    mocker.patch(
+        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
+        return_value=("some reason", False),
+    )
+    mocker.patch(
+        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code",
+        return_value=False,
+    )
+
+    with pytest.raises(
+        LGInvalidFilesException, match="Patient not registered at your practice"
+    ):
+        lenient_repo.validate_accessing_patient_data(
+            ["file.pdf"], mock_patient, "A1234"
+        )
+
+
+def test_validate_accessing_patient_data_adds_deceased_reason(
+    mocker, lenient_repo, mock_patient
+):
+    mocker.patch(
+        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
+        return_value=("some reason", False),
+    )
+    mocker.patch(
+        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code", return_value=True
+    )
+
+    deceased_status_mock = mocker.Mock()
+    deceased_status_mock.name = "Formal"
+    mock_patient.get_death_notification_status.return_value = deceased_status_mock
+
+    result = lenient_repo.validate_accessing_patient_data(
+        ["file.pdf"], mock_patient, "A1234"
+    )
+
+    assert "some reason" in result
+    assert "Patient is deceased - Formal" in result
+
+
+def test_validate_accessing_patient_data_adds_restricted_reason(
+    mocker, lenient_repo, mock_patient
+):
+    mocker.patch(
+        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
+        return_value=("some reason", False),
+    )
+    mocker.patch(
+        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code", return_value=True
+    )
+
+    result = lenient_repo.validate_accessing_patient_data(
+        ["file.pdf"], mock_patient, PatientOdsInactiveStatus.RESTRICTED
+    )
+
+    assert "some reason" in result
+    assert "PDS record is restricted" in result

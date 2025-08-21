@@ -117,6 +117,113 @@ class BulkUploadService:
             logger.error(e)
             raise InvalidMessageException(str(e))
 
+    def validate_filenames(self, staging_metadata: StagingMetadata):
+        file_names = [
+            os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+        ]
+        request_context.patient_nhs_no = staging_metadata.nhs_number
+        validate_nhs_number(staging_metadata.nhs_number)
+        validate_lg_file_names(file_names, staging_metadata.nhs_number)
+
+    def validate_accessing_patient_data(
+        self,
+        file_names: list[str],
+        pds_patient_details,
+        patient_ods_code: str,
+    ) -> str | None:
+
+        if self.pds_fhir_always_true:
+            return None
+        accepted_reason = None
+
+        if self.strict_mode:
+            is_name_validation_based_on_historic_name = (
+                validate_filename_with_patient_details_strict(
+                    file_names, pds_patient_details
+                )
+            )
+        else:
+            (
+                name_validation_accepted_reason,
+                is_name_validation_based_on_historic_name,
+            ) = validate_filename_with_patient_details_lenient(
+                file_names, pds_patient_details
+            )
+            accepted_reason = self.concatenate_acceptance_reason(
+                accepted_reason, name_validation_accepted_reason
+            )
+
+        if is_name_validation_based_on_historic_name:
+            accepted_reason = self.concatenate_acceptance_reason(
+                accepted_reason, "Patient matched on historical name"
+            )
+        if not allowed_to_ingest_ods_code(patient_ods_code):
+            raise LGInvalidFilesException("Patient not registered at your practice")
+        patient_death_notification_status = (
+            pds_patient_details.get_death_notification_status()
+        )
+        if patient_death_notification_status:
+            deceased_accepted_reason = (
+                f"Patient is deceased - {patient_death_notification_status.name}"
+            )
+            accepted_reason = self.concatenate_acceptance_reason(
+                accepted_reason, deceased_accepted_reason
+            )
+        if patient_ods_code is PatientOdsInactiveStatus.RESTRICTED:
+            accepted_reason = self.concatenate_acceptance_reason(
+                accepted_reason, "PDS record is restricted"
+            )
+
+        return accepted_reason
+
+    def validate_entry(
+        self, staging_metadata: StagingMetadata
+    ) -> tuple[str | None, str | None]:
+        patient_ods_code = ""
+        try:
+            self.validate_filenames(staging_metadata)
+            file_names = [
+                os.path.basename(metadata.file_path)
+                for metadata in staging_metadata.files
+            ]
+
+            # Fetch PDS details and ODS code early
+            pds_patient_details = getting_patient_info_from_pds(
+                staging_metadata.nhs_number
+            )
+            patient_ods_code = (
+                pds_patient_details.get_ods_code_or_inactive_status_for_gp()
+            )
+
+            accepted_reason = self.validate_accessing_patient_data(
+                file_names,
+                pds_patient_details,
+                patient_ods_code,
+            )
+
+            return accepted_reason, patient_ods_code
+
+        except (
+            InvalidNhsNumberException,
+            LGInvalidFilesException,
+            PatientRecordAlreadyExistException,
+        ) as error:
+            logger.info(
+                f"Detected issue related to patient number: {staging_metadata.nhs_number}"
+            )
+            logger.error(error)
+            logger.info("Will stop processing Lloyd George record for this patient.")
+
+            reason = str(error)
+            self.dynamo_repository.write_report_upload_to_dynamo(
+                staging_metadata,
+                UploadStatus.FAILED,
+                reason,
+                patient_ods_code if "patient_ods_code" in locals() else None,
+            )
+
+        return None, None
+
     # def handle_sqs_message_v2(self, message: dict):
     #     logger.info("validate SQS event")
     #     staging_metadata = self.build_staging_metadata_from_message(message)
@@ -157,83 +264,17 @@ class BulkUploadService:
     #     self.add_information_to_stitching_queue(staging_metadata, patient_ods_code, accepted_reason)
 
     def handle_sqs_message(self, message: dict):
-        patient_ods_code = ""
-        accepted_reason = None
         logger.info("validate SQS event")
         staging_metadata = self.build_staging_metadata_from_message(message)
         logger.info("SQS event is valid. Validating NHS number and file names")
-        try:
-            file_names = [
-                os.path.basename(metadata.file_path)
-                for metadata in staging_metadata.files
-            ]
-            request_context.patient_nhs_no = staging_metadata.nhs_number
-            validate_nhs_number(staging_metadata.nhs_number)
-            validate_lg_file_names(file_names, staging_metadata.nhs_number)
-            pds_patient_details = getting_patient_info_from_pds(
-                staging_metadata.nhs_number
-            )
-            patient_ods_code = (
-                pds_patient_details.get_ods_code_or_inactive_status_for_gp()
-            )
-            if not self.pds_fhir_always_true:
-                if not self.strict_mode:
-                    (
-                        name_validation_accepted_reason,
-                        is_name_validation_based_on_historic_name,
-                    ) = validate_filename_with_patient_details_lenient(
-                        file_names, pds_patient_details
-                    )
-                    accepted_reason = self.concatenate_acceptance_reason(
-                        accepted_reason, name_validation_accepted_reason
-                    )
-                else:
-                    is_name_validation_based_on_historic_name = (
-                        validate_filename_with_patient_details_strict(
-                            file_names, pds_patient_details
-                        )
-                    )
-                if is_name_validation_based_on_historic_name:
-                    accepted_reason = self.concatenate_acceptance_reason(
-                        accepted_reason, "Patient matched on historical name"
-                    )
-
-                if not allowed_to_ingest_ods_code(patient_ods_code):
-                    raise LGInvalidFilesException(
-                        "Patient not registered at your practice"
-                    )
-                patient_death_notification_status = (
-                    pds_patient_details.get_death_notification_status()
-                )
-                if patient_death_notification_status:
-                    deceased_accepted_reason = f"Patient is deceased - {patient_death_notification_status.name}"
-                    accepted_reason = self.concatenate_acceptance_reason(
-                        accepted_reason, deceased_accepted_reason
-                    )
-                if patient_ods_code is PatientOdsInactiveStatus.RESTRICTED:
-                    accepted_reason = self.concatenate_acceptance_reason(
-                        accepted_reason, "PDS record is restricted"
-                    )
-
-        except (
-            InvalidNhsNumberException,
-            LGInvalidFilesException,
-            PatientRecordAlreadyExistException,
-        ) as error:
-            logger.info(
-                f"Detected issue related to patient number: {staging_metadata.nhs_number}"
-            )
-            logger.error(error)
-            logger.info("Will stop processing Lloyd George record for this patient.")
-
-            reason = str(error)
-            self.dynamo_repository.write_report_upload_to_dynamo(
-                staging_metadata, UploadStatus.FAILED, reason, patient_ods_code
-            )
+        accepted_reason, patient_ods_code = self.validate_entry(staging_metadata)
+        if accepted_reason is None:
             return
 
         logger.info(
-            "NHS Number and filename validation complete. Checking virus scan has marked files as Clean"
+            "NHS Number and filename validation complete."
+            "Validated strick mode, and if we can access the patient information ex:patient dead"
+            " Checking virus scan has marked files as Clean"
         )
 
         try:
