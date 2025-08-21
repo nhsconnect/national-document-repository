@@ -1,9 +1,8 @@
 import { ErrorSummary } from 'nhsuk-react-components';
 import { Ref, MouseEvent, JSX } from 'react';
-import { groupUploadErrorsByType } from '../../../helpers/utils/fileUploadErrorMessages';
-import { UploadFilesError } from '../../../types/pages/UploadDocumentsPage/types';
+import { ErrorMessageListItem, GroupErrors } from '../../../types/pages/genericPageErrors';
 
-type Props = {
+type ErrorBoxProps<T extends string> = {
     errorBoxSummaryId: string;
     messageTitle: string;
     messageBody?: string;
@@ -12,23 +11,34 @@ type Props = {
     errorBody?: string;
     dataTestId?: string;
     errorOnClick?: () => void;
-    errorMessageList?: UploadFilesError[];
+    errorMessageList?: ErrorMessageListItem<T>[];
     scrollToRef?: Ref<HTMLDivElement>;
+    groupErrorsFn?: GroupErrors<T>;
 };
 
-type UploadErrorMessagesProps = {
-    errorMessageList: UploadFilesError[];
+type ErrorMessagesProps<T extends string> = {
+    errorMessageList: ErrorMessageListItem<T>[];
+    groupErrorsFn?: GroupErrors<T>;
 };
 
-function UploadErrorMessages({
+function ErrorMessages<T extends string>({
     errorMessageList,
-}: Readonly<UploadErrorMessagesProps>): JSX.Element {
-    const uploadErrorsGrouped = groupUploadErrorsByType(errorMessageList);
+    groupErrorsFn,
+}: Readonly<ErrorMessagesProps<T>>): JSX.Element {
+    if (!groupErrorsFn) return <></>;
+
+    const groupedErrors = groupErrorsFn(errorMessageList);
 
     return (
         <>
-            {Object.entries(uploadErrorsGrouped).map(([errorType, { linkIds, errorMessage }]) => {
+            {Object.entries(groupedErrors).map(([errorType, value]) => {
+                const { linkIds, errorMessage } = value as {
+                    linkIds: string[];
+                    errorMessage: string;
+                };
+
                 const firstFile = linkIds[0];
+
                 return (
                     <div key={errorType}>
                         <ErrorSummary.List>
@@ -43,7 +53,7 @@ function UploadErrorMessages({
     );
 }
 
-const ErrorBox = ({
+const ErrorBox = <T extends string>({
     errorBoxSummaryId,
     messageTitle,
     messageBody,
@@ -54,7 +64,8 @@ const ErrorBox = ({
     errorOnClick,
     errorMessageList,
     scrollToRef,
-}: Props): JSX.Element => {
+    groupErrorsFn,
+}: ErrorBoxProps<T>): JSX.Element => {
     const hasInputLink = errorInputLink && messageLinkBody;
     const hasOnClick = errorOnClick && messageLinkBody;
 
@@ -94,8 +105,12 @@ const ErrorBox = ({
                             </ErrorSummary.Item>
                         )}
                     </ErrorSummary.List>
+
                     {errorMessageList && (
-                        <UploadErrorMessages errorMessageList={errorMessageList} />
+                        <ErrorMessages<T>
+                            errorMessageList={errorMessageList}
+                            groupErrorsFn={groupErrorsFn}
+                        />
                     )}
                 </ErrorSummary.Body>
             </ErrorSummary>
