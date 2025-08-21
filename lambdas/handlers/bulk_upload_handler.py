@@ -27,7 +27,7 @@ def lambda_handler(event, _context):
     validation_strict_mode = validation_strict_mode_flag_object[
         FeatureFlags.LLOYD_GEORGE_VALIDATION_STRICT_MODE_ENABLED.value
     ]
-    pds_fhir_always_true = os.getenv("PDS_FHIR_ALWAYS_TRUE", "false").lower() == "true"
+    bypass_pds = os.getenv("BYPASS_PDS", "false").lower() == "true"
 
     if validation_strict_mode:
         logger.info("Lloyd George validation strict mode is enabled")
@@ -43,7 +43,7 @@ def lambda_handler(event, _context):
         ).create_api_gateway_response()
 
     bulk_upload_service = BulkUploadService(
-        strict_mode=validation_strict_mode, pds_fhir_always_true=pds_fhir_always_true
+        strict_mode=validation_strict_mode, bypass_pds=bypass_pds
     )
 
     try:
