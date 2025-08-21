@@ -107,6 +107,16 @@ class BulkUploadService:
                 )
                 logger.info(message_body)
 
+    def build_staging_metadata_from_message(self, message: dict) -> StagingMetadata:
+        logger.info("Validating SQS event")
+        try:
+            staging_metadata_json = message["body"]
+            return StagingMetadata.model_validate_json(staging_metadata_json)
+        except (pydantic.ValidationError, KeyError) as e:
+            logger.error(f"Got incomprehensible message: {message}")
+            logger.error(e)
+            raise InvalidMessageException(str(e))
+
     # def handle_sqs_message_v2(self, message: dict):
     #     logger.info("validate SQS event")
     #     staging_metadata = self.build_staging_metadata_from_message(message)
@@ -147,21 +157,11 @@ class BulkUploadService:
     #     self.add_information_to_stitching_queue(staging_metadata, patient_ods_code, accepted_reason)
 
     def handle_sqs_message(self, message: dict):
-        logger.info("Validating SQS event")
         patient_ods_code = ""
         accepted_reason = None
-        try:
-            staging_metadata_json = message["body"]
-            staging_metadata = StagingMetadata.model_validate_json(
-                staging_metadata_json
-            )
-        except (pydantic.ValidationError, KeyError) as e:
-            logger.error(f"Got incomprehensible message: {message}")
-            logger.error(e)
-            raise InvalidMessageException(str(e))
-
+        logger.info("validate SQS event")
+        staging_metadata = self.build_staging_metadata_from_message(message)
         logger.info("SQS event is valid. Validating NHS number and file names")
-
         try:
             file_names = [
                 os.path.basename(metadata.file_path)

@@ -1115,3 +1115,76 @@ def test_handle_sqs_message_happy_path_strict_mode(
     mock_validate_files.assert_called_with(
         expected_file_paths, TEST_STAGING_METADATA.nhs_number
     )
+
+
+def test_handle_sqs_message_happy_path_v2(mocker, repo_under_test):
+    mock_metadata = TEST_STAGING_METADATA
+    mock_staging_metadata = mocker.patch.object(
+        repo_under_test,
+        "build_staging_metadata_from_message",
+        return_value=mock_metadata,
+    )
+
+    mock_validate_entry = mocker.patch.object(
+        repo_under_test, "validate_entry", return_value=("some reason", "Y12345")
+    )
+
+    mock_validate_virus_scan = mocker.patch.object(
+        repo_under_test, "validate_virus_scan", return_value=True
+    )
+
+    mock_initiate_transactions = mocker.patch.object(
+        repo_under_test, "initiate_transactions"
+    )
+    mock_transfer_files = mocker.patch.object(
+        repo_under_test, "transfer_files", return_value=True
+    )
+
+    mock_remove_files = mocker.patch.object(
+        repo_under_test.bulk_upload_s3_repository,
+        "remove_ingested_file_from_source_bucket",
+    )
+
+    mock_write_report = mocker.patch.object(
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+
+    mock_add_to_stitching_queue = mocker.patch.object(
+        repo_under_test, "add_information_to_stitching_queue"
+    )
+
+    repo_under_test.handle_sqs_message_v2(TEST_SQS_MESSAGE)
+
+    mock_staging_metadata.assert_called_once_with(TEST_SQS_MESSAGE)
+    mock_validate_entry.assert_called_once_with(mock_metadata)
+    mock_validate_virus_scan.assert_called_once_with(mock_metadata, "Y12345")
+    mock_initiate_transactions.assert_called_once()
+    mock_transfer_files.assert_called_once_with(mock_metadata, "Y12345")
+    mock_remove_files.assert_called_once()
+    mock_write_report.assert_called_once_with(
+        mock_metadata, UploadStatus.COMPLETE, "some reason", "Y12345"
+    )
+    mock_add_to_stitching_queue.assert_called_once_with(
+        mock_metadata, "Y12345", "some reason"
+    )
+
+
+def test_build_staging_metadata_from_message(repo_under_test):
+    result = repo_under_test.build_staging_metadata_from_message(TEST_SQS_MESSAGE)
+    assert (
+        result.nhs_number
+        == TEST_SQS_MESSAGE["messageAttributes"]["NhsNumber"]["stringValue"]
+    )
+    assert len(result.files) > 0
+    assert result.retries == 0
+
+
+def test_build_staging_metadata_from_message_with_missing_body(repo_under_test):
+    with pytest.raises(InvalidMessageException):
+        repo_under_test.build_staging_metadata_from_message({})
+
+
+def test_build_staging_metadata_from_message_with_invalid_json(repo_under_test):
+    bad_message = {"body": '{"invalid_json": }'}
+    with pytest.raises(InvalidMessageException):
+        repo_under_test.build_staging_metadata_from_message(bad_message)
