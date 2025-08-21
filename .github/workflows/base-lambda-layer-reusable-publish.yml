@@ -45,7 +45,7 @@ jobs:
           echo Lambda Layer Name: ${{ inputs.lambda_layer_name }}
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}

@@ -23,7 +23,7 @@ jobs:
         node-version: [24.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ github.event.inputs.build_branch }}
