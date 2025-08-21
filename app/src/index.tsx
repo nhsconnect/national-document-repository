@@ -25,4 +25,4 @@ root.render(
     </React.StrictMode>,
 );
 
-GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
+GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
