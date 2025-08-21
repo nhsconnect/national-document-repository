@@ -8,6 +8,7 @@ TEST_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_test.txt
 CORE_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_core_lambda_layer.txt
 DATA_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_data_lambda_layer.txt
 REPORTS_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_reports_lambda_layer.txt
+ALERTING_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_alerting_lambda_layer.txt
 EDGE_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_edge_lambda.txt
 LAMBDAS_BUILD_PATH=build/lambdas
 LAMBDA_LAYERS_BUILD_PATH=build/lambda_layers
@@ -48,6 +49,7 @@ sort-requirements:
 	sort -o $(CORE_REQUIREMENTS) $(CORE_REQUIREMENTS)
 	sort -o $(DATA_REQUIREMENTS) $(DATA_REQUIREMENTS)
 	sort -o $(REPORTS_REQUIREMENTS) $(REPORTS_REQUIREMENTS)
+	sort -o $(ALERTING_REQUIREMENTS) $(ALERTING_REQUIREMENTS)
 
 
 check-packages:
@@ -55,19 +57,25 @@ check-packages:
 	./lambdas/venv/bin/pip-audit -r $(CORE_REQUIREMENTS)
 	./lambdas/venv/bin/pip-audit -r $(DATA_REQUIREMENTS)
 	./lambdas/venv/bin/pip-audit -r $(REPORTS_REQUIREMENTS)
+	./lambdas/venv/bin/pip-audit -r $(ALERTING_REQUIREMENTS)
 
+test-api-e2e:
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e -vv
+
+test-api-e2e-snapshots:
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e --snapshot-update
 
 test-unit:
-	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit
 
 test-unit-coverage:
-	cd ./lambdas && ./venv/bin/python3 -m pytest --cov=. --cov-report xml:coverage.xml
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit --cov=. --cov-report xml:coverage.xml
 
 test-unit-coverage-html:
-	cd ./lambdas && coverage run --source=. --omit="tests/*" -m pytest -v tests && coverage report && coverage html
+	cd ./lambdas && coverage run --source=. --omit="tests/*" -m pytest -v tests/unit && coverage report && coverage html
 
 test-unit-collect:
-	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --collect-only
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit --collect-only
 
 env:
 	rm -rf lambdas/venv || true
@@ -77,6 +85,7 @@ env:
 	./lambdas/venv/bin/pip3 install -r $(CORE_REQUIREMENTS) --no-cache-dir
 	./lambdas/venv/bin/pip3 install -r $(DATA_REQUIREMENTS) --no-cache-dir
 	./lambdas/venv/bin/pip3 install -r $(REPORTS_REQUIREMENTS) --no-cache-dir
+	./lambdas/venv/bin/pip3 install -r $(ALERTING_REQUIREMENTS) --no-cache-dir
 
 
 github_env:
@@ -96,7 +105,7 @@ zip:
 	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
 	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name) || true
 	mkdir -p $(ZIP_BASE_PATH)/handlers
-	cp lambdas/handlers/$(lambda_name).py $(ZIP_BASE_PATH)/handlers
+	cp lambdas/handlers/${lambda_path}/$(lambda_name).py $(ZIP_BASE_PATH)/handlers
 	cp -r $(ZIP_COMMON_FILES) $(ZIP_BASE_PATH)
 	cd $(ZIP_BASE_PATH) ; zip -r ../$(lambda_name).zip .
 	rm -rf $(ZIP_BASE_PATH)
@@ -119,6 +128,7 @@ package: format zip
 
 install:
 	npm --prefix ./app install --legacy-peer-deps
+	mv ./app/node_modules/pdfjs-dist/build/pdf.worker.min.mjs ./app/public/
 
 clean-install:
 	npm --prefix ./app ci --legacy-peer-deps
@@ -161,3 +171,4 @@ cypress-run:
 
 cypress-report:
 	TZ=GMT npm --prefix ./app run cypress-report
+

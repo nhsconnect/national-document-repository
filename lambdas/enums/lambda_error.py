@@ -7,6 +7,10 @@ from utils.request_context import request_context
 
 
 class LambdaError(Enum):
+    MISSING_POST = "Missing POST request body"
+    MISSING_KEY = "An error occurred due to missing key"
+    RETRIEVE_DOCUMENTS = "Unable to retrieve documents for patient"
+
     def create_error_response(
         self, params: Optional[dict] = None, **kwargs
     ) -> ErrorResponse:
@@ -69,26 +73,38 @@ class LambdaError(Enum):
     CreateDocNoParse = {
         "err_code": "CDR_4005",
         "message": "Failed to parse document upload request data",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     CreateDocNoType = {
         "err_code": "CDR_4006",
-        "message": "Failed to parse document upload request data",
+        "message": "Failed to parse document upload request data due to missing document type",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     CreateDocInvalidType = {
         "err_code": "CDR_4007",
-        "message": "Failed to parse document upload request data",
+        "message": "Failed to parse document upload request data due to invalid document type",
+        "fhir_coding": FhirIssueCoding.INVALID,
     }
     CreateDocRecordAlreadyInPlace = {
         "err_code": "CDR_4008",
         "message": "The patient already has a full set of record.",
     }
+    CreateDocRefOdsCodeNotAllowed = {
+        "err_code": "CDR_4009",
+        "message": "ODS code does not match any of the allowed.",
+    }
     CreateDocPresign = {
         "err_code": "CDR_5001",
         "message": "An error occurred when creating pre-signed url for document reference",
     }
-    CreateDocUpload = {
+    CreateDocUploadInternalError = {
         "err_code": "CDR_5002",
         "message": "An error occurred when creating pre-signed url for document reference",
+    }
+    CreatePatientSearchInvalid = {
+        "err_code": "CDR_5003",
+        "message": "Failed to validate patient",
+        "fhir_coding": FhirIssueCoding.EXCEPTION,
     }
 
     """
@@ -183,7 +199,7 @@ class LambdaError(Enum):
     }
     ManifestMissingBody = {
         "err_code": "DMS_4002",
-        "message": "Missing POST request body",
+        "message": MISSING_POST,
     }
     ManifestFilterDocumentReferences = {
         "err_code": "DMS_4003",
@@ -191,7 +207,7 @@ class LambdaError(Enum):
     }
     ManifestMissingJobId = {
         "err_code": "DMS_4004",
-        "message": "An error occurred due to missing key",
+        "message": MISSING_KEY,
     }
     ManifestMissingJob = {
         "err_code": "DMS_4005",
@@ -215,7 +231,7 @@ class LambdaError(Enum):
     }
     StitchNoService = {
         "err_code": "LGS_5001",
-        "message": "Unable to retrieve documents for patient",
+        "message": RETRIEVE_DOCUMENTS,
     }
     StitchClient = {
         "err_code": "LGS_5002",
@@ -223,11 +239,11 @@ class LambdaError(Enum):
     }
     StitchDB = {
         "err_code": "LGS_5003",
-        "message": "Unable to retrieve documents for patient",
+        "message": RETRIEVE_DOCUMENTS,
     }
     StitchValidation = {
         "err_code": "LGS_5004",
-        "message": "Unable to retrieve documents for patient",
+        "message": RETRIEVE_DOCUMENTS,
     }
     StitchCloudFront = {
         "err_code": "LGS_5005",
@@ -268,7 +284,7 @@ class LambdaError(Enum):
     """
     FeedbackMissingBody = {
         "err_code": "SFB_4001",
-        "message": "Missing POST request body",
+        "message": MISSING_POST,
     }
 
     FeedbackInvalidBody = {
@@ -341,22 +357,11 @@ class LambdaError(Enum):
     """
        Errors for Upload Confirm Result lambda 
     """
-    UploadConfirmResultMissingBody = {
+    UploadConfirmResultMissingParams = {
         "err_code": "UC_4001",
-        "message": "Missing POST request body",
+        "message": "Missing GET request query parameters",
     }
-    UploadConfirmResultPayload = {
-        "err_code": "UC_4002",
-        "message": "Invalid json in body",
-    }
-    UploadConfirmResultProps = {
-        "err_code": "UC_4003",
-        "message": "Request body missing some properties",
-    }
-    UploadConfirmResultBadRequest = {
-        "err_code": "UC_4004",
-        "message": "Number of document references not equal to number of documents in dynamo table for this nhs number",
-    }
+    
     UploadConfirmResultFilesNotClean = {
         "err_code": "UC_4005",
         "message": "Some of the given document references are not referring to clean files",
@@ -535,7 +540,7 @@ class LambdaError(Enum):
     }
     DocTypeKey = {
         "err_code": "VDT_4003",
-        "message": "An error occurred due to missing key",
+        "message": MISSING_KEY,
     }
     PatientIdInvalid = {
         "err_code": "PN_4001",
@@ -544,7 +549,7 @@ class LambdaError(Enum):
     }
     PatientIdNoKey = {
         "err_code": "PN_4002",
-        "message": "An error occurred due to missing key",
+        "message": MISSING_KEY,
         "fhir_coding": FhirIssueCoding.INVALID,
     }
     PatientIdMismatch = {

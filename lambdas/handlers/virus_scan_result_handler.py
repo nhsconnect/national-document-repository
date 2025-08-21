@@ -1,12 +1,15 @@
 import json
+import os
 from json import JSONDecodeError
 
+from botocore.exceptions import ClientError
 from enums.feature_flags import FeatureFlags
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.supported_document_types import SupportedDocumentTypes
+from enums.virus_scan_result import VirusScanResult
+from services.base.dynamo_service import DynamoDBService
 from services.feature_flags_service import FeatureFlagService
-from services.virus_scan_result_service import VirusScanService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -16,6 +19,7 @@ from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_exceptions import FeatureFlagsException, VirusScanResultException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.utilities import get_virus_scan_service
 
 logger = LoggingService(__name__)
 
@@ -30,6 +34,7 @@ logger = LoggingService(__name__)
         "DOCUMENT_STORE_DYNAMODB_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "STAGING_STORE_BUCKET_NAME",
+        "VIRUS_SCAN_STUB",
     ]
 )
 @override_error_check
@@ -63,9 +68,31 @@ def lambda_handler(event, context):
     except ValueError:
         raise VirusScanResultException(400, LambdaError.VirusScanNoDocumentType)
 
-    virus_scan_service = VirusScanService()
-    virus_scan_service.scan_file(document_reference)
+    lg_table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
+    virus_scan_service = get_virus_scan_service()
+    scan_result = virus_scan_service.scan_file(
+        document_reference, nhs_number=nhs_number
+    )
 
-    return ApiGatewayResponse(
-        200, "Virus Scan was successful", "POST"
-    ).create_api_gateway_response()
+    dynamo_service = DynamoDBService()
+    file_id = document_reference.split("/")[-1]
+    logger.info("Updating dynamo db table")
+    updated_fields = {"VirusScannerResult": scan_result}
+    if scan_result == VirusScanResult.INFECTED:
+        updated_fields["DocStatus"] = "cancelled"
+        logger.error("Document failed virus scan check")
+    try:
+        dynamo_service.update_item(
+            table_name=lg_table_name,
+            key_pair={"ID": file_id},
+            updated_fields=updated_fields,
+        )
+    except ClientError:
+        raise VirusScanResultException(500, LambdaError.VirusScanAWSFailure)
+
+    if scan_result == VirusScanResult.CLEAN:
+        return ApiGatewayResponse(
+            200, "Virus Scan was successful", "POST"
+        ).create_api_gateway_response()
+    else:
+        raise VirusScanResultException(400, LambdaError.VirusScanUnclean)

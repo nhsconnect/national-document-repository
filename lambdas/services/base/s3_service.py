@@ -15,6 +15,7 @@ logger = LoggingService(__name__)
 
 class S3Service:
     _instance = None
+    EXPIRED_SESSION_WARNING = "Expired session, creating a new role session"
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -48,7 +49,7 @@ class S3Service:
             if datetime.now(timezone.utc) > self.expiration_time - timedelta(
                 minutes=10
             ):
-                logger.info("Expired session, creating a new role session")
+                logger.info(S3Service.EXPIRED_SESSION_WARNING)
                 self.custom_client, self.expiration_time = self.iam_service.assume_role(
                     self.custom_aws_role, "s3", config=self.config
                 )
@@ -60,12 +61,29 @@ class S3Service:
                 ExpiresIn=self.presigned_url_expiry,
             )
 
+    def create_put_presigned_url(self, s3_bucket_name: str, file_key: str):
+        if self.custom_client:
+            if datetime.now(timezone.utc) > self.expiration_time - timedelta(
+                minutes=10
+            ):
+                logger.info(S3Service.EXPIRED_SESSION_WARNING)
+                self.custom_client, self.expiration_time = self.iam_service.assume_role(
+                    self.custom_aws_role, "s3", config=self.config
+                )
+            logger.info("Generating presigned URL")
+            return self.custom_client.generate_presigned_url(
+                "put_object",
+                Params={"Bucket": s3_bucket_name, "Key": file_key},
+                ExpiresIn=self.presigned_url_expiry,
+            )
+        return None
+
     def create_download_presigned_url(self, s3_bucket_name: str, file_key: str):
         if self.custom_client:
             if datetime.now(timezone.utc) > self.expiration_time - timedelta(
                 minutes=10
             ):
-                logger.info("Expired session, creating a new role session")
+                logger.info(S3Service.EXPIRED_SESSION_WARNING)
                 self.custom_client, self.expiration_time = self.iam_service.assume_role(
                     self.custom_aws_role, "s3", config=self.config
                 )

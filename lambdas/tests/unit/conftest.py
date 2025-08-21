@@ -195,8 +195,9 @@ def set_env(monkeypatch):
         "UNSTITCHED_LLOYD_GEORGE_DYNAMODB_NAME", MOCK_UNSTITCHED_LG_TABLE_NAME
     )
     monkeypatch.setenv(
-        "DOCUMENT_RETRIEVE_ENDPOINT_APIM", "https://api.gov.uk/DocumentReference"
+        "DOCUMENT_RETRIEVE_ENDPOINT_APIM", f"{APIM_API_URL}/DocumentReference"
     )
+    monkeypatch.setenv("VIRUS_SCAN_STUB", "True")
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
@@ -225,12 +226,6 @@ def mock_valid_pds_response():
         mock_data = f.read()
         mock_response._content = mock_data
     yield mock_response
-
-
-@pytest.fixture(scope="session", autouse=True)
-def logger_mocker():
-    with mock.patch("utils.audit_logging_setup.SensitiveAuditService.emit") as _fixture:
-        yield _fixture
 
 
 @pytest.fixture

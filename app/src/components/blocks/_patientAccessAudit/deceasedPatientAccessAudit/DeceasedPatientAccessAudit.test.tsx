@@ -1,5 +1,5 @@
 import DeceasedPatientAccessAudit from './DeceasedPatientAccessAudit';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { LinkProps, MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
@@ -18,6 +18,8 @@ import PatientAccessAuditProvider from '../../../../providers/patientAccessAudit
 import ConfigProvider from '../../../../providers/configProvider/ConfigProvider';
 import PatientDetailsProvider from '../../../../providers/patientProvider/PatientProvider';
 import { beforeEach, describe, expect, it, vi, Mock } from 'vitest';
+import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 
 const mockedUseNavigate = vi.fn();
 vi.mock('react-router-dom', async () => ({
@@ -53,9 +55,11 @@ describe('DeceasedPatientAccessAudit', () => {
             renderDeceasedPatientAccessAudit();
 
             const title = screen.getByTestId('title');
+            const expectedNhsNumber = formatNhsNumber(mockPatientDetails.nhsNumber);
+
             expect(title).toBeInTheDocument();
             expect(title.innerHTML).toContain('Deceased patient record');
-            expect(screen.getByTestId('patient-nhs-number')).toBeInTheDocument();
+            expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
             expect(screen.queryByTestId('access-reason-error-box')).not.toBeInTheDocument();
 
             Object.values(DeceasedAccessAuditReasons).forEach((reason) => {
@@ -67,9 +71,7 @@ describe('DeceasedPatientAccessAudit', () => {
         it('should render error notification when no reason is selected', async () => {
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 const errorBox = screen.getByTestId('access-reason-error-box');
@@ -82,14 +84,10 @@ describe('DeceasedPatientAccessAudit', () => {
         it('should render error notification when another reason is selected and no reason is entered', async () => {
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`,
-                    ),
-                );
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`),
+            );
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 const errorBox = screen.getByTestId('access-reason-error-box');
@@ -102,19 +100,13 @@ describe('DeceasedPatientAccessAudit', () => {
         it('should render error notification when a reason and another reason is selected and no reason is entered', async () => {
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.familyRequest}`,
-                    ),
-                );
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`,
-                    ),
-                );
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.familyRequest}`),
+            );
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`),
+            );
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 const errorBox = screen.getByTestId('access-reason-error-box');
@@ -122,6 +114,22 @@ describe('DeceasedPatientAccessAudit', () => {
                     'Enter a reason why you need to access this record',
                 );
             });
+        });
+
+        it('renders patient summary fields', async () => {
+            renderDeceasedPatientAccessAudit();
+
+            const expectedFullName = `${mockPatientDetails.familyName}, ${mockPatientDetails.givenName}`;
+            expect(screen.getByText(/Patient name/i)).toBeInTheDocument();
+            expect(screen.getByText(expectedFullName)).toBeInTheDocument();
+
+            expect(screen.getByText(/NHS number/i)).toBeInTheDocument();
+            const expectedNhsNumber = formatNhsNumber(mockPatientDetails.nhsNumber);
+            expect(screen.getByText(expectedNhsNumber)).toBeInTheDocument();
+
+            expect(screen.getByText(/Date of birth/i)).toBeInTheDocument();
+            const expectedDob = getFormattedDate(new Date(mockPatientDetails.birthDate));
+            expect(screen.getByText(expectedDob)).toBeInTheDocument();
         });
     });
 
@@ -143,14 +151,10 @@ describe('DeceasedPatientAccessAudit', () => {
 
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.familyRequest}`,
-                    ),
-                );
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.familyRequest}`),
+            );
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
@@ -164,15 +168,11 @@ describe('DeceasedPatientAccessAudit', () => {
 
             renderDeceasedPatientAccessAudit();
 
-            act(() => {
-                userEvent.click(
-                    screen.getByTestId(
-                        `reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`,
-                    ),
-                );
-                userEvent.type(screen.getByTestId('otherReasonText'), 'reason');
-                userEvent.click(screen.getByTestId('form-submit-button'));
-            });
+            await userEvent.click(
+                screen.getByTestId(`reason-checkbox-${DeceasedAccessAuditReasons.anotherReason}`),
+            );
+            await userEvent.type(screen.getByTestId('otherReasonText'), 'reason');
+            await userEvent.click(screen.getByTestId('form-submit-button'));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);

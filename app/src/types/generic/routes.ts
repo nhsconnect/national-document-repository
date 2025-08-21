@@ -17,17 +17,17 @@ export enum routes {
     VERIFY_PATIENT = '/patient/verify',
     LLOYD_GEORGE = '/patient/lloyd-george-record',
     LLOYD_GEORGE_WILDCARD = '/patient/lloyd-george-record/*',
-    LLOYD_GEORGE_UPLOAD = '/patient/lloyd-george-record/upload',
-    LLOYD_GEORGE_UPLOAD_WILDCARD = '/patient/lloyd-george-record/upload/*',
     ARF_OVERVIEW = '/patient/arf',
     ARF_OVERVIEW_WILDCARD = '/patient/arf/*',
-    ARF_UPLOAD_DOCUMENTS = '/patient/arf/upload',
-    ARF_UPLOAD_DOCUMENTS_WILDCARD = '/patient/arf/upload/*',
     FEEDBACK_CONFIRMATION = '/feedback/confirmation',
     REPORT_DOWNLOAD = '/create-report',
     REPORT_DOWNLOAD_WILDCARD = '/create-report/*',
     PATIENT_ACCESS_AUDIT = '/patient/access-audit',
     PATIENT_ACCESS_AUDIT_WILDCARD = '/patient/access-audit/*',
+
+    DOCUMENT_UPLOAD = '/patient/document-upload',
+    DOCUMENT_UPLOAD_WILDCARD = '/patient/document-upload/*',
+    MOCK_LOGIN = 'Auth/MockLogin',
 }
 
 export enum routeChildren {
@@ -38,22 +38,18 @@ export enum routeChildren {
     LLOYD_GEORGE_DELETE = '/patient/lloyd-george-record/delete',
     LLOYD_GEORGE_DELETE_CONFIRMATION = '/patient/lloyd-george-record/delete/confirmation',
     LLOYD_GEORGE_DELETE_COMPLETE = '/patient/lloyd-george-record/delete/complete',
-    LLOYD_GEORGE_UPLOAD_UPLOADING = '/patient/lloyd-george-record/upload/in-progress',
-    LLOYD_GEORGE_UPLOAD_COMPLETED = '/patient/lloyd-george-record/upload/completed',
-    LLOYD_GEORGE_UPLOAD_FAILED = '/patient/lloyd-george-record/upload/failed',
-    LLOYD_GEORGE_UPLOAD_INFECTED = '/patient/lloyd-george-record/upload/infected',
-    LLOYD_GEORGE_UPLOAD_RETRY = '/patient/lloyd-george-record/upload/retry',
-    LLOYD_GEORGE_UPLOAD_CONFIRMATION = '/patient/lloyd-george-record/upload/confirmation',
     ARF_DELETE = '/patient/arf/delete',
     ARF_DELETE_CONFIRMATION = '/patient/arf/delete/confirmation',
     ARF_DELETE_COMPLETE = '/patient/arf/delete/complete',
-    ARF_UPLOAD_UPLOADING = '/patient/arf/upload/in-progress',
-    ARF_UPLOAD_CONFIRMATION = '/patient/arf/upload/confirmation',
-    ARF_UPLOAD_COMPLETED = '/patient/arf/upload/completed',
-    ARF_UPLOAD_FAILED = '/patient/arf/upload/failed',
-    ARF_UPLOAD_CONFIRMATION_FAILED = '/patient/arf/upload/confirmation-failed',
     REPORT_DOWNLOAD_COMPLETE = '/create-report/complete',
     PATIENT_ACCESS_AUDIT_DECEASED = '/patient/access-audit/deceased',
+
+    DOCUMENT_UPLOAD_SELECT_ORDER = '/patient/document-upload/select-order',
+    DOCUMENT_UPLOAD_REMOVE_ALL = '/patient/document-upload/remove-all',
+    DOCUMENT_UPLOAD_CONFIRMATION = '/patient/document-upload/confirmation',
+    DOCUMENT_UPLOAD_UPLOADING = '/patient/document-upload/in-progress',
+    DOCUMENT_UPLOAD_COMPLETED = '/patient/document-upload/completed',
+    DOCUMENT_UPLOAD_INFECTED = '/patient/document-upload/infected',
 }
 
 export enum ROUTE_TYPE {
@@ -66,7 +62,7 @@ export enum ROUTE_TYPE {
 }
 
 export type route = {
-    page: JSX.Element;
+    page: React.JSX.Element;
     type: ROUTE_TYPE;
     unauthorized?: Array<REPOSITORY_ROLE>;
     children?: React.ReactNode;

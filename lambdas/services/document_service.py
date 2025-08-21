@@ -59,23 +59,30 @@ class DocumentService:
         query_filter: Attr | ConditionBase = None,
     ) -> list[DocumentReference]:
         documents = []
+        exclusive_start_key = None
 
-        response = self.dynamo_service.query_table_by_index(
-            table_name=table,
-            index_name=index_name,
-            search_key=search_key,
-            search_condition=search_condition,
-            query_filter=query_filter,
-        )
+        while True:
+            response = self.dynamo_service.query_table_by_index(
+                table_name=table,
+                index_name=index_name,
+                search_key=search_key,
+                search_condition=search_condition,
+                query_filter=query_filter,
+                exclusive_start_key=exclusive_start_key,
+            )
 
-        for item in response["Items"]:
-            try:
-                document = DocumentReference.model_validate(item)
-                documents.append(document)
-            except ValidationError as e:
-                logger.error(f"Validation error on document: {item}")
-                logger.error(f"{e}")
-                continue
+            for item in response["Items"]:
+                try:
+                    document = DocumentReference.model_validate(item)
+                    documents.append(document)
+                except ValidationError as e:
+                    logger.error(f"Validation error on document: {item}")
+                    logger.error(f"{e}")
+                    continue
+            if "LastEvaluatedKey" in response:
+                exclusive_start_key = response["LastEvaluatedKey"]
+            else:
+                break
         return documents
 
     def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
@@ -106,12 +113,11 @@ class DocumentService:
             reference.doc_status = "deprecated"
             reference.deleted = deletion_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             reference.ttl = document_reference_ttl
-            reference.status = "superseded"
 
             update_fields = reference.model_dump(
                 by_alias=True,
                 exclude_none=True,
-                include={"doc_status", "deleted", "ttl", "status"},
+                include={"doc_status", "deleted", "ttl"},
             )
             self.dynamo_service.update_item(
                 table_name=table_name,
@@ -164,13 +170,12 @@ class DocumentService:
             self.dynamo_service.delete_item(table_name, deletion_key)
 
     @staticmethod
-    def is_upload_in_process(records: list[DocumentReference]):
-        return any(
+    def is_upload_in_process(record: DocumentReference):
+        return (
             not record.uploaded
             and record.uploading
             and record.last_updated_within_three_minutes()
             and record.doc_status != "final"
-            for record in records
         )
 
     def get_available_lloyd_george_record_for_patient(
@@ -192,3 +197,14 @@ class DocumentService:
             if document.uploading and not document.uploaded:
                 raise FileUploadInProgress(file_in_progress_message)
         return available_docs
+
+    def get_batch_document_references_by_id(
+        self, document_ids: list[str], doc_type: SupportedDocumentTypes
+    ) -> list[DocumentReference]:
+        table_name = doc_type.get_dynamodb_table_name()
+        response = self.dynamo_service.batch_get_items(
+            table_name=table_name, key_list=document_ids
+        )
+
+        found_docs = [DocumentReference.model_validate(item) for item in response]
+        return found_docs

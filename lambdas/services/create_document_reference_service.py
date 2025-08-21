@@ -9,18 +9,24 @@ from models.document_reference import DocumentReference, UploadRequestDocument
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
+from services.base.ssm_service import SSMService
 from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadIncomplete
-from utils.exceptions import InvalidNhsNumberException, PdsTooManyRequestsException
+from utils.constants.ssm import UPLOAD_PILOT_ODS_ALLOWED_LIST
+from utils.exceptions import (
+    InvalidNhsNumberException,
+    LGInvalidFilesException,
+    PatientNotFoundException,
+    PdsTooManyRequestsException,
+)
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import (
-    LGInvalidFilesException,
     getting_patient_info_from_pds,
     validate_lg_files,
 )
-from utils.utilities import create_reference_id, validate_nhs_number
+from utils.utilities import create_reference_id
 
 FAILED_CREATE_REFERENCE_MESSAGE = "Create document reference failed"
 PROVIDED_DOCUMENT_SUPPORTED_MESSAGE = "Provided document is supported"
@@ -40,6 +46,7 @@ class CreateDocumentReferenceService:
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
         self.document_deletion_service = DocumentDeletionService()
+        self.ssm_service = SSMService()
 
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
@@ -54,7 +61,6 @@ class CreateDocumentReferenceService:
         lg_documents: list[DocumentReference] = []
         lg_documents_dict_format: list = []
         url_responses = {}
-
         upload_request_documents = self.parse_documents_list(documents_list)
 
         has_lg_document = any(
@@ -63,7 +69,6 @@ class CreateDocumentReferenceService:
         )
 
         try:
-            validate_nhs_number(nhs_number)
             snomed_code_type = None
             current_gp_ods = ""
             if has_lg_document:
@@ -71,6 +76,11 @@ class CreateDocumentReferenceService:
                 current_gp_ods = (
                     pds_patient_details.get_ods_code_or_inactive_status_for_gp()
                 )
+                ods_allowed = self.check_if_ods_code_is_in_pilot(current_gp_ods)
+                if not ods_allowed:
+                    raise CreateDocumentRefException(
+                        404, LambdaError.CreateDocRefOdsCodeNotAllowed
+                    )
                 snomed_code_type = SnomedCodes.LLOYD_GEORGE.value.code
 
             for validated_doc in upload_request_documents:
@@ -125,6 +135,9 @@ class CreateDocumentReferenceService:
 
             return url_responses
 
+        except PatientNotFoundException:
+            raise CreateDocumentRefException(404, LambdaError.SearchPatientNoPDS)
+
         except (
             InvalidNhsNumberException,
             LGInvalidFilesException,
@@ -135,6 +148,10 @@ class CreateDocumentReferenceService:
                 {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
+
+    def check_if_ods_code_is_in_pilot(self, ods_code) -> bool:
+        pilot_ods_codes = self.get_allowed_list_of_ods_codes_for_upload_pilot()
+        return ods_code in pilot_ods_codes
 
     def check_existing_arf_record_and_remove_failed_upload(self, nhs_number):
         incomplete_arf_upload_records = self.fetch_incomplete_arf_upload_records(
@@ -221,10 +238,12 @@ class CreateDocumentReferenceService:
 
         except ClientError as e:
             logger.error(
-                f"{LambdaError.CreateDocUpload.to_str()}: {str(e)}",
+                f"{LambdaError.CreateDocUploadInternalError.to_str()}: {str(e)}",
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
-            raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
+            raise CreateDocumentRefException(
+                500, LambdaError.CreateDocUploadInternalError
+            )
 
     def check_existing_lloyd_george_records_and_remove_failed_upload(
         self,
@@ -250,7 +269,10 @@ class CreateDocumentReferenceService:
         self.remove_records_of_failed_upload(self.lg_dynamo_table, previous_records)
 
     def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
-        if self.document_service.is_upload_in_process(previous_records):
+        if any(
+            self.document_service.is_upload_in_process(document)
+            for document in previous_records
+        ):
             logger.error(
                 "Records are in the process of being uploaded. Will not process the new upload.",
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
@@ -269,7 +291,7 @@ class CreateDocumentReferenceService:
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
             raise CreateDocumentRefException(
-                400, LambdaError.CreateDocRecordAlreadyInPlace
+                422, LambdaError.CreateDocRecordAlreadyInPlace
             )
 
     def remove_records_of_failed_upload(
@@ -303,3 +325,12 @@ class CreateDocumentReferenceService:
             doc_type=SupportedDocumentTypes.ARF,
             query_filter=UploadIncomplete,
         )
+
+    def get_allowed_list_of_ods_codes_for_upload_pilot(self) -> list[str]:
+        logger.info(
+            "Starting ssm request to retrieve allowed list of ODS codes for Upload Pilot"
+        )
+        response = self.ssm_service.get_ssm_parameter(UPLOAD_PILOT_ODS_ALLOWED_LIST)
+        if not response:
+            logger.warning("No ODS codes found in allowed list for Upload Pilot")
+        return response

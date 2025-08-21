@@ -5,6 +5,7 @@ import pytest
 from enums.lambda_error import LambdaError
 from handlers.login_redirect_handler import lambda_handler
 from utils.lambda_exceptions import LoginRedirectException
+from utils.request_context import request_context
 
 
 class MockError(Enum):
@@ -20,6 +21,13 @@ def mock_configuration_service(mocker):
     mock_service = mocker.patch(
         "handlers.login_redirect_handler.DynamicConfigurationService"
     )
+    mock_instance = mock_service.return_value
+
+    def fake_set_auth_ssm_prefix():
+        request_context.auth_ssm_prefix = "/auth/smartcard/"
+
+    mock_instance.set_auth_ssm_prefix.side_effect = fake_set_auth_ssm_prefix
+    mock_instance.is_auth_mocked.return_value = False
     yield mock_service
 
 

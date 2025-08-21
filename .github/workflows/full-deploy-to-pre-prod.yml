@@ -8,6 +8,11 @@ on:
         required: true
         type: string
         default: main
+      mock_login_enabled:
+        description: "Do you want to deploy with mock login enabled?"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   pull-requests: write
@@ -44,7 +49,7 @@ jobs:
     uses: ./.github/workflows/base-cypress-build.yml
     with:
       build_branch: main
-  
+
   cypress_test_job:
     name: Run Cypress E2E Tests
     needs: [cypress_build_job]
@@ -63,7 +68,7 @@ jobs:
     steps:
     - name: Checkout main
       if: ${{ github.event.inputs.branch_or_tag == 'main' }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: main
         fetch-depth: '0'
@@ -76,7 +81,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: false
         DEFAULT_BUMP: patch
-    
+
     - name: View outputs
       run: |
         echo Deploying branch or tagged version to pre-prod: ${{ steps.versioning.outputs.tag || github.event.inputs.branch_or_tag }}
@@ -102,9 +107,10 @@ jobs:
       sandbox: pre-prod
       environment: pre-prod
       python_version: "3.11"
+      mock_login_enabled: ${{ inputs.mock_login_enabled }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
+
   deploy_ui:
     name: Deploy UI
     needs: ["tag_and_release"]
@@ -126,4 +132,3 @@ jobs:
       sandbox: pre-prod
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-        

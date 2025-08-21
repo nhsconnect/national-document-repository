@@ -258,6 +258,8 @@ def test_create_stitched_reference(mock_service, mock_uuid, document_reference):
     assert actual.uploading is False
     assert actual.last_updated == 1735732800
     assert actual.file_size == file_size
+    assert actual.s3_file_key == f"{TEST_NHS_NUMBER}/{TEST_UUID}"
+    assert actual.s3_bucket_name == MOCK_LG_BUCKET
 
 
 def test_process_stitching(mock_service, mock_download_fileobj):
@@ -468,6 +470,7 @@ def test_publish_nrl_message(mock_service, mock_uuid):
     expected_apim_attachment = Attachment(
         url=f"https://apim.api.service.uk/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_service.stitched_reference.id}",
         contentType="application/pdf",
+        title=None,
     )
 
     expected_nrl_message = NrlSqsMessage(
@@ -673,10 +676,10 @@ def test_process_manual_trigger_calls_process_message_for_each_nhs_number(
         return_value=test_nhs_numbers,
     )
     mock_send_message = mocker.patch(
-        "lambdas.services.pdf_stitching_service.SQSService.send_message_standard"
+        "lambdas.services.pdf_stitching_service.SQSService.send_message_batch_standard"
     )
 
     mock_service.process_manual_trigger(ods_code=test_ods_code, queue_url="url")
 
     mock_get_nhs_numbers.assert_called_once_with(ods_code=test_ods_code)
-    assert mock_send_message.call_count == len(test_nhs_numbers)
+    assert mock_send_message.call_count == 1

@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from unittest.mock import call
 
 import pytest
+from botocore.exceptions import ClientError
 from enums.document_retention import DocumentRetentionDays
 from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -31,10 +32,9 @@ MOCK_DOCUMENT = MOCK_SEARCH_RESPONSE["Items"][0]
 
 @pytest.fixture
 def mock_service(set_env, mocker):
-    mocker.patch("boto3.resource")
+    mocker.patch("services.document_service.S3Service")
+    mocker.patch("services.document_service.DynamoDBService")
     service = DocumentService()
-    mocker.patch.object(service, "s3_service")
-    mocker.patch.object(service, "dynamo_service")
     yield service
 
 
@@ -81,6 +81,7 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
+        exclusive_start_key=None,
     )
 
 
@@ -103,6 +104,7 @@ def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_ref
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
+        exclusive_start_key=None,
     )
 
 
@@ -121,6 +123,7 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         query_filter=mock_filter_expression,
+        exclusive_start_key=None,
     )
 
 
@@ -134,6 +137,7 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             query_filter=mock_filter_expression,
+            exclusive_start_key=None,
         )
     ]
 
@@ -164,6 +168,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             query_filter=mock_filter_expression,
+            exclusive_start_key=None,
         )
     ]
     mock_dynamo_service.query_table_by_index.return_value = MOCK_EMPTY_RESPONSE
@@ -182,9 +187,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
 
 
 @freeze_time("2023-10-1 13:00:00")
-def test_delete_documents_soft_delete(
-    mock_service, mock_dynamo_service, mock_s3_service
-):
+def test_delete_documents_soft_delete(mock_service, mock_dynamo_service):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_date = datetime.now()
@@ -194,7 +197,6 @@ def test_delete_documents_soft_delete(
         "Deleted": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "TTL": int(ttl_date.timestamp()),
         "DocStatus": "deprecated",
-        "Status": "superseded",
     }
 
     mock_service.delete_document_references(
@@ -209,9 +211,7 @@ def test_delete_documents_soft_delete(
 
 
 @freeze_time("2023-10-1 13:00:00")
-def test_delete_documents_death_delete(
-    mock_service, mock_dynamo_service, mock_s3_service
-):
+def test_delete_documents_death_delete(mock_service, mock_dynamo_service):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_date = datetime.now()
@@ -221,7 +221,6 @@ def test_delete_documents_death_delete(
         "Deleted": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "TTL": int(ttl_date.timestamp()),
         "DocStatus": "deprecated",
-        "Status": "superseded",
     }
 
     mock_service.delete_document_references(
@@ -285,7 +284,7 @@ def test_check_existing_lloyd_george_records_return_true_if_upload_in_progress(
         }
     )
 
-    response = mock_service.is_upload_in_process(mock_records_upload_in_process)
+    response = mock_service.is_upload_in_process(mock_records_upload_in_process[0])
 
     assert response
 
@@ -361,3 +360,69 @@ def test_get_nhs_numbers_based_on_ods_code(mock_service, mocker):
         search_condition=ods_code,
         query_filter=NotDeleted,
     )
+
+
+def test_get_batch_document_references_by_id_success(mock_service):
+    document_ids = ["doc1", "doc2"]
+    doc_type = SupportedDocumentTypes.LG
+    table_name = doc_type.get_dynamodb_table_name()
+    mock_dynamo_response = [
+        {
+            "ID": "doc1",
+            "NhsNumber": "1234567890",
+            "FileName": "file1.pdf",
+            "Created": "2023-01-01T00:00:00Z",
+            "Deleted": "",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "ID": "doc2",
+            "NhsNumber": "1234567890",
+            "FileName": "file2.pdf",
+            "Created": "2023-01-02T00:00:00Z",
+            "Deleted": "",
+            "VirusScannerResult": "Clean",
+        },
+    ]
+
+    mock_service.dynamo_service.batch_get_items.return_value = mock_dynamo_response
+
+    result = mock_service.get_batch_document_references_by_id(document_ids, doc_type)
+
+    mock_service.dynamo_service.batch_get_items.assert_called_with(
+        table_name=table_name, key_list=document_ids
+    )
+    assert len(result) == 2
+    assert isinstance(result[0], DocumentReference)
+    assert result[0].id == "doc1"
+    assert result[1].id == "doc2"
+
+
+def test_get_batch_document_references_by_id_not_found(mock_service):
+    document_ids = ["doc3"]
+    doc_type = SupportedDocumentTypes.ARF
+    table_name = doc_type.get_dynamodb_table_name()
+
+    mock_service.dynamo_service.batch_get_items.return_value = []
+
+    result = mock_service.get_batch_document_references_by_id(document_ids, doc_type)
+
+    mock_service.dynamo_service.batch_get_items.assert_called_with(
+        table_name=table_name, key_list=document_ids
+    )
+    assert len(result) == 0
+
+
+def test_get_batch_document_references_by_id_client_error(
+    mock_service, mock_dynamo_service
+):
+    document_ids = ["doc1"]
+    doc_type = SupportedDocumentTypes.LG
+    error_response = {"Error": {"Code": "500", "Message": "Something went wrong"}}
+
+    mock_dynamo_service.batch_get_items.side_effect = ClientError(
+        error_response, "BatchGetItem"
+    )
+
+    with pytest.raises(ClientError):
+        mock_service.get_batch_document_references_by_id(document_ids, doc_type)

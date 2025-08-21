@@ -1,0 +1,90 @@
+# .github/workflows/terraform-dev
+name: "Z-BASE E2e Test: E2e shared actions for running tests on the NDR Backend"
+
+on:
+  workflow_call:
+    inputs:
+      build_branch:
+        description: "Branch with e2e tests."
+        required: true
+        type: "string"
+      environment:
+        description: "Which Environment type are we using"
+        required: true
+        type: "string"
+      sandbox:
+        description: "Sandbox to run the smoke tests on."
+        required: true
+        type: "string"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write
+  contents: read
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          repository: "nhsconnect/national-document-repository"
+          ref: ${{ inputs.build_branch }}
+
+      - name: AWS Role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          mask-aws-account-id: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Set up Python ${{ inputs.python_version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Start virtual environment
+        run: |
+          source ./lambdas/venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Get APIM API Gateway Key
+        run: |
+          API_KEY_ID=$(aws apigateway get-api-keys --name-query "${SANDBOX}_apim" --query "items[0].id" --output text)
+          echo "::add-mask::$API_KEY_ID"
+          API_KEY=$(aws apigateway get-api-key --api-key $API_KEY_ID --include-value --query 'value' --output text)
+          echo "::add-mask::$API_KEY"
+          echo "NDR_API_KEY=$API_KEY" >> $GITHUB_ENV
+        env:
+          SANDBOX: ${{ inputs.sandbox }}
+
+      - name: Get MockCIS2 Token
+        run: |
+          MOCK_CIS2_KEY=$(aws ssm get-parameter --name "/auth/password/MOCK_KEY" --with-decryption --query "Parameter.Value" --output text)
+          echo "::add-mask::$MOCK_CIS2_KEY"
+          echo "MOCK_CIS2_KEY=$MOCK_CIS2_KEY" >> $GITHUB_ENV
+
+      - name: Get E2e Test Variables
+        run: |
+          DYNAMO_DB_TABLE="${SANDBOX}_LloydGeorgeReferenceMetadata"
+          S3_BUCKET_NAME="${SANDBOX}-lloyd-george-store"
+          API_URL="api-${SANDBOX}.access-request-fulfilment.patient-deductions.nhs.uk"
+          echo "NDR_DYNAMO_STORE=$DYNAMO_DB_TABLE" >> $GITHUB_ENV
+          echo "NDR_S3_BUCKET=$S3_BUCKET_NAME" >> $GITHUB_ENV
+          echo "NDR_API_ENDPOINT=$API_URL" >> $GITHUB_ENV
+        env:
+          SANDBOX: ${{ inputs.sandbox }}
+
+      - name: Run E2e Tests
+        run: |
+          make test-api-e2e

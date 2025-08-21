@@ -6,7 +6,7 @@ export enum endpoints {
     PATIENT_SEARCH = '/SearchPatient',
 
     DOCUMENT_SEARCH = '/SearchDocumentReferences',
-    DOCUMENT_UPLOAD = '/DocumentReference',
+    DOCUMENT_UPLOAD = '/CreateDocumentReference',
     DOCUMENT_PRESIGN = '/DocumentManifest',
 
     LLOYDGEORGE_STITCH = '/LloydGeorgeStitch',
@@ -15,7 +15,8 @@ export enum endpoints {
     FEATURE_FLAGS = '/FeatureFlags',
     VIRUS_SCAN = '/VirusScan',
     UPLOAD_CONFIRMATION = '/UploadConfirm',
-    UPLOAD_DOCUMENT_STATE = '/UploadState',
+    DOCUMENT_STATUS = '/DocumentStatus',
 
     ODS_REPORT = '/OdsReport',
+    MOCK_LOGIN = 'Auth/MockLogin',
 }

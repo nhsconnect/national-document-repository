@@ -13,6 +13,7 @@ from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_reference_search_service import DocumentReferenceSearchService
+from tests.unit.conftest import APIM_API_URL
 from tests.unit.helpers.data.dynamo.dynamo_responses import MOCK_SEARCH_RESPONSE
 from utils.common_query_filters import NotDeleted, UploadCompleted
 from utils.exceptions import DynamoServiceException
@@ -98,7 +99,10 @@ def test_get_document_references_raise_dynamodb_error(mock_document_service):
     )
     with pytest.raises(DynamoServiceException):
         mock_document_service._search_tables_for_documents(
-            "1234567890", ["table1", "table2"], return_fhir=True
+            "1234567890",
+            ["table1", "table2"],
+            return_fhir=True,
+            check_upload_completed=False,
         )
 
 
@@ -178,7 +182,7 @@ def test_get_document_references_success(mock_document_service, mocker):
     assert result == [{"id": "123"}]
     mock_get_table_names.assert_called_once()
     mock_search_document.assert_called_once_with(
-        "1234567890", ["table1", "table2"], False, None
+        "1234567890", ["table1", "table2"], False, None, True
     )
 
 
@@ -205,7 +209,10 @@ def test_search_tables_for_documents_non_fhir(mock_document_service, mocker):
 
     mock_document_service._process_documents = mock_process_document_non_fhir
     result_non_fhir = mock_document_service._search_tables_for_documents(
-        "1234567890", ["table1", "table2"], return_fhir=False
+        "1234567890",
+        ["table1", "table2"],
+        return_fhir=False,
+        check_upload_completed=True,
     )
 
     assert result_non_fhir == [mock_document_id, mock_document_id]
@@ -237,7 +244,10 @@ def test_search_tables_for_documents_fhir(mock_document_service, mocker):
 
     mock_document_service._process_documents = mock_process_document_fhir
     result_fhir = mock_document_service._search_tables_for_documents(
-        "1234567890", ["table1", "table2"], return_fhir=True
+        "1234567890",
+        ["table1", "table2"],
+        return_fhir=True,
+        check_upload_completed=True,
     )
 
     assert result_fhir["resourceType"] == "Bundle"
@@ -311,7 +321,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     )
 
     expected_fhir_response = {
-        "id": "Y05868-1634567890",
+        "id": "16521000000101~Y05868-1634567890",
         "resourceType": "DocumentReference",
         "status": "current",
         "docStatus": "final",
@@ -328,7 +338,7 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
                     "language": "en-GB",
                     "title": "test_document.pdf",
                     "creation": "2023-05-01",
-                    "url": "https://api.gov.uk/DocumentReference/123",
+                    "url": f"{APIM_API_URL}/DocumentReference/123",
                 }
             }
         ],
@@ -356,11 +366,11 @@ def test_create_document_reference_fhir_response(mock_document_service, mocker):
     mock_attachment.assert_called_once_with(
         title=mock_document_reference.file_name,
         creation=mock_document_reference.document_scan_creation,
-        url=f"https://api.gov.uk/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_document_reference.id}",
+        url=f"{APIM_API_URL}/DocumentReference/{SnomedCodes.LLOYD_GEORGE.value.code}~{mock_document_reference.id}",
     )
 
     mock_doc_ref_info.assert_called_once_with(
-        nhsNumber=mock_document_reference.nhs_number,
+        nhs_number=mock_document_reference.nhs_number,
         attachment=mock_attachment_instance,
         custodian=mock_document_reference.current_gp_ods,
         snomed_code_doc_type=None,
@@ -386,9 +396,10 @@ def test_create_document_reference_fhir_response_integration(
     mock_document_reference.author = "Y12345"
     mock_document_reference.doc_status = "final"
     mock_document_reference.custodian = "Y12345"
+    mock_document_reference.document_snomed_code_type = "16521000000101"
 
     expected_fhir_response = {
-        "id": "Y05868-1634567890",
+        "id": "16521000000101~Y05868-1634567890",
         "resourceType": "DocumentReference",
         "status": "current",
         "docStatus": "final",
@@ -406,7 +417,7 @@ def test_create_document_reference_fhir_response_integration(
                     "language": "en-GB",
                     "title": "test_document.pdf",
                     "creation": "2023-05-01",
-                    "url": "https://api.gov.uk/DocumentReference/16521000000101~Y05868-1634567890",
+                    "url": f"{APIM_API_URL}/DocumentReference/16521000000101~Y05868-1634567890",
                 }
             }
         ],
@@ -445,10 +456,8 @@ def test_create_document_reference_fhir_response_integration(
 
 def test_build_filter_expression_custodian(mock_document_service):
     filter_values = {"custodian": "12345"}
-    expected_filter = (
-        Attr("CurrentGpOds").eq("12345")
-        & Attr("Uploaded").eq(True)
-        & (Attr("Deleted").eq("") | Attr("Deleted").not_exists())
+    expected_filter = Attr("CurrentGpOds").eq("12345") & (
+        Attr("Deleted").eq("") | Attr("Deleted").not_exists()
     )
 
     actual_filter = mock_document_service._build_filter_expression(filter_values)
@@ -472,24 +481,8 @@ def test_build_filter_expression_custodian_mocked(
 
 def test_build_filter_expression_defaults(mock_document_service):
     filter_values = {}
-    expected_filter = Attr("Uploaded").eq(True) & (
-        Attr("Deleted").eq("") | Attr("Deleted").not_exists()
-    )
+    expected_filter = Attr("Deleted").eq("") | Attr("Deleted").not_exists()
 
     actual_filter = mock_document_service._build_filter_expression(filter_values)
 
     assert actual_filter == expected_filter
-
-
-def test_build_filter_expression_defaults_mocked(
-    mock_document_service, mock_filter_builder
-):
-    filter_values = {}
-
-    mock_document_service._build_filter_expression(filter_values)
-
-    mock_filter_builder.add_condition.assert_any_call(
-        attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
-        attr_operator=AttributeOperator.EQUAL,
-        filter_value=True,
-    )
