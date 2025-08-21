@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       sandbox:
-        description: "Which Sandbox to push to?."
+        description: "Which Sandbox to push to."
         required: true
         type: "string"
         default: "ndr"
