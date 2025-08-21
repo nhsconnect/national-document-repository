@@ -2,6 +2,7 @@ import logging
 
 from utils.logging_formatter import LoggingFormatter
 
+
 class LoggingService:
     audit_logger = None
 
