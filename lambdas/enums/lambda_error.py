@@ -7,6 +7,10 @@ from utils.request_context import request_context
 
 
 class LambdaError(Enum):
+    MISSING_POST = "Missing POST request body"
+    MISSING_KEY = "An error occurred due to missing key"
+    RETRIEVE_DOCUMENTS = "Unable to retrieve documents for patient"
+
     def create_error_response(
         self, params: Optional[dict] = None, **kwargs
     ) -> ErrorResponse:
@@ -195,7 +199,7 @@ class LambdaError(Enum):
     }
     ManifestMissingBody = {
         "err_code": "DMS_4002",
-        "message": "Missing POST request body",
+        "message": MISSING_POST,
     }
     ManifestFilterDocumentReferences = {
         "err_code": "DMS_4003",
@@ -203,7 +207,7 @@ class LambdaError(Enum):
     }
     ManifestMissingJobId = {
         "err_code": "DMS_4004",
-        "message": "An error occurred due to missing key",
+        "message": MISSING_KEY,
     }
     ManifestMissingJob = {
         "err_code": "DMS_4005",
@@ -227,7 +231,7 @@ class LambdaError(Enum):
     }
     StitchNoService = {
         "err_code": "LGS_5001",
-        "message": "Unable to retrieve documents for patient",
+        "message": RETRIEVE_DOCUMENTS,
     }
     StitchClient = {
         "err_code": "LGS_5002",
@@ -235,11 +239,11 @@ class LambdaError(Enum):
     }
     StitchDB = {
         "err_code": "LGS_5003",
-        "message": "Unable to retrieve documents for patient",
+        "message": RETRIEVE_DOCUMENTS,
     }
     StitchValidation = {
         "err_code": "LGS_5004",
-        "message": "Unable to retrieve documents for patient",
+        "message": RETRIEVE_DOCUMENTS,
     }
     StitchCloudFront = {
         "err_code": "LGS_5005",
@@ -280,7 +284,7 @@ class LambdaError(Enum):
     """
     FeedbackMissingBody = {
         "err_code": "SFB_4001",
-        "message": "Missing POST request body",
+        "message": MISSING_POST,
     }
 
     FeedbackInvalidBody = {
@@ -362,6 +366,7 @@ class LambdaError(Enum):
         "err_code": "UC_4001",
         "message": "Missing GET request query parameters",
     }
+    
     UploadConfirmResultFilesNotClean = {
         "err_code": "UC_4005",
         "message": "Some of the given document references are not referring to clean files",
@@ -540,7 +545,7 @@ class LambdaError(Enum):
     }
     DocTypeKey = {
         "err_code": "VDT_4003",
-        "message": "An error occurred due to missing key",
+        "message": MISSING_KEY,
     }
     PatientIdInvalid = {
         "err_code": "PN_4001",
@@ -549,7 +554,7 @@ class LambdaError(Enum):
     }
     PatientIdNoKey = {
         "err_code": "PN_4002",
-        "message": "An error occurred due to missing key",
+        "message": MISSING_KEY,
         "fhir_coding": FhirIssueCoding.INVALID,
     }
     PatientIdMismatch = {

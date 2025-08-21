@@ -237,12 +237,6 @@ def mock_valid_pds_response():
     yield mock_response
 
 
-@pytest.fixture(scope="session", autouse=True)
-def logger_mocker():
-    with mock.patch("utils.audit_logging_setup.SensitiveAuditService.emit") as _fixture:
-        yield _fixture
-
-
 @pytest.fixture
 def event():
     api_gateway_proxy_event = {
