@@ -51,6 +51,7 @@ from utils.exceptions import (
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
     S3FileNotFoundException,
+    VirusScanFailedException,
     VirusScanNoResultException,
 )
 from utils.lloyd_george_validator import LGInvalidFilesException
@@ -1485,3 +1486,115 @@ def test_validate_accessing_patient_data_adds_restricted_reason(
 
     assert "some reason" in result
     assert "PDS record is restricted" in result
+
+
+def test_virus_scan_success(repo_under_test, mocker):
+    mocker.patch.object(repo_under_test, "resolve_source_file_path")
+    mock_check = mocker.patch.object(
+        repo_under_test.bulk_upload_s3_repository, "check_virus_result"
+    )
+
+    result = repo_under_test.validate_virus_scan(TEST_STAGING_METADATA, "ODS123")
+
+    assert result is True
+    mock_check.assert_called_once_with(
+        TEST_STAGING_METADATA, repo_under_test.file_path_cache
+    )
+
+
+def test_virus_scan_no_result_max_retries(repo_under_test, mocker):
+    metadata = copy(TEST_STAGING_METADATA)
+    metadata.retries = 15
+
+    mocker.patch.object(repo_under_test, "resolve_source_file_path")
+    mocker.patch.object(
+        repo_under_test.bulk_upload_s3_repository,
+        "check_virus_result",
+        side_effect=VirusScanNoResultException("no result"),
+    )
+
+    result = repo_under_test.validate_virus_scan(metadata, "ODS123")
+
+    assert result is False
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called_once_with(
+        metadata,
+        UploadStatus.FAILED,
+        "File was not scanned for viruses before maximum retries attempted",
+        "ODS123",
+    )
+
+
+def test_virus_scan_no_result_retries_remaining(repo_under_test, mocker):
+    metadata = copy(TEST_STAGING_METADATA)
+    metadata.retries = 5
+
+    mocker.patch.object(repo_under_test, "resolve_source_file_path")
+    mocker.patch.object(
+        repo_under_test.bulk_upload_s3_repository,
+        "check_virus_result",
+        side_effect=VirusScanNoResultException("no result"),
+    )
+
+    result = repo_under_test.validate_virus_scan(metadata, "ODS123")
+
+    assert result is False
+    repo_under_test.sqs_repository.put_staging_metadata_back_to_queue.assert_called_once_with(
+        metadata
+    )
+
+
+def test_virus_scan_failed_exception(repo_under_test, mocker):
+    mocker.patch.object(repo_under_test, "resolve_source_file_path")
+    mocker.patch.object(
+        repo_under_test.bulk_upload_s3_repository,
+        "check_virus_result",
+        side_effect=VirusScanFailedException("fail"),
+    )
+
+    result = repo_under_test.validate_virus_scan(TEST_STAGING_METADATA, "ODS123")
+
+    assert result is False
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called_once_with(
+        TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
+        "One or more of the files failed virus scanner check",
+        "ODS123",
+    )
+
+
+def test_virus_scan_document_infected_exception(repo_under_test, mocker):
+    mocker.patch.object(repo_under_test, "resolve_source_file_path")
+    mocker.patch.object(
+        repo_under_test.bulk_upload_s3_repository,
+        "check_virus_result",
+        side_effect=DocumentInfectedException("infected"),
+    )
+
+    result = repo_under_test.validate_virus_scan(TEST_STAGING_METADATA, "ODS123")
+
+    assert result is False
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called_once_with(
+        TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
+        "One or more of the files failed virus scanner check",
+        "ODS123",
+    )
+
+
+def test_virus_scan_file_not_found(repo_under_test, mocker):
+    mocker.patch.object(repo_under_test, "resolve_source_file_path")
+    mocker.patch.object(
+        repo_under_test.bulk_upload_s3_repository,
+        "check_virus_result",
+        side_effect=S3FileNotFoundException("missing"),
+    )
+
+    result = repo_under_test.validate_virus_scan(TEST_STAGING_METADATA, "ODS123")
+
+    assert result is False
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called_once_with(
+        TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
+        "One or more of the files is not accessible from staging bucket",
+        "ODS123",
+    )

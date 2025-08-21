@@ -224,6 +224,55 @@ class BulkUploadService:
 
         return None, None
 
+    def validate_virus_scan(
+        self, staging_metadata: StagingMetadata, patient_ods_code: str
+    ) -> bool:
+        try:
+            self.resolve_source_file_path(staging_metadata)
+            self.bulk_upload_s3_repository.check_virus_result(
+                staging_metadata, self.file_path_cache
+            )
+            return True
+        except VirusScanNoResultException as e:
+            logger.info(e)
+            logger.info(
+                f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
+            )
+            if staging_metadata.retries > 14:
+                err = (
+                    "File was not scanned for viruses before maximum retries attempted"
+                )
+                self.dynamo_repository.write_report_upload_to_dynamo(
+                    staging_metadata, UploadStatus.FAILED, err, patient_ods_code
+                )
+            else:
+                self.sqs_repository.put_staging_metadata_back_to_queue(staging_metadata)
+            return False
+        except (VirusScanFailedException, DocumentInfectedException) as e:
+            logger.info(e)
+            logger.info(
+                f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"
+            )
+            self.dynamo_repository.write_report_upload_to_dynamo(
+                staging_metadata,
+                UploadStatus.FAILED,
+                "One or more of the files failed virus scanner check",
+                patient_ods_code,
+            )
+            return False
+        except S3FileNotFoundException as e:
+            logger.info(e)
+            logger.info(
+                f"One or more of the files is not accessible from S3 bucket for patient {staging_metadata.nhs_number}"
+            )
+            self.dynamo_repository.write_report_upload_to_dynamo(
+                staging_metadata,
+                UploadStatus.FAILED,
+                "One or more of the files is not accessible from staging bucket",
+                patient_ods_code,
+            )
+            return False
+
     # def handle_sqs_message_v2(self, message: dict):
     #     logger.info("validate SQS event")
     #     staging_metadata = self.build_staging_metadata_from_message(message)
@@ -276,56 +325,8 @@ class BulkUploadService:
             "Validated strick mode, and if we can access the patient information ex:patient dead"
             " Checking virus scan has marked files as Clean"
         )
-
-        try:
-            self.resolve_source_file_path(staging_metadata)
-            self.bulk_upload_s3_repository.check_virus_result(
-                staging_metadata, self.file_path_cache
-            )
-        except VirusScanNoResultException as e:
-            logger.info(e)
-            logger.info(
-                f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
-            )
-            if staging_metadata.retries > 14:
-                err = (
-                    "File was not scanned for viruses before maximum retries attempted"
-                )
-                self.dynamo_repository.write_report_upload_to_dynamo(
-                    staging_metadata, UploadStatus.FAILED, err, patient_ods_code
-                )
-            else:
-                self.sqs_repository.put_staging_metadata_back_to_queue(staging_metadata)
+        if not self.validate_virus_scan(staging_metadata, patient_ods_code):
             return
-        except (VirusScanFailedException, DocumentInfectedException) as e:
-            logger.info(e)
-            logger.info(
-                f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"
-            )
-            logger.info("Will stop processing Lloyd George record for this patient")
-
-            self.dynamo_repository.write_report_upload_to_dynamo(
-                staging_metadata,
-                UploadStatus.FAILED,
-                "One or more of the files failed virus scanner check",
-                patient_ods_code,
-            )
-            return
-        except S3FileNotFoundException as e:
-            logger.info(e)
-            logger.info(
-                f"One or more of the files is not accessible from S3 bucket for patient {staging_metadata.nhs_number}"
-            )
-            logger.info("Will stop processing Lloyd George record for this patient")
-
-            self.dynamo_repository.write_report_upload_to_dynamo(
-                staging_metadata,
-                UploadStatus.FAILED,
-                "One or more of the files is not accessible from staging bucket",
-                patient_ods_code,
-            )
-            return
-
         logger.info("Virus result validation complete. Initialising transaction")
 
         self.bulk_upload_s3_repository.init_transaction()
