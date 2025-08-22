@@ -278,6 +278,30 @@ class BulkUploadService:
         self.dynamo_repository.init_transaction()
         logger.info("Transaction initialised.")
 
+    def transfer_files(self, staging_metadata, patient_ods_code) -> bool:
+        try:
+            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
+            logger.info(
+                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
+                {"Result": "Successful upload"},
+            )
+            return True
+        except ClientError as e:
+            logger.info(
+                f"Got unexpected error during file transfer: {str(e)}",
+                {"Result": "Unsuccessful upload"},
+            )
+            logger.info("Will try to rollback any change to database and bucket")
+            self.rollback_transaction()
+
+            self.dynamo_repository.write_report_upload_to_dynamo(
+                staging_metadata,
+                UploadStatus.FAILED,
+                "Validation passed but error occurred during file transfer",
+                patient_ods_code,
+            )
+            return False
+
     # def handle_sqs_message_v2(self, message: dict):
     #     logger.info("validate SQS event")
     #     staging_metadata = self.build_staging_metadata_from_message(message)
@@ -336,31 +360,13 @@ class BulkUploadService:
 
         self.initiate_transactions()
 
-        try:
-            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
-            logger.info(
-                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
-                {"Result": "Successful upload"},
-            )
-        except ClientError as e:
-            logger.info(
-                f"Got unexpected error during file transfer: {str(e)}",
-                {"Result": "Unsuccessful upload"},
-            )
-            logger.info("Will try to rollback any change to database and bucket")
-            self.rollback_transaction()
-
-            self.dynamo_repository.write_report_upload_to_dynamo(
-                staging_metadata,
-                UploadStatus.FAILED,
-                "Validation passed but error occurred during file transfer",
-                patient_ods_code,
-            )
+        logger.info("Transferring files and creating metadata")
+        if not self.transfer_files(staging_metadata, patient_ods_code):
             return
-
         logger.info(
             "File transfer complete. Removing uploaded files from staging bucket"
         )
+
         self.bulk_upload_s3_repository.remove_ingested_file_from_source_bucket()
 
         logger.info(

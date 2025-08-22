@@ -1605,3 +1605,39 @@ def test_initiate_transactions_calls_repos(repo_under_test):
 
     repo_under_test.bulk_upload_s3_repository.init_transaction.assert_called_once()
     repo_under_test.dynamo_repository.init_transaction.assert_called_once()
+
+
+def test_transfer_files_success(repo_under_test, mocker):
+    mock_create = mocker.patch.object(
+        repo_under_test, "create_lg_records_and_copy_files"
+    )
+
+    result = repo_under_test.transfer_files(TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS)
+
+    assert result is True
+    mock_create.assert_called_once_with(TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS)
+
+
+def test_transfer_files_client_error_triggers_rollback(repo_under_test, mocker):
+    mocker.patch.object(
+        repo_under_test,
+        "create_lg_records_and_copy_files",
+        side_effect=ClientError(
+            {"Error": {"Code": "500", "Message": "Something failed"}}, "CopyObject"
+        ),
+    )
+    mock_rollback = mocker.patch.object(repo_under_test, "rollback_transaction")
+    mock_write_report = mocker.patch.object(
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+
+    result = repo_under_test.transfer_files(TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS)
+
+    assert result is False
+    mock_rollback.assert_called_once()
+    mock_write_report.assert_called_once_with(
+        TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
+        "Validation passed but error occurred during file transfer",
+        TEST_CURRENT_GP_ODS,
+    )
