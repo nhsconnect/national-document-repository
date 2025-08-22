@@ -5,7 +5,6 @@ import boto3
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from models.feedback_model import Feedback
-from pydantic import ValidationError
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import SendFeedbackException
@@ -21,18 +20,7 @@ class SendFeedbackService:
         self.email_subject: str = os.environ["EMAIL_SUBJECT"]
         self.recipient_email_list: list[str] = self.get_email_recipients_list()
 
-    def process_feedback(self, body: str):
-        logger.info("Parsing feedback content...")
-        try:
-            feedback = Feedback.model_validate_json(body)
-        except ValidationError as e:
-            logger.error(e)
-            logger.error(
-                LambdaError.FeedbackInvalidBody.to_str(),
-                {"Result": failure_msg},
-            )
-            raise SendFeedbackException(400, LambdaError.FeedbackInvalidBody)
-
+    def process_feedback(self, feedback: Feedback):
         email_body_html = self.build_email_body(feedback)
         self.send_feedback_by_email(email_body_html)
 
