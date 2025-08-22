@@ -15,22 +15,18 @@ logger = LoggingService(__name__)
 class MockLoginRedirectService(LoginRedirectService):
 
     def prepare_redirect_response(self, event):
-        host = event.get("headers", {}).get("Host")
-        if not host:
+        referer = event.get("headers", {}).get("Referer")
+        if not referer:
             logger.error(
-                "Host header not found in request",
+                "Referer header not found in request",
                 {"Result": "Unsuccessful redirect"},
             )
             raise LoginRedirectException(500, LambdaError.RedirectClient)
 
         state = "".join(random.choices(string.ascii_letters + string.digits, k=30))
         self.save_state_in_dynamo_db(state)
-        if os.getenv("WORKSPACE") == "pre-prod":
-            clean_url = re.sub(r"^api.", "", host)
-        else:
-            clean_url = re.sub(r"^api-", "", host)
 
-        url = f"https://{clean_url}{MOCK_LOGIN_ROUTE}?state={state}"
+        url = f"{referer}{MOCK_LOGIN_ROUTE}?state={state}"
 
         location_header = {"Location": url}
         logger.info(
