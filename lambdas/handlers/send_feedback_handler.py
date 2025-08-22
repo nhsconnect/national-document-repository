@@ -1,6 +1,11 @@
+import os
+
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
+from models.feedback_model import Feedback
+from pydantic import ValidationError
 from services.send_feedback_service import SendFeedbackService
+from services.send_test_feedback_service import SendTestFeedbackService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -11,6 +16,7 @@ from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)
+failure_msg = "Failed to send feedback by email"
 
 
 @set_request_context_for_logging
@@ -40,14 +46,37 @@ def lambda_handler(event, context):
         )
         raise SendFeedbackException(400, LambdaError.FeedbackMissingBody)
 
-    logger.info("Setting up SendFeedbackService...")
-    feedback_service = SendFeedbackService()
+    logger.info("Parsing feedback content...")
+    try:
+        feedback = Feedback.model_validate_json(event_body)
 
-    logger.info("SendFeedbackService ready, start processing feedback")
-    feedback_service.process_feedback(event_body)
+    except ValidationError as e:
+        logger.error(e)
+        logger.error(
+            LambdaError.FeedbackInvalidBody.to_str(),
+            {"result": failure_msg},
+        )
+        raise SendFeedbackException(400, LambdaError.FeedbackInvalidBody)
+
+    if is_itoc_test_feedback(feedback.respondent_email):
+        logger.info("Setting up SendTestFeedbackService")
+
+        test_feedback_service = SendTestFeedbackService()
+        test_feedback_service.process_feedback(feedback)
+    else:
+        logger.info("Setting up SendFeedbackService...")
+
+        feedback_service = SendFeedbackService()
+        logger.info("SendFeedbackService ready, start processing feedback")
+
+        feedback_service.process_feedback(feedback)
 
     logger.info("Process complete", {"Result": "Successfully sent feedback by email"})
 
     return ApiGatewayResponse(
         200, "Feedback email processed", "POST"
     ).create_api_gateway_response()
+
+
+def is_itoc_test_feedback(email_address: str) -> bool:
+    return email_address == os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
