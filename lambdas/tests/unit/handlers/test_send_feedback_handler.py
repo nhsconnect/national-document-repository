@@ -2,11 +2,20 @@ import json
 
 import pytest
 from enums.lambda_error import LambdaError
-from handlers.send_feedback_handler import lambda_handler
+from handlers.send_feedback_handler import is_itoc_test_feedback, lambda_handler
+from models.feedback_model import Feedback
 from services.send_feedback_service import SendFeedbackService
-from tests.unit.conftest import MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST, MOCK_INTERACTION_ID
+from tests.unit.conftest import (
+    MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
+    MOCK_INTERACTION_ID,
+    MOCK_ITOC_TEST_EMAIL_ADDRESS,
+)
 from tests.unit.helpers.data.feedback.mock_data import (
+    MOCK_ITOC_FEEDBACK_BODY_JSON_STR,
     MOCK_ITOC_FEEDBACK_EVENT,
+    MOCK_PARSED_FEEDBACK,
+    MOCK_PARSED_ITOC_FEEDBACK,
+    MOCK_VALID_FEEDBACK_BODY_JSON_STR,
     MOCK_VALID_SEND_FEEDBACK_EVENT,
 )
 from utils.lambda_exceptions import SendFeedbackException
@@ -21,6 +30,15 @@ def mock_feedback_service(mocker):
 
 
 @pytest.fixture
+def mock_send_test_feedback_service(mocker):
+    mocked_class = mocker.patch(
+        "handlers.send_feedback_handler.SendTestFeedbackService"
+    )
+    mocked_instance = mocked_class.return_value
+    return mocked_instance
+
+
+@pytest.fixture
 def mock_get_email_recipients_list(mocker):
     yield mocker.patch.object(
         SendFeedbackService,
@@ -29,9 +47,15 @@ def mock_get_email_recipients_list(mocker):
     )
 
 
+@pytest.fixture
+def mock_validator(mocker):
+    yield mocker.patch.object(Feedback, "model_validate_json")
+
+
 def test_lambda_handler_respond_with_200_when_successful(
-    set_env, context, mock_feedback_service
+    set_env, context, mock_feedback_service, mock_validator
 ):
+    mock_validator.return_value = MOCK_PARSED_FEEDBACK
     test_event = MOCK_VALID_SEND_FEEDBACK_EVENT
 
     expected = ApiGatewayResponse(
@@ -39,7 +63,7 @@ def test_lambda_handler_respond_with_200_when_successful(
     ).create_api_gateway_response()
 
     actual = lambda_handler(test_event, context)
-
+    mock_validator.assert_called_with(MOCK_VALID_FEEDBACK_BODY_JSON_STR)
     assert actual == expected
 
 
@@ -148,8 +172,9 @@ def test_lambda_handler_respond_with_500_when_failed_to_send_email(
 
 
 def test_lambda_handler_respond_with_200_when_itoc_feedback_sent(
-    set_env, context, mock_feedback_service
+    set_env, context, mock_send_test_feedback_service, mock_validator
 ):
+    mock_validator.return_value = MOCK_PARSED_ITOC_FEEDBACK
     test_event = MOCK_ITOC_FEEDBACK_EVENT
     expected = ApiGatewayResponse(
         status_code=200, body="Feedback email processed", methods="POST"
@@ -157,16 +182,17 @@ def test_lambda_handler_respond_with_200_when_itoc_feedback_sent(
 
     actual = lambda_handler(test_event, context)
 
+    mock_validator.assert_called_once_with(MOCK_ITOC_FEEDBACK_BODY_JSON_STR)
     assert actual == expected
 
 
 def test_lambda_handler_respond_with_500_when_failed_to_send_itoc_feedback(
-    set_env, context, mock_feedback_service
+    set_env, context, mock_send_test_feedback_service
 ):
     test_event = MOCK_ITOC_FEEDBACK_EVENT
 
-    mock_feedback_service.process_feedback.side_effect = SendFeedbackException(
-        500, LambdaError.FeedbackITOCFailure
+    mock_send_test_feedback_service.process_feedback.side_effect = (
+        SendFeedbackException(500, LambdaError.FeedbackITOCFailure)
     )
     expected = ApiGatewayResponse(
         status_code=500,
@@ -182,3 +208,11 @@ def test_lambda_handler_respond_with_500_when_failed_to_send_itoc_feedback(
 
     actual = lambda_handler(test_event, context)
     assert actual == expected
+
+
+def test_is_itoc_test_feedback_itoc_email(set_env):
+    assert is_itoc_test_feedback(MOCK_ITOC_TEST_EMAIL_ADDRESS)
+
+
+def test_is_itoc_test_feedback_non_itoc_email(set_env):
+    assert is_itoc_test_feedback("jane_smith@test-email.com") is False

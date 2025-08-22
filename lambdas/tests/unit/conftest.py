@@ -4,7 +4,6 @@ import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from unittest import mock
 
 import pytest
 from botocore.exceptions import ClientError

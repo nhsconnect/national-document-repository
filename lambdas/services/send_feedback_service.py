@@ -1,15 +1,10 @@
-import json
 import os
 from typing import List
 
 import boto3
-import requests
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
-from jinja2 import Template
 from models.feedback_model import Feedback
-from pydantic import ValidationError
-from requests.exceptions import HTTPError
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import SendFeedbackException
@@ -25,24 +20,9 @@ class SendFeedbackService:
         self.email_subject: str = os.environ["EMAIL_SUBJECT"]
         self.recipient_email_list: list[str] = self.get_email_recipients_list()
 
-    def process_feedback(self, body: str):
-        logger.info("Parsing feedback content...")
-        try:
-            feedback = Feedback.model_validate_json(body)
-            if self.is_itoc_test_feedback(feedback.respondent_email):
-                logger.info("Feedback is from ITOC testing...")
-                self.send_itoc_feedback_via_slack(feedback)
-                self.send_itoc_feedback_via_teams(feedback)
-            else:
-                email_body_html = self.build_email_body(feedback)
-                self.send_feedback_by_email(email_body_html)
-        except ValidationError as e:
-            logger.error(e)
-            logger.error(
-                LambdaError.FeedbackInvalidBody.to_str(),
-                {"Result": failure_msg},
-            )
-            raise SendFeedbackException(400, LambdaError.FeedbackInvalidBody)
+    def process_feedback(self, feedback: Feedback):
+        email_body_html = self.build_email_body(feedback)
+        self.send_feedback_by_email(email_body_html)
 
     @staticmethod
     def get_email_recipients_list() -> List[str]:
@@ -94,80 +74,3 @@ class SendFeedbackService:
                 {"Result": failure_msg},
             )
             raise SendFeedbackException(500, LambdaError.FeedbackSESFailure)
-
-    def is_itoc_test_feedback(self, email_address: str) -> bool:
-        return email_address == os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
-
-    def compose_slack_message(self, feedback: Feedback):
-        logger.info("Composing ITOC test feedback message...")
-        with open("./models/templates/itoc_slack_feedback_blocks.json", "r") as f:
-            template_content = f.read()
-
-        template = Template(template_content)
-
-        context = {
-            "name": feedback.respondent_name,
-            "experience": feedback.experience,
-            "feedback": feedback.feedback_content,
-        }
-
-        rendered_json = template.render(context)
-        return json.loads(rendered_json)
-
-    def send_itoc_feedback_via_slack(self, feedback: Feedback):
-        logger.info("Sending ITOC test feedback via slack")
-        headers = {
-            "Content-type": "application/json; charset=utf-8",
-            "Authorization": "Bearer " + os.environ["ITOC_TESTING_SLACK_BOT_TOKEN"],
-        }
-
-        body = {
-            "blocks": self.compose_slack_message(feedback),
-            "channel": os.environ["ITOC_TESTING_CHANNEL_ID"],
-        }
-        try:
-            response = requests.post(
-                url="https://slack.com/api/chat.postMessage", json=body, headers=headers
-            )
-            response.raise_for_status()
-        except HTTPError as e:
-            logger.error(e)
-            raise SendFeedbackException(
-                e.response.status_code, LambdaError.FeedbackITOCFailure
-            )
-
-    def compose_teams_message(self, feedback: Feedback):
-        logger.info("Composing ITOC test feedback message...")
-        with open("./models/templates/itoc_feedback_teams_message.json", "r") as f:
-            template_content = f.read()
-
-        template = Template(template_content)
-
-        context = {
-            "name": feedback.respondent_name,
-            "experience": feedback.experience,
-            "feedback": feedback.feedback_content,
-        }
-
-        rendered_json = template.render(context)
-        return json.loads(rendered_json)
-
-    def send_itoc_feedback_via_teams(self, feedback: Feedback):
-        logger.info("Sending ITOC test feedback via teams")
-        try:
-            payload = self.compose_teams_message(feedback)
-
-            headers = {"Content-type": "application/json"}
-
-            response = requests.post(
-                url=os.environ["ITOC_TESTING_TEAMS_WEBHOOK"],
-                headers=headers,
-                json=payload,
-            )
-            response.raise_for_status()
-            logger.info("ITOC test feedback successfully sent via teams")
-        except HTTPError as e:
-            logger.error(e)
-            raise SendFeedbackException(
-                e.response.status_code, LambdaError.FeedbackITOCFailure
-            )
