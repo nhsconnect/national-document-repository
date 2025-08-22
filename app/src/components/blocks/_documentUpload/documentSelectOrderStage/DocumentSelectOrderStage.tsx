@@ -39,13 +39,17 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
     const { handleSubmit, getValues, register, unregister, formState, setValue } =
         useForm<FormData>({
             reValidateMode: 'onSubmit',
-            shouldFocusError: true,
+            shouldFocusError: false,
         });
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
     const pageTitle = 'What order do you want these files in?';
     useTitle({ pageTitle });
+
+    useEffect(() => {
+        scrollToRef.current?.scrollIntoView();
+    }, [formState.errors]);
 
     useEffect(() => {
         documents.forEach((doc) => {
