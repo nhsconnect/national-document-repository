@@ -302,44 +302,17 @@ class BulkUploadService:
             )
             return False
 
-    # def handle_sqs_message_v2(self, message: dict):
-    #     logger.info("validate SQS event")
-    #     staging_metadata = self.build_staging_metadata_from_message(message)
-    #     logger.info("SQS event is valid. Validating NHS number and file names")
-    #
-    #     accepted_reason, patient_ods_code = self.validate_entry(staging_metadata)
-    #     if accepted_reason is None:
-    #         return
-    #
-    #     logger.info(
-    #         "NHS Number and filename validation complete."
-    #         "Validated strick mode, and if we can access the patient information ex:patient dead"
-    #         " Checking virus scan has marked files as Clean"
-    #     )
-    #
-    #     if not self.validate_virus_scan(staging_metadata, patient_ods_code):
-    #         return
-    #     logger.info("Virus result validation complete. Initialising transaction")
-    #
-    #     self.initiate_transactions()
-    #     logger.info("Transferring files and creating metadata")
-    #     if not self.transfer_files(staging_metadata, patient_ods_code):
-    #         return
-    #     logger.info("File transfer complete. Removing uploaded files from staging bucket")
-    #     self.bulk_upload_s3_repository.remove_ingested_file_from_source_bucket()
-    #
-    #     logger.info(
-    #         f"Completed file ingestion for patient {staging_metadata.nhs_number}",
-    #         {"Result": "Successful upload"},
-    #     )
-    #     logger.info("Reporting transaction successful")
-    #     self.dynamo_repository.write_report_upload_to_dynamo(
-    #         staging_metadata,
-    #         UploadStatus.COMPLETE,
-    #         accepted_reason,
-    #         patient_ods_code,
-    #     )
-    #     self.add_information_to_stitching_queue(staging_metadata, patient_ods_code, accepted_reason)
+    def add_information_to_stitching_queue(
+        self, staging_metadata, patient_ods_code, accepted_reason
+    ):
+        pdf_stitching_sqs_message = PdfStitchingSqsMessage(
+            nhs_number=staging_metadata.nhs_number,
+            snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+        )
+        self.sqs_repository.send_message_to_pdf_stitching_queue(
+            queue_url=self.pdf_stitching_queue_url,
+            message=pdf_stitching_sqs_message,
+        )
 
     def handle_sqs_message(self, message: dict):
         logger.info("validate SQS event")
@@ -381,14 +354,10 @@ class BulkUploadService:
             patient_ods_code,
         )
 
-        pdf_stitching_sqs_message = PdfStitchingSqsMessage(
-            nhs_number=staging_metadata.nhs_number,
-            snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+        self.add_information_to_stitching_queue(
+            staging_metadata, patient_ods_code, accepted_reason
         )
-        self.sqs_repository.send_message_to_pdf_stitching_queue(
-            queue_url=self.pdf_stitching_queue_url,
-            message=pdf_stitching_sqs_message,
-        )
+
         logger.info(
             f"Message sent to stitching queue for patient {staging_metadata.nhs_number}"
         )

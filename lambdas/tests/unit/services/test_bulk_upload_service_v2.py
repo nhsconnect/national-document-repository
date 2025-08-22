@@ -3,6 +3,7 @@ import os
 from copy import copy
 
 import pytest
+import services.bulk_upload_service_v2 as bulk_upload_module
 from botocore.exceptions import ClientError
 from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.upload_status import UploadStatus
@@ -75,14 +76,15 @@ def mock_check_virus_result(mocker):
 
 @pytest.fixture
 def mock_validate_files(mocker):
-    yield mocker.patch("services.bulk_upload_service_v2.validate_lg_file_names")
+    return mocker.patch.object(bulk_upload_module, "validate_lg_file_names")
 
 
 @pytest.fixture
 def mock_pds_service(mocker):
     patient = Patient.model_validate(PDS_PATIENT)
-    mocker.patch(
-        "services.bulk_upload_service_v2.getting_patient_info_from_pds",
+    mocker.patch.object(
+        bulk_upload_module,
+        "getting_patient_info_from_pds",
         return_value=patient,
     )
     yield patient
@@ -91,8 +93,9 @@ def mock_pds_service(mocker):
 @pytest.fixture
 def mock_pds_service_patient_deceased_formal(mocker):
     patient = Patient.model_validate(PDS_PATIENT_DECEASED_FORMAL)
-    mocker.patch(
-        "services.bulk_upload_service_v2.getting_patient_info_from_pds",
+    mocker.patch.object(
+        bulk_upload_module,
+        "getting_patient_info_from_pds",
         return_value=patient,
     )
     yield patient
@@ -101,8 +104,9 @@ def mock_pds_service_patient_deceased_formal(mocker):
 @pytest.fixture
 def mock_pds_service_patient_deceased_informal(mocker):
     patient = Patient.model_validate(PDS_PATIENT_DECEASED_INFORMAL)
-    mocker.patch(
-        "services.bulk_upload_service_v2.getting_patient_info_from_pds",
+    mocker.patch.object(
+        bulk_upload_module,
+        "getting_patient_info_from_pds",
         return_value=patient,
     )
     yield patient
@@ -111,31 +115,44 @@ def mock_pds_service_patient_deceased_informal(mocker):
 @pytest.fixture
 def mock_pds_service_patient_restricted(mocker):
     patient = Patient.model_validate(PDS_PATIENT_RESTRICTED)
-    mocker.patch(
-        "services.bulk_upload_service_v2.getting_patient_info_from_pds",
+    mocker.patch.object(
+        bulk_upload_module,
+        "getting_patient_info_from_pds",
         return_value=patient,
     )
-    yield patient
+    return patient
 
 
 @pytest.fixture
 def mock_pds_validation_lenient(mocker):
-    yield mocker.patch(
-        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
+    return mocker.patch.object(
+        bulk_upload_module,
+        "validate_filename_with_patient_details_lenient",
         return_value=("test string", True),
     )
 
 
 @pytest.fixture
 def mock_pds_validation_strict(mocker):
-    yield mocker.patch(
-        "services.bulk_upload_service_v2.validate_filename_with_patient_details_strict",
+    return mocker.patch.object(
+        bulk_upload_module,
+        "validate_filename_with_patient_details_strict",
     )
 
 
 @pytest.fixture
 def mock_ods_validation(mocker):
-    yield mocker.patch("services.bulk_upload_service_v2.allowed_to_ingest_ods_code")
+    return mocker.patch.object(bulk_upload_module, "allowed_to_ingest_ods_code")
+
+
+@pytest.fixture
+def mock_ods_validation_true(mocker):
+    patcher = mocker.patch.object(
+        bulk_upload_module,
+        "allowed_to_ingest_ods_code",
+        return_value=True,
+    )
+    yield patcher
 
 
 @pytest.fixture
@@ -1158,7 +1175,7 @@ def test_handle_sqs_message_happy_path_v2(mocker, repo_under_test):
         repo_under_test, "add_information_to_stitching_queue"
     )
 
-    repo_under_test.handle_sqs_message_v2(TEST_SQS_MESSAGE)
+    repo_under_test.handle_sqs_message(TEST_SQS_MESSAGE)
 
     mock_staging_metadata.assert_called_once_with(TEST_SQS_MESSAGE)
     mock_validate_entry.assert_called_once_with(mock_metadata)
@@ -1220,12 +1237,9 @@ def test_validate_filenames(repo_under_test, mocker):
     }
     staging_metadata = StagingMetadata.parse_obj(staging_metadata_data)
 
-    mock_validate_nhs = mocker.patch(
-        "services.bulk_upload_service_v2.validate_nhs_number"
-    )
-    mock_validate_lg = mocker.patch(
-        "services.bulk_upload_service_v2.validate_lg_file_names"
-    )
+    mock_validate_nhs = mocker.patch.object(bulk_upload_module, "validate_nhs_number")
+
+    mock_validate_lg = mocker.patch.object(bulk_upload_module, "validate_lg_file_names")
 
     repo_under_test.validate_filenames(staging_metadata)
 
@@ -1247,8 +1261,8 @@ def test_validate_entry_happy_path(mocker, repo_under_test, mock_patient):
     staging_metadata = TEST_STAGING_METADATA
 
     mock_validate_filenames = mocker.patch.object(repo_under_test, "validate_filenames")
-    mock_getting_patient_info_from_pds = mocker.patch(
-        "services.bulk_upload_service_v2.getting_patient_info_from_pds"
+    mock_getting_patient_info_from_pds = mocker.patch.object(
+        bulk_upload_module, "getting_patient_info_from_pds"
     )
     mock_patient = mocker.Mock()
     mock_patient.get_ods_code_or_inactive_status_for_gp.return_value = "Y12345"
@@ -1357,15 +1371,12 @@ def test_validate_accessing_patient_data_returns_none_when_pds_fhir_always_true(
 
 
 def test_validate_accessing_patient_data_strict_mode_calls_strict_validation(
-    mocker, repo_under_test, mock_patient
+    mocker, repo_under_test, mock_patient, mock_ods_validation_true
 ):
-    mock_validate = mocker.patch(
-        "services.bulk_upload_service_v2.validate_filename_with_patient_details_strict",
+    mock_validate = mocker.patch.object(
+        bulk_upload_module,
+        "validate_filename_with_patient_details_strict",
         return_value=False,
-    )
-    mock_allowed = mocker.patch(
-        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code",
-        return_value=True,
     )
 
     result = repo_under_test.validate_accessing_patient_data(
@@ -1373,7 +1384,7 @@ def test_validate_accessing_patient_data_strict_mode_calls_strict_validation(
     )
 
     mock_validate.assert_called_once()
-    mock_allowed.assert_called_once()
+    mock_ods_validation_true.assert_called_once()
     assert result is None
 
 
@@ -1386,36 +1397,36 @@ def lenient_repo(set_env, mocker):  # 👈 include set_env
     return service
 
 
-def test_validate_accessing_patient_data_lenient_mode_calls_lenient_validation(
-    mocker, lenient_repo, mock_patient
-):
-    mock_validate = mocker.patch(
-        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
+@pytest.fixture
+def mock_validate_lenient(mocker):
+    patcher = mocker.patch.object(
+        bulk_upload_module,
+        "validate_filename_with_patient_details_lenient",
         return_value=("some reason", False),
     )
-    mock_allowed = mocker.patch(
-        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code",
-        return_value=True,
-    )
+    yield patcher
+
+
+def test_validate_accessing_patient_data_lenient_mode_calls_lenient_validation(
+    lenient_repo, mock_patient, mock_validate_lenient, mock_ods_validation_true
+):
 
     result = lenient_repo.validate_accessing_patient_data(
         ["file.pdf"], mock_patient, "A1234"
     )
 
-    mock_validate.assert_called_once()
-    mock_allowed.assert_called_once()
+    mock_validate_lenient.assert_called_once()
+    mock_ods_validation_true.assert_called_once()
     assert "some reason" in result
 
 
 def test_validate_accessing_patient_data_adds_historic_name_reason_when_flag_true(
-    mocker, lenient_repo, mock_patient
+    mocker, lenient_repo, mock_patient, mock_ods_validation_true
 ):
-    mocker.patch(
-        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
+    mocker.patch.object(
+        bulk_upload_module,
+        "validate_filename_with_patient_details_lenient",
         return_value=("some reason", True),
-    )
-    mocker.patch(
-        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code", return_value=True
     )
 
     result = lenient_repo.validate_accessing_patient_data(
@@ -1427,17 +1438,9 @@ def test_validate_accessing_patient_data_adds_historic_name_reason_when_flag_tru
 
 
 def test_validate_accessing_patient_data_raises_exception_when_ods_code_not_allowed(
-    mocker, lenient_repo, mock_patient
+    lenient_repo, mock_patient, mock_validate_lenient, mock_ods_validation
 ):
-    mocker.patch(
-        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
-        return_value=("some reason", False),
-    )
-    mocker.patch(
-        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code",
-        return_value=False,
-    )
-
+    mock_ods_validation.return_value = False
     with pytest.raises(
         LGInvalidFilesException, match="Patient not registered at your practice"
     ):
@@ -1447,15 +1450,8 @@ def test_validate_accessing_patient_data_raises_exception_when_ods_code_not_allo
 
 
 def test_validate_accessing_patient_data_adds_deceased_reason(
-    mocker, lenient_repo, mock_patient
+    mocker, lenient_repo, mock_patient, mock_validate_lenient, mock_ods_validation_true
 ):
-    mocker.patch(
-        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
-        return_value=("some reason", False),
-    )
-    mocker.patch(
-        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code", return_value=True
-    )
 
     deceased_status_mock = mocker.Mock()
     deceased_status_mock.name = "Formal"
@@ -1470,16 +1466,13 @@ def test_validate_accessing_patient_data_adds_deceased_reason(
 
 
 def test_validate_accessing_patient_data_adds_restricted_reason(
-    mocker, lenient_repo, mock_patient
+    mocker, lenient_repo, mock_patient, mock_validate_lenient
 ):
-    mocker.patch(
-        "services.bulk_upload_service_v2.validate_filename_with_patient_details_lenient",
-        return_value=("some reason", False),
+    mocker.patch.object(
+        bulk_upload_module,
+        "allowed_to_ingest_ods_code",
+        return_value=True,
     )
-    mocker.patch(
-        "services.bulk_upload_service_v2.allowed_to_ingest_ods_code", return_value=True
-    )
-
     result = lenient_repo.validate_accessing_patient_data(
         ["file.pdf"], mock_patient, PatientOdsInactiveStatus.RESTRICTED
     )
@@ -1641,3 +1634,44 @@ def test_transfer_files_client_error_triggers_rollback(repo_under_test, mocker):
         "Validation passed but error occurred during file transfer",
         TEST_CURRENT_GP_ODS,
     )
+
+
+def test_add_information_to_stitching_queue(repo_under_test, mocker):
+    mock_send = mocker.patch.object(
+        repo_under_test.sqs_repository, "send_message_to_pdf_stitching_queue"
+    )
+
+    repo_under_test.add_information_to_stitching_queue(
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, accepted_reason="Some reason"
+    )
+
+    mock_send.assert_called_once()
+    args, kwargs = mock_send.call_args
+
+    assert kwargs["queue_url"] == repo_under_test.pdf_stitching_queue_url
+
+    message = kwargs["message"]
+    assert message.nhs_number == TEST_STAGING_METADATA.nhs_number
+    assert message.snomed_code_doc_type.code == "16521000000101"
+    assert message.snomed_code_doc_type.display_name == "Lloyd George record folder"
+
+
+def test_add_information_to_stitching_queue_calls_send_with_correct_values(
+    repo_under_test, mocker
+):
+    mock_send = mocker.patch.object(
+        repo_under_test.sqs_repository, "send_message_to_pdf_stitching_queue"
+    )
+
+    repo_under_test.add_information_to_stitching_queue(
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, accepted_reason="Some reason"
+    )
+
+    mock_send.assert_called_once()
+    args, kwargs = mock_send.call_args
+
+    assert kwargs["queue_url"] == repo_under_test.pdf_stitching_queue_url
+
+    message = kwargs["message"]
+    assert message.nhs_number == TEST_STAGING_METADATA.nhs_number
+    assert message.snomed_code_doc_type.code == "16521000000101"
