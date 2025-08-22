@@ -1,0 +1,44 @@
+{
+    "type": "message",
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "contentUrl": null,
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.4",
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "Medium",
+                        "weight": "Bolder",
+                        "text": "dev-test_bulk_upload_metadata_queue ApproximateAgeOfOldestMessage Alert: \uD83D\uDD34",
+                        "wrap": true
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Entry: dev-test_bulk_upload_metadata_queue ApproximateAgeOfOldestMessage:1744902641"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "History: \uD83D\uDD34",
+                        "wrap": true
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Last state change: 15:10:41 17-04-2025 UTC",
+                        "wrap": true
+                    }
+                ],
+                "actions": [
+                    {
+                        "type": "Action.OpenUrl",
+                        "title": "Find out what to do",
+                        "url": "https://confluence.example.com#:~:text=test%20bulk%20upload%20metadata%20queue%20ApproximateAgeOfOldestMessage"
+                    }
+                ]
+            }
+        }
+    ]
+}
