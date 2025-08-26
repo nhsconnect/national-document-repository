@@ -39,7 +39,7 @@ const errorCodes: { [key: string]: string } = {
     LGL_423: 'Record is uploading. Wait a few minutes and try again',
     SP_4002: 'The NHS number entered could not be found in the Personal Demographics Service',
     SP_4003:
-        "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+        "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record if it's stored in this service.",
     UC_4002: 'There was an issue when attempting to virus scan your uploaded files',
     UC_4004: technicalIssueMsg,
 };

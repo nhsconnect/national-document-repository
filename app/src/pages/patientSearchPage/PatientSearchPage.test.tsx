@@ -154,7 +154,7 @@ describe('PatientSearchPage', () => {
             await userEvent.click(screen.getByRole('button', { name: 'Search' }));
             expect(
                 await screen.findAllByText(
-                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record if it's stored in this service.",
                 ),
             ).toHaveLength(2);
         });
@@ -198,7 +198,7 @@ describe('PatientSearchPage', () => {
 
             expect(
                 await screen.findAllByText(
-                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record if it's stored in this service.",
                 ),
             ).toHaveLength(2);
         });
@@ -357,7 +357,7 @@ describe('PatientSearchPage', () => {
             await userEvent.click(screen.getByRole('button', { name: 'Search' }));
             expect(
                 await screen.findAllByText(
-                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record if it's stored in this service.",
                 ),
             ).toHaveLength(2);
         });
