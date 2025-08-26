@@ -1,4 +1,3 @@
-from models.staging_metadata import METADATA_FILENAME
 from services.V2_bulk_upload_metadata_service import V2BulkUploadMetadataService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -15,8 +14,18 @@ logger = LoggingService(__name__)
     names=["STAGING_STORE_BUCKET_NAME", "METADATA_SQS_QUEUE_URL"]
 )
 @handle_lambda_exceptions
-def lambda_handler(_event, _context):
-    logger.info("Starting metadata reading process")
+def lambda_handler(event, _context):
+    practice_directory = event.get("practiceDirectory")
 
-    metadata_service = V2BulkUploadMetadataService()
-    metadata_service.process_metadata(METADATA_FILENAME)
+    if not practice_directory:
+        logger.info(
+            "Failed to start metadata processing due to missing practice directory"
+        )
+        return
+
+    logger.info(
+        f"Starting metadata processing for practice directory: {practice_directory}"
+    )
+
+    metadata_service = V2BulkUploadMetadataService(practice_directory)
+    metadata_service.process_metadata()
