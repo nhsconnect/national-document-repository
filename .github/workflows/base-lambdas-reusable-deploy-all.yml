@@ -154,7 +154,7 @@ jobs:
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
-      lambda_handler_name: bulk_upload_metadata_handler
+      lambda_handler_name: V2_bulk_upload_metadata_handler
       lambda_aws_name: V2BulkUploadMetadataLambda
       lambda_layer_names: 'core_lambda_layer'
     secrets:
