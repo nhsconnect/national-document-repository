@@ -51,7 +51,7 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadService:
-    def __init__(self, strict_mode, pds_fhir_always_true=False):
+    def __init__(self, strict_mode, bypass_pds=False):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
         self.bulk_upload_s3_repository = BulkUploadS3Repository()
@@ -60,7 +60,7 @@ class BulkUploadService:
         self.unhandled_messages = []
         self.file_path_cache = {}
         self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
-        self.pds_fhir_always_true = pds_fhir_always_true
+        self.bypass_pds = bypass_pds
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -138,7 +138,7 @@ class BulkUploadService:
             patient_ods_code = (
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
-            if not self.pds_fhir_always_true:
+            if not self.bypass_pds:
                 if not self.strict_mode:
                     (
                         name_validation_accepted_reason,
