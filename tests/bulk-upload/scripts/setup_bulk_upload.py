@@ -415,11 +415,11 @@ def upload_lg_files_to_staging():
 def removing_previous_uploads():
     dynamodb = boto3.resource("dynamodb")
 
-    bulk_table = dynamodb.Table(BULK_UPLOAD_TABLE_NAME)
-    scan_and_remove_items(bulk_table)
+    tables_to_truncate = [BULK_UPLOAD_TABLE_NAME, LG_TABLE_NAME, LG_STITCH_TABLE_NAME]
 
-    bulk_table = dynamodb.Table(LG_TABLE_NAME)
-    scan_and_remove_items(bulk_table)
+    for table_name in tables_to_truncate:
+        table = dynamodb.Table(table_name)
+        scan_and_remove_items(table)
 
 
 def create_previous_uploads():
@@ -448,16 +448,29 @@ def create_previous_uploads():
 
 
 def scan_and_remove_items(table):
-    # Scan the table to get all items
-    response = table.scan()
-    items = response["Items"]
+    """
+    Scans all items in the provided DynamoDB table and removes them.
+    This function performs a full table scan and deletes each item using a batch writer.
+    It handles pagination to ensure all items are deleted, even if the scan result is paginated.
+    Args:
+        table: A boto3 DynamoDB Table resource instance.
+    Returns:
+        None
+    Side Effects:
+        Deletes all items from the specified DynamoDB table.
+        Prints a confirmation message upon completion.
+    """
+
+    response: Dict[str, Any] = table.scan()
+    items: list[Dict[str, Any]] = response["Items"]
 
     with table.batch_writer() as batch:
         # Loop through the items and delete each one
         for item in items:
             batch.delete_item(Key={"ID": item["ID"]})
 
-        # Handle pagination if there are more items
+        # No LastEvaluatedKey means no more items to retrieve
+        # (no more pages, we just need to delete last page)
         while "LastEvaluatedKey" in response:
             response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
             items = response["Items"]
@@ -472,7 +485,7 @@ def create_items(table, items):
             for item in items:
                 batch.put_item(Item=item)
     except ClientError as e:
-        print(f"Error writing items: {e.response['Error']['Message']}")
+        print(f"Error writing items: {e.response['Error']['Message']}")  # type: ignore
         exit(1)
 
 
@@ -560,6 +573,7 @@ if __name__ == "__main__":
     LLOYD_GEORGE_BUCKET = f"{ENVIRONMENT}-lloyd-george-store"
     BULK_UPLOAD_TABLE_NAME = f"{ENVIRONMENT}_BulkUploadReport"
     LG_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeReferenceMetadata"
+    LG_STITCH_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeStitchJobMetadata"
 
     if not args.environment:
         env_confirmation = input(
