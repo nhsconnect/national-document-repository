@@ -23,5 +23,6 @@ describe('DownloadReportCompleteStage', () => {
 
         expect(screen.getByTestId('home-button')).toBeInTheDocument();
         expect(screen.getByTestId('back-to-download-page-button')).toBeInTheDocument();
+        expect(screen.getByText('Go to home')).toBeInTheDocument();
     });
 });
