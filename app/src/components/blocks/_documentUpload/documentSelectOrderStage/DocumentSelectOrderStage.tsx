@@ -1,7 +1,7 @@
 import { Button, Select, Table } from 'nhsuk-react-components';
-import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
+import { Dispatch, JSX, SetStateAction, useEffect, useRef } from 'react';
 import { FieldErrors, FieldValues, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,
@@ -19,6 +19,7 @@ import BackButton from '../../../generic/backButton/BackButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
+import getMergedPdfBlob from '../../../../helpers/utils/pdfMerger';
 
 type Props = {
     documents: UploadDocument[];
@@ -29,7 +30,7 @@ type FormData = {
     [key: string]: number | null;
 };
 
-const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props) => {
+const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props): JSX.Element => {
     const navigate = useNavigate();
 
     const documentPositionKey = (documentId: string): string => {
@@ -132,7 +133,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         );
     };
 
-    const onRemove = (index: number) => {
+    const onRemove = (index: number): void => {
         let updatedDocList: UploadDocument[] = [...documents];
         const docToRemove = documents[index];
         const key = documentPositionKey(documents[index].id);
@@ -153,7 +154,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         setDocuments(updatedDocList);
     };
 
-    const updateDocumentPositions = () => {
+    const updateDocumentPositions = (): void => {
         const fieldValues = getValues();
 
         const updatedDocuments = documents.map((doc) => ({
@@ -164,7 +165,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         setDocuments(updatedDocuments);
     };
 
-    const submitDocuments = () => {
+    const submitDocuments = (): void => {
         updateDocumentPositions();
         if (documents.length === 1) {
             navigate(routeChildren.DOCUMENT_UPLOAD_UPLOADING);
@@ -173,7 +174,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
     };
 
-    const handleErrors = (_: FieldValues) => {
+    const handleErrors = (_: FieldValues): void => {
         scrollToRef.current?.scrollIntoView();
     };
 
@@ -191,6 +192,13 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                 };
             })
             .filter((item) => item !== undefined);
+
+    const viewPdfFile = async (file: File): Promise<void> => {
+        const blob = await getMergedPdfBlob([file]);
+        const url = URL.createObjectURL(blob);
+
+        window.open(url);
+    };
 
     return (
         <>
@@ -285,15 +293,14 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                                             )}
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <a
-                                                href={URL.createObjectURL(document.file)}
+                                            <Link
+                                                to=""
+                                                onClick={() => viewPdfFile(document.file)}
                                                 aria-label="Preview - opens in a new tab"
                                                 data-testid={`document-preview-${document.id}`}
-                                                target="_blank"
-                                                rel="noreferrer"
                                             >
                                                 View
-                                            </a>
+                                            </Link>
                                         </Table.Cell>
                                         <Table.Cell>
                                             <button
