@@ -1,4 +1,4 @@
-name: "Updated Base Bulk Upload - Execute a Bulk Upload"
+name: "Performance Base Bulk Upload - Execute a Bulk Upload"
 
 permissions:
   pull-requests: write
@@ -76,7 +76,7 @@ jobs:
 
       - name: Setup Bulk Upload
         run: |
-          python updated_setup_bulk_upload.py \
+          python performance_setup_bulk_upload.py \
             --environment "${{ inputs.sandbox }}" \
             --delete-table \
             --download-data \
@@ -95,7 +95,7 @@ jobs:
           else
             V2_FLAG=""
           fi
-          python run_bulk_upload.py \
+          python performance_run_bulk_upload.py \
             --environment "${{ inputs.sandbox }}" \
             --start-bulk-upload\
             "${V2_FLAG}"
