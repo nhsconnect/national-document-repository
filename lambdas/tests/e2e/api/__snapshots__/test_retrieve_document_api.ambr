@@ -54,9 +54,9 @@
         'details': dict({
           'coding': list([
             dict({
-              'code': 'not-found',
-              'display': 'Not Found',
-              'system': 'http://hl7.org/fhir/issue-type',
+              'code': 'RESOURCE_NOT_FOUND',
+              'display': 'Resource not found',
+              'system': 'https://fhir.hl7.org.uk/CodeSystem/UKCore-SpineErrorOrWarningCode',
             }),
           ]),
         }),

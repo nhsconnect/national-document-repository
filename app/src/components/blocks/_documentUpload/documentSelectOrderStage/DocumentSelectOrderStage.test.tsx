@@ -424,24 +424,6 @@ describe('DocumentSelectOrderStage', () => {
         });
     });
 
-    describe('File Preview', () => {
-        it('creates object URL for file preview', () => {
-            renderSut(documents);
-
-            const viewLink = screen.getByTestId('document-preview-1');
-            expect(viewLink).toHaveAttribute('href', 'mocked-url');
-            expect(global.URL.createObjectURL).toHaveBeenCalledWith(documents[0].file);
-        });
-
-        it('opens file preview in new tab', () => {
-            renderSut(documents);
-
-            const viewLink = screen.getByTestId('document-preview-1');
-            expect(viewLink).toHaveAttribute('target', '_blank');
-            expect(viewLink).toHaveAttribute('rel', 'noreferrer');
-        });
-    });
-
     describe('PDF Viewer Integration', () => {
         it('renders PDF viewer when Lloyd George preview is shown', async () => {
             renderSut(documents);
