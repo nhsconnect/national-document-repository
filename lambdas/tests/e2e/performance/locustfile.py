@@ -90,22 +90,22 @@ class UserBehavior(TaskSet):
                     files=files,
                 )
 
-    # @task(1)
-    # def search_document_references(self):
-    #     search_info = random_item_in_csv(search_data)
-    #     headers = {"Authorization": "Bearer 123", "X-Api-Key": API_KEY}
-    #     response = self.client.get(
-    #         f"/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{search_info['nhs_number']}",
-    #         headers=headers,
-    #         name="Search Document References",
-    #     )
-    #     logging.info(response.json())
-    #
-    @task(50)
+    @task(1)
+    def search_document_references(self):
+        search_info = random_item_in_csv(search_data)
+        headers = {"Authorization": "Bearer 123", "X-Api-Key": API_KEY}
+        response = self.client.get(
+            f"/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{search_info['nhs_number']}",
+            headers=headers,
+            name="Search Document References",
+        )
+        logging.info(response.json())
+
+    @task(1)
     def post_60kb(self):
         self.upload(False, "60kb.pdf")
 
-    @task(5)
+    @task(1)
     def post_10mb(self):
         self.upload(True, "10mb.pdf")
 
@@ -113,18 +113,17 @@ class UserBehavior(TaskSet):
     def post_90mb(self):
         self.upload(True, "90mb.pdf")
 
-    # @task(1)
-    # def retrieve_60kb(self):
-    #     self.retrieve(False, "60kb.pdf")
-    #
-    # @task(1)
-    # def retrieve_10mb(self):
-    #     self.retrieve(True, "10mb.pdf")
-    #
-    # @task(1)
-    # def retrieve_90mb(self):
-    #     self.retrieve(True, "90mb.pdf")
-    #
+    @task(1)
+    def retrieve_60kb(self):
+        self.retrieve(False, "60kb.pdf")
+
+    @task(1)
+    def retrieve_10mb(self):
+        self.retrieve(True, "10mb.pdf")
+
+    @task(1)
+    def retrieve_90mb(self):
+        self.retrieve(True, "90mb.pdf")
 
 
 class WebsiteUser(HttpUser):

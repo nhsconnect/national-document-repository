@@ -80,6 +80,7 @@ def test_create_document_base64(test_data, snapshot):
 
     retrieve_response = requests.post(url, headers=headers, data=payload)
     upload_response = retrieve_response.json()
+    logging.info(upload_response)
     lloyd_george_record["id"] = upload_response["id"].split("~")[1]
     test_data.append(lloyd_george_record)
 
