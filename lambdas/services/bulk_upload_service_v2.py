@@ -50,62 +50,86 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadService:
-    def __init__(self, strict_mode, pds_fhir_always_true=False):
+    def __init__(self, strict_mode, bypass_pds=False):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
         self.bulk_upload_s3_repository = BulkUploadS3Repository()
         self.strict_mode = strict_mode
-        self.pdf_content_type = "application/pdf"
         self.unhandled_messages = []
         self.file_path_cache = {}
         self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
-        self.pds_fhir_always_true = pds_fhir_always_true
+        self.bypass_pds = bypass_pds
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
+            logger.info(f"Processing message {index} of {len(records)}")
+
             try:
-                logger.info(f"Processing message {index} of {len(records)}")
                 self.handle_sqs_message(message)
+
             except (PdsTooManyRequestsException, PdsErrorException) as error:
-                logger.error(error)
-
-                logger.info(
-                    "Cannot validate patient due to PDS responded with Too Many Requests"
-                )
-                logger.info("Cannot process for now due to PDS rate limit reached.")
-                logger.info(
-                    "All remaining messages in this batch will be returned to sqs queue to retry later."
-                )
-
-                all_unprocessed_message = records[index - 1 :]
-                for unprocessed_message in all_unprocessed_message:
-                    self.sqs_repository.put_sqs_message_back_to_queue(
-                        unprocessed_message
-                    )
+                self.handle_process_message_pds_error(records, index, error)
                 raise BulkUploadException(
                     "Bulk upload process paused due to PDS rate limit reached"
                 )
+
             except (
                 ClientError,
                 InvalidMessageException,
                 LGInvalidFilesException,
                 Exception,
             ) as error:
-                self.unhandled_messages.append(message)
-                logger.info(f"Failed to process current message due to error: {error}")
-                logger.info("Continue on next message")
+                self.handle_process_message_general_error(message, error)
+
+        self.log_processing_summary(records)
+
+    def handle_sqs_message(self, message: dict):
+        logger.info("validate SQS event")
+        staging_metadata = self.build_staging_metadata_from_message(message)
+        logger.info("SQS event is valid. Validating NHS number and file names")
+        accepted_reason, patient_ods_code = self.validate_entry(staging_metadata)
+        if accepted_reason is None:
+            return
 
         logger.info(
-            f"Finish Processing successfully {len(records) - len(self.unhandled_messages)} of {len(records)} messages"
+            "NHS Number and filename validation complete."
+            "Validated strick mode, and if we can access the patient information ex:patient dead"
+            " Checking if virus scan has marked files as Clean"
         )
-        if self.unhandled_messages:
-            logger.info("Unable to process the following messages:")
-            for message in self.unhandled_messages:
-                message_body = json.loads(message.get("body", "{}"))
-                request_context.patient_nhs_no = message_body.get(
-                    "NHS-NO", "no number found"
-                )
-                logger.info(message_body)
+        if not self.validate_virus_scan(staging_metadata, patient_ods_code):
+            return
+        logger.info("Virus result validation complete. Initialising transaction")
+
+        self.initiate_transactions()
+
+        logger.info("Transferring files and creating metadata")
+        if not self.transfer_files(staging_metadata, patient_ods_code):
+            return
+        logger.info(
+            "File transfer complete. Removing uploaded files from staging bucket"
+        )
+
+        self.bulk_upload_s3_repository.remove_ingested_file_from_source_bucket()
+
+        logger.info(
+            f"Completed file ingestion for patient {staging_metadata.nhs_number}",
+            {"Result": "Successful upload"},
+        )
+        logger.info("Reporting transaction successful")
+        self.dynamo_repository.write_report_upload_to_dynamo(
+            staging_metadata,
+            UploadStatus.COMPLETE,
+            accepted_reason,
+            patient_ods_code,
+        )
+
+        self.add_information_to_stitching_queue(
+            staging_metadata, patient_ods_code, accepted_reason
+        )
+
+        logger.info(
+            f"Message sent to stitching queue for patient {staging_metadata.nhs_number}"
+        )
 
     def build_staging_metadata_from_message(self, message: dict) -> StagingMetadata:
         logger.info("Validating SQS event")
@@ -117,71 +141,12 @@ class BulkUploadService:
             logger.error(e)
             raise InvalidMessageException(str(e))
 
-    def validate_filenames(self, staging_metadata: StagingMetadata):
-        file_names = [
-            os.path.basename(metadata.file_path) for metadata in staging_metadata.files
-        ]
-        request_context.patient_nhs_no = staging_metadata.nhs_number
-        validate_nhs_number(staging_metadata.nhs_number)
-        validate_lg_file_names(file_names, staging_metadata.nhs_number)
-
-    def validate_accessing_patient_data(
-        self,
-        file_names: list[str],
-        pds_patient_details,
-        patient_ods_code: str,
-    ) -> str | None:
-
-        if self.pds_fhir_always_true:
-            return None
-        accepted_reason = None
-
-        if self.strict_mode:
-            is_name_validation_based_on_historic_name = (
-                validate_filename_with_patient_details_strict(
-                    file_names, pds_patient_details
-                )
-            )
-        else:
-            (
-                name_validation_accepted_reason,
-                is_name_validation_based_on_historic_name,
-            ) = validate_filename_with_patient_details_lenient(
-                file_names, pds_patient_details
-            )
-            accepted_reason = self.concatenate_acceptance_reason(
-                accepted_reason, name_validation_accepted_reason
-            )
-
-        if is_name_validation_based_on_historic_name:
-            accepted_reason = self.concatenate_acceptance_reason(
-                accepted_reason, "Patient matched on historical name"
-            )
-        if not allowed_to_ingest_ods_code(patient_ods_code):
-            raise LGInvalidFilesException("Patient not registered at your practice")
-        patient_death_notification_status = (
-            pds_patient_details.get_death_notification_status()
-        )
-        if patient_death_notification_status:
-            deceased_accepted_reason = (
-                f"Patient is deceased - {patient_death_notification_status.name}"
-            )
-            accepted_reason = self.concatenate_acceptance_reason(
-                accepted_reason, deceased_accepted_reason
-            )
-        if patient_ods_code is PatientOdsInactiveStatus.RESTRICTED:
-            accepted_reason = self.concatenate_acceptance_reason(
-                accepted_reason, "PDS record is restricted"
-            )
-
-        return accepted_reason
-
     def validate_entry(
         self, staging_metadata: StagingMetadata
     ) -> tuple[str | None, str | None]:
         patient_ods_code = ""
         try:
-            self.validate_filenames(staging_metadata)
+            self.validate_staging_metadata_filenames(staging_metadata)
             file_names = [
                 os.path.basename(metadata.file_path)
                 for metadata in staging_metadata.files
@@ -195,7 +160,7 @@ class BulkUploadService:
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
 
-            accepted_reason = self.validate_accessing_patient_data(
+            accepted_reason = self.validate_patient_data_access_conditions(
                 file_names,
                 pds_patient_details,
                 patient_ods_code,
@@ -273,95 +238,6 @@ class BulkUploadService:
             )
             return False
 
-    def initiate_transactions(self):
-        self.bulk_upload_s3_repository.init_transaction()
-        self.dynamo_repository.init_transaction()
-        logger.info("Transaction initialised.")
-
-    def transfer_files(self, staging_metadata, patient_ods_code) -> bool:
-        try:
-            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
-            logger.info(
-                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
-                {"Result": "Successful upload"},
-            )
-            return True
-        except ClientError as e:
-            logger.info(
-                f"Got unexpected error during file transfer: {str(e)}",
-                {"Result": "Unsuccessful upload"},
-            )
-            logger.info("Will try to rollback any change to database and bucket")
-            self.rollback_transaction()
-
-            self.dynamo_repository.write_report_upload_to_dynamo(
-                staging_metadata,
-                UploadStatus.FAILED,
-                "Validation passed but error occurred during file transfer",
-                patient_ods_code,
-            )
-            return False
-
-    def add_information_to_stitching_queue(
-        self, staging_metadata, patient_ods_code, accepted_reason
-    ):
-        pdf_stitching_sqs_message = PdfStitchingSqsMessage(
-            nhs_number=staging_metadata.nhs_number,
-            snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
-        )
-        self.sqs_repository.send_message_to_pdf_stitching_queue(
-            queue_url=self.pdf_stitching_queue_url,
-            message=pdf_stitching_sqs_message,
-        )
-
-    def handle_sqs_message(self, message: dict):
-        logger.info("validate SQS event")
-        staging_metadata = self.build_staging_metadata_from_message(message)
-        logger.info("SQS event is valid. Validating NHS number and file names")
-        accepted_reason, patient_ods_code = self.validate_entry(staging_metadata)
-        if accepted_reason is None:
-            return
-
-        logger.info(
-            "NHS Number and filename validation complete."
-            "Validated strick mode, and if we can access the patient information ex:patient dead"
-            " Checking virus scan has marked files as Clean"
-        )
-        if not self.validate_virus_scan(staging_metadata, patient_ods_code):
-            return
-        logger.info("Virus result validation complete. Initialising transaction")
-
-        self.initiate_transactions()
-
-        logger.info("Transferring files and creating metadata")
-        if not self.transfer_files(staging_metadata, patient_ods_code):
-            return
-        logger.info(
-            "File transfer complete. Removing uploaded files from staging bucket"
-        )
-
-        self.bulk_upload_s3_repository.remove_ingested_file_from_source_bucket()
-
-        logger.info(
-            f"Completed file ingestion for patient {staging_metadata.nhs_number}",
-            {"Result": "Successful upload"},
-        )
-        logger.info("Reporting transaction successful")
-        self.dynamo_repository.write_report_upload_to_dynamo(
-            staging_metadata,
-            UploadStatus.COMPLETE,
-            accepted_reason,
-            patient_ods_code,
-        )
-
-        self.add_information_to_stitching_queue(
-            staging_metadata, patient_ods_code, accepted_reason
-        )
-
-        logger.info(
-            f"Message sent to stitching queue for patient {staging_metadata.nhs_number}"
-        )
-
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
         sample_file_path = staging_metadata.files[0].file_path
 
@@ -404,6 +280,35 @@ class BulkUploadService:
 
         self.file_path_cache = resolved_file_paths
 
+    def initiate_transactions(self):
+        self.bulk_upload_s3_repository.init_transaction()
+        self.dynamo_repository.init_transaction()
+        logger.info("Transaction initialised.")
+
+    def transfer_files(self, staging_metadata, patient_ods_code) -> bool:
+        try:
+            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
+            logger.info(
+                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
+                {"Result": "Successful upload"},
+            )
+            return True
+        except ClientError as e:
+            logger.info(
+                f"Got unexpected error during file transfer: {str(e)}",
+                {"Result": "Unsuccessful upload"},
+            )
+            logger.info("Will try to rollback any change to database and bucket")
+            self.rollback_transaction()
+
+            self.dynamo_repository.write_report_upload_to_dynamo(
+                staging_metadata,
+                UploadStatus.FAILED,
+                "Validation passed but error occurred during file transfer",
+                patient_ods_code,
+            )
+            return False
+
     def create_lg_records_and_copy_files(
         self, staging_metadata: StagingMetadata, current_gp_ods: str
     ):
@@ -430,16 +335,6 @@ class BulkUploadService:
             document_reference.doc_status = "final"
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
 
-    def rollback_transaction(self):
-        try:
-            self.bulk_upload_s3_repository.rollback_transaction()
-            self.dynamo_repository.rollback_transaction()
-            logger.info("Rolled back an incomplete transaction")
-        except ClientError as e:
-            logger.error(
-                f"Failed to rollback the incomplete transaction due to error: {e}"
-            )
-
     def convert_to_document_reference(
         self, file_metadata: MetadataFile, nhs_number: str, current_gp_ods: str
     ) -> DocumentReference:
@@ -465,6 +360,130 @@ class BulkUploadService:
         document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
 
         return document_reference
+
+    def rollback_transaction(self):
+        try:
+            self.bulk_upload_s3_repository.rollback_transaction()
+            self.dynamo_repository.rollback_transaction()
+            logger.info("Rolled back an incomplete transaction")
+        except ClientError as e:
+            logger.error(
+                f"Failed to rollback the incomplete transaction due to error: {e}"
+            )
+
+    def add_information_to_stitching_queue(
+        self, staging_metadata, patient_ods_code, accepted_reason
+    ):
+        pdf_stitching_sqs_message = PdfStitchingSqsMessage(
+            nhs_number=staging_metadata.nhs_number,
+            snomed_code_doc_type=SnomedCodes.LLOYD_GEORGE.value,
+        )
+        self.sqs_repository.send_message_to_pdf_stitching_queue(
+            queue_url=self.pdf_stitching_queue_url,
+            message=pdf_stitching_sqs_message,
+        )
+
+    def validate_staging_metadata_filenames(self, staging_metadata: StagingMetadata):
+        file_names = [
+            os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+        ]
+        request_context.patient_nhs_no = staging_metadata.nhs_number
+        validate_nhs_number(staging_metadata.nhs_number)
+        validate_lg_file_names(file_names, staging_metadata.nhs_number)
+
+    def validate_patient_data_access_conditions(
+        self,
+        file_names: list[str],
+        pds_patient_details,
+        patient_ods_code: str,
+    ) -> str | None:
+
+        if self.bypass_pds:
+            return None
+
+        accepted_reason = self.validate_file_name(file_names, pds_patient_details)
+
+        if not allowed_to_ingest_ods_code(patient_ods_code):
+            raise LGInvalidFilesException("Patient not registered at your practice")
+
+        accepted_reason = self.deceased_validation(accepted_reason, pds_patient_details)
+        accepted_reason = self.restricted_validation(accepted_reason, patient_ods_code)
+
+        return accepted_reason
+
+    def validate_file_name(self, file_names, pds_patient_details) -> str | None:
+        accepted_reason = None
+
+        if self.strict_mode:
+            matched_on_history = validate_filename_with_patient_details_strict(
+                file_names, pds_patient_details
+            )
+        else:
+            name_reason, matched_on_history = (
+                validate_filename_with_patient_details_lenient(
+                    file_names, pds_patient_details
+                )
+            )
+            accepted_reason = self.concatenate_acceptance_reason(
+                accepted_reason, name_reason
+            )
+
+        if matched_on_history:
+            accepted_reason = self.concatenate_acceptance_reason(
+                accepted_reason, "Patient matched on historical name"
+            )
+
+        return accepted_reason
+
+    def deceased_validation(
+        self, accepted_reason: str | None, pds_patient_details
+    ) -> str | None:
+        status = pds_patient_details.get_death_notification_status()
+        if status:
+            reason = f"Patient is deceased - {status.name}"
+            return self.concatenate_acceptance_reason(accepted_reason, reason)
+        return accepted_reason
+
+    def restricted_validation(
+        self, accepted_reason: str | None, patient_ods_code: str
+    ) -> str | None:
+        if patient_ods_code is PatientOdsInactiveStatus.RESTRICTED:
+            return self.concatenate_acceptance_reason(
+                accepted_reason, "PDS record is restricted"
+            )
+        return accepted_reason
+
+    def handle_process_message_pds_error(
+        self, records: list, current_index: int, error: Exception
+    ):
+        logger.error(error)
+        logger.info(
+            "Cannot validate patient due to PDS responded with Too Many Requests"
+        )
+        logger.info("Cannot process for now due to PDS rate limit reached.")
+        logger.info(
+            "All remaining messages in this batch will be returned to SQS queue to retry later."
+        )
+
+        remaining_messages = records[current_index - 1 :]
+        for message in remaining_messages:
+            self.sqs_repository.put_sqs_message_back_to_queue(message)
+
+    def handle_process_message_general_error(self, message, error: Exception):
+        self.unhandled_messages.append(message)
+        logger.info(f"Failed to process current message due to error: {error}")
+        logger.info("Continue on next message")
+
+    def log_processing_summary(self, records: list):
+        processed_count = len(records) - len(self.unhandled_messages)
+        logger.info(f"Finished processing {processed_count} of {len(records)} messages")
+
+        if self.unhandled_messages:
+            logger.info("Unable to process the following messages:")
+            for message in self.unhandled_messages:
+                body = json.loads(message.get("body", "{}"))
+                request_context.patient_nhs_no = body.get("NHS-NO", "no number found")
+                logger.info(body)
 
     @staticmethod
     def strip_leading_slash(filepath: str) -> str:

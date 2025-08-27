@@ -50,6 +50,7 @@ from utils.exceptions import (
     InvalidMessageException,
     InvalidNhsNumberException,
     PatientRecordAlreadyExistException,
+    PdsErrorException,
     PdsTooManyRequestsException,
     S3FileNotFoundException,
     VirusScanFailedException,
@@ -169,6 +170,167 @@ def build_resolved_file_names_cache(
     file_path_in_metadata: list[str], file_path_in_s3: list[str]
 ) -> dict:
     return dict(zip(file_path_in_metadata, file_path_in_s3))
+
+
+def test_process_message_queue_happy_path(mocker, repo_under_test):
+    message1 = {"body": json.dumps({"NHS-NO": "1234567890"})}
+    message2 = {"body": json.dumps({"NHS-NO": "9876543210"})}
+    records = [message1, message2]
+
+    mock_handle = mocker.patch.object(repo_under_test, "handle_sqs_message")
+    mock_log_summary = mocker.patch.object(repo_under_test, "log_processing_summary")
+
+    repo_under_test.process_message_queue(records)
+
+    assert mock_handle.call_count == 2
+    mock_handle.assert_any_call(message1)
+    mock_handle.assert_any_call(message2)
+
+    mock_log_summary.assert_called_once_with(records)
+
+
+@pytest.mark.parametrize(
+    "exception_instance",
+    [
+        ClientError(
+            {"Error": {"Code": "500", "Message": "An error occurred"}}, "TestOperation"
+        ),
+        InvalidMessageException("Error occurred"),
+        LGInvalidFilesException("Error occurred"),
+        Exception("Error occurred"),
+    ],
+)
+def test_process_message_queue_general_error(
+    mocker, repo_under_test, exception_instance
+):
+    message = {"body": json.dumps({"NHS-NO": "1234567890"})}
+    records = [message]
+
+    mock_handle = mocker.patch.object(
+        repo_under_test, "handle_sqs_message", side_effect=exception_instance
+    )
+    mock_general_error = mocker.patch.object(
+        repo_under_test, "handle_process_message_general_error"
+    )
+    mock_log_summary = mocker.patch.object(repo_under_test, "log_processing_summary")
+
+    repo_under_test.process_message_queue(records)
+
+    mock_handle.assert_called_once_with(message)
+    mock_general_error.assert_called_once_with(message, exception_instance)
+    mock_log_summary.assert_called_once_with(records)
+
+
+@pytest.mark.parametrize(
+    "pds_exception_instance",
+    [
+        PdsTooManyRequestsException("Rate limit reached"),
+        PdsErrorException("PDS error occurred"),
+    ],
+)
+def test_process_message_queue_pds_error(
+    mocker, repo_under_test, pds_exception_instance
+):
+    message1 = {"body": json.dumps({"NHS-NO": "1234567890"})}
+    message2 = {"body": json.dumps({"NHS-NO": "9876543210"})}
+    records = [message1, message2]
+
+    mock_handle = mocker.patch.object(
+        repo_under_test, "handle_sqs_message", side_effect=pds_exception_instance
+    )
+    mock_pds_error = mocker.patch.object(
+        repo_under_test, "handle_process_message_pds_error"
+    )
+    mock_log_summary = mocker.patch.object(repo_under_test, "log_processing_summary")
+
+    with pytest.raises(
+        BulkUploadException,
+        match="Bulk upload process paused due to PDS rate limit reached",
+    ):
+        repo_under_test.process_message_queue(records)
+
+    mock_handle.assert_called_once_with(message1)
+    mock_pds_error.assert_called_once_with(records, 1, pds_exception_instance)
+    mock_log_summary.assert_not_called()
+
+
+def test_handle_process_message_pds_error_calls_put_sqs_message_back_to_queue_correctly(
+    mocker, repo_under_test
+):
+    msg1 = {"body": "msg1"}
+    msg2 = {"body": "msg2"}
+    msg3 = {"body": "msg3"}
+    records = [msg1, msg2, msg3]
+
+    current_index = 2
+
+    mock_put = mocker.patch.object(
+        repo_under_test.sqs_repository, "put_sqs_message_back_to_queue"
+    )
+
+    error = Exception("PDS rate limit error")
+
+    repo_under_test.handle_process_message_pds_error(records, current_index, error)
+
+    assert mock_put.call_count == 2
+    mock_put.assert_any_call(msg2)
+    mock_put.assert_any_call(msg3)
+
+
+def test_handle_process_message_general_error_adds_message_to_unhandled(
+    mocker, repo_under_test
+):
+    message = {"body": "test message"}
+    error = Exception("some error")
+
+    assert repo_under_test.unhandled_messages == []
+
+    repo_under_test.handle_process_message_general_error(message, error)
+
+    assert message in repo_under_test.unhandled_messages
+
+
+def test_log_processing_summary_without_unhandled_messages(mocker, repo_under_test):
+    message1 = {"body": json.dumps({"NHS-NO": "1234567890"})}
+    records = [message1]
+
+    repo_under_test.unhandled_messages = []
+
+    mock_logger_info = mocker.patch.object(bulk_upload_module.logger, "info")
+
+    repo_under_test.log_processing_summary(records)
+
+    mock_logger_info.assert_any_call(
+        f"Finished processing {len(records)} of {len(records)} messages"
+    )
+    assert not any(
+        "Unable to process the following messages:" in str(call.args[0])
+        for call in mock_logger_info.mock_calls
+    )
+
+
+def test_log_processing_summary_with_unhandled_messages(mocker, repo_under_test):
+    message1 = {"body": json.dumps({"NHS-NO": "1234567890"})}
+    message2 = {"body": json.dumps({"NHS-NO": "0987654321"})}
+    records = [message1, message2]
+
+    repo_under_test.unhandled_messages = [message1, message2]
+
+    mock_logger_info = mocker.patch.object(bulk_upload_module.logger, "info")
+    mock_request_context = mocker.patch.object(
+        bulk_upload_module, "request_context", create=True
+    )
+
+    repo_under_test.log_processing_summary(records)
+
+    mock_logger_info.assert_any_call(
+        f"Finished processing 0 of {len(records)} messages"
+    )
+    mock_logger_info.assert_any_call("Unable to process the following messages:")
+    mock_logger_info.assert_any_call(json.loads(message1["body"]))
+    mock_logger_info.assert_any_call(json.loads(message2["body"]))
+
+    assert mock_request_context.patient_nhs_no == "0987654321"
 
 
 def test_lambda_handler_process_each_sqs_message_one_by_one(
@@ -1241,7 +1403,7 @@ def test_validate_filenames(repo_under_test, mocker):
 
     mock_validate_lg = mocker.patch.object(bulk_upload_module, "validate_lg_file_names")
 
-    repo_under_test.validate_filenames(staging_metadata)
+    repo_under_test.validate_staging_metadata_filenames(staging_metadata)
 
     mock_validate_nhs.assert_called_once_with(test_nhs_number)
     mock_validate_lg.assert_called_once_with(
@@ -1257,10 +1419,158 @@ def mock_patient(mocker):
     return patient
 
 
+def test_validate_patient_data_happy_path(
+    mocker, repo_under_test, mock_patient, mock_ods_validation_true
+):
+    file_names = ["Patient_John_Doe.pdf"]
+    ods_code = "ODS123"
+
+    repo_under_test.bypass_pds = False
+
+    mock_validate_file_name = mocker.patch.object(
+        repo_under_test, "validate_file_name", return_value="reason: filename check"
+    )
+    mock_deceased = mocker.patch.object(
+        repo_under_test,
+        "deceased_validation",
+        return_value="reason: filename check; patient deceased",
+    )
+    mock_restricted = mocker.patch.object(
+        repo_under_test,
+        "restricted_validation",
+        return_value="reason: filename check; patient deceased; restricted",
+    )
+
+    result = repo_under_test.validate_patient_data_access_conditions(
+        file_names, mock_patient, ods_code
+    )
+
+    assert result == "reason: filename check; patient deceased; restricted"
+    mock_validate_file_name.assert_called_once_with(file_names, mock_patient)
+    mock_deceased.assert_called_once_with("reason: filename check", mock_patient)
+    mock_restricted.assert_called_once_with(
+        "reason: filename check; patient deceased", ods_code
+    )
+
+
+def test_validate_file_name_strict_mode_with_history_match(
+    mocker, repo_under_test, mock_patient
+):
+    mocker.patch.object(
+        bulk_upload_module,
+        "validate_filename_with_patient_details_strict",
+        return_value=True,
+    )
+    mock_concat = mocker.patch.object(
+        repo_under_test, "concatenate_acceptance_reason", side_effect=lambda a, b: b
+    )
+
+    result = repo_under_test.validate_file_name(["file.pdf"], mock_patient)
+
+    assert result == "Patient matched on historical name"
+    mock_concat.assert_called_once_with(None, "Patient matched on historical name")
+
+
+def test_validate_file_name_strict_mode_with_no_history_match(
+    mocker, repo_under_test, mock_patient
+):
+    mocker.patch.object(
+        bulk_upload_module,
+        "validate_filename_with_patient_details_strict",
+        return_value=False,
+    )
+    mock_concat = mocker.patch.object(repo_under_test, "concatenate_acceptance_reason")
+
+    result = repo_under_test.validate_file_name(["file.pdf"], mock_patient)
+
+    assert result is None
+    mock_concat.assert_not_called()
+
+
+def test_validate_file_name_lenient_mode_with_history_match(
+    mocker, lenient_repo, mock_patient
+):
+    mocker.patch.object(
+        bulk_upload_module,
+        "validate_filename_with_patient_details_lenient",
+        return_value=("some reason", True),
+    )
+    mock_concat = mocker.patch.object(
+        lenient_repo,
+        "concatenate_acceptance_reason",
+        side_effect=lambda a, b: f"{a}, {b}" if a else b,
+    )
+
+    result = lenient_repo.validate_file_name(["file.pdf"], mock_patient)
+
+    assert result == "some reason, Patient matched on historical name"
+    assert mock_concat.call_count == 2
+
+
+def test_deceased_validation_with_status(mocker, repo_under_test, mock_patient):
+    mock_status = mocker.Mock()
+    mock_status.name = "FORMAL"
+    mock_patient.get_death_notification_status.return_value = mock_status
+
+    mock_concat = mocker.patch.object(
+        repo_under_test,
+        "concatenate_acceptance_reason",
+        return_value="existing reason; Patient is deceased - FORMAL",
+    )
+
+    result = repo_under_test.deceased_validation("existing reason", mock_patient)
+
+    mock_concat.assert_called_once_with(
+        "existing reason", "Patient is deceased - FORMAL"
+    )
+    assert result == "existing reason; Patient is deceased - FORMAL"
+
+
+def test_deceased_validation_without_status(mocker, repo_under_test, mock_patient):
+    mock_patient.get_death_notification_status.return_value = None
+
+    mock_concat = mocker.patch.object(repo_under_test, "concatenate_acceptance_reason")
+
+    result = repo_under_test.deceased_validation("existing reason", mock_patient)
+
+    assert result == "existing reason"
+    mock_concat.assert_not_called()
+
+
+def test_restricted_validation_with_restricted_code(mocker, repo_under_test):
+    accepted_reason = "some reason"
+    patient_ods_code = PatientOdsInactiveStatus.RESTRICTED
+
+    mock_concat = mocker.patch.object(
+        repo_under_test,
+        "concatenate_acceptance_reason",
+        return_value="some reason; PDS record is restricted",
+    )
+
+    result = repo_under_test.restricted_validation(accepted_reason, patient_ods_code)
+
+    mock_concat.assert_called_once_with(accepted_reason, "PDS record is restricted")
+    assert result == "some reason; PDS record is restricted"
+
+
+def test_restricted_validation_with_non_restricted_code(mocker, repo_under_test):
+    accepted_reason = "some reason"
+    patient_ods_code = "ACTIVE"
+
+    mock_concat = mocker.patch.object(repo_under_test, "concatenate_acceptance_reason")
+
+    result = repo_under_test.restricted_validation(accepted_reason, patient_ods_code)
+
+    mock_concat.assert_not_called()
+    assert result == accepted_reason
+
+
 def test_validate_entry_happy_path(mocker, repo_under_test, mock_patient):
     staging_metadata = TEST_STAGING_METADATA
 
-    mock_validate_filenames = mocker.patch.object(repo_under_test, "validate_filenames")
+    mock_validate_filenames = mocker.patch.object(
+        repo_under_test, "validate_staging_metadata_filenames"
+    )
     mock_getting_patient_info_from_pds = mocker.patch.object(
         bulk_upload_module, "getting_patient_info_from_pds"
     )
@@ -1269,7 +1579,9 @@ def test_validate_entry_happy_path(mocker, repo_under_test, mock_patient):
     mock_getting_patient_info_from_pds.return_value = mock_patient
 
     mock_validate_accessing_patient_data = mocker.patch.object(
-        repo_under_test, "validate_accessing_patient_data", return_value="some reason"
+        repo_under_test,
+        "validate_patient_data_access_conditions",
+        return_value="some reason",
     )
 
     accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
@@ -1295,7 +1607,7 @@ def test_validate_entry_invalid_file_exception_triggers_write_to_dynamo(
 
     mocker.patch.object(
         repo_under_test,
-        "validate_filenames",
+        "validate_staging_metadata_filenames",
         side_effect=LGInvalidFilesException("invalid file"),
     )
     mock_write_report = mocker.patch.object(
@@ -1318,7 +1630,7 @@ def test_validate_entry_patient_record_exists_exception(mocker, repo_under_test)
 
     mocker.patch.object(
         repo_under_test,
-        "validate_filenames",
+        "validate_staging_metadata_filenames",
         side_effect=PatientRecordAlreadyExistException("record exists"),
     )
     mock_write_report = mocker.patch.object(
@@ -1341,7 +1653,7 @@ def test_validate_entry_invalid_nhs_number_exception(mocker, repo_under_test):
 
     mocker.patch.object(
         repo_under_test,
-        "validate_filenames",
+        "validate_staging_metadata_filenames",
         side_effect=InvalidNhsNumberException("bad nhs"),
     )
     mock_write_report = mocker.patch.object(
@@ -1361,9 +1673,9 @@ def test_validate_entry_invalid_nhs_number_exception(mocker, repo_under_test):
 def test_validate_accessing_patient_data_returns_none_when_pds_fhir_always_true(
     repo_under_test, mock_patient
 ):
-    repo_under_test.pds_fhir_always_true = True
+    repo_under_test.bypass_pds = True
 
-    result = repo_under_test.validate_accessing_patient_data(
+    result = repo_under_test.validate_patient_data_access_conditions(
         ["file.pdf"], mock_patient, "A1234"
     )
 
@@ -1379,7 +1691,7 @@ def test_validate_accessing_patient_data_strict_mode_calls_strict_validation(
         return_value=False,
     )
 
-    result = repo_under_test.validate_accessing_patient_data(
+    result = repo_under_test.validate_patient_data_access_conditions(
         ["file.pdf"], mock_patient, "A1234"
     )
 
@@ -1410,8 +1722,7 @@ def mock_validate_lenient(mocker):
 def test_validate_accessing_patient_data_lenient_mode_calls_lenient_validation(
     lenient_repo, mock_patient, mock_validate_lenient, mock_ods_validation_true
 ):
-
-    result = lenient_repo.validate_accessing_patient_data(
+    result = lenient_repo.validate_patient_data_access_conditions(
         ["file.pdf"], mock_patient, "A1234"
     )
 
@@ -1429,7 +1740,7 @@ def test_validate_accessing_patient_data_adds_historic_name_reason_when_flag_tru
         return_value=("some reason", True),
     )
 
-    result = lenient_repo.validate_accessing_patient_data(
+    result = lenient_repo.validate_patient_data_access_conditions(
         ["file.pdf"], mock_patient, "A1234"
     )
 
@@ -1444,7 +1755,7 @@ def test_validate_accessing_patient_data_raises_exception_when_ods_code_not_allo
     with pytest.raises(
         LGInvalidFilesException, match="Patient not registered at your practice"
     ):
-        lenient_repo.validate_accessing_patient_data(
+        lenient_repo.validate_patient_data_access_conditions(
             ["file.pdf"], mock_patient, "A1234"
         )
 
@@ -1452,12 +1763,11 @@ def test_validate_accessing_patient_data_raises_exception_when_ods_code_not_allo
 def test_validate_accessing_patient_data_adds_deceased_reason(
     mocker, lenient_repo, mock_patient, mock_validate_lenient, mock_ods_validation_true
 ):
-
     deceased_status_mock = mocker.Mock()
     deceased_status_mock.name = "Formal"
     mock_patient.get_death_notification_status.return_value = deceased_status_mock
 
-    result = lenient_repo.validate_accessing_patient_data(
+    result = lenient_repo.validate_patient_data_access_conditions(
         ["file.pdf"], mock_patient, "A1234"
     )
 
@@ -1473,7 +1783,7 @@ def test_validate_accessing_patient_data_adds_restricted_reason(
         "allowed_to_ingest_ods_code",
         return_value=True,
     )
-    result = lenient_repo.validate_accessing_patient_data(
+    result = lenient_repo.validate_patient_data_access_conditions(
         ["file.pdf"], mock_patient, PatientOdsInactiveStatus.RESTRICTED
     )
 
