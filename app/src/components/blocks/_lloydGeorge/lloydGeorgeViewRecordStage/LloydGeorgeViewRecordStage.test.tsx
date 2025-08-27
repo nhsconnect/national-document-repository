@@ -122,8 +122,8 @@ describe('<LloydGeorgeViewRecordStage />', () => {
             renderComponent({ downloadStage: DOWNLOAD_STAGE.NO_RECORDS });
             expect(
                 screen.getByText(
-                    'This patient does not have a Lloyd George record stored in this service.'
-                )
+                    'This patient does not have a Lloyd George record stored in this service.',
+                ),
             ).toBeInTheDocument();
         });
 

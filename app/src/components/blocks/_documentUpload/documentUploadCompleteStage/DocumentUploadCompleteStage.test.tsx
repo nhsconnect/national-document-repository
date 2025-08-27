@@ -8,7 +8,11 @@ import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
-import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../../../types/pages/UploadDocumentsPage/types';
 
 const mockNavigate = vi.fn();
 vi.mock('../../../../helpers/hooks/usePatient');
@@ -31,15 +35,17 @@ describe('DocumentUploadCompleteStage', () => {
         vi.mocked(usePatient).mockReturnValue(patientDetails);
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
 
-        documents = [{
-            docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-            id: '1',
-            file: buildLgFile(1),
-            attempts: 0,
-            state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-            numPages: 5,
-            position: 1,
-        }];
+        documents = [
+            {
+                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                id: '1',
+                file: buildLgFile(1),
+                attempts: 0,
+                state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                numPages: 5,
+                position: 1,
+            },
+        ];
     });
     afterEach(() => {
         vi.clearAllMocks();
@@ -49,20 +55,21 @@ describe('DocumentUploadCompleteStage', () => {
         renderApp(documents);
 
         expect(
-            screen.getByText(
-                'You have successfully uploaded a digital Lloyd George record for:',
-            ),
+            screen.getByText('You have successfully uploaded a digital Lloyd George record for:'),
         ).toBeInTheDocument();
 
         const expectedFullName = getFormattedPatientFullName(patientDetails);
-        expect(screen.getByTestId("patient-name").textContent).toEqual("Patient name: " + expectedFullName)
+        expect(screen.getByTestId('patient-name').textContent).toEqual(
+            'Patient name: ' + expectedFullName,
+        );
 
         const expectedNhsNumber = formatNhsNumber(patientDetails.nhsNumber);
-        expect(screen.getByTestId("nhs-number").textContent).toEqual("NHS Number: " + expectedNhsNumber)
+        expect(screen.getByTestId('nhs-number').textContent).toEqual(
+            'NHS Number: ' + expectedNhsNumber,
+        );
 
         const expectedDob = getFormattedDate(new Date(patientDetails.birthDate));
-        expect(screen.getByTestId("dob").textContent).toEqual("Date of birth: " + expectedDob)
-
+        expect(screen.getByTestId('dob').textContent).toEqual('Date of birth: ' + expectedDob);
     });
 
     it('should navigate to search when clicking the search link', async () => {
@@ -89,7 +96,7 @@ describe('DocumentUploadCompleteStage', () => {
         render(
             <MemoryRouter>
                 <DocumentUploadCompleteStage documents={documents} />,
-            </MemoryRouter>
+            </MemoryRouter>,
         );
     };
 });

@@ -9,6 +9,7 @@ import {
 import { MemoryRouter } from 'react-router-dom';
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
 import { buildLgFile } from '../../../../helpers/test/testBuilders';
+import { Mock } from 'vitest';
 
 const mockNavigate = vi.fn();
 const mockSetDocuments = vi.fn();
@@ -16,9 +17,13 @@ const mockSetMergedPdfBlob = vi.fn();
 
 vi.mock('../../../../helpers/hooks/usePatient');
 vi.mock('../../../../helpers/hooks/useTitle');
-vi.mock('react-router-dom', () => ({
-    useNavigate: () => mockNavigate,
-}));
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: (): Mock => mockNavigate,
+    };
+});
 
 URL.createObjectURL = vi.fn(() => 'mocked-url');
 
@@ -26,7 +31,7 @@ URL.createObjectURL = vi.fn(() => 'mocked-url');
 Element.prototype.scrollIntoView = vi.fn();
 
 vi.mock('../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview', () => ({
-    default: ({ documents }: { documents: UploadDocument[] }) => (
+    default: ({ documents }: { documents: UploadDocument[] }): React.JSX.Element => (
         <div data-testid="lloyd-george-preview">
             Lloyd George Preview for {documents.length} documents
         </div>

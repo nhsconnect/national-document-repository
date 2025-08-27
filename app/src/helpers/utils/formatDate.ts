@@ -11,8 +11,8 @@ export const formatDateWithDashes = (date: Date): string => {
 };
 
 export const getFormattedDateFromString = (dateString: string | undefined): string => {
-  if (!dateString) {
-    return '';
-  }
-  return getFormattedDate(new Date(dateString));
+    if (!dateString) {
+        return '';
+    }
+    return getFormattedDate(new Date(dateString));
 };

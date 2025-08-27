@@ -32,6 +32,6 @@ const DocumentUploadInfectedStage = (): React.JSX.Element => {
             </p>
         </>
     );
-}
+};
 
 export default DocumentUploadInfectedStage;

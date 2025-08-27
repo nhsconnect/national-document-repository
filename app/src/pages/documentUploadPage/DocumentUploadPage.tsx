@@ -123,7 +123,7 @@ const DocumentUploadPage = (): React.JSX.Element => {
             state: DOCUMENT_UPLOAD_STATE.ERROR,
             progress: 0,
         });
-    }
+    };
 
     const uploadAllDocuments = (
         uploadDocuments: Array<UploadDocument>,
@@ -332,13 +332,13 @@ const DocumentUploadPage = (): React.JSX.Element => {
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION) + '/*'}
-                    element={
-                        <DocumentUploadConfirmStage documents={documents} />
-                    }
+                    element={<DocumentUploadConfirmStage documents={documents} />}
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_UPLOADING) + '/*'}
-                    element={<DocumentUploadingStage documents={documents} startUpload={startUpload} />}
+                    element={
+                        <DocumentUploadingStage documents={documents} startUpload={startUpload} />
+                    }
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_COMPLETED) + '/*'}
@@ -353,6 +353,6 @@ const DocumentUploadPage = (): React.JSX.Element => {
             <Outlet />
         </div>
     );
-}
+};
 
 export default DocumentUploadPage;

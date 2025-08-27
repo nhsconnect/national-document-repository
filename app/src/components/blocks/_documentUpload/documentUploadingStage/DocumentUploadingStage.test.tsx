@@ -1,5 +1,9 @@
 import { render, waitFor, screen } from '@testing-library/react';
-import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../../../types/pages/UploadDocumentsPage/types';
 import DocumentUploadingStage from './DocumentUploadingStage';
 import { buildLgFile } from '../../../../helpers/test/testBuilders';
 import { MemoryRouter } from 'react-router-dom';
@@ -23,15 +27,17 @@ describe('DocumentUploadCompleteStage', () => {
 
     beforeEach(() => {
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
-        documents = [{
-            docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-            id: '1',
-            file: buildLgFile(1),
-            attempts: 0,
-            state: DOCUMENT_UPLOAD_STATE.SELECTED,
-            numPages: 5,
-            position: 1,
-        }];
+        documents = [
+            {
+                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                id: '1',
+                file: buildLgFile(1),
+                attempts: 0,
+                state: DOCUMENT_UPLOAD_STATE.SELECTED,
+                numPages: 5,
+                position: 1,
+            },
+        ];
     });
     afterEach(() => {
         vi.clearAllMocks();
@@ -50,7 +56,7 @@ describe('DocumentUploadCompleteStage', () => {
 
         it('should trigger start upload when page is loaded', async () => {
             renderApp(documents);
-    
+
             await waitFor(() => {
                 expect(mockStartUpload).toHaveBeenCalledTimes(1);
             });
@@ -70,7 +76,7 @@ describe('DocumentUploadCompleteStage', () => {
         render(
             <MemoryRouter>
                 <DocumentUploadingStage documents={documents} startUpload={mockStartUpload} />
-            </MemoryRouter>
+            </MemoryRouter>,
         );
-    }
+    };
 });

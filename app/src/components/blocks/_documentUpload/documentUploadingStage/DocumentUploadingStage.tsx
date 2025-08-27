@@ -26,7 +26,7 @@ const DocumentUploadingStage = ({ documents, startUpload }: Props): React.JSX.El
                 navigate(routes.HOME);
                 return;
             }
-            
+
             uploadStartedRef.current = true;
             startUpload();
         }
