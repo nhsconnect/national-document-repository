@@ -38,7 +38,7 @@ class AccessAuditReason(BaseModel):
 
     @field_validator("request_type", mode="before")
     @classmethod
-    def request_type(cls, value):
+    def validate_request_type(cls, value):
         if value not in AccessAuditRequestType.list():
             raise ValueError("Invalid request type")
         return AccessAuditRequestType(value)
@@ -85,9 +85,6 @@ class AccessAuditReason(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def check_custom_reason(cls, data: Any) -> Any:
-        if (
-            DeceasedAccessReason.OTHER.value in data["reason_codes"]
-            and not data["custom_reason"]
-        ):
+        if DeceasedAccessReason.OTHER.value in data["reason_codes"] and not data["custom_reason"]:
             raise ValueError("Missing custom reason")
         return data

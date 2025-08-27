@@ -90,7 +90,7 @@ def extract_document_parameters(event):
     if not document_id or not snomed_code:
         logger.error("Missing document id or snomed code in request path parameters.")
         raise GetFhirDocumentReferenceException(
-            400, LambdaError.DocumentReferenceInvalidRequest
+            400, LambdaError.DocumentReferenceMissingParameters
         )
 
     return document_id, snomed_code
