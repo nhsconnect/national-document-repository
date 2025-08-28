@@ -5,7 +5,7 @@ from datetime import date
 from unittest.mock import patch
 
 import pytest
-from updated_setup_bulk_upload import (
+from performance_setup_bulk_upload import (
     S3_STORAGE_CLASS,
     STAGING_BUCKET,
     build_file_path,
@@ -58,7 +58,7 @@ def test_generate_nhs_number(
     mocker, input_nhs_number, mock_return_values, expected_output
 ):
     mocker.patch(
-        "updated_setup_bulk_upload.pairing_nhs_number_digit",
+        "performance_setup_bulk_upload.pairing_nhs_number_digit",
         side_effect=mock_return_values,
     )
     result = generate_nhs_number(input_nhs_number)
@@ -123,20 +123,20 @@ def test_build_file_path(nhs_number, file_name, expected):
 
 def test_create_test_file_keys_and_metadata_rows_calls(mocker):
     mock_generate_random_name = mocker.patch(
-        "updated_setup_bulk_upload.generate_random_name", return_value="Alice"
+        "performance_setup_bulk_upload.generate_random_name", return_value="Alice"
     )
     mock_generate_nhs_number = mocker.patch(
-        "updated_setup_bulk_upload.generate_nhs_number",
+        "performance_setup_bulk_upload.generate_nhs_number",
         side_effect=lambda number: number + "1",
     )
     mock_generate_file_name = mocker.patch(
-        "updated_setup_bulk_upload.generate_file_name", return_value="file1.pdf"
+        "performance_setup_bulk_upload.generate_file_name", return_value="file1.pdf"
     )
     mock_build_file_path = mocker.patch(
-        "updated_setup_bulk_upload.build_file_path", return_value="NH123/file1.pdf"
+        "performance_setup_bulk_upload.build_file_path", return_value="NH123/file1.pdf"
     )
     mock_build_metadata_csv_row = mocker.patch(
-        "updated_setup_bulk_upload.build_metadata_csv_row", return_value="row"
+        "performance_setup_bulk_upload.build_metadata_csv_row", return_value="row"
     )
 
     requested_patients_number = 2
@@ -186,11 +186,13 @@ def test_upload_source_file_to_staging_calls(mocker):
     )
     file_key = "1234567890/test.pdf"
 
-    mock_client = mocker.patch("updated_setup_bulk_upload.client")
-    mocker.patch("updated_setup_bulk_upload.STAGING_BUCKET", "test-bucket")
-    mocker.patch("updated_setup_bulk_upload.S3_STORAGE_CLASS", "INTELLIGENT_TIERING")
+    mock_client = mocker.patch("performance_setup_bulk_upload.client")
+    mocker.patch("performance_setup_bulk_upload.STAGING_BUCKET", "test-bucket")
     mocker.patch(
-        "updated_setup_bulk_upload.S3_SCAN_TAGS",
+        "performance_setup_bulk_upload.S3_STORAGE_CLASS", "INTELLIGENT_TIERING"
+    )
+    mocker.patch(
+        "performance_setup_bulk_upload.S3_SCAN_TAGS",
         [{"Key": "ScanStatus", "Value": "Clean"}],
     )
 
@@ -203,7 +205,7 @@ def test_upload_source_file_to_staging_calls(mocker):
 def test_delete_file_from_staging_calls_client_delete_object_once():
     file_key = "some/file/key.pdf"
 
-    with patch("updated_setup_bulk_upload.client") as mock_client:
+    with patch("performance_setup_bulk_upload.client") as mock_client:
         delete_file_from_staging(file_key)
 
         calls = mock_client.delete_object.call_count
@@ -211,7 +213,7 @@ def test_delete_file_from_staging_calls_client_delete_object_once():
 
 
 def test_upload_lg_files_to_staging_calls_client_methods(mocker):
-    mock_client = mocker.patch("updated_setup_bulk_upload.client")
+    mock_client = mocker.patch("performance_setup_bulk_upload.client")
 
     lg_file_keys = ["file1.pdf", "file2.pdf", "file3.pdf"]
     source_pdf_file_key = "source.pdf"
@@ -302,7 +304,7 @@ def test_build_metadata_csv_row():
 def test_upload_metadata_to_s3_calls_put_object_with_correct_args(mocker):
     test_body = "some,csv,content\n1,2,3"
 
-    mock_client = mocker.patch("updated_setup_bulk_upload.client")
+    mock_client = mocker.patch("performance_setup_bulk_upload.client")
 
     upload_metadata_to_s3(test_body)
 

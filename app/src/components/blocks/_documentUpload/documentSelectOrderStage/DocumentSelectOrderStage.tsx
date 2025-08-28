@@ -1,7 +1,7 @@
 import { Button, Select, Table } from 'nhsuk-react-components';
 import { Dispatch, JSX, SetStateAction, useEffect, useRef } from 'react';
 import { FieldErrors, FieldValues, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,
@@ -20,6 +20,7 @@ import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/Pat
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
 import { ErrorMessageListItem } from '../../../../types/pages/genericPageErrors';
+import getMergedPdfBlob from '../../../../helpers/utils/pdfMerger';
 
 type Props = {
     documents: UploadDocument[];
@@ -45,13 +46,17 @@ const DocumentSelectOrderStage = ({
     const { handleSubmit, getValues, register, unregister, formState, setValue } =
         useForm<FormData>({
             reValidateMode: 'onSubmit',
-            shouldFocusError: true,
+            shouldFocusError: false,
         });
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
     const pageTitle = 'What order do you want these files in?';
     useTitle({ pageTitle });
+
+    useEffect(() => {
+        scrollToRef.current?.scrollIntoView();
+    }, [formState.errors]);
 
     useEffect(() => {
         documents.forEach((doc) => {
@@ -194,6 +199,13 @@ const DocumentSelectOrderStage = ({
             })
             .filter((item) => item !== undefined);
 
+    const viewPdfFile = async (file: File): Promise<void> => {
+        const blob = await getMergedPdfBlob([file]);
+        const url = URL.createObjectURL(blob);
+
+        window.open(url);
+    };
+
     return (
         <>
             <BackButton />
@@ -288,15 +300,14 @@ const DocumentSelectOrderStage = ({
                                             )}
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <a
-                                                href={URL.createObjectURL(document.file)}
+                                            <Link
+                                                to=""
+                                                onClick={() => viewPdfFile(document.file)}
                                                 aria-label="Preview - opens in a new tab"
                                                 data-testid={`document-preview-${document.id}`}
-                                                target="_blank"
-                                                rel="noreferrer"
                                             >
                                                 View
-                                            </a>
+                                            </Link>
                                         </Table.Cell>
                                         <Table.Cell>
                                             <button
