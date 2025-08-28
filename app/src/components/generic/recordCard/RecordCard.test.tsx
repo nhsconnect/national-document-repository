@@ -17,7 +17,7 @@ vi.mock('../../../helpers/hooks/useRole');
 vi.mock('../../../helpers/hooks/useBaseAPIUrl');
 vi.mock('../../../helpers/requests/getLloydGeorgeRecord');
 vi.mock('axios');
-vi.mock('react-router', () => ({
+vi.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 

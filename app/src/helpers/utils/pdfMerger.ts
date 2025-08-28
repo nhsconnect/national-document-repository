@@ -29,7 +29,7 @@ const getMergedPdfBlob = async (pdfFiles: File[]) => {
         producer: 'National Document Respository',
     });
 
-   return await merger.saveAsBlob();
+    return await merger.saveAsBlob();
 };
 
 export default getMergedPdfBlob;

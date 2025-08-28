@@ -80,7 +80,7 @@ const Details: React.FC<{ item: PatientInfo }> = ({ item }) => {
         case PatientInfo.FULL_NAME:
             key = 'Patient name';
             elementId = 'patient-summary-full-name';
-            value = getFormattedPatientFullName(patientDetails)
+            value = getFormattedPatientFullName(patientDetails);
             break;
         case PatientInfo.NHS_NUMBER:
             key = 'NHS number';

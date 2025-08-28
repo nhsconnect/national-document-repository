@@ -39,10 +39,7 @@ const DocumentUploadLloydGeorgePreview = ({ documents, setMergedPdfBlob }: Props
     return (
         <>
             {documents && mergedPdfUrl && (
-                <PdfViewer
-                    customClasses={['upload-preview']}
-                    fileUrl={mergedPdfUrl}
-                />
+                <PdfViewer customClasses={['upload-preview']} fileUrl={mergedPdfUrl} />
             )}
         </>
     );
