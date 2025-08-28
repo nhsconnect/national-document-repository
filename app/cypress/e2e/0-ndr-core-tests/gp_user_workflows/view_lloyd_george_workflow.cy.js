@@ -48,7 +48,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             `${searchPatientPayload.familyName}, ${searchPatientPayload.givenName}`,
         );
         cy.getByTestId('patient-summary-nhs-number').should('have.text', `900 000 0009`);
-        cy.getByTestId('patient-summary-date-of-birth').should('have.text', `01 January 1970`);
+        cy.getByTestId('patient-summary-date-of-birth').should('have.text', `1 January 1970`);
     };
 
     const beforeEachConfiguration = (role) => {
@@ -264,7 +264,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.contains('Surname').should('be.visible');
                 cy.contains('GivenName').should('be.visible');
                 cy.contains('900 000 0009').should('be.visible');
-                cy.contains('01 January 1970').should('be.visible');
+                cy.contains('1 January 1970').should('be.visible');
 
                 cy.intercept(
                     'DELETE',

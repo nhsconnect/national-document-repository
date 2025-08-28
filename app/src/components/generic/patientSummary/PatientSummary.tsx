@@ -1,6 +1,6 @@
-import { ReactNode, createContext, useContext } from 'react';
+import { JSX, ReactNode, createContext, useContext } from 'react';
 import usePatient from '../../../helpers/hooks/usePatient';
-import { getFormattedDate } from '../../../helpers/utils/formatDate';
+import { getFormattedDateFromString } from '../../../helpers/utils/formatDate';
 import { SummaryList, Tag } from 'nhsuk-react-components';
 import type { PatientDetails } from '../../../types/generic/patientDetails';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
@@ -24,7 +24,7 @@ type PatientSummaryContextType = {
 
 const PatientSummaryContext = createContext<PatientSummaryContextType | null>(null);
 
-const usePatientSummaryContext = () => {
+const usePatientSummaryContext = (): PatientSummaryContextType => {
     const context = useContext(PatientSummaryContext);
     if (!context) {
         throw new Error('PatientSummary subcomponents must be used within PatientSummary');
@@ -55,7 +55,7 @@ export enum PatientInfo {
     FULL_NAME,
 }
 
-const summaryRow = (key: string, elementId: string, value: ReactNode) => {
+const summaryRow = (key: string, elementId: string, value: ReactNode): JSX.Element => {
     return (
         <SummaryList.Row>
             <SummaryList.Key>{key}</SummaryList.Key>
@@ -80,7 +80,7 @@ const Details: React.FC<{ item: PatientInfo }> = ({ item }) => {
         case PatientInfo.FULL_NAME:
             key = 'Patient name';
             elementId = 'patient-summary-full-name';
-            value = getFormattedPatientFullName(patientDetails)
+            value = getFormattedPatientFullName(patientDetails);
             break;
         case PatientInfo.NHS_NUMBER:
             key = 'NHS number';
@@ -100,9 +100,7 @@ const Details: React.FC<{ item: PatientInfo }> = ({ item }) => {
         case PatientInfo.BIRTH_DATE:
             key = 'Date of birth';
             elementId = 'patient-summary-date-of-birth';
-            value = patientDetails?.birthDate
-                ? getFormattedDate(new Date(patientDetails.birthDate))
-                : '';
+            value = getFormattedDateFromString(patientDetails?.birthDate);
             break;
         case PatientInfo.POSTAL_CODE:
             key = 'Postcode';
@@ -123,7 +121,10 @@ const Details: React.FC<{ item: PatientInfo }> = ({ item }) => {
  * @param children - Optional child components to be rendered inside the summary.
  * @returns A React element representing the patient summary.
  */
-const PatientSummary = ({ showDeceasedTag = false, children }: PatientSummaryProps) => {
+const PatientSummary = ({
+    showDeceasedTag = false,
+    children,
+}: PatientSummaryProps): JSX.Element => {
     const patientDetails = usePatient();
 
     // If children are provided, use compound component pattern

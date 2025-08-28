@@ -323,6 +323,23 @@ describe('PatientSummary', () => {
             expect(dobElement).toHaveTextContent('');
         });
 
+        it('handles the leading zero of the day in the birthDate', () => {
+            const mockDetails = buildPatientDetails({
+                birthDate: '03/03/2023',
+            });
+
+            mockedUsePatient.mockReturnValue(mockDetails);
+            render(
+                <PatientSummary>
+                    <PatientSummary.Child item={PatientInfo.BIRTH_DATE} />
+                </PatientSummary>,
+            );
+
+            expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
+            const dobElement = document.getElementById('patient-summary-date-of-birth');
+            expect(dobElement?.textContent).toBe('3 March 2023');
+        });
+
         it('handles undefined postalCode', () => {
             const mockDetails = buildPatientDetails({
                 postalCode: undefined,

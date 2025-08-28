@@ -1,5 +1,5 @@
-export const getFormattedDate = (date: Date) => {
-    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+export const getFormattedDate = (date: Date): string => {
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 export const formatDateWithDashes = (date: Date): string => {
@@ -11,8 +11,8 @@ export const formatDateWithDashes = (date: Date): string => {
 };
 
 export const getFormattedDateFromString = (dateString: string | undefined): string => {
-  if (!dateString) {
-    return '';
-  }
-  return getFormattedDate(new Date(dateString));
+    if (!dateString) {
+        return '';
+    }
+    return getFormattedDate(new Date(dateString));
 };
