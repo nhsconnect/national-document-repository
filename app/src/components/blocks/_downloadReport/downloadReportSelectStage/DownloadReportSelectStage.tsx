@@ -7,7 +7,7 @@ import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
 import { isMock } from '../../../../helpers/utils/isLocal';
-import { ReactNode, useRef } from 'react';
+import { JSX, ReactNode, useRef } from 'react';
 import NotificationBanner from '../../../layout/notificationBanner/NotificationBanner';
 import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
 import React from 'react';
@@ -16,7 +16,7 @@ type Props = {
     report: ReportData;
 };
 
-const DownloadReportSelectStage = (props: Props) => {
+const DownloadReportSelectStage = (props: Props): JSX.Element => {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
@@ -24,11 +24,11 @@ const DownloadReportSelectStage = (props: Props) => {
     const [downloadError, setDownloadError] = React.useState<ReactNode>(null);
     const scrollToRef = useRef<HTMLDivElement>(null);
 
-    const handleSuccess = () => {
+    const handleSuccess = (): void => {
         navigate(`${routeChildren.REPORT_DOWNLOAD_COMPLETE}?reportType=${props.report.reportType}`);
     };
 
-    const noDataContent = () => {
+    const noDataContent = (): JSX.Element => {
         return (
             <>
                 <h3>Report could not be created</h3>
@@ -50,7 +50,7 @@ const DownloadReportSelectStage = (props: Props) => {
         );
     };
 
-    const serverErrorContent = () => {
+    const serverErrorContent = (): JSX.Element => {
         return (
             <>
                 <h3>Download failed</h3>
@@ -70,7 +70,7 @@ const DownloadReportSelectStage = (props: Props) => {
         );
     };
 
-    const handleError = (errorCode: number) => {
+    const handleError = (errorCode: number): void => {
         if (errorCode === 403) {
             navigate(routes.SESSION_EXPIRED);
             return;
@@ -81,7 +81,7 @@ const DownloadReportSelectStage = (props: Props) => {
         scrollToRef.current?.scrollIntoView();
     };
 
-    const handleDownload = async (fileType: string) => {
+    const handleDownload = async (fileType: string): Promise<void> => {
         setDownloading(true);
 
         try {
@@ -100,7 +100,7 @@ const DownloadReportSelectStage = (props: Props) => {
         setDownloading(false);
     };
 
-    const DownloadLinks = (fileTypes: FileTypeData[]) => {
+    const DownloadLinks = (fileTypes: FileTypeData[]): JSX.Element | JSX.Element[] => {
         if (downloading) {
             return (
                 <SpinnerButton id="download-spinner" status="Downloading report" disabled={true} />
@@ -113,7 +113,7 @@ const DownloadReportSelectStage = (props: Props) => {
                     data-testid={`download-${fileType.extension}-button`}
                     secondary
                     className="mb-5"
-                    onClick={async () => {
+                    onClick={async (): Promise<void> => {
                         handleDownload(fileType.extension);
                     }}
                     key={fileType.extension}
@@ -132,7 +132,7 @@ const DownloadReportSelectStage = (props: Props) => {
                 href={routes.HOME}
                 className="mb-5"
             >
-                Return to Home
+                Go to home
             </BackLink>
             {downloadError && (
                 <NotificationBanner
