@@ -61,6 +61,24 @@ class BulkUploadService:
         self.bypass_pds = bypass_pds
 
     def process_message_queue(self, records: list):
+        """
+        Processes a list of SQS messages from the bulk upload queue.
+
+        Each message is processed individually using `handle_sqs_message`. If a PDS-related
+        exception occurs (e.g., rate limiting or PDS service failure), processing is paused,
+        remaining messages are returned to the queue, and a `BulkUploadException` is raised.
+
+        For all other exceptions (e.g., client errors, invalid messages, or unexpected errors),
+        the message is marked as unhandled, and processing continues with the next message.
+
+        After processing all messages, a summary of the processing outcome is logged.
+
+        Args:
+            records (list): A list of SQS messages to process.
+
+        Raises:
+            BulkUploadException: Raised if PDS-related rate limiting or service errors are encountered.
+        """
         for index, message in enumerate(records, start=1):
             logger.info(f"Processing message {index} of {len(records)}")
 
@@ -84,6 +102,28 @@ class BulkUploadService:
         self.log_processing_summary(records)
 
     def handle_sqs_message(self, message: dict):
+        """
+        Handles a single SQS message representing a bulk upload event.
+
+        This method performs the following steps:
+        1. Parses the message and constructs staging metadata.
+        2. Validates the NHS number and file names.
+        3. Performs additional validation checks such as patient access conditions
+           (e.g., deceased, restricted) and virus scan results.
+        4. Initiates transactional operations and transfers the validated files.
+        5. Removes the ingested files from the staging bucket.
+        6. Logs the completion of ingestion and writes the report to DynamoDB.
+        7. Sends metadata to the stitching queue for further processing.
+
+        If at any point the validation fails (e.g., NHS number, virus scan),
+        the process exits early without performing file ingestion or reporting.
+
+        Args:
+            message (dict): The SQS message payload containing bulk upload information.
+
+        Returns:
+            None
+        """
         logger.info("validate SQS event")
         staging_metadata = self.build_staging_metadata_from_message(message)
         logger.info("SQS event is valid. Validating NHS number and file names")
