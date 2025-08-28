@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,
+    groupUploadErrorsByType,
     UPLOAD_FILE_ERROR_TYPE,
 } from '../../../../helpers/utils/fileUploadErrorMessages';
 import { routeChildren, routes } from '../../../../types/generic/routes';
@@ -13,12 +14,12 @@ import {
     DOCUMENT_TYPE,
     SetUploadDocuments,
     UploadDocument,
-    UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
+import { ErrorMessageListItem } from '../../../../types/pages/genericPageErrors';
 import getMergedPdfBlob from '../../../../helpers/utils/pdfMerger';
 
 type Props = {
@@ -29,8 +30,13 @@ type Props = {
 type FormData = {
     [key: string]: number | null;
 };
+type UploadFilesError = ErrorMessageListItem<UPLOAD_FILE_ERROR_TYPE>;
 
-const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props): JSX.Element => {
+const DocumentSelectOrderStage = ({
+    documents,
+    setDocuments,
+    setMergedPdfBlob,
+}: Props): JSX.Element => {
     const navigate = useNavigate();
 
     const documentPositionKey = (documentId: string): string => {
@@ -210,6 +216,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                     errorBoxSummaryId="document-positions"
                     messageTitle="There is a problem"
                     errorMessageList={errorMessageList(formState.errors)}
+                    groupErrorsFn={groupUploadErrorsByType}
                     scrollToRef={scrollToRef}
                 />
             )}
@@ -263,7 +270,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                                         You have removed all files. Go back to&nbsp;
                                         <button
                                             className="govuk-link"
-                                            onClick={(e) => {
+                                            onClick={(e): void => {
                                                 e.preventDefault();
                                                 navigate(routes.DOCUMENT_UPLOAD);
                                             }}
@@ -307,7 +314,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                                                 type="button"
                                                 aria-label={`Remove ${document.file.name} from selection`}
                                                 className="link-button"
-                                                onClick={() => {
+                                                onClick={(): void => {
                                                     onRemove(index);
                                                 }}
                                             >
