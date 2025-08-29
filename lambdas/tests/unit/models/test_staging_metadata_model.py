@@ -33,3 +33,42 @@ def test_deserialise_json_to_staging_data():
         )
         == patient_2
     )
+
+
+def test_staging_metadata_with_field_corrections():
+    input_dict = {
+        "NHS-NO": "1000000000",
+        "files": [
+            {
+                "FILEPATH": "/abc/xyz/01of01_Lloyd_George_Record.pdf",
+                "PAGE COUNT": "10",
+                "GP-PRACTICE-CODE": "A12345",
+                "SECTION": "General",
+                "SUB-SECTION": None,
+                "SCAN-DATE": "01/01/2023",
+                "SCAN-ID": "scan001",
+                "USER-ID": "user001",
+                "UPLOAD": "yes",
+            }
+        ],
+        "corrections": {
+            "/abc/xyz/01of01_Lloyd_George_Record.pdf": "/abc/xyz/1of1_Lloyd_George_Record.pdf"
+        },
+    }
+
+    # Deserialize
+    metadata_obj = StagingMetadata.model_validate(input_dict)
+    assert metadata_obj.nhs_number == "1000000000"
+    assert metadata_obj.corrections == {
+        "/abc/xyz/01of01_Lloyd_George_Record.pdf": "/abc/xyz/1of1_Lloyd_George_Record.pdf"
+    }
+
+    # Serialize
+    json_output = metadata_obj.model_dump_json(by_alias=True)
+    parsed_back = json.loads(json_output)
+
+    assert parsed_back["corrections"] == input_dict["corrections"]
+    assert parsed_back["NHS-NO"] == "1000000000"
+    assert (
+        parsed_back["files"][0]["FILEPATH"] == "/abc/xyz/01of01_Lloyd_George_Record.pdf"
+    )

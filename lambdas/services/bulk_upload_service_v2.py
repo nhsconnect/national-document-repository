@@ -2,6 +2,7 @@ import json
 import os
 import uuid
 from datetime import datetime
+from typing import Dict
 
 import pydantic
 from botocore.exceptions import ClientError
@@ -126,8 +127,11 @@ class BulkUploadService:
         """
         logger.info("validate SQS event")
         staging_metadata = self.build_staging_metadata_from_message(message)
+        corrected_file_paths = staging_metadata.corrections
         logger.info("SQS event is valid. Validating NHS number and file names")
-        accepted_reason, patient_ods_code = self.validate_entry(staging_metadata)
+        accepted_reason, patient_ods_code = self.validate_entry(
+            staging_metadata, corrected_file_paths
+        )
         if accepted_reason is None:
             return
 
@@ -182,11 +186,13 @@ class BulkUploadService:
             raise InvalidMessageException(str(e))
 
     def validate_entry(
-        self, staging_metadata: StagingMetadata
+        self, staging_metadata: StagingMetadata, corrected_file_paths: Dict[str, str]
     ) -> tuple[str | None, str | None]:
         patient_ods_code = ""
         try:
-            self.validate_staging_metadata_filenames(staging_metadata)
+            self.validate_staging_metadata_filenames(
+                staging_metadata, corrected_file_paths
+            )
             file_names = [
                 os.path.basename(metadata.file_path)
                 for metadata in staging_metadata.files
@@ -423,9 +429,14 @@ class BulkUploadService:
             message=pdf_stitching_sqs_message,
         )
 
-    def validate_staging_metadata_filenames(self, staging_metadata: StagingMetadata):
+    def validate_staging_metadata_filenames(
+        self, staging_metadata: StagingMetadata, corrected_file_paths: dict[str, str]
+    ):
         file_names = [
-            os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+            os.path.basename(
+                corrected_file_paths.get(metadata.file_path, metadata.file_path)
+            )
+            for metadata in staging_metadata.files
         ]
         request_context.patient_nhs_no = staging_metadata.nhs_number
         validate_nhs_number(staging_metadata.nhs_number)

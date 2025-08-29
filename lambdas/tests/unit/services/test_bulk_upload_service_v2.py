@@ -1340,7 +1340,7 @@ def test_handle_sqs_message_happy_path_v2(mocker, repo_under_test):
     repo_under_test.handle_sqs_message(TEST_SQS_MESSAGE)
 
     mock_staging_metadata.assert_called_once_with(TEST_SQS_MESSAGE)
-    mock_validate_entry.assert_called_once_with(mock_metadata)
+    mock_validate_entry.assert_called_once_with(mock_metadata, {})
     mock_validate_virus_scan.assert_called_once_with(mock_metadata, "Y12345")
     mock_initiate_transactions.assert_called_once()
     mock_transfer_files.assert_called_once_with(mock_metadata, "Y12345")
@@ -1403,7 +1403,7 @@ def test_validate_filenames(repo_under_test, mocker):
 
     mock_validate_lg = mocker.patch.object(bulk_upload_module, "validate_lg_file_names")
 
-    repo_under_test.validate_staging_metadata_filenames(staging_metadata)
+    repo_under_test.validate_staging_metadata_filenames(staging_metadata, {})
 
     mock_validate_nhs.assert_called_once_with(test_nhs_number)
     mock_validate_lg.assert_called_once_with(
@@ -1584,9 +1584,11 @@ def test_validate_entry_happy_path(mocker, repo_under_test, mock_patient):
         return_value="some reason",
     )
 
-    accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
+    accepted_reason, patient_ods_code = repo_under_test.validate_entry(
+        staging_metadata, {}
+    )
 
-    mock_validate_filenames.assert_called_once_with(staging_metadata)
+    mock_validate_filenames.assert_called_once_with(staging_metadata, {})
     mock_getting_patient_info_from_pds.assert_called_once_with(
         staging_metadata.nhs_number
     )
@@ -1614,7 +1616,9 @@ def test_validate_entry_invalid_file_exception_triggers_write_to_dynamo(
         repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
 
-    accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
+    accepted_reason, patient_ods_code = repo_under_test.validate_entry(
+        staging_metadata, {}
+    )
 
     mock_write_report.assert_called_once()
     args, kwargs = mock_write_report.call_args
@@ -1637,7 +1641,9 @@ def test_validate_entry_patient_record_exists_exception(mocker, repo_under_test)
         repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
 
-    accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
+    accepted_reason, patient_ods_code = repo_under_test.validate_entry(
+        staging_metadata, {}
+    )
 
     mock_write_report.assert_called_once()
     args, kwargs = mock_write_report.call_args
@@ -1660,7 +1666,9 @@ def test_validate_entry_invalid_nhs_number_exception(mocker, repo_under_test):
         repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
 
-    accepted_reason, patient_ods_code = repo_under_test.validate_entry(staging_metadata)
+    accepted_reason, patient_ods_code = repo_under_test.validate_entry(
+        staging_metadata, {}
+    )
 
     mock_write_report.assert_called_once()
     args, kwargs = mock_write_report.call_args

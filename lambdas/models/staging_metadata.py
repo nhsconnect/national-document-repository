@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 from pydantic_core import PydanticCustomError
@@ -52,6 +52,9 @@ class StagingMetadata(BaseModel):
     nhs_number: str = Field(default=NHS_NUMBER_PLACEHOLDER, alias=NHS_NUMBER_FIELD_NAME)
     files: list[MetadataFile]
     retries: int = 0
+    corrections: Dict[str, str] = Field(
+        default_factory=dict
+    )  # TODO when V2 becomes V1 corrections: Dict[str, str]
 
     @field_validator("nhs_number")
     @classmethod
