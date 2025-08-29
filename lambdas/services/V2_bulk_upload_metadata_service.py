@@ -44,8 +44,43 @@ class V2BulkUploadMetadataService:
         self.processed_date = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     def process_metadata(self):
-        self.preprocessor_lambda_function()
+        # Pre-processor Lambda
+        # 1. Get metadata rows from original metadata.csv
+        # 2. Rename rows if required??
+        # 3. 
+        file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
 
+        metadata_rows = self.get_metadata_rows_from_file(
+            file_key=file_key, bucket_name=self.staging_bucket_name
+        )
+
+        logger.info("Generating renaming map from metadata")
+        renaming_map, rejected_rows, rejected_reasons = self.generate_renaming_map(
+            metadata_rows
+        )
+
+        logger.info("Processing metadata filenames")
+        updated_metadata_rows = self.standardize_filenames(
+            renaming_map, rejected_rows, rejected_reasons
+        )
+
+        successfully_moved_file = self.move_original_metadata_file(file_key)
+        if successfully_moved_file:
+            self.s3_service.delete_object(
+                s3_bucket_name=self.staging_bucket_name, file_key=file_key
+            )
+
+        self.generate_and_save_csv_file(
+            csv_dict=updated_metadata_rows, file_key=file_key
+        )
+
+        if rejected_reasons:
+            file_key = f"{self.practice_directory}/{self.processed_folder_name}/{self.processed_date}/rejections.csv"
+            self.generate_and_save_csv_file(
+                csv_dict=rejected_reasons, file_key=file_key
+            )
+
+        # Metadata Lambda
         try:
             metadata_file = self.download_metadata_from_s3()
 
