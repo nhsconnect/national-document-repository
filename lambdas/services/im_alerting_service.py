@@ -305,9 +305,9 @@ class IMAlertingService:
                 },
                 updated_fields=fields_to_update,
             )
-        except HTTPError as e:
+        except ClientError as e:
             logger.error(
-                f"Updating alarm table entry returned HTTP error for alarm {alarm_entry.alarm_name_metric}: {e}"
+                f"Updating alarm table entry returned client error for alarm {alarm_entry.alarm_name_metric}: {e}"
             )
         except Exception as e:
             logger.error(
@@ -397,10 +397,6 @@ class IMAlertingService:
         dt = datetime.fromtimestamp(time_stamp, tz=timezone.utc)
         return dt.strftime("%H:%M:%S %d-%m-%Y %Z")
 
-    def format_alarm_name(self, alarm_name: str) -> str:
-        underscore_stripped_string = alarm_name.replace("_", " ")
-        return underscore_stripped_string.rsplit(" ", 1)[0].title()
-
     def unpack_alarm_history_unicode(self, alarm_history: list[AlarmSeverity]) -> str:
         alarm_history_unicodes = [severity.value for severity in alarm_history]
         return " ".join(alarm_history_unicodes)
@@ -416,8 +412,12 @@ class IMAlertingService:
     def create_action_url(self, base_url: str, alarm_name: str) -> str:
         search_query = "#:~:text="
 
-        url_extension = alarm_name.partition("_")[2]  # remove the "<ENV>_" prefix
-        url_extension.replace(" ", "%20")
+        prefixes = [f"{os.environ['WORKSPACE']}_", f"{os.environ['WORKSPACE']}-"]
+
+        for prefix in prefixes:
+            alarm_name = alarm_name.replace(prefix, "")
+
+        url_extension = re.sub(r'[-_. ]', '%20', alarm_name)
 
         return f"{base_url}{search_query}{url_extension}"
 
