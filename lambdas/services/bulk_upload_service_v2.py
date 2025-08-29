@@ -133,7 +133,7 @@ class BulkUploadService:
 
         logger.info(
             "NHS Number and filename validation complete."
-            "Validated strick mode, and if we can access the patient information ex:patient dead"
+            "Validated strict mode, and if we can access the patient information ex:patient dead"
             " Checking if virus scan has marked files as Clean"
         )
         if not self.validate_virus_scan(staging_metadata, patient_ods_code):
@@ -172,7 +172,6 @@ class BulkUploadService:
         )
 
     def build_staging_metadata_from_message(self, message: dict) -> StagingMetadata:
-        logger.info("Validating SQS event")
         try:
             staging_metadata_json = message["body"]
             return StagingMetadata.model_validate_json(staging_metadata_json)
