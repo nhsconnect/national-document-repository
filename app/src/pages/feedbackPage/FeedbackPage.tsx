@@ -1,4 +1,4 @@
-import { JSX, useRef, useState } from 'react';
+import { JSX, useEffect, useRef, useState } from 'react';
 
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
@@ -48,6 +48,11 @@ function FeedbackPage(): JSX.Element {
     });
     const navigate = useNavigate();
     const [stage, setStage] = useState(SUBMISSION_STAGE.NotSubmitted);
+    const scrollToRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        scrollToRef.current?.scrollIntoView();
+    });
 
     const submit: SubmitHandler<FormData> = async (formData) => {
         setStage(SUBMISSION_STAGE.Submitting);
@@ -98,8 +103,6 @@ function FeedbackPage(): JSX.Element {
         'inputRef',
     );
     useTitle({ pageTitle: 'Give feedback on this service' });
-
-    const scrollToRef = useRef<HTMLDivElement>(null);
 
     const errorMessageList = (): FeedbackError[] => {
         const errorConfig: {
