@@ -1,6 +1,6 @@
-import { JSX, useEffect, useRef, useState } from 'react';
+import { JSX, useRef, useState } from 'react';
 
-import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
+import { FieldValues, SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
 import {
     Button,
@@ -50,9 +50,11 @@ function FeedbackPage(): JSX.Element {
     const [stage, setStage] = useState(SUBMISSION_STAGE.NotSubmitted);
     const scrollToRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        scrollToRef.current?.scrollIntoView();
-    });
+    const handleErrors = (_: FieldValues): void => {
+        setTimeout(() => {
+            scrollToRef.current?.scrollIntoView();
+        }, 20);
+    };
 
     const submit: SubmitHandler<FormData> = async (formData) => {
         setStage(SUBMISSION_STAGE.Submitting);
@@ -151,7 +153,7 @@ function FeedbackPage(): JSX.Element {
                 />
             )}
 
-            <form onSubmit={handleSubmit(submit)}>
+            <form onSubmit={handleSubmit(submit, handleErrors)}>
                 <Fieldset id="select-how-satisfied" data-testid="feedback-radio-section">
                     <Fieldset.Legend>
                         <h2>Overall, how satisfied with the service are you?</h2>
