@@ -148,6 +148,7 @@ jobs:
 
   deploy_v2_bulk_upload_metadata_lambda:
     name: Deploy v2_bulk_upload_metadata_lambda
+    if: ${{ (inputs.environment != 'prod') && (inputs.environment != 'pre-prod') }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -294,6 +295,7 @@ jobs:
 
   deploy_v2_bulk_upload_lambda:
     name: Deploy v2_bulk_upload_lambda
+    if: ${{ (inputs.environment != 'prod') && (inputs.environment != 'pre-prod') }}
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
