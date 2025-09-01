@@ -100,6 +100,7 @@ class UploadDocumentReferenceService:
                 logger.warning(f"Document {document_reference.id} failed virus scan")
             document_reference.file_size = object_size
             document_reference.uploaded = True
+            document_reference.uploading = False
             self.update_dynamo_table(document_reference, virus_scan_result)
 
         except Exception as e:
@@ -196,6 +197,7 @@ class UploadDocumentReferenceService:
                 "file_location",
                 "file_size",
                 "uploaded",
+                "uploading",
             }
 
             self.document_service.update_document(
