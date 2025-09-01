@@ -9,11 +9,17 @@ import regex
 
 import pydantic
 from botocore.exceptions import ClientError
+from distlib.util import ensure_slash
+
 from models.staging_metadata import (
     NHS_NUMBER_FIELD_NAME,
     ODS_CODE,
     MetadataFile,
     StagingMetadata,
+)
+
+from repositories.bulk_upload.bulk_upload_dynamo_repository import (
+    BulkUploadDynamoRepository,
 )
 from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
@@ -28,18 +34,19 @@ class V2BulkUploadMetadataService:
     def __init__(self):
         self.s3_service = S3Service()
         self.sqs_service = SQSService()
+        self.dynamo_repository = BulkUploadDynamoRepository()
 
         self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
         self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
 
         self.temp_download_dir = tempfile.mkdtemp()
 
+        self.corrections = {}
+        self.failure_reasons = []
+
     def process_metadata(self, metadata_filename: str):
         try:
             metadata_file = self.download_metadata_from_s3(metadata_filename)
-
-            # self.validate_record_filename(metadata_file)
-
             staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
             logger.info("Finished parsing metadata")
 
@@ -77,25 +84,29 @@ class V2BulkUploadMetadataService:
         )
         return local_file_path
 
-    @staticmethod
-    def csv_to_staging_metadata(csv_file_path: str) -> list[StagingMetadata]:
-        logger.info("Parsing bulk upload metadata")
 
+    def csv_to_staging_metadata(self, csv_file_path: str) -> list[StagingMetadata]:
+        logger.info("Parsing bulk upload metadata")
         patients = {}
         with open(
             csv_file_path, mode="r", encoding="utf-8-sig", errors="replace"
         ) as csv_file_handler:
             csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
             for row in csv_reader:
-                file_metadata = MetadataFile.model_validate(row)
-                nhs_number = row[NHS_NUMBER_FIELD_NAME]
-                ods_code = row[ODS_CODE]
-                key = (nhs_number, ods_code)
-                if key not in patients:
-                    patients[key] = [file_metadata]
+                file_name_correction = self.validate_record_filename(row["FILEPATH"])
+                if file_name_correction:
+                    self.corrections.update({row["FILEPATH"]: file_name_correction})
+                    file_metadata = MetadataFile.model_validate(row)
+                    nhs_number = row[NHS_NUMBER_FIELD_NAME]
+                    ods_code = row[ODS_CODE]
+                    key = (nhs_number, ods_code)
+                    if key not in patients:
+                        patients[key] = [file_metadata]
+                    else:
+                        patients[key].append(file_metadata)
                 else:
-                    patients[key].append(file_metadata)
 
+                    self.failure_reasons.clear()
         return [
             StagingMetadata(
                 nhs_number=nhs_number,
@@ -138,32 +149,7 @@ class V2BulkUploadMetadataService:
         logger.info("Clearing temp storage directory")
         shutil.rmtree(self.temp_download_dir)
 
-    def validate_all_record_filenames(self, metadata_filepath: str):
-        validated_successfully = True
-        try:
-            with open(metadata_filepath, mode="r", encoding='utf-8-sig') as metadata_file:
-                reader = csv.DictReader(metadata_file)
-                for row in reader:
-                    file_path = row.get("FILEPATH")
-                    if file_path:
-                        try:
-                            self.validate_record_filename(file_path)
-                            logger.info(f"Validated {file_path} successfully")
-                        except InvalidFileNameException as e:
-                            logger.info(f"Failed to validate {file_path}: {str(e)}")
-                            validated_successfully = False
-        except FileNotFoundError:
-            logger.error(f"Metadata file not found at: {metadata_filepath}")
-            raise
-        except KeyError:
-            logger.error(f"Missing 'FILEPATH' column in the metadata file: {metadata_filepath}")
-            raise
-        except Exception as error:
-            logger.error(f"An unexpected error occurred while processing {metadata_filepath}: {error}")
-            raise
-        return validated_successfully
-
-    def validate_record_filename(self, file_name) -> bool:
+    def validate_record_filename(self, file_name) -> str:
         try:
             logger.info(f"Processing file name {file_name}")
 
@@ -182,7 +168,7 @@ class V2BulkUploadMetadataService:
 
             if sum(c.isdigit() for c in current_file_name) != 18:
                 logger.info("Failed to find NHS number or date")
-                raise InvalidFileNameException("Incorrect NHS number or date format")
+                raise InvalidFileNameException(f"Incorrect NHS number or date format avocado {current_file_name}")
 
             nhs_number, current_file_name = (
                 self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
@@ -190,13 +176,31 @@ class V2BulkUploadMetadataService:
             day, month, year, current_file_name = (
                 self.extract_date_from_bulk_upload_file_name(current_file_name)
             )
-            logger.info(f"File name '{file_name}' is valid")
-
-            return True
+            file_extension = self.extract_file_extension_from_bulk_upload_file_name(
+                current_file_name
+            )
+            file_name_correction = self.assemble_valid_file_name(
+                file_path_prefix,
+                first_document_number,
+                second_document_number,
+                lloyd_george_record,
+                patient_name,
+                nhs_number,
+                day,
+                month,
+                year,
+                file_extension,
+            )
+            if file_name_correction:
+                logger.info(f"Finished processing, new file name is: {file_name}")
+                return file_name_correction
+            else:
+                return ""
 
         except InvalidFileNameException as error:
             logger.error(f"Failed to process {file_name} due to error: {error}")
             raise error
+
 
     @staticmethod
     def extract_document_path(
@@ -323,4 +327,27 @@ class V2BulkUploadMetadataService:
         file_extension = expression_result.group(1)
 
         return file_extension
+
+    @staticmethod
+    def assemble_valid_file_name(
+        file_path_prefix: str,
+        first_document_number: int,
+        second_document_number: int,
+        lloyd_george_record: str,
+        patient_name: str,
+        nhs_number: str,
+        day: str,
+        month: str,
+        year: str,
+        file_extension: str,
+    ) -> str:
+        return (
+            f"{file_path_prefix}"
+            f"{first_document_number}of{second_document_number}"
+            f"_{lloyd_george_record}_"
+            f"[{patient_name}]_"
+            f"[{nhs_number}]_"
+            f"[{day}-{month}-{year}]"
+            f"{file_extension}"
+        )
 
