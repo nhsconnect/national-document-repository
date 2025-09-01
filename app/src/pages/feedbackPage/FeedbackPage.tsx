@@ -53,7 +53,7 @@ function FeedbackPage(): JSX.Element {
     const handleErrors = (_: FieldValues): void => {
         setTimeout(() => {
             scrollToRef.current?.scrollIntoView();
-        }, 20);
+        }, 50);
     };
 
     const submit: SubmitHandler<FormData> = async (formData) => {
