@@ -1,6 +1,7 @@
 import json
 import os
 from copy import copy
+from pathlib import Path
 
 import pytest
 import services.bulk_upload_service_v2 as bulk_upload_module
@@ -410,7 +411,7 @@ def test_handle_sqs_message_happy_path(
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
     mock_create_lg_records_and_copy_files.assert_called_with(
-        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, {}
     )
     mock_pds_validation_strict.assert_called()
     mock_report_upload_complete.assert_called()
@@ -445,7 +446,7 @@ def test_handle_sqs_message_happy_path_single_file(
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE_SINGLE_FILE)
 
     mock_create_lg_records_and_copy_files.assert_called_with(
-        TEST_STAGING_METADATA_SINGLE_FILE, TEST_CURRENT_GP_ODS
+        TEST_STAGING_METADATA_SINGLE_FILE, TEST_CURRENT_GP_ODS, {}
     )
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
@@ -1033,7 +1034,7 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
     repo_under_test.resolve_source_file_path(TEST_STAGING_METADATA)
 
     repo_under_test.create_lg_records_and_copy_files(
-        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, {}
     )
 
     nhs_number = TEST_STAGING_METADATA.nhs_number
@@ -1066,6 +1067,7 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
         file_metadata=TEST_FILE_METADATA,
         nhs_number=TEST_STAGING_METADATA.nhs_number,
         current_gp_ods=TEST_CURRENT_GP_ODS,
+        corrected_file_paths={},
     )
 
     assert actual == expected
@@ -1085,12 +1087,34 @@ def test_convert_to_document_reference_missing_scan_date(
         file_metadata=TEST_FILE_METADATA,
         nhs_number=TEST_STAGING_METADATA.nhs_number,
         current_gp_ods=TEST_CURRENT_GP_ODS,
+        corrected_file_paths={},
     )
 
     assert actual == expected
 
     TEST_FILE_METADATA.scan_date = "03/09/2022"
     TEST_DOCUMENT_REFERENCE.document_scan_creation = "2022-09-03"
+
+
+@freeze_time("2024-01-01 12:00:00")
+def test_convert_to_document_reference_uses_corrected_file_paths(
+    set_env, mock_uuid, repo_under_test
+):
+    TEST_STAGING_METADATA.retries = 0
+    repo_under_test.bulk_upload_s3_repository.lg_bucket_name = "test_lg_s3_bucket"
+
+    corrected_path = "/corrected/path/to/file.pdf"
+    corrected_file_paths = {TEST_FILE_METADATA.file_path: corrected_path}
+
+    actual = repo_under_test.convert_to_document_reference(
+        file_metadata=TEST_FILE_METADATA,
+        nhs_number=TEST_STAGING_METADATA.nhs_number,
+        current_gp_ods=TEST_CURRENT_GP_ODS,
+        corrected_file_paths=corrected_file_paths,
+    )
+
+    expected_file_name = Path(corrected_path).name
+    assert actual.file_name == expected_file_name
 
 
 def test_raise_client_error_from_ssm_with_pds_service(
@@ -1193,7 +1217,7 @@ def test_handle_sqs_message_happy_path_historical_name(
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
     mock_create_lg_records_and_copy_files.assert_called_with(
-        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, {}
     )
     mock_report_upload_complete.assert_called()
     mock_report_upload_complete.assert_called_with(
@@ -1233,7 +1257,7 @@ def test_handle_sqs_message_lenient_mode_happy_path(
 
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
     mock_create_lg_records_and_copy_files.assert_called_with(
-        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, {}
     )
     mock_pds_validation_lenient.assert_called()
     mock_pds_validation_strict.assert_not_called()
@@ -1343,7 +1367,7 @@ def test_handle_sqs_message_happy_path_v2(mocker, repo_under_test):
     mock_validate_entry.assert_called_once_with(mock_metadata, {})
     mock_validate_virus_scan.assert_called_once_with(mock_metadata, "Y12345")
     mock_initiate_transactions.assert_called_once()
-    mock_transfer_files.assert_called_once_with(mock_metadata, "Y12345")
+    mock_transfer_files.assert_called_once_with(mock_metadata, "Y12345", {})
     mock_remove_files.assert_called_once()
     mock_write_report.assert_called_once_with(
         mock_metadata, UploadStatus.COMPLETE, "some reason", "Y12345"
@@ -1403,7 +1427,8 @@ def test_validate_filenames(repo_under_test, mocker):
 
     mock_validate_lg = mocker.patch.object(bulk_upload_module, "validate_lg_file_names")
 
-    repo_under_test.validate_staging_metadata_filenames(staging_metadata, {})
+    file_names = [os.path.basename(test_file_path)]
+    repo_under_test.validate_staging_metadata_filenames(staging_metadata, file_names)
 
     mock_validate_nhs.assert_called_once_with(test_nhs_number)
     mock_validate_lg.assert_called_once_with(
@@ -1588,7 +1613,10 @@ def test_validate_entry_happy_path(mocker, repo_under_test, mock_patient):
         staging_metadata, {}
     )
 
-    mock_validate_filenames.assert_called_once_with(staging_metadata, {})
+    expected_filenames = [os.path.basename(f.file_path) for f in staging_metadata.files]
+    mock_validate_filenames.assert_called_once_with(
+        staging_metadata, expected_filenames
+    )
     mock_getting_patient_info_from_pds.assert_called_once_with(
         staging_metadata.nhs_number
     )
@@ -1923,10 +1951,12 @@ def test_transfer_files_success(repo_under_test, mocker):
         repo_under_test, "create_lg_records_and_copy_files"
     )
 
-    result = repo_under_test.transfer_files(TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS)
+    result = repo_under_test.transfer_files(
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, {}
+    )
 
     assert result is True
-    mock_create.assert_called_once_with(TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS)
+    mock_create.assert_called_once_with(TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, {})
 
 
 def test_transfer_files_client_error_triggers_rollback(repo_under_test, mocker):
@@ -1942,7 +1972,9 @@ def test_transfer_files_client_error_triggers_rollback(repo_under_test, mocker):
         repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
 
-    result = repo_under_test.transfer_files(TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS)
+    result = repo_under_test.transfer_files(
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS, {}
+    )
 
     assert result is False
     mock_rollback.assert_called_once()

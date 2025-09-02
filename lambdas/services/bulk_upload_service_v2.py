@@ -147,7 +147,9 @@ class BulkUploadService:
         self.initiate_transactions()
 
         logger.info("Transferring files and creating metadata")
-        if not self.transfer_files(staging_metadata, patient_ods_code):
+        if not self.transfer_files(
+            staging_metadata, patient_ods_code, corrected_file_paths
+        ):
             return
         logger.info(
             "File transfer complete. Removing uploaded files from staging bucket"
@@ -160,13 +162,14 @@ class BulkUploadService:
             {"Result": "Successful upload"},
         )
         logger.info("Reporting transaction successful")
+
         self.dynamo_repository.write_report_upload_to_dynamo(
             staging_metadata,
             UploadStatus.COMPLETE,
             accepted_reason,
             patient_ods_code,
         )
-
+        #
         self.add_information_to_stitching_queue(
             staging_metadata, patient_ods_code, accepted_reason
         )
@@ -190,13 +193,13 @@ class BulkUploadService:
     ) -> tuple[str | None, str | None]:
         patient_ods_code = ""
         try:
-            self.validate_staging_metadata_filenames(
-                staging_metadata, corrected_file_paths
-            )
             file_names = [
-                os.path.basename(metadata.file_path)
+                os.path.basename(
+                    corrected_file_paths.get(metadata.file_path, metadata.file_path)
+                )
                 for metadata in staging_metadata.files
             ]
+            self.validate_staging_metadata_filenames(staging_metadata, file_names)
 
             # Fetch PDS details and ODS code early
             pds_patient_details = getting_patient_info_from_pds(
@@ -331,9 +334,13 @@ class BulkUploadService:
         self.dynamo_repository.init_transaction()
         logger.info("Transaction initialised.")
 
-    def transfer_files(self, staging_metadata, patient_ods_code) -> bool:
+    def transfer_files(
+        self, staging_metadata, patient_ods_code, corrected_file_paths: Dict[str, str]
+    ) -> bool:
         try:
-            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
+            self.create_lg_records_and_copy_files(
+                staging_metadata, patient_ods_code, corrected_file_paths
+            )
             logger.info(
                 f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
                 {"Result": "Successful upload"},
@@ -356,12 +363,15 @@ class BulkUploadService:
             return False
 
     def create_lg_records_and_copy_files(
-        self, staging_metadata: StagingMetadata, current_gp_ods: str
+        self,
+        staging_metadata: StagingMetadata,
+        current_gp_ods: str,
+        corrected_file_paths: Dict[str, str],
     ):
         nhs_number = staging_metadata.nhs_number
         for file_metadata in staging_metadata.files:
             document_reference = self.convert_to_document_reference(
-                file_metadata, nhs_number, current_gp_ods
+                file_metadata, nhs_number, current_gp_ods, corrected_file_paths
             )
 
             source_file_key = self.file_path_cache[file_metadata.file_path]
@@ -382,10 +392,16 @@ class BulkUploadService:
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
 
     def convert_to_document_reference(
-        self, file_metadata: MetadataFile, nhs_number: str, current_gp_ods: str
+        self,
+        file_metadata: MetadataFile,
+        nhs_number: str,
+        current_gp_ods: str,
+        corrected_file_paths: Dict[str, str],
     ) -> DocumentReference:
         s3_bucket_name = self.bulk_upload_s3_repository.lg_bucket_name
-        file_name = os.path.basename(file_metadata.file_path)
+        file_name = os.path.basename(
+            corrected_file_paths.get(file_metadata.file_path, file_metadata.file_path)
+        )
         if file_metadata.scan_date:
             scan_date_formatted = datetime.strptime(
                 file_metadata.scan_date, "%d/%m/%Y"
@@ -430,14 +446,8 @@ class BulkUploadService:
         )
 
     def validate_staging_metadata_filenames(
-        self, staging_metadata: StagingMetadata, corrected_file_paths: dict[str, str]
+        self, staging_metadata: StagingMetadata, file_names: list[str]
     ):
-        file_names = [
-            os.path.basename(
-                corrected_file_paths.get(metadata.file_path, metadata.file_path)
-            )
-            for metadata in staging_metadata.files
-        ]
         request_context.patient_nhs_no = staging_metadata.nhs_number
         validate_nhs_number(staging_metadata.nhs_number)
         validate_lg_file_names(file_names, staging_metadata.nhs_number)
