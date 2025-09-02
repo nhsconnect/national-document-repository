@@ -1,0 +1,33 @@
+[
+    {
+        "type": "header",
+        "text": {
+            "type": "plain_text",
+            "text": "dev-test_bulk_upload_metadata_queue ApproximateAgeOfOldestMessage Alert: :red_circle:"
+        }
+    },
+    {
+        "type": "divider"
+    },
+    {
+        "type": "section",
+        "text": {
+            "type": "plain_text",
+            "text": "History: :red_circle:"
+        }
+    },
+    {
+        "type": "section",
+        "text": {
+            "type": "plain_text",
+            "text": "Last state change: 15:10:41 17-04-2025 UTC"
+        }
+    },
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": "*Info:*\n <https://confluence.example.com#:~:text=test%20bulk%20upload%20metadata%20queue%20ApproximateAgeOfOldestMessage>"
+        }
+    }
+]
