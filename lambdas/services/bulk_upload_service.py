@@ -38,6 +38,7 @@ from utils.lloyd_george_validator import (
     validate_filename_with_patient_details_strict,
     validate_lg_file_names,
 )
+from utils.ods_utils import PCSE_ODS_CODE
 from utils.request_context import request_context
 from utils.unicode_utils import (
     contains_accent_char,
@@ -50,7 +51,7 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadService:
-    def __init__(self, strict_mode, pds_fhir_always_true=False):
+    def __init__(self, strict_mode, bypass_pds=False):
         self.dynamo_repository = BulkUploadDynamoRepository()
         self.sqs_repository = BulkUploadSqsRepository()
         self.bulk_upload_s3_repository = BulkUploadS3Repository()
@@ -59,7 +60,7 @@ class BulkUploadService:
         self.unhandled_messages = []
         self.file_path_cache = {}
         self.pdf_stitching_queue_url = os.environ["PDF_STITCHING_SQS_URL"]
-        self.pds_fhir_always_true = pds_fhir_always_true
+        self.bypass_pds = bypass_pds
 
     def process_message_queue(self, records: list):
         for index, message in enumerate(records, start=1):
@@ -137,7 +138,7 @@ class BulkUploadService:
             patient_ods_code = (
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
-            if not self.pds_fhir_always_true:
+            if not self.bypass_pds:
                 if not self.strict_mode:
                     (
                         name_validation_accepted_reason,
@@ -395,13 +396,17 @@ class BulkUploadService:
             ).strftime("%Y-%m-%d")
         else:
             scan_date_formatted = None
+        if current_gp_ods in PatientOdsInactiveStatus.list():
+            custodian = PCSE_ODS_CODE
+        else:
+            custodian = current_gp_ods
         document_reference = DocumentReference(
             id=str(uuid.uuid4()),
             nhs_number=nhs_number,
             file_name=file_name,
             s3_bucket_name=s3_bucket_name,
             current_gp_ods=current_gp_ods,
-            custodian=current_gp_ods,
+            custodian=custodian,
             author=file_metadata.gp_practice_code,
             document_scan_creation=scan_date_formatted,
             doc_status="preliminary",
