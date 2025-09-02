@@ -121,10 +121,16 @@ PDF_STITCHING_SQS_URL = (
 
 TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
-MOCK_SLACK_BOT_TOKEN = f"xoxb-{TEST_UUID}"
+
+
 MOCK_ITOC_SLACK_CHANNEL_ID = "slack_channel_id"
 MOCK_ITOC_TEST_EMAIL_ADDRESS = "itoc_testing@testing.com"
 MOCK_ITOC_TEAMS_WEBHOOK = "https://webhook.team"
+MOCK_CONFLUENCE_URL = "https://confluence.example.com"
+MOCK_ALARM_HISTORY_TABLE = "test_alarm_history_table"
+MOCK_TEAMS_WEBHOOK = "test_teams_webhook"
+MOCK_SLACK_BOT_TOKEN = f"xoxb-{TEST_UUID}"
+MOCK_ALERTING_SLACK_CHANNEL_ID = "slack_channel_id"
 
 
 @pytest.fixture
@@ -206,7 +212,12 @@ def set_env(monkeypatch):
     monkeypatch.setenv("ITOC_TESTING_CHANNEL_ID", MOCK_ITOC_SLACK_CHANNEL_ID)
     monkeypatch.setenv("ITOC_TESTING_EMAIL_ADDRESS", MOCK_ITOC_TEST_EMAIL_ADDRESS)
     monkeypatch.setenv("ITOC_TESTING_TEAMS_WEBHOOK", MOCK_ITOC_TEAMS_WEBHOOK)
-
+    monkeypatch.setenv("CONFLUENCE_BASE_URL", MOCK_CONFLUENCE_URL)
+    monkeypatch.setenv("ALARM_HISTORY_DYNAMODB_NAME", MOCK_ALARM_HISTORY_TABLE)
+    monkeypatch.setenv("TEAMS_WEBHOOK_URL", MOCK_TEAMS_WEBHOOK)
+    monkeypatch.setenv("SLACK_BOT_TOKEN", MOCK_SLACK_BOT_TOKEN)
+    monkeypatch.setenv("SLACK_CHANNEL_ID", MOCK_ALERTING_SLACK_CHANNEL_ID)
+    
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
     givenName=["Jane"],
