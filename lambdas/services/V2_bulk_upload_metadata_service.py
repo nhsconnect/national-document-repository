@@ -11,6 +11,7 @@ import pydantic
 from botocore.exceptions import ClientError
 from distlib.util import ensure_slash
 
+from enums.upload_status import UploadStatus
 from models.staging_metadata import (
     NHS_NUMBER_FIELD_NAME,
     ODS_CODE,
@@ -42,7 +43,6 @@ class V2BulkUploadMetadataService:
         self.temp_download_dir = tempfile.mkdtemp()
 
         self.corrections = {}
-        self.failure_reasons = []
 
     def process_metadata(self, metadata_filename: str):
         try:
@@ -84,7 +84,6 @@ class V2BulkUploadMetadataService:
         )
         return local_file_path
 
-
     def csv_to_staging_metadata(self, csv_file_path: str) -> list[StagingMetadata]:
         logger.info("Parsing bulk upload metadata")
         patients = {}
@@ -93,20 +92,26 @@ class V2BulkUploadMetadataService:
         ) as csv_file_handler:
             csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
             for row in csv_reader:
-                file_name_correction = self.validate_record_filename(row["FILEPATH"])
-                if file_name_correction:
-                    self.corrections.update({row["FILEPATH"]: file_name_correction})
-                    file_metadata = MetadataFile.model_validate(row)
-                    nhs_number = row[NHS_NUMBER_FIELD_NAME]
-                    ods_code = row[ODS_CODE]
-                    key = (nhs_number, ods_code)
-                    if key not in patients:
-                        patients[key] = [file_metadata]
-                    else:
-                        patients[key].append(file_metadata)
-                else:
-
-                    self.failure_reasons.clear()
+                try:
+                    valid_filename = self.validate_record_filename(row["FILEPATH"])
+                    if valid_filename != "":
+                        self.corrections.update({row["FILEPATH"]: valid_filename})
+                        file_metadata = MetadataFile.model_validate(row)
+                        nhs_number = row[NHS_NUMBER_FIELD_NAME]
+                        ods_code = row[ODS_CODE]
+                        key = (nhs_number, ods_code)
+                        if key not in patients:
+                            patients[key] = [file_metadata]
+                        else:
+                            patients[key].append(file_metadata)
+                except InvalidFileNameException as error:
+                    failed_entry = StagingMetadata(
+                        nhs_number=nhs_number,
+                        files=patients[nhs_number, ods_code]
+                    )
+                    self.dynamo_repository.write_report_upload_to_dynamo(
+                        failed_entry, UploadStatus.FAILED, str(error), ods_code
+                    )
         return [
             StagingMetadata(
                 nhs_number=nhs_number,
@@ -154,9 +159,11 @@ class V2BulkUploadMetadataService:
             logger.info(f"Processing file name {file_name}")
 
             file_path_prefix, current_file_name = self.extract_document_path(file_name)
+
             first_document_number, second_document_number, current_file_name = (
                 self.extract_document_number_bulk_upload_file_name(current_file_name)
             )
+
             lloyd_george_record, current_file_name = (
                 self.extract_lloyd_george_record_from_bulk_upload_file_name(
                     current_file_name
@@ -199,7 +206,6 @@ class V2BulkUploadMetadataService:
 
         except InvalidFileNameException as error:
             logger.error(f"Failed to process {file_name} due to error: {error}")
-            raise error
 
 
     @staticmethod
