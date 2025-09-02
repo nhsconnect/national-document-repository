@@ -133,7 +133,7 @@ class BulkUploadService:
 
         logger.info(
             "NHS Number and filename validation complete."
-            "Validated strict mode, and patient information is accessible (e.g. patient not deceased/restricted)
+            "Validated strict mode, and patient information is accessible (e.g. patient not deceased/restricted)"
             " Checking if virus scan has marked files as Clean"
         )
         if not self.validate_virus_scan(staging_metadata, patient_ods_code):
