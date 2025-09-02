@@ -15,7 +15,7 @@ from models.staging_metadata import (
     NHS_NUMBER_FIELD_NAME,
     ODS_CODE,
     MetadataFile,
-    StagingMetadata,
+    StagingMetadata, METADATA_FILENAME,
 )
 
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
@@ -31,7 +31,7 @@ unsuccessful = "Unsuccessful bulk upload"
 
 
 class V2BulkUploadMetadataService:
-    def __init__(self):
+    def __init__(self, practice_directory: str):
         self.s3_service = S3Service()
         self.sqs_service = SQSService()
         self.dynamo_repository = BulkUploadDynamoRepository()
@@ -42,22 +42,23 @@ class V2BulkUploadMetadataService:
         self.temp_download_dir = tempfile.mkdtemp()
 
         self.corrections = {}
+        self.practice_directory = practice_directory
 
-    def process_metadata(self, metadata_filename: str):
+    def process_metadata(self):
         try:
-            metadata_file = self.download_metadata_from_s3(metadata_filename)
+            metadata_file = self.download_metadata_from_s3()
             staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
             logger.info("Finished parsing metadata")
 
             self.send_metadata_to_fifo_sqs(staging_metadata_list)
             logger.info("Sent bulk upload metadata to sqs queue")
 
-            self.copy_metadata_to_dated_folder(metadata_filename)
+            self.copy_metadata_to_dated_folder()
 
             self.clear_temp_storage()
 
         except pydantic.ValidationError as e:
-            failure_msg = f"Failed to parse {metadata_filename}: {str(e)}"
+            failure_msg = f"Failed to parse {METADATA_FILENAME}: {str(e)}"
             logger.error(failure_msg, {"Result": unsuccessful})
             raise BulkUploadMetadataException(failure_msg)
         except KeyError as e:
@@ -66,19 +67,19 @@ class V2BulkUploadMetadataService:
             raise BulkUploadMetadataException(failure_msg)
         except ClientError as e:
             if "HeadObject" in str(e):
-                failure_msg = f'No metadata file could be found with the name "{metadata_filename}"'
+                failure_msg = f'No metadata file could be found with the name "{METADATA_FILENAME}"'
             else:
                 failure_msg = str(e)
             logger.error(failure_msg, {"Result": unsuccessful})
             raise BulkUploadMetadataException(failure_msg)
 
-    def download_metadata_from_s3(self, metadata_filename: str) -> str:
-        logger.info(f"Fetching {metadata_filename} from bucket")
+    def download_metadata_from_s3(self) -> str:
+        logger.info(f"Fetching {METADATA_FILENAME} from bucket")
 
-        local_file_path = os.path.join(self.temp_download_dir, metadata_filename)
+        local_file_path = os.path.join(self.temp_download_dir, METADATA_FILENAME)
         self.s3_service.download_file(
             s3_bucket_name=self.staging_bucket_name,
-            file_key=metadata_filename,
+            file_key=f"{self.practice_directory}/{METADATA_FILENAME}",
             download_path=local_file_path,
         )
         return local_file_path
@@ -135,19 +136,19 @@ class V2BulkUploadMetadataService:
                 group_id=sqs_group_id,
             )
 
-    def copy_metadata_to_dated_folder(self, metadata_filename: str):
+    def copy_metadata_to_dated_folder(self):
         logger.info("Copying metadata CSV to dated folder")
 
         current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
         self.s3_service.copy_across_bucket(
             self.staging_bucket_name,
-            metadata_filename,
+            METADATA_FILENAME,
             self.staging_bucket_name,
             f"metadata/{current_datetime}.csv",
         )
 
-        self.s3_service.delete_object(self.staging_bucket_name, metadata_filename)
+        self.s3_service.delete_object(self.staging_bucket_name, METADATA_FILENAME)
 
     def clear_temp_storage(self):
         logger.info("Clearing temp storage directory")
