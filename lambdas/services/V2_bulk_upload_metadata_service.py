@@ -5,19 +5,18 @@ import tempfile
 import uuid
 from datetime import datetime
 from typing import Iterable
-import regex
 
 import pydantic
+import regex
 from botocore.exceptions import ClientError
-
 from enums.upload_status import UploadStatus
 from models.staging_metadata import (
+    METADATA_FILENAME,
     NHS_NUMBER_FIELD_NAME,
     ODS_CODE,
     MetadataFile,
-    StagingMetadata, METADATA_FILENAME,
+    StagingMetadata,
 )
-
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
 )
@@ -106,8 +105,7 @@ class V2BulkUploadMetadataService:
                             patients[key].append(file_metadata)
                 except InvalidFileNameException as error:
                     failed_entry = StagingMetadata(
-                        nhs_number=nhs_number,
-                        files=patients[nhs_number, ods_code]
+                        nhs_number=nhs_number, files=patients[nhs_number, ods_code]
                     )
                     self.dynamo_repository.write_report_upload_to_dynamo(
                         failed_entry, UploadStatus.FAILED, str(error), ods_code
@@ -143,7 +141,7 @@ class V2BulkUploadMetadataService:
 
         self.s3_service.copy_across_bucket(
             self.staging_bucket_name,
-            METADATA_FILENAME,
+            f"{self.practice_directory}/{METADATA_FILENAME}",
             self.staging_bucket_name,
             f"metadata/{current_datetime}.csv",
         )
@@ -175,7 +173,9 @@ class V2BulkUploadMetadataService:
 
             if sum(c.isdigit() for c in current_file_name) != 18:
                 logger.info("Failed to find NHS number or date")
-                raise InvalidFileNameException(f"Incorrect NHS number or date format avocado {current_file_name}")
+                raise InvalidFileNameException(
+                    f"Incorrect NHS number or date format"
+                )
 
             nhs_number, current_file_name = (
                 self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
@@ -207,10 +207,9 @@ class V2BulkUploadMetadataService:
         except InvalidFileNameException as error:
             logger.error(f"Failed to process {file_name} due to error: {error}")
 
-
     @staticmethod
     def extract_document_path(
-            file_path: str,
+        file_path: str,
     ) -> tuple[str, str]:
         document_number_expression = r"(.*[/])*((\d+)[^0-9]*of[^0-9]*(\d+)(.*))"
 
@@ -321,7 +320,7 @@ class V2BulkUploadMetadataService:
 
     @staticmethod
     def extract_file_extension_from_bulk_upload_file_name(
-            file_path: str,
+        file_path: str,
     ) -> str:
         file_extension_expression = r"(\.([^.]*))$"
         expression_result = regex.search(rf"{file_extension_expression}", file_path)
@@ -356,4 +355,3 @@ class V2BulkUploadMetadataService:
             f"[{day}-{month}-{year}]"
             f"{file_extension}"
         )
-
