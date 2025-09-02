@@ -11,6 +11,7 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.exceptions import OdsErrorException
 from utils.lambda_exceptions import SendFeedbackException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -28,13 +29,18 @@ failure_msg = "Failed to send feedback by email"
         "EMAIL_RECIPIENT_SSM_PARAM_KEY",
         "ITOC_TESTING_SLACK_BOT_TOKEN",
         "ITOC_TESTING_CHANNEL_ID",
-        "ITOC_TESTING_EMAIL_ADDRESS",
         "ITOC_TESTING_TEAMS_WEBHOOK",
+        "ITOC_TESTING_ODS_CODE",
     ]
 )
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.SEND_FEEDBACK.value
+    ods_code = request_context.authorization.get("selected_organisation", {}).get(
+        "org_ods_code"
+    )
+    if not ods_code:
+        raise OdsErrorException("No ODS code provided")
 
     logger.info("Send feedback handler triggered")
 
@@ -58,7 +64,7 @@ def lambda_handler(event, context):
         )
         raise SendFeedbackException(400, LambdaError.FeedbackInvalidBody)
 
-    if is_itoc_test_feedback(feedback.respondent_email):
+    if is_itoc_test_feedback(ods_code):
         logger.info("Setting up SendTestFeedbackService")
 
         test_feedback_service = SendTestFeedbackService()
@@ -78,5 +84,5 @@ def lambda_handler(event, context):
     ).create_api_gateway_response()
 
 
-def is_itoc_test_feedback(email_address: str) -> bool:
-    return email_address == os.environ["ITOC_TESTING_EMAIL_ADDRESS"]
+def is_itoc_test_feedback(ods_code: str) -> bool:
+    return ods_code == os.environ["ITOC_TESTING_ODS_CODE"]

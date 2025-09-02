@@ -49,7 +49,9 @@ def test_compose_slack_message(send_test_feedback_service):
     slack_block_json_str = readfile("mock_itoc_slack_message_blocks.json")
     expected = json.loads(slack_block_json_str)
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
-    actual = send_test_feedback_service.compose_message(feedback, MessageTemplates.ITOC_FEEDBACK_TEST_SLACK)
+    actual = send_test_feedback_service.compose_message(
+        feedback, MessageTemplates.ITOC_FEEDBACK_TEST_SLACK
+    )
     assert actual == expected
 
 
@@ -92,7 +94,9 @@ def test_compose_teams_message(send_test_feedback_service):
     teams_message_json_str = readfile("mock_itoc_teams_message.json")
     expected = json.loads(teams_message_json_str)
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
-    actual = send_test_feedback_service.compose_message(feedback, MessageTemplates.ITOC_FEEDBACK_TEST_TEAMS)
+    actual = send_test_feedback_service.compose_message(
+        feedback, MessageTemplates.ITOC_FEEDBACK_TEST_TEAMS
+    )
     assert actual == expected
 
 

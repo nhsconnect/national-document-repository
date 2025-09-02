@@ -25,7 +25,9 @@ class SendTestFeedbackService:
         }
 
         body = {
-            "blocks": self.compose_message(feedback, MessageTemplates.ITOC_FEEDBACK_TEST_SLACK),
+            "blocks": self.compose_message(
+                feedback, MessageTemplates.ITOC_FEEDBACK_TEST_SLACK
+            ),
             "channel": os.environ["ITOC_TESTING_CHANNEL_ID"],
         }
         try:
@@ -42,7 +44,9 @@ class SendTestFeedbackService:
     def send_itoc_feedback_via_teams(self, feedback: Feedback):
         logger.info("Sending ITOC test feedback via teams")
         try:
-            payload = self.compose_message(feedback, MessageTemplates.ITOC_FEEDBACK_TEST_TEAMS)
+            payload = self.compose_message(
+                feedback, MessageTemplates.ITOC_FEEDBACK_TEST_TEAMS
+            )
 
             headers = {"Content-type": "application/json"}
 
@@ -60,7 +64,7 @@ class SendTestFeedbackService:
             )
 
     def compose_message(self, feedback: Feedback, messaging_template: str):
-        logger.info(f"Composing ITOC test feedback message...")
+        logger.info("Composing ITOC test feedback message...")
         with open(messaging_template, "r") as f:
             template_content = f.read()
 

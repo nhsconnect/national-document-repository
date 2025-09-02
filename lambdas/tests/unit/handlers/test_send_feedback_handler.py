@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 
 import pytest
 from enums.lambda_error import LambdaError
@@ -8,11 +9,10 @@ from services.send_feedback_service import SendFeedbackService
 from tests.unit.conftest import (
     MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
     MOCK_INTERACTION_ID,
-    MOCK_ITOC_TEST_EMAIL_ADDRESS,
+    MOCK_ITOC_ODS_CODE,
 )
 from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_ITOC_FEEDBACK_BODY_JSON_STR,
-    MOCK_ITOC_FEEDBACK_EVENT,
     MOCK_PARSED_FEEDBACK,
     MOCK_PARSED_ITOC_FEEDBACK,
     MOCK_VALID_FEEDBACK_BODY_JSON_STR,
@@ -52,23 +52,52 @@ def mock_validator(mocker):
     yield mocker.patch.object(Feedback, "model_validate_json")
 
 
+@pytest.fixture
+def mock_jwt_encode_itoc_user(mocker):
+    decoded_token = {"selected_organisation": {"org_ods_code": MOCK_ITOC_ODS_CODE}}
+    yield mocker.patch("jwt.decode", return_value=decoded_token)
+
+
+@pytest.fixture
+def mock_itoc_test_event(event):
+    itoc_event = deepcopy(event)
+    itoc_event["body"] = MOCK_ITOC_FEEDBACK_BODY_JSON_STR
+    itoc_event["httpMethod"] = "POST"
+    yield itoc_event
+
+
+@pytest.fixture
+def mock_valid_feedback_event(event):
+    valid_feedback_event = deepcopy(event)
+    valid_feedback_event["body"] = MOCK_VALID_FEEDBACK_BODY_JSON_STR
+    valid_feedback_event["httpMethod"] = "POST"
+    yield valid_feedback_event
+
+
 def test_lambda_handler_respond_with_200_when_successful(
-    set_env, context, mock_feedback_service, mock_validator
+    set_env,
+    context,
+    mock_feedback_service,
+    mock_validator,
+    mock_valid_feedback_event,
+    mock_jwt_encode,
 ):
     mock_validator.return_value = MOCK_PARSED_FEEDBACK
-    test_event = MOCK_VALID_SEND_FEEDBACK_EVENT
 
     expected = ApiGatewayResponse(
         status_code=200, body="Feedback email processed", methods="POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, context)
+    actual = lambda_handler(mock_valid_feedback_event, context)
     mock_validator.assert_called_with(MOCK_VALID_FEEDBACK_BODY_JSON_STR)
     assert actual == expected
 
 
-def test_lambda_handler_respond_with_400_when_no_event_body_given(set_env, context):
-    test_event = {"key1": "value1", "httpMethod": "POST"}
+def test_lambda_handler_respond_with_400_when_no_event_body_given(
+    set_env, context, mock_valid_feedback_event, mock_jwt_encode
+):
+    test_event = deepcopy(mock_valid_feedback_event)
+    test_event.pop("body")
     expected = ApiGatewayResponse(
         status_code=400,
         body=json.dumps(
@@ -86,9 +115,14 @@ def test_lambda_handler_respond_with_400_when_no_event_body_given(set_env, conte
 
 
 def test_lambda_handler_respond_with_400_when_invalid_event_body_given(
-    set_env, context, mock_get_email_recipients_list
+    set_env,
+    context,
+    mock_get_email_recipients_list,
+    mock_valid_feedback_event,
+    mock_jwt_encode,
 ):
-    test_event = {"body": "some_invalid_event_body", "httpMethod": "POST"}
+    test_event = deepcopy(mock_valid_feedback_event)
+    test_event["body"] = "some invalid feedback body"
     expected = ApiGatewayResponse(
         status_code=400,
         body=json.dumps(
@@ -124,9 +158,13 @@ def test_lambda_handler_respond_with_500_when_missing_env_var(context):
 
 
 def test_lambda_handler_respond_with_500_when_failed_to_get_recipient_emails_from_param_store(
-    set_env, context, mock_get_email_recipients_list
+    set_env,
+    context,
+    mock_get_email_recipients_list,
+    mock_valid_feedback_event,
+    mock_jwt_encode,
 ):
-    test_event = MOCK_VALID_SEND_FEEDBACK_EVENT
+
     mock_get_email_recipients_list.side_effect = SendFeedbackException(
         500, LambdaError.FeedbackFetchParamFailure
     )
@@ -143,14 +181,13 @@ def test_lambda_handler_respond_with_500_when_failed_to_get_recipient_emails_fro
         methods="POST",
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, context)
+    actual = lambda_handler(mock_valid_feedback_event, context)
     assert actual == expected
 
 
 def test_lambda_handler_respond_with_500_when_failed_to_send_email(
-    set_env, context, mock_feedback_service
+    set_env, context, mock_feedback_service, mock_valid_feedback_event, mock_jwt_encode
 ):
-    test_event = MOCK_VALID_SEND_FEEDBACK_EVENT
     mock_feedback_service.process_feedback.side_effect = SendFeedbackException(
         500, LambdaError.FeedbackSESFailure
     )
@@ -167,29 +204,37 @@ def test_lambda_handler_respond_with_500_when_failed_to_send_email(
         methods="POST",
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, context)
+    actual = lambda_handler(mock_valid_feedback_event, context)
     assert actual == expected
 
 
 def test_lambda_handler_respond_with_200_when_itoc_feedback_sent(
-    set_env, context, mock_send_test_feedback_service, mock_validator
+    set_env,
+    context,
+    mock_send_test_feedback_service,
+    mock_validator,
+    mock_jwt_encode_itoc_user,
+    mock_itoc_test_event,
 ):
     mock_validator.return_value = MOCK_PARSED_ITOC_FEEDBACK
-    test_event = MOCK_ITOC_FEEDBACK_EVENT
+
     expected = ApiGatewayResponse(
         status_code=200, body="Feedback email processed", methods="POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, context)
+    actual = lambda_handler(mock_itoc_test_event, context)
 
     mock_validator.assert_called_once_with(MOCK_ITOC_FEEDBACK_BODY_JSON_STR)
     assert actual == expected
 
 
 def test_lambda_handler_respond_with_500_when_failed_to_send_itoc_feedback(
-    set_env, context, mock_send_test_feedback_service
+    set_env,
+    context,
+    mock_send_test_feedback_service,
+    mock_jwt_encode_itoc_user,
+    mock_itoc_test_event,
 ):
-    test_event = MOCK_ITOC_FEEDBACK_EVENT
 
     mock_send_test_feedback_service.process_feedback.side_effect = (
         SendFeedbackException(500, LambdaError.FeedbackITOCFailure)
@@ -206,13 +251,13 @@ def test_lambda_handler_respond_with_500_when_failed_to_send_itoc_feedback(
         methods="POST",
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, context)
+    actual = lambda_handler(mock_itoc_test_event, context)
     assert actual == expected
 
 
 def test_is_itoc_test_feedback_itoc_email(set_env):
-    assert is_itoc_test_feedback(MOCK_ITOC_TEST_EMAIL_ADDRESS)
+    assert is_itoc_test_feedback(MOCK_ITOC_ODS_CODE)
 
 
 def test_is_itoc_test_feedback_non_itoc_email(set_env):
-    assert is_itoc_test_feedback("jane_smith@test-email.com") is False
+    assert is_itoc_test_feedback("ABC1234") is False
