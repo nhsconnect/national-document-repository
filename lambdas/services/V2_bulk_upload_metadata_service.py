@@ -9,7 +9,6 @@ import regex
 
 import pydantic
 from botocore.exceptions import ClientError
-from distlib.util import ensure_slash
 
 from enums.upload_status import UploadStatus
 from models.staging_metadata import (
