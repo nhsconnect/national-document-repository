@@ -14,68 +14,16 @@ def test_service(mocker, set_env):
     mocker.patch.object(service, "s3_service")
     return service
 
-@pytest.fixture
-def mock_get_metadata_rows_from_file(mocker, test_service):
-    return mocker.patch.object(test_service, "get_metadata_rows_from_file")
 
+# TODO: Possibly needed as part of PRMT-576
+# @pytest.fixture
+# def mock_update_date_in_row(mocker, test_service):
+#     return mocker.patch.object(
+#         test_service,
+#         "update_date_in_row",
+#         side_effect=lambda original_date: original_date,
+#     )
 
-@pytest.fixture
-def mock_generate_and_save_csv_file(mocker, test_service):
-    return mocker.patch.object(test_service, "generate_and_save_csv_file")
-
-
-@pytest.fixture
-def mock_s3_client(mocker, test_service):
-    return mocker.patch.object(test_service.s3_service, "client")
-
-
-@pytest.fixture
-def sample_metadata_row():
-    return {
-        "FILEPATH": "01 of 02_Lloyd_George_Record_[Dwayne Basil COWIE]_[9730787506]_[18-09-1974].pdf",
-        "GP-PRACTICE-CODE": "M85143",
-        "NHS-NO": "9730787506",
-        "PAGE COUNT": "1",
-        "SCAN-DATE": "03/09/2022",
-        "SCAN-ID": "NEC",
-        "SECTION": "LG",
-        "SUB-SECTION": "",
-        "UPLOAD": "04/10/2023",
-        "USER-ID": "NEC",
-    }
-
-
-@pytest.fixture
-def mock_metadata_file_get_object():
-    def _mock_metadata_file_get_object(
-        test_file_path: str,
-        Bucket: str,
-        Key: str,
-    ):
-        with open(test_file_path, "rb") as file:
-            test_file_data = file.read()
-
-        return {"Body": BytesIO(test_file_data)}
-
-    return _mock_metadata_file_get_object
-
-
-@pytest.fixture
-def mock_update_date_in_row(mocker, test_service):
-    return mocker.patch.object(
-        test_service,
-        "update_date_in_row",
-        side_effect=lambda original_date: original_date,
-    )
-
-
-@pytest.fixture
-def mock_valid_record_filename(mocker, test_service):
-    return mocker.patch.object(
-        test_service,
-        "validate_record_filename",
-        side_effect=lambda original_filename: original_filename,
-    )
 
 def test_validate_record_filename_successful(test_service, mocker):
     original_filename = "/M89002/01 of 02_Lloyd_George_Record_[Dwayne The Rock Johnson]_[9730787506]_[18-09-1974].pdf"
