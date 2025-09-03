@@ -3,6 +3,7 @@ import time
 
 import pytest
 import requests
+from syrupy.extensions.json import JSONSnapshotExtension
 from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 
 data_helper = LloydGeorgeDataHelper()
@@ -32,3 +33,8 @@ def fetch_with_retry(url, condition_func, max_retries=5, delay=10):
         time.sleep(delay)
         retries += 1
     raise Exception("Condition not met within retry limit")
+
+
+@pytest.fixture
+def snapshot_json(snapshot):
+    return snapshot.with_defaults(extension_class=JSONSnapshotExtension)

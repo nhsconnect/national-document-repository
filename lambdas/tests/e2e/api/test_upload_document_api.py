@@ -4,6 +4,7 @@ import logging
 import os
 
 import requests
+from syrupy.filters import paths
 from tests.e2e.conftest import (
     API_ENDPOINT,
     API_KEY,
@@ -66,7 +67,7 @@ def create_upload_payload(lloyd_george_record):
     return json.dumps(sample_payload)
 
 
-def test_create_document_base64(test_data, snapshot):
+def test_create_document_base64(test_data, snapshot_json):
     lloyd_george_record = {}
     lloyd_george_record["ods"] = "H81109"
     lloyd_george_record["nhs_number"] = "9449303304"
@@ -94,28 +95,24 @@ def test_create_document_base64(test_data, snapshot):
     raw_retrieve_response = fetch_with_retry(retrieve_url, condition)
     retrieve_response = raw_retrieve_response.json()
 
-    del upload_response["id"]
-    del upload_response["date"]
-
     attachment_url = upload_response["content"][0]["attachment"]["url"]
     assert (
         f"https://{APIM_ENDPOINT}/national-document-repository/DocumentReference/{LLOYD_GEORGE_SNOMED}~"
         in attachment_url
     )
-    del upload_response["content"][0]["attachment"]["url"]
 
     base64_data = retrieve_response["content"][0]["attachment"]["data"]
     assert base64.b64decode(base64_data, validate=True)
 
-    del retrieve_response["id"]
-    del retrieve_response["date"]
-    del retrieve_response["content"][0]["attachment"]["data"]
+    assert upload_response == snapshot_json(
+        exclude=paths("id", "date", "content.0.attachment.url")
+    )
+    assert retrieve_response == snapshot_json(
+        exclude=paths("id", "date", "content.0.attachment.data")
+    )
 
-    assert upload_response == snapshot
-    assert retrieve_response == snapshot
 
-
-def test_create_document_presign(test_data, snapshot):
+def test_create_document_presign(test_data, snapshot_json):
     lloyd_george_record = {}
     lloyd_george_record["ods"] = "H81109"
     lloyd_george_record["nhs_number"] = "9449303304"
@@ -151,23 +148,20 @@ def test_create_document_presign(test_data, snapshot):
     expected_presign_uri = f"https://{LLOYD_GEORGE_S3_BUCKET}.s3.eu-west-2.amazonaws.com/{lloyd_george_record['nhs_number']}/{lloyd_george_record['id']}"
     assert expected_presign_uri in retrieve_response["content"][0]["attachment"]["url"]
 
-    del upload_response["id"]
-    del upload_response["date"]
-
-    del retrieve_response["date"]
-    del retrieve_response["id"]
-    del retrieve_response["content"][0]["attachment"]["url"]
     assert isinstance(retrieve_response["content"][0]["attachment"]["size"], (int))
-    del retrieve_response["content"][0]["attachment"]["size"]
-    assert upload_response == snapshot
-    assert retrieve_response == snapshot
+
+    assert upload_response == snapshot_json(exclude=paths("id", "date"))
+    assert retrieve_response == snapshot_json(
+        exclude=paths(
+            "id", "date", "content.0.attachment.url", "content.0.attachment.size"
+        )
+    )
 
 
-def test_create_document_virus(test_data, snapshot):
+def test_create_document_virus(test_data, snapshot_json):
     lloyd_george_record = {}
     lloyd_george_record["ods"] = "H81109"
 
-    # The usage of the following NHS Number will trigger a virus
     lloyd_george_record["nhs_number"] = "9730154260"
 
     payload = create_upload_payload(lloyd_george_record)
@@ -198,11 +192,5 @@ def test_create_document_virus(test_data, snapshot):
     raw_retrieve_response = fetch_with_retry(retrieve_url, condition)
     retrieve_response = raw_retrieve_response.json()
 
-    del upload_response["id"]
-    del upload_response["date"]
-
-    del retrieve_response["id"]
-    del retrieve_response["date"]
-
-    assert upload_response == snapshot
-    assert retrieve_response == snapshot
+    assert upload_response == snapshot_json(exclude=paths("id", "date"))
+    assert retrieve_response == snapshot_json(exclude=paths("id", "date"))

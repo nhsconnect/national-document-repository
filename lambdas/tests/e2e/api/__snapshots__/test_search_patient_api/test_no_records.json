@@ -1,0 +1,19 @@
+{
+  "issue": [
+    {
+      "code": "exception",
+      "details": {
+        "coding": [
+          {
+            "code": "RESOURCE_NOT_FOUND",
+            "display": "Resource not found",
+            "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-SpineErrorOrWarningCode"
+          }
+        ]
+      },
+      "diagnostics": "Document reference not found",
+      "severity": "error"
+    }
+  ],
+  "resourceType": "OperationOutcome"
+}
