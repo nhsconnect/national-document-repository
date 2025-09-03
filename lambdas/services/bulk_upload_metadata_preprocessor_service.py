@@ -6,6 +6,8 @@ from datetime import datetime
 
 import regex
 from botocore.exceptions import ClientError
+
+from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
 from models.staging_metadata import METADATA_FILENAME
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -16,7 +18,11 @@ logger = LoggingService(__name__)
 
 
 class MetadataPreprocessorService:
-    def __init__(self, practice_directory: str):
+    def __init__(
+        self,
+        practice_directory: str,
+        pre_format_type: LloydGeorgePreProcessFormat = LloydGeorgePreProcessFormat.GENERAL,
+    ):
         self.s3_service = S3Service()
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
         self.processed_folder_name = "processed"

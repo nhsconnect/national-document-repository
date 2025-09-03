@@ -1,3 +1,4 @@
+from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
@@ -16,7 +17,9 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, _context):
     practice_directory = event.get("practiceDirectory")
+    raw_pre_format_type = event.get("preFormatType")
 
+    pre_format_type = get_pre_process_format_type(raw_pre_format_type)
     if not practice_directory:
         logger.info(
             "Failed to start metadata pre-processor due to missing practice directory"
@@ -26,5 +29,16 @@ def lambda_handler(event, _context):
     logger.info(
         f"Starting metadata pre-processor for practice directory: {practice_directory}"
     )
-    metadata_service = MetadataPreprocessorService(practice_directory)
+    metadata_service = MetadataPreprocessorService(practice_directory, pre_format_type)
     metadata_service.process_metadata()
+
+
+def get_pre_process_format_type(raw_pre_format_type):
+    try:
+        pre_format_type = LloydGeorgePreProcessFormat(raw_pre_format_type)
+    except ValueError:
+        logger.warning(
+            f"Invalid preFormatType: '{raw_pre_format_type}', defaulting to {LloydGeorgePreProcessFormat.GENERAL}."
+        )
+        pre_format_type = LloydGeorgePreProcessFormat.GENERAL
+    return pre_format_type
