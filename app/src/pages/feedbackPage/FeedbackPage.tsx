@@ -1,4 +1,4 @@
-import { JSX, useRef, useState } from 'react';
+import { JSX, useEffect, useRef, useState } from 'react';
 
 import { FieldValues, SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
@@ -45,16 +45,15 @@ function FeedbackPage(): JSX.Element {
         formState: { errors },
     } = useForm<FormData>({
         reValidateMode: 'onSubmit',
+        shouldFocusError: false,
     });
     const navigate = useNavigate();
     const [stage, setStage] = useState(SUBMISSION_STAGE.NotSubmitted);
     const scrollToRef = useRef<HTMLDivElement>(null);
 
-    const handleErrors = (_: FieldValues): void => {
-        setTimeout(() => {
-            scrollToRef.current?.scrollIntoView();
-        }, 50);
-    };
+    useEffect(() => {
+        scrollToRef.current?.scrollIntoView();
+    });
 
     const submit: SubmitHandler<FormData> = async (formData) => {
         setStage(SUBMISSION_STAGE.Submitting);
@@ -153,7 +152,7 @@ function FeedbackPage(): JSX.Element {
                 />
             )}
 
-            <form onSubmit={handleSubmit(submit, handleErrors)}>
+            <form onSubmit={handleSubmit(submit)}>
                 <Fieldset id="select-how-satisfied" data-testid="feedback-radio-section">
                     <Fieldset.Legend>
                         <h2>Overall, how satisfied with the service are you?</h2>
@@ -226,7 +225,12 @@ function FeedbackPage(): JSX.Element {
                     />
                 </Fieldset>
                 {stage !== SUBMISSION_STAGE.Submitting ? (
-                    <Button type="submit" id="submit-feedback" data-testid="submit-feedback">
+                    <Button
+                        type="submit"
+                        id="submit-feedback"
+                        data-testid="submit-feedback"
+                        role="button"
+                    >
                         Send feedback
                     </Button>
                 ) : (

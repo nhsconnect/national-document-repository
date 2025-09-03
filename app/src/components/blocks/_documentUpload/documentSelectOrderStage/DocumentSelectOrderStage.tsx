@@ -58,6 +58,10 @@ const DocumentSelectOrderStage = ({
         scrollToRef.current?.scrollIntoView();
     }, [formState.errors]);
 
+    const handleErrors = (_: FieldValues): void => {
+        scrollToRef.current?.scrollIntoView();
+    };
+
     useEffect(() => {
         documents.forEach((doc) => {
             const key = documentPositionKey(doc.id);
@@ -178,10 +182,6 @@ const DocumentSelectOrderStage = ({
             return;
         }
         navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
-    };
-
-    const handleErrors = (_: FieldValues): void => {
-        scrollToRef.current?.scrollIntoView();
     };
 
     const errorMessageList = (formStateErrors: FieldErrors<FormData>): UploadFilesError[] =>

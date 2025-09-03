@@ -65,6 +65,7 @@ describe('<FeedbackPage />', () => {
 
     describe('User interactions', () => {
         it('on submit, call sendEmail() with the data that user had filled in', async () => {
+            const user = userEvent.setup();
             mockedAxios.post.mockImplementation(() =>
                 Promise.resolve({ status: 200, data: 'Success' }),
             );
@@ -79,7 +80,9 @@ describe('<FeedbackPage />', () => {
             renderComponent();
 
             await fillInForm(mockInputData);
-            await clickSubmitButton();
+
+            const submitButton = screen.getByRole('button', { name: 'Send feedback' });
+            await user.click(submitButton);
 
             await waitFor(() => {
                 expect(document.querySelector('#error-box')).toBeNull();
@@ -96,6 +99,7 @@ describe('<FeedbackPage />', () => {
         });
 
         it("on submit, if feedback content is empty, display an error message and don't send email", async () => {
+            const user = userEvent.setup();
             const mockInputData = {
                 howSatisfied: SATISFACTION_CHOICES.Neither,
                 respondentName: 'Jane Smith',
@@ -105,16 +109,14 @@ describe('<FeedbackPage />', () => {
             renderComponent();
 
             await fillInForm(mockInputData);
-            await clickSubmitButton();
-
-            await waitFor(() => {
-                const errorCount = screen.getAllByText('Enter your feedback');
-                expect(errorCount.length).toBe(2);
-            });
+            const button = screen.getByRole('button', { name: 'Send feedback' });
+            user.click(button);
 
             await waitFor(() => {
                 const errorBox = document.querySelector('#error-box');
+                const errorCount = screen.getAllByText('Enter your feedback');
                 expect(errorBox).toBeVisible();
+                expect(errorCount.length).toBe(2);
             });
 
             expect(mockedAxios).not.toBeCalled();
@@ -122,6 +124,7 @@ describe('<FeedbackPage />', () => {
         });
 
         it("on submit, if user haven't chosen an option for howSatisfied, display an error message and don't send email", async () => {
+            const user = userEvent.setup();
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 respondentName: 'Jane Smith',
@@ -131,16 +134,14 @@ describe('<FeedbackPage />', () => {
             renderComponent();
 
             await fillInForm(mockInputData);
-            await clickSubmitButton();
+            const button = screen.getByRole('button', { name: 'Send feedback' });
+            user.click(button);
 
             await waitFor(() => {
                 const errorCount = screen.getAllByText('Select an option');
-                expect(errorCount.length).toBe(2);
-            });
-
-            await waitFor(() => {
                 const errorBox = document.querySelector('#error-box');
                 expect(errorBox).toBeVisible();
+                expect(errorCount.length).toBe(2);
             });
 
             expect(mockedAxios).not.toBeCalled();
@@ -148,6 +149,7 @@ describe('<FeedbackPage />', () => {
         });
 
         it("on submit, if user filled in an invalid email address, display an error message and don't send email", async () => {
+            const user = userEvent.setup();
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
@@ -158,15 +160,13 @@ describe('<FeedbackPage />', () => {
             renderComponent();
 
             await fillInForm(mockInputData);
-            await clickSubmitButton();
+            const button = screen.getByRole('button', { name: 'Send feedback' });
+            user.click(button);
 
             await waitFor(() => {
                 const errorCount = screen.getAllByText('Enter a valid email address');
-                expect(errorCount.length).toBe(2);
-            });
-
-            await waitFor(() => {
                 const errorBox = document.querySelector('#error-box');
+                expect(errorCount.length).toBe(2);
                 expect(errorBox).toBeVisible();
             });
 
