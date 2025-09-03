@@ -104,6 +104,7 @@ class V2BulkUploadMetadataService:
                         else:
                             patients[key].append(file_metadata)
                 except InvalidFileNameException as error:
+                    logger.error(f"Failed to process {row['FILEPATH']} due to error: {error}")
                     failed_entry = StagingMetadata(
                         nhs_number=nhs_number, files=patients[nhs_number, ods_code]
                     )
@@ -153,59 +154,55 @@ class V2BulkUploadMetadataService:
         shutil.rmtree(self.temp_download_dir)
 
     def validate_record_filename(self, file_name) -> str:
-        try:
-            logger.info(f"Processing file name {file_name}")
+        logger.info(f"Processing file name {file_name}")
 
-            file_path_prefix, current_file_name = self.extract_document_path(file_name)
+        file_path_prefix, current_file_name = self.extract_document_path(file_name)
 
-            first_document_number, second_document_number, current_file_name = (
-                self.extract_document_number_bulk_upload_file_name(current_file_name)
-            )
+        first_document_number, second_document_number, current_file_name = (
+            self.extract_document_number_bulk_upload_file_name(current_file_name)
+        )
 
-            lloyd_george_record, current_file_name = (
-                self.extract_lloyd_george_record_from_bulk_upload_file_name(
-                    current_file_name
-                )
-            )
-            patient_name, current_file_name = (
-                self.extract_patient_name_from_bulk_upload_file_name(current_file_name)
-            )
-
-            if sum(c.isdigit() for c in current_file_name) != 18:
-                logger.info("Failed to find NHS number or date")
-                raise InvalidFileNameException(
-                    f"Incorrect NHS number or date format"
-                )
-
-            nhs_number, current_file_name = (
-                self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
-            )
-            day, month, year, current_file_name = (
-                self.extract_date_from_bulk_upload_file_name(current_file_name)
-            )
-            file_extension = self.extract_file_extension_from_bulk_upload_file_name(
+        lloyd_george_record, current_file_name = (
+            self.extract_lloyd_george_record_from_bulk_upload_file_name(
                 current_file_name
             )
-            file_name_correction = self.assemble_valid_file_name(
-                file_path_prefix,
-                first_document_number,
-                second_document_number,
-                lloyd_george_record,
-                patient_name,
-                nhs_number,
-                day,
-                month,
-                year,
-                file_extension,
-            )
-            if file_name_correction:
-                logger.info(f"Finished processing, new file name is: {file_name}")
-                return file_name_correction
-            else:
-                return ""
+        )
+        patient_name, current_file_name = (
+            self.extract_patient_name_from_bulk_upload_file_name(current_file_name)
+        )
 
-        except InvalidFileNameException as error:
-            logger.error(f"Failed to process {file_name} due to error: {error}")
+        if sum(c.isdigit() for c in current_file_name) != 18:
+            logger.info("Failed to find NHS number or date")
+            raise InvalidFileNameException(
+                f"Incorrect NHS number or date format"
+            )
+
+        nhs_number, current_file_name = (
+            self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
+        )
+        day, month, year, current_file_name = (
+            self.extract_date_from_bulk_upload_file_name(current_file_name)
+        )
+        file_extension = self.extract_file_extension_from_bulk_upload_file_name(
+            current_file_name
+        )
+        file_name_correction = self.assemble_valid_file_name(
+            file_path_prefix,
+            first_document_number,
+            second_document_number,
+            lloyd_george_record,
+            patient_name,
+            nhs_number,
+            day,
+            month,
+            year,
+            file_extension,
+        )
+        if file_name_correction:
+            logger.info(f"Finished processing, new file name is: {file_name}")
+            return file_name_correction
+        else:
+            return ""
 
     @staticmethod
     def extract_document_path(
