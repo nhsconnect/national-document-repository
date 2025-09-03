@@ -22,7 +22,6 @@ from utils.utilities import generate_date_folder_name
 
 logger = LoggingService(__name__)
 
-
 class StatisticalReportService:
     def __init__(self):
         self.dynamo_service = DynamoDBService()
@@ -160,7 +159,7 @@ class StatisticalReportService:
                 pl.concat_list("active_user_ids_hashed")
                 .flatten()
                 .unique()
-                .map_elements(lambda col: str(col.sort().to_list()))
+                .map_elements(lambda col: str(col.sort().to_list()), return_dtype=pl.Utf8)
                 .alias("unique_active_user_ids_hashed"),
                 pl.concat_list("active_user_ids_hashed")
                 .flatten()
@@ -180,7 +179,7 @@ class StatisticalReportService:
 
         for other_dataframe in data_to_report[1:]:
             joined_dataframe = joined_dataframe.join(
-                other_dataframe, on="ods_code", how="outer_coalesce"
+                other_dataframe, on="ods_code", how='full', coalesce=True
             )
 
         return joined_dataframe
