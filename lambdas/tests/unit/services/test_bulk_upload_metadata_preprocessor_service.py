@@ -6,6 +6,8 @@ import pytest
 from botocore.exceptions import ClientError
 from freezegun import freeze_time
 from msgpack.fallback import BytesIO
+
+from lambdas.models.staging_metadata import METADATA_FILENAME
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
@@ -15,8 +17,6 @@ from tests.unit.conftest import (
     TEST_BASE_DIRECTORY,
 )
 from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
-
-from lambdas.models.staging_metadata import METADATA_FILENAME
 
 
 @pytest.fixture(autouse=True)
@@ -886,6 +886,15 @@ def test_generate_renaming_map_handles_empty_filename(
 
 def test_update_date_in_row(test_service):
     metadata_row = {"SCAN-DATE": "2025.01.01", "UPLOAD": "2025.01.01"}
+
+    updated_row = test_service.update_date_in_row(metadata_row)
+
+    assert updated_row["SCAN-DATE"] == "2025/01/01"
+    assert updated_row["UPLOAD"] == "2025/01/01"
+
+
+def test_update_date_in_row_already_formatted(test_service):
+    metadata_row = {"SCAN-DATE": "2025/01/01", "UPLOAD": "2025/01/01"}
 
     updated_row = test_service.update_date_in_row(metadata_row)
 
