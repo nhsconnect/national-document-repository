@@ -33,20 +33,21 @@ describe('DocumentUploadCompleteStage', () => {
         render(<DocumentUploadCompleteStage />);
 
         expect(
-            screen.getByText(
-                'You have successfully uploaded a digital Lloyd George record for:',
-            ),
+            screen.getByText('You have successfully uploaded a digital Lloyd George record for:'),
         ).toBeInTheDocument();
 
         const expectedFullName = getFormattedPatientFullName(patientDetails);
-        expect(screen.getByTestId("patient-name").textContent).toEqual("Patient name: " + expectedFullName)
+        expect(screen.getByTestId('patient-name').textContent).toEqual(
+            'Patient name: ' + expectedFullName,
+        );
 
         const expectedNhsNumber = formatNhsNumber(patientDetails.nhsNumber);
-        expect(screen.getByTestId("nhs-number").textContent).toEqual("NHS Number: " + expectedNhsNumber)
+        expect(screen.getByTestId('nhs-number').textContent).toEqual(
+            'NHS Number: ' + expectedNhsNumber,
+        );
 
         const expectedDob = getFormattedDate(new Date(patientDetails.birthDate));
-        expect(screen.getByTestId("dob").textContent).toEqual("Date of birth: " + expectedDob)
-
+        expect(screen.getByTestId('dob').textContent).toEqual('Date of birth: ' + expectedDob);
     });
 
     it('should navigate to search when clicking the search link', async () => {

@@ -30,7 +30,11 @@ type FormData = {
     [key: string]: number | null;
 };
 
-const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props): JSX.Element => {
+const DocumentSelectOrderStage = ({
+    documents,
+    setDocuments,
+    setMergedPdfBlob,
+}: Props): JSX.Element => {
     const navigate = useNavigate();
 
     const documentPositionKey = (documentId: string): string => {

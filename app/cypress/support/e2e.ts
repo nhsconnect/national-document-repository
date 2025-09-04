@@ -1,53 +1,79 @@
-import { DynamoDB, S3 } from 'aws-sdk';
-import { Roles, roleIds, roleList } from './roles';
+/// <reference types="cypress" />
+
+import {
+    AttributeValue,
+    DeleteItemCommandOutput,
+    PutItemCommandOutput,
+} from '@aws-sdk/client-dynamodb';
+
+import { DeleteObjectCommandOutput, PutObjectCommandOutput } from '@aws-sdk/client-s3';
+import { Roles, RoleKey, RoleId, RoleInfo } from './roles';
 import { routes } from './routes';
-import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
-import Bluebird from 'cypress/types/bluebird';
+import { defaultFeatureFlags } from './feature_flags';
 import './aws.commands';
 import 'cypress-real-events';
 
-/// <reference types="cypress" />
 const registerCypressGrep = require('@cypress/grep');
 registerCypressGrep();
+
+const roleEntries = Object.entries(Roles) as [RoleKey, RoleId][];
+const roleIds = [...new Set(roleEntries.map(([, id]) => id))];
+
+function resolveRole(input: RoleKey | RoleId | string): RoleInfo {
+    const raw = String(input);
+    const key = raw.toUpperCase() as RoleKey;
+    const val = raw.toLowerCase() as RoleId;
+
+    if (key in Roles) {
+        return { roleId: Roles[key], roleName: key };
+    }
+
+    const byValue = roleEntries.find(([, id]) => id === val);
+    if (byValue) {
+        return { roleId: byValue[1], roleName: byValue[0] };
+    }
+
+    const ALIASES: Partial<Record<string, RoleKey>> = {
+        GP: 'GP_ADMIN',
+        SMOKE_GP_ADMIN: 'GP_ADMIN',
+        SMOKE_GP_CLINICAL: 'GP_CLINICAL',
+        PCSE_USER: 'PCSE',
+    };
+    const aliasKey = ALIASES[key];
+    if (aliasKey && aliasKey! in Roles) {
+        return { roleId: Roles[aliasKey], roleName: aliasKey };
+    }
+
+    throw new Error(
+        `Unknown role '${input}'. Accept keys: ${Object.keys(Roles).join(', ')}; ids: ${roleIds.join(', ')}`,
+    );
+}
 
 Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
 });
 
 Cypress.Commands.add('login', (role, featureFlags) => {
-    if (roleIds.includes(role)) {
-        const roleName = roleList.find((roleName) => Roles[roleName] === role);
-        // Login for regression tests
-        const authCallback = '/auth-callback';
-        const fixturePath = 'requests/auth/GET_TokenRequest_' + roleName + '.json';
+    const roleInfo: RoleInfo = resolveRole(role);
+    const authCallback = '/auth-callback';
+    const fixturePath = `requests/auth/GET_TokenRequest_${roleInfo.roleName}.json`;
 
-        cy.intercept('GET', '/Auth/TokenRequest*', {
-            statusCode: 200,
-            fixture: fixturePath,
-        }).as('auth');
+    cy.intercept('GET', '/Auth/TokenRequest*', {
+        statusCode: 200,
+        fixture: fixturePath,
+    }).as('auth');
 
-        if (featureFlags) {
-            cy.intercept('GET', '/FeatureFlags*', {
-                statusCode: 200,
-                body: featureFlags,
-            }).as('featureFlags');
-        } else {
-            cy.intercept('GET', '/FeatureFlags*', {
-                statusCode: 200,
-                body: defaultFeatureFlags,
-            }).as('featureFlags');
-        }
+    cy.intercept('GET', '/FeatureFlags*', {
+        statusCode: 200,
+        body: featureFlags ?? defaultFeatureFlags,
+    }).as('featureFlags');
 
-        cy.visit(authCallback);
-        cy.wait('@auth');
-        cy.wait('@featureFlags');
-    } else {
-        throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
-    }
+    cy.visit(authCallback);
+    cy.wait('@auth');
+    cy.wait('@featureFlags');
 });
 
 Cypress.Commands.add('smokeLogin', (role) => {
-    // Login for smoke tests
     const baseUrl = Cypress.config('baseUrl');
     const key = Cypress.env('KEY');
     const odsCode = Cypress.env('ODSCODE');
@@ -114,13 +140,13 @@ declare global {
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
              * @param featureFlags - Feature flags values to override the defaults
              */
-            login(role: Roles, featureFlags?: FeatureFlags): Chainable<void>;
+            login(role: RoleKey | RoleId | string, featureFlags?: any): Chainable<void>;
 
             /**
              * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
              */
-            smokeLogin(role: Roles): Chainable<void>;
+            smokeLogin(role: RoleKey | RoleId | string): Chainable<void>;
             /**
              * Add file to s3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
@@ -132,7 +158,7 @@ declare global {
                 bucketName: string,
                 fileName: string,
                 filePath: string,
-            ): Chainable<Bluebird<S3.ManagedUpload.SendData>>;
+            ): Chainable<PutObjectCommandOutput>;
             /**
              * Add dynamoDB entry
              * @param {string} tableName - Name of the target dynamoDB table
@@ -141,8 +167,8 @@ declare global {
              */
             addItemToDynamoDb(
                 tableName: string,
-                item: DynamoDB.PutItemInputAttributeMap,
-            ): Chainable<Bluebird<DynamoDB.PutItemOutput>>;
+                item: Record<string, AttributeValue>,
+            ): Chainable<PutItemCommandOutput>;
             /**
              * Delete file from S3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
@@ -152,7 +178,7 @@ declare global {
             deleteFileFromS3(
                 bucketName: string,
                 fileName: string,
-            ): Chainable<Bluebird<S3.DeleteObjectOutput>>;
+            ): Chainable<DeleteObjectCommandOutput>;
             /**
              * Delete item from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
@@ -162,7 +188,7 @@ declare global {
             deleteItemFromDynamoDb(
                 tableName: string,
                 itemId: string,
-            ): Chainable<Bluebird<DynamoDB.DeleteItemOutput>>;
+            ): Chainable<DeleteItemCommandOutput>;
             /**
              * Delete items with a specific secondary key value from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
@@ -176,7 +202,7 @@ declare global {
                 index: string,
                 attribute: string,
                 value: string,
-            ): Chainable<Bluebird<DynamoDB.BatchWriteItemOutput>>;
+            ): Chainable<void>;
 
             navigateToHomePage(): Chainable<void>;
             navigateToPatientSearchPage(): Chainable<void>;
