@@ -8,7 +8,7 @@ import {
 } from '@aws-sdk/client-dynamodb';
 
 import { DeleteObjectCommandOutput, PutObjectCommandOutput  } from '@aws-sdk/client-s3';
-import { Roles, RoleKey, RoleId } from './roles';
+import { Roles, RoleKey, RoleId, RoleInfo } from './roles';
 import { routes } from './routes';
 import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
 import './aws.commands';
@@ -20,18 +20,20 @@ registerCypressGrep();
 const roleEntries = Object.entries(Roles) as [RoleKey, RoleId][];
 const roleIds = [...new Set(roleEntries.map(([, id]) => id))];
 
-function resolveRole(input: RoleKey | RoleId | string): { roleId: RoleId; roleName: RoleKey } {
+function resolveRole(input: RoleKey | RoleId | string): RoleInfo {
   const raw = String(input);
   const key = raw.toUpperCase() as RoleKey;
   const val = raw.toLowerCase() as RoleId;
 
   if (key in Roles) {
-    return { roleId: Roles[key], roleName: key };
+      const roleInfo: RoleInfo = { roleId: Roles[key], roleName: key }
+      return roleInfo;
   }
 
   const byValue = roleEntries.find(([, id]) => id === val);
   if (byValue) {
-    return { roleId: byValue[1], roleName: byValue[0] };
+      const roleInfo: RoleInfo = { roleId: byValue[1], roleName: byValue[0] };
+      return roleInfo
   }
 
   const ALIASES: Partial<Record<string, RoleKey>> = {
@@ -42,7 +44,8 @@ function resolveRole(input: RoleKey | RoleId | string): { roleId: RoleId; roleNa
   };
   const aliasKey = ALIASES[key];
   if (aliasKey && aliasKey in Roles) {
-    return { roleId: Roles[aliasKey], roleName: aliasKey };
+      const roleInfo: RoleInfo =  { roleId: Roles[aliasKey], roleName: aliasKey };
+      return roleInfo
   }
 
   throw new Error(
@@ -55,9 +58,9 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
 });
 
 Cypress.Commands.add('login', (role, featureFlags) => {
-  const { roleId, roleName } = resolveRole(role); 
+  const roleInfo : RoleInfo = resolveRole(role);
   const authCallback = '/auth-callback';
-  const fixturePath = `requests/auth/GET_TokenRequest_${roleName}.json`;
+  const fixturePath = `requests/auth/GET_TokenRequest_${roleInfo.roleName}.json`;
 
   cy.intercept('GET', '/Auth/TokenRequest*', {
     statusCode: 200,

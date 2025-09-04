@@ -42,13 +42,11 @@ Cypress.Commands.add('addPdfFileToS3', (bucketName: string, fileName: string, fi
         return cy.wrap(
             s3
                 .send(new PutObjectCommand(params))
-                .then((data) => {
-                    return data;
-                })
+                .then((data) => data)
                 .catch((err) => {
-                    const message = 'Error uploading file to S3: ' + err;
+                    const message = 'Error uploading file to S3: ' + bucketName;
                     // eslint-disable-next-line no-console
-                    console.error(message);
+                    console.error(message, err);
                     throw new Error(message);
                 }),
         );

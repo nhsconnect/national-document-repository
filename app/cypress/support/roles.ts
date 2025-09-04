@@ -12,6 +12,11 @@ export const Roles = {
 export type RoleKey = keyof typeof Roles;
 export type RoleId  = typeof Roles[RoleKey];
 
+export type RoleInfo = {
+    roleId: RoleId;
+    roleName: RoleKey;
+};
+
 export function roleName(input: RoleKey | RoleId | string): RoleKey {
   const key = String(input).toUpperCase().trim();
   if ((Roles as any)[key]) return key as RoleKey;
