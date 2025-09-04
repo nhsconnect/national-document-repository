@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { JSX, useState } from 'react';
 import { routes } from '../../types/generic/routes';
 import { FieldValues, useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
@@ -26,7 +26,7 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
-function PatientSearchPage() {
+function PatientSearchPage(): JSX.Element {
     const [, setPatientDetails] = usePatientDetailsContext();
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
@@ -49,7 +49,7 @@ function PatientSearchPage() {
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    const handleSuccess = (patientDetails: PatientDetails) => {
+    const handleSuccess = (patientDetails: PatientDetails): void => {
         setPatientDetails(patientDetails);
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
         navigate(routes.VERIFY_PATIENT);
@@ -59,12 +59,12 @@ function PatientSearchPage() {
     const pageTitle = 'Search for a patient';
     useTitle({ pageTitle: pageTitle });
 
-    const setFailedSubmitState = (statusCode: number | null) => {
+    const setFailedSubmitState = (statusCode: number | null): void => {
         setStatusCode(statusCode);
         setSubmissionState(SEARCH_STATES.FAILED);
     };
 
-    const handleSearch = async (data: FieldValues) => {
+    const handleSearch = async (data: FieldValues): Promise<void> => {
         setSubmissionState(SEARCH_STATES.SEARCHING);
         setInputError(null);
         setStatusCode(null);
@@ -117,7 +117,7 @@ function PatientSearchPage() {
             setFailedSubmitState(error.response?.status ?? null);
         }
     };
-    const handleError = (fields: FieldValues) => {
+    const handleError = (fields: FieldValues): void => {
         const errorMessages = Object.entries(fields).map(
             ([k, v]: [string, { message: string }]) => v.message,
         );
@@ -126,7 +126,7 @@ function PatientSearchPage() {
     return (
         <>
             <BackLink asElement="a" href={routes.HOME}>
-                Return to Home
+                Go to home
             </BackLink>
             {(submissionState === SEARCH_STATES.FAILED ||
                 inputError === incorrectFormatMessage) && (
