@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { JSX, useEffect, useRef, useState } from 'react';
 
-import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
+import { FieldValues, SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
 import {
     Button,
@@ -27,8 +27,16 @@ import sendEmail from '../../helpers/requests/sendEmail';
 import { isMock } from '../../helpers/utils/isLocal';
 import { routes } from '../../types/generic/routes';
 import { errorToParams } from '../../helpers/utils/errorToParams';
+import ErrorBox from '../../components/layout/errorBox/ErrorBox';
+import {
+    FEEDBACK_ERROR_TYPE,
+    groupFeedbackErrorsByType,
+} from '../../helpers/utils/feedbackErrorMessages';
+import { ErrorMessageListItem } from '../../types/pages/genericPageErrors';
 
-function FeedbackPage() {
+type FeedbackError = ErrorMessageListItem<FEEDBACK_ERROR_TYPE>;
+
+function FeedbackPage(): JSX.Element {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const {
@@ -37,9 +45,15 @@ function FeedbackPage() {
         formState: { errors },
     } = useForm<FormData>({
         reValidateMode: 'onSubmit',
+        shouldFocusError: false,
     });
     const navigate = useNavigate();
     const [stage, setStage] = useState(SUBMISSION_STAGE.NotSubmitted);
+    const scrollToRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        scrollToRef.current?.scrollIntoView();
+    });
 
     const submit: SubmitHandler<FormData> = async (formData) => {
         setStage(SUBMISSION_STAGE.Submitting);
@@ -69,12 +83,12 @@ function FeedbackPage() {
 
     const feedbackContentProps = renameRefKey(
         register(FORM_FIELDS.FeedbackContent, {
-            required: 'Please enter your feedback',
+            required: 'Enter your feedback',
         }),
         'textareaRef',
     );
     const howSatisfiedProps = renameRefKey(
-        register(FORM_FIELDS.HowSatisfied, { required: 'Please select an option' }),
+        register(FORM_FIELDS.HowSatisfied, { required: 'Select an option' }),
         'inputRef',
     );
     const respondentNameProps = renameRefKey(register(FORM_FIELDS.RespondentName), 'inputRef');
@@ -91,16 +105,59 @@ function FeedbackPage() {
     );
     useTitle({ pageTitle: 'Give feedback on this service' });
 
+    const errorMessageList = (): FeedbackError[] => {
+        const errorConfig: {
+            key: keyof typeof errors;
+            linkId: string;
+            error: FEEDBACK_ERROR_TYPE;
+        }[] = [
+            {
+                key: FORM_FIELDS.HowSatisfied,
+                linkId: 'select-how-satisfied',
+                error: FEEDBACK_ERROR_TYPE.feedbackSatisfaction,
+            },
+            {
+                key: FORM_FIELDS.FeedbackContent,
+                linkId: 'feedback_textbox',
+                error: FEEDBACK_ERROR_TYPE.feedbackTextbox,
+            },
+            {
+                key: FORM_FIELDS.RespondentEmail,
+                linkId: 'email-text-input',
+                error: FEEDBACK_ERROR_TYPE.emailTextInput,
+            },
+        ];
+
+        return errorConfig
+            .filter(({ key }) => errors[key])
+            .map(({ key, linkId, error }) => ({
+                linkId,
+                error,
+                details: errors[key]!.message,
+            }));
+    };
+
     return (
         <div id="feedback-form">
             <h1 data-testid="feedback-page-header">Give feedback on this service</h1>
 
+            {Object.keys(errors).length > 0 && (
+                <ErrorBox
+                    dataTestId="feedback-error-box"
+                    errorBoxSummaryId="feedback-errors"
+                    messageTitle="There is a problem"
+                    errorMessageList={errorMessageList()}
+                    groupErrorsFn={groupFeedbackErrorsByType}
+                    scrollToRef={scrollToRef}
+                />
+            )}
+
             <form onSubmit={handleSubmit(submit)}>
-                <Fieldset data-testid="feedback-radio-section">
+                <Fieldset id="select-how-satisfied" data-testid="feedback-radio-section">
                     <Fieldset.Legend>
                         <h2>Overall, how satisfied with the service are you?</h2>
                     </Fieldset.Legend>
-                    <Radios id="select-how-satisfied" error={errors.howSatisfied?.message}>
+                    <Radios error={errors.howSatisfied?.message}>
                         {Object.values(SATISFACTION_CHOICES).map((choice) => (
                             <Radios.Radio key={choice} value={choice} {...howSatisfiedProps}>
                                 {choice}
@@ -109,7 +166,7 @@ function FeedbackPage() {
                     </Radios>
                 </Fieldset>
 
-                <Fieldset data-testid="feedback-text-section">
+                <Fieldset id="feedback_textbox" data-testid="feedback-text-section">
                     <Fieldset.Legend>
                         <h2>Can you tell us why you selected that option?</h2>
                     </Fieldset.Legend>
@@ -157,6 +214,7 @@ function FeedbackPage() {
                     />
 
                     <TextInput
+                        id="email-text-input"
                         label="Your email address"
                         hint="We’ll only use this to reply to your message"
                         data-testid={FORM_FIELDS.RespondentEmail}
@@ -167,7 +225,12 @@ function FeedbackPage() {
                     />
                 </Fieldset>
                 {stage !== SUBMISSION_STAGE.Submitting ? (
-                    <Button type="submit" id="submit-feedback" data-testid="submit-feedback">
+                    <Button
+                        type="submit"
+                        id="submit-feedback"
+                        data-testid="submit-feedback"
+                        role="button"
+                    >
                         Send feedback
                     </Button>
                 ) : (

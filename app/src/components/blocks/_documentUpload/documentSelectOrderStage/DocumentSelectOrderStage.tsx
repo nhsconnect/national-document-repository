@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,
+    groupUploadErrorsByType,
     UPLOAD_FILE_ERROR_TYPE,
 } from '../../../../helpers/utils/fileUploadErrorMessages';
 import { routeChildren, routes } from '../../../../types/generic/routes';
@@ -13,12 +14,12 @@ import {
     DOCUMENT_TYPE,
     SetUploadDocuments,
     UploadDocument,
-    UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
+import { ErrorMessageListItem } from '../../../../types/pages/genericPageErrors';
 import getMergedPdfBlob from '../../../../helpers/utils/pdfMerger';
 
 type Props = {
@@ -29,6 +30,7 @@ type Props = {
 type FormData = {
     [key: string]: number | null;
 };
+type UploadFilesError = ErrorMessageListItem<UPLOAD_FILE_ERROR_TYPE>;
 
 const DocumentSelectOrderStage = ({
     documents,
@@ -55,6 +57,10 @@ const DocumentSelectOrderStage = ({
     useEffect(() => {
         scrollToRef.current?.scrollIntoView();
     }, [formState.errors]);
+
+    const handleErrors = (_: FieldValues): void => {
+        scrollToRef.current?.scrollIntoView();
+    };
 
     useEffect(() => {
         documents.forEach((doc) => {
@@ -178,10 +184,6 @@ const DocumentSelectOrderStage = ({
         navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
     };
 
-    const handleErrors = (_: FieldValues): void => {
-        scrollToRef.current?.scrollIntoView();
-    };
-
     const errorMessageList = (formStateErrors: FieldErrors<FormData>): UploadFilesError[] =>
         Object.entries(formStateErrors)
             .map(([key, error]) => {
@@ -214,6 +216,7 @@ const DocumentSelectOrderStage = ({
                     errorBoxSummaryId="document-positions"
                     messageTitle="There is a problem"
                     errorMessageList={errorMessageList(formState.errors)}
+                    groupErrorsFn={groupUploadErrorsByType}
                     scrollToRef={scrollToRef}
                 />
             )}
@@ -267,7 +270,7 @@ const DocumentSelectOrderStage = ({
                                         You have removed all files. Go back to&nbsp;
                                         <button
                                             className="govuk-link"
-                                            onClick={(e) => {
+                                            onClick={(e): void => {
                                                 e.preventDefault();
                                                 navigate(routes.DOCUMENT_UPLOAD);
                                             }}
@@ -311,7 +314,7 @@ const DocumentSelectOrderStage = ({
                                                 type="button"
                                                 aria-label={`Remove ${document.file.name} from selection`}
                                                 className="link-button"
-                                                onClick={() => {
+                                                onClick={(): void => {
                                                     onRemove(index);
                                                 }}
                                             >
