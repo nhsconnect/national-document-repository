@@ -64,20 +64,21 @@ def lambda_handler(event, context):
         )
         raise SendFeedbackException(400, LambdaError.FeedbackInvalidBody)
 
+    logger.info("Setting up SendFeedbackService...")
+
+    feedback_service = SendFeedbackService()
+    logger.info("SendFeedbackService ready, start processing feedback")
+
+    feedback_service.process_feedback(feedback)
+    logger.info("Process complete", {"Result": "Successfully sent feedback by email"})
+
     if is_itoc_test_feedback(ods_code):
         logger.info("Setting up SendTestFeedbackService")
 
         test_feedback_service = SendTestFeedbackService()
         test_feedback_service.process_feedback(feedback)
-    else:
-        logger.info("Setting up SendFeedbackService...")
 
-        feedback_service = SendFeedbackService()
-        logger.info("SendFeedbackService ready, start processing feedback")
 
-        feedback_service.process_feedback(feedback)
-
-    logger.info("Process complete", {"Result": "Successfully sent feedback by email"})
 
     return ApiGatewayResponse(
         200, "Feedback email processed", "POST"

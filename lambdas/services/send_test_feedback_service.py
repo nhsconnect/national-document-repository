@@ -2,13 +2,11 @@ import json
 import os
 
 import requests
-from enums.lambda_error import LambdaError
 from enums.message_templates import MessageTemplates
 from enums.supported_document_types import logger
 from jinja2 import Template
 from models.feedback_model import Feedback
 from requests.exceptions import HTTPError
-from utils.lambda_exceptions import SendFeedbackException
 
 
 class SendTestFeedbackService:
@@ -16,6 +14,7 @@ class SendTestFeedbackService:
     def process_feedback(self, feedback: Feedback):
         self.send_itoc_feedback_via_slack(feedback)
         self.send_itoc_feedback_via_teams(feedback)
+
 
     def send_itoc_feedback_via_slack(self, feedback: Feedback):
         logger.info("Sending ITOC test feedback via slack")
@@ -35,11 +34,10 @@ class SendTestFeedbackService:
                 url="https://slack.com/api/chat.postMessage", json=body, headers=headers
             )
             response.raise_for_status()
+            logger.info("Successfully sent ITOC test feedback via slack.")
         except HTTPError as e:
             logger.error(e)
-            raise SendFeedbackException(
-                e.response.status_code, LambdaError.FeedbackITOCFailure
-            )
+            logger.error("Failed to send ITOC test feedback via slack.")
 
     def send_itoc_feedback_via_teams(self, feedback: Feedback):
         logger.info("Sending ITOC test feedback via teams")
@@ -56,12 +54,10 @@ class SendTestFeedbackService:
                 json=payload,
             )
             response.raise_for_status()
-            logger.info("ITOC test feedback successfully sent via teams")
+            logger.info("ITOC test feedback successfully sent via teams.")
         except HTTPError as e:
             logger.error(e)
-            raise SendFeedbackException(
-                e.response.status_code, LambdaError.FeedbackITOCFailure
-            )
+            logger.error("ITOC test feedback failed via teams.")
 
     def compose_message(self, feedback: Feedback, messaging_template: str):
         logger.info("Composing ITOC test feedback message...")

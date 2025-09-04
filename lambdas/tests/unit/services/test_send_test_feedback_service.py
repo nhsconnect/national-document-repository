@@ -1,7 +1,6 @@
 import json
 
 import pytest
-from enums.lambda_error import LambdaError
 from enums.message_templates import MessageTemplates
 from models.feedback_model import Feedback
 from requests import Response
@@ -16,7 +15,6 @@ from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_ITOC_FEEDBACK_BODY_JSON_STR,
     readfile,
 )
-from utils.lambda_exceptions import SendFeedbackException
 
 
 @pytest.fixture
@@ -74,20 +72,21 @@ def test_send_slack_message(send_test_feedback_service, mock_post):
     )
 
 
-def test_send_slack_message_raise_error_on_failure(
-    send_test_feedback_service, mock_post
+def test_send_slack_message_logs_error_on_failure(
+    send_test_feedback_service, mock_post, caplog
 ):
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
     response = Response()
-    response.status_code = 403
+    response.status_code = 500
     mock_post.return_value = response
 
-    expected_error = SendFeedbackException(403, LambdaError.FeedbackITOCFailure)
+    expected_log = "Failed to send ITOC test feedback via slack."
 
-    with pytest.raises(SendFeedbackException) as error:
-        send_test_feedback_service.send_itoc_feedback_via_slack(feedback)
+    send_test_feedback_service.send_itoc_feedback_via_slack(feedback)
 
-    assert error.value == expected_error
+    actual = caplog.messages[-1]
+
+    assert actual == expected_log
 
 
 def test_compose_teams_message(send_test_feedback_service):
@@ -114,17 +113,18 @@ def test_send_itoc_feedback_via_teams(send_test_feedback_service, mock_post):
     )
 
 
-def test_send_teams_message_raise_error_on_failure(
-    send_test_feedback_service, mock_post
+def test_send_teams_message_logs_error_on_failure(
+    send_test_feedback_service, mock_post, caplog
 ):
     feedback = Feedback.model_validate(MOCK_ITOC_FEEDBACK_BODY)
     response = Response()
     response.status_code = 500
     mock_post.return_value = response
 
-    expected_error = SendFeedbackException(500, LambdaError.FeedbackITOCFailure)
+    expected_log = "ITOC test feedback failed via teams."
 
-    with pytest.raises(SendFeedbackException) as error:
-        send_test_feedback_service.send_itoc_feedback_via_teams(feedback)
+    send_test_feedback_service.send_itoc_feedback_via_teams(feedback)
 
-    assert error.value == expected_error
+    actual = caplog.messages[-1]
+
+    assert actual == expected_log

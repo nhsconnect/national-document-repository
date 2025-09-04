@@ -2,6 +2,8 @@ import json
 from copy import deepcopy
 
 import pytest
+from requests import Response
+
 from enums.lambda_error import LambdaError
 from handlers.send_feedback_handler import is_itoc_test_feedback, lambda_handler
 from models.feedback_model import Feedback
@@ -72,6 +74,12 @@ def mock_valid_feedback_event(event):
     valid_feedback_event["body"] = MOCK_VALID_FEEDBACK_BODY_JSON_STR
     valid_feedback_event["httpMethod"] = "POST"
     yield valid_feedback_event
+
+
+@pytest.fixture
+def mock_post(mocker):
+    yield mocker.patch("requests.post")
+
 
 
 def test_lambda_handler_respond_with_200_when_successful(
@@ -215,6 +223,8 @@ def test_lambda_handler_respond_with_200_when_itoc_feedback_sent(
     mock_validator,
     mock_jwt_encode_itoc_user,
     mock_itoc_test_event,
+    mock_feedback_service,
+    mock_get_email_recipients_list
 ):
     mock_validator.return_value = MOCK_PARSED_ITOC_FEEDBACK
 
@@ -225,33 +235,31 @@ def test_lambda_handler_respond_with_200_when_itoc_feedback_sent(
     actual = lambda_handler(mock_itoc_test_event, context)
 
     mock_validator.assert_called_once_with(MOCK_ITOC_FEEDBACK_BODY_JSON_STR)
+    mock_feedback_service.process_feedback.assert_called()
     assert actual == expected
 
 
-def test_lambda_handler_respond_with_500_when_failed_to_send_itoc_feedback(
+def test_lambda_handler_respond_with_200_when_failed_to_send_itoc_feedback(
     set_env,
     context,
     mock_send_test_feedback_service,
     mock_jwt_encode_itoc_user,
     mock_itoc_test_event,
+    mock_post,
+    mock_feedback_service,
+    mock_get_email_recipients_list
 ):
 
-    mock_send_test_feedback_service.process_feedback.side_effect = (
-        SendFeedbackException(500, LambdaError.FeedbackITOCFailure)
-    )
+    response = Response()
+    response.status_code = 500
+    mock_post.return_value = response
+
     expected = ApiGatewayResponse(
-        status_code=500,
-        body=json.dumps(
-            {
-                "message": LambdaError.FeedbackITOCFailure.value["message"],
-                "err_code": LambdaError.FeedbackITOCFailure.value["err_code"],
-                "interaction_id": MOCK_INTERACTION_ID,
-            }
-        ),
-        methods="POST",
+        status_code=200, body="Feedback email processed", methods="POST"
     ).create_api_gateway_response()
 
     actual = lambda_handler(mock_itoc_test_event, context)
+    mock_feedback_service.process_feedback.assert_called()
     assert actual == expected
 
 
