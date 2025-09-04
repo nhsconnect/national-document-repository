@@ -8,6 +8,7 @@ def update_lambda_environment_variables(lambda_name, new_variables):
     lambda_client = session.client("lambda")
 
     response = lambda_client.get_function_configuration(FunctionName=lambda_name)
+    print(response)
     current_environment = response["Environment"]["Variables"]
 
     updated_environment = current_environment.copy()
