@@ -1,6 +1,6 @@
 def extract_page_number(filename: str) -> int:
     """
-    extract page number from lloyd george file names
+    extract page number from Lloyd George file names
 
     example usage:
         filename = "123of456_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf"
@@ -16,7 +16,7 @@ def extract_page_number(filename: str) -> int:
 
 def extract_total_pages(filename: str) -> int:
     """
-    extract total page number from lloyd george file names
+    extract total page number from Lloyd George file names
 
     example usage:
         filename = "123of456_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf"

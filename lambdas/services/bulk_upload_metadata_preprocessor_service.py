@@ -21,7 +21,7 @@ class MetadataPreprocessorService:
     def __init__(
         self,
         practice_directory: str,
-            pre_format_type: LloydGeorgePreProcessFormat = LloydGeorgePreProcessFormat.GENERAL
+        pre_format_type: LloydGeorgePreProcessFormat = LloydGeorgePreProcessFormat.GENERAL
     ):
         self.s3_service = S3Service()
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
