@@ -332,13 +332,13 @@ function DocumentUploadPage() {
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION) + '/*'}
-                    element={
-                        <DocumentUploadConfirmStage documents={documents} />
-                    }
+                    element={<DocumentUploadConfirmStage documents={documents} />}
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_UPLOADING) + '/*'}
-                    element={<DocumentUploadingStage documents={documents} startUpload={startUpload} />}
+                    element={
+                        <DocumentUploadingStage documents={documents} startUpload={startUpload} />
+                    }
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_COMPLETED) + '/*'}

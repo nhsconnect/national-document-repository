@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
 import aws from './aws.config';
-import './aws.commands'; 
+import './aws.commands';
 import {
     S3Client,
     PutObjectCommand,

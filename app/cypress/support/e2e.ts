@@ -2,12 +2,11 @@
 
 import {
     AttributeValue,
-    BatchWriteItemCommandOutput,
     DeleteItemCommandOutput,
     PutItemCommandOutput,
 } from '@aws-sdk/client-dynamodb';
 
-import { DeleteObjectCommandOutput, PutObjectCommandOutput  } from '@aws-sdk/client-s3';
+import { DeleteObjectCommandOutput, PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { Roles, RoleKey, RoleId, RoleInfo } from './roles';
 import { routes } from './routes';
 import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
@@ -21,36 +20,33 @@ const roleEntries = Object.entries(Roles) as [RoleKey, RoleId][];
 const roleIds = [...new Set(roleEntries.map(([, id]) => id))];
 
 function resolveRole(input: RoleKey | RoleId | string): RoleInfo {
-  const raw = String(input);
-  const key = raw.toUpperCase() as RoleKey;
-  const val = raw.toLowerCase() as RoleId;
+    const raw = String(input);
+    const key = raw.toUpperCase() as RoleKey;
+    const val = raw.toLowerCase() as RoleId;
 
-  if (key in Roles) {
-      const roleInfo: RoleInfo = { roleId: Roles[key], roleName: key }
-      return roleInfo;
-  }
+    if (key in Roles) {
+        return { roleId: Roles[key], roleName: key };
+    }
 
-  const byValue = roleEntries.find(([, id]) => id === val);
-  if (byValue) {
-      const roleInfo: RoleInfo = { roleId: byValue[1], roleName: byValue[0] };
-      return roleInfo
-  }
+    const byValue = roleEntries.find(([, id]) => id === val);
+    if (byValue) {
+        return { roleId: byValue[1], roleName: byValue[0] };
+    }
 
-  const ALIASES: Partial<Record<string, RoleKey>> = {
-    GP: 'GP_ADMIN',
-    SMOKE_GP_ADMIN: 'GP_ADMIN',
-    SMOKE_GP_CLINICAL: 'GP_CLINICAL',
-    PCSE_USER: 'PCSE',
-  };
-  const aliasKey = ALIASES[key];
-  if (aliasKey && aliasKey in Roles) {
-      const roleInfo: RoleInfo =  { roleId: Roles[aliasKey], roleName: aliasKey };
-      return roleInfo
-  }
+    const ALIASES: Partial<Record<string, RoleKey>> = {
+        GP: 'GP_ADMIN',
+        SMOKE_GP_ADMIN: 'GP_ADMIN',
+        SMOKE_GP_CLINICAL: 'GP_CLINICAL',
+        PCSE_USER: 'PCSE',
+    };
+    const aliasKey = ALIASES[key];
+    if (aliasKey && aliasKey! in Roles) {
+        return { roleId: Roles[aliasKey], roleName: aliasKey };
+    }
 
-  throw new Error(
-    `Unknown role '${input}'. Accept keys: ${Object.keys(Roles).join(', ')}; ids: ${roleIds.join(', ')}`
-  );
+    throw new Error(
+        `Unknown role '${input}'. Accept keys: ${Object.keys(Roles).join(', ')}; ids: ${roleIds.join(', ')}`,
+    );
 }
 
 Cypress.Commands.add('getByTestId', (selector, ...args) => {
@@ -58,24 +54,23 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
 });
 
 Cypress.Commands.add('login', (role, featureFlags) => {
-  const roleInfo : RoleInfo = resolveRole(role);
-  const authCallback = '/auth-callback';
-  const fixturePath = `requests/auth/GET_TokenRequest_${roleInfo.roleName}.json`;
+    const roleInfo: RoleInfo = resolveRole(role);
+    const authCallback = '/auth-callback';
+    const fixturePath = `requests/auth/GET_TokenRequest_${roleInfo.roleName}.json`;
 
-  cy.intercept('GET', '/Auth/TokenRequest*', {
-    statusCode: 200,
-    fixture: fixturePath,
-  }).as('auth');
+    cy.intercept('GET', '/Auth/TokenRequest*', {
+        statusCode: 200,
+        fixture: fixturePath,
+    }).as('auth');
 
-  cy.intercept('GET', '/FeatureFlags*', {
-    statusCode: 200,
-    body: featureFlags ?? defaultFeatureFlags,
-  }).as('featureFlags');
+    cy.intercept('GET', '/FeatureFlags*', {
+        statusCode: 200,
+        body: featureFlags ?? defaultFeatureFlags,
+    }).as('featureFlags');
 
- 
-  cy.visit(authCallback);
-  cy.wait('@auth');
-  cy.wait('@featureFlags');
+    cy.visit(authCallback);
+    cy.wait('@auth');
+    cy.wait('@featureFlags');
 });
 
 Cypress.Commands.add('smokeLogin', (role) => {
