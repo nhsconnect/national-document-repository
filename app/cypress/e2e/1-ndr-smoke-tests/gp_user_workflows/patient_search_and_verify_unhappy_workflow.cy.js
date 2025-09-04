@@ -24,7 +24,7 @@ describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient 
                 // Assert
                 cy.get('#nhs-number-input--error-message', { timeout: 20000 }).should(
                     'include.text',
-                    "You cannot access this patient's record",
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record if it's stored in this service.",
                 );
             },
         );
