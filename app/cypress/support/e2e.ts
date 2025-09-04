@@ -9,7 +9,7 @@ import {
 import { DeleteObjectCommandOutput, PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { Roles, RoleKey, RoleId, RoleInfo } from './roles';
 import { routes } from './routes';
-import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
+import { defaultFeatureFlags } from './feature_flags';
 import './aws.commands';
 import 'cypress-real-events';
 
