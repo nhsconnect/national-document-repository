@@ -151,6 +151,39 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         updateFormWithNewPositions(updatedDocs);
     };
 
+    const orderNumerically = () => {
+        const sortedDocuments = [...documents].sort((a, b) => {
+            const extractNumbers = (filename: string): number[] => {
+                const matches = filename.match(/\d+/g);
+                return matches ? matches.map(Number) : [];
+            };
+
+            const aNumbers = extractNumbers(a.file.name);
+            const bNumbers = extractNumbers(b.file.name);
+
+            // Compare each number position by position
+            for (let i = 0; i < Math.max(aNumbers.length, bNumbers.length); i++) {
+            const aNum = aNumbers[i] || 0;
+            const bNum = bNumbers[i] || 0;
+            
+            if (aNum !== bNum) {
+                return aNum - bNum;
+            }
+            }
+
+            // If all numbers are equal, fallback to alphabetical
+            return a.file.name.localeCompare(b.file.name, 'en', { sensitivity: 'base' });
+        });
+
+        const updatedDocs = sortedDocuments.map((doc, index) => ({
+            ...doc,
+            position: index + 1,
+        }));
+
+        setDocuments(updatedDocs);
+        updateFormWithNewPositions(updatedDocs);
+    };
+
     const orderAlphabetically = () => {
         const sortedDocuments = [...documents].sort((a, b) =>
             a.file.name.localeCompare(b.file.name, 'en', { sensitivity: 'base' }),
@@ -266,7 +299,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                         use Ctrl+Arrow keys when focused on a row.
                     </p>
                     {/* <p> */}
-                    <strong>Ordering:</strong> These will order the entire list.
+                    <strong>Ordering:</strong> These will order the entire list based on file name.
                     {/* </p> */}
                     <div className="d-flex">
                         <button
@@ -277,6 +310,15 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                             style={{ fontSize: '14px', padding: '8px 16px' }}
                         >
                             A-Z
+                        </button>
+                        <button
+                            type="button"
+                            onClick={orderNumerically}
+                            disabled={previewLoading}
+                            className="link-button ml-2"
+                            style={{ fontSize: '14px', padding: '8px 16px' }}
+                        >
+                            0-9
                         </button>
                         <button
                             type="button"
@@ -341,7 +383,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                                             key={document.id}
                                             id={document.file.name}
                                             className={`drag-table-row ${isDraggedItem ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}`}
-                                            draggable={!previewLoading}
+                                            draggable={true}
                                             onDragStart={(e) => handleDragStart(e, document.id)}
                                             onDragEnd={handleDragEnd}
                                             onDragOver={handleDragOver}

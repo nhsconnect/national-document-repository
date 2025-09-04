@@ -105,7 +105,15 @@ $hunit: '%';
     transition: all 0.2s ease;
     
     &:hover {
-        background-color: #f0f4f8;
+        background-color:  #c1c5c9;
+    }
+
+    &:focus {
+        outline: 4px solid #9a9ea1;
+        box-shadow:
+            0 -2px #9a9ea1,
+            0 4px #212b32;
+        border-radius: 4px;
     }
     
     &.dragging {
@@ -124,7 +132,6 @@ $hunit: '%';
     
     &.drag-disabled {
         cursor: not-allowed;
-        opacity: 0.6;
     }
 }
 
@@ -139,7 +146,7 @@ $hunit: '%';
     color: #626a6e;
     
     &:hover {
-        background-color: #e8edee;
+        background-color: #9a9ea1;
         color: #005eb8;
     }
     
