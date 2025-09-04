@@ -18,18 +18,18 @@ vi.mock('../../helpers/hooks/useBaseAPIHeaders');
 vi.mock('../../helpers/hooks/useRole');
 vi.mock('axios');
 vi.mock('react-router-dom', () => ({
-    useNavigate: () => mockedUseNavigate,
-    useLocation: () => vi.fn(),
+    useNavigate: (): Mock => mockedUseNavigate,
+    useLocation: (): Mock => vi.fn(),
 }));
 vi.mock('../../helpers/hooks/useConfig', () => ({
-    default: () => ({
+    default: (): { featureFlags: { uploadArfWorkflowEnabled: boolean } } => ({
         featureFlags: {
             uploadArfWorkflowEnabled: false,
         },
     }),
 }));
 
-Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
+Date.now = (): number => new Date('2020-01-01T00:00:00.000Z').getTime();
 const mockedAxios = axios as Mocked<typeof axios>;
 const mockedUseRole = useRole as Mock;
 
@@ -154,7 +154,7 @@ describe('PatientSearchPage', () => {
             await userEvent.click(screen.getByRole('button', { name: 'Search' }));
             expect(
                 await screen.findAllByText(
-                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record if it's stored in this service.",
                 ),
             ).toHaveLength(2);
         });
@@ -198,7 +198,7 @@ describe('PatientSearchPage', () => {
 
             expect(
                 await screen.findAllByText(
-                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record if it's stored in this service.",
                 ),
             ).toHaveLength(2);
         });
@@ -357,7 +357,7 @@ describe('PatientSearchPage', () => {
             await userEvent.click(screen.getByRole('button', { name: 'Search' }));
             expect(
                 await screen.findAllByText(
-                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record.",
+                    "You cannot access this patient's record because they are not registered at your practice. The patient's current practice can access this record if it's stored in this service.",
                 ),
             ).toHaveLength(2);
         });
@@ -493,7 +493,7 @@ describe('PatientSearchPage', () => {
     });
 });
 
-const renderPatientSearchPage = () => {
+const renderPatientSearchPage = (): void => {
     const patient: PatientDetails = buildPatientDetails();
     render(
         <ConfigProvider>
