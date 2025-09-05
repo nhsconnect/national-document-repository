@@ -30,7 +30,7 @@ failure_msg = "Failed to send feedback by email"
         "ITOC_TESTING_SLACK_BOT_TOKEN",
         "ITOC_TESTING_CHANNEL_ID",
         "ITOC_TESTING_TEAMS_WEBHOOK",
-        "ITOC_TESTING_ODS_CODE",
+        "ITOC_TESTING_ODS_CODES",
     ]
 )
 @handle_lambda_exceptions
@@ -86,4 +86,6 @@ def lambda_handler(event, context):
 
 
 def is_itoc_test_feedback(ods_code: str) -> bool:
-    return ods_code == os.environ["ITOC_TESTING_ODS_CODE"]
+    ods_codes = os.environ["ITOC_TESTING_ODS_CODES"].split(",")
+    return ods_code in ods_codes
+

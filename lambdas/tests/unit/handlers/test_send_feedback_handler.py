@@ -11,7 +11,7 @@ from services.send_feedback_service import SendFeedbackService
 from tests.unit.conftest import (
     MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
     MOCK_INTERACTION_ID,
-    MOCK_ITOC_ODS_CODE,
+    MOCK_ITOC_ODS_CODES,
 )
 from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_ITOC_FEEDBACK_BODY_JSON_STR,
@@ -56,7 +56,7 @@ def mock_validator(mocker):
 
 @pytest.fixture
 def mock_jwt_encode_itoc_user(mocker):
-    decoded_token = {"selected_organisation": {"org_ods_code": MOCK_ITOC_ODS_CODE}}
+    decoded_token = {"selected_organisation": {"org_ods_code": MOCK_ITOC_ODS_CODES[0]}}
     yield mocker.patch("jwt.decode", return_value=decoded_token)
 
 
@@ -264,7 +264,7 @@ def test_lambda_handler_respond_with_200_when_failed_to_send_itoc_feedback(
 
 
 def test_is_itoc_test_feedback_itoc_email(set_env):
-    assert is_itoc_test_feedback(MOCK_ITOC_ODS_CODE)
+    assert is_itoc_test_feedback(MOCK_ITOC_ODS_CODES.split(",")[0])
 
 
 def test_is_itoc_test_feedback_non_itoc_email(set_env):

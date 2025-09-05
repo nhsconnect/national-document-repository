@@ -122,7 +122,7 @@ PDF_STITCHING_SQS_URL = (
 TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
-MOCK_ITOC_ODS_CODE = "Y12345"
+MOCK_ITOC_ODS_CODES = "Y12345,Y12"
 MOCK_ITOC_SLACK_CHANNEL_ID = "slack_channel_id"
 MOCK_ITOC_TEST_EMAIL_ADDRESS = "itoc_testing@testing.com"
 MOCK_ITOC_TEAMS_WEBHOOK = "https://webhook.team"
@@ -217,7 +217,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv("TEAMS_WEBHOOK_URL", MOCK_TEAMS_WEBHOOK)
     monkeypatch.setenv("SLACK_BOT_TOKEN", MOCK_SLACK_BOT_TOKEN)
     monkeypatch.setenv("SLACK_CHANNEL_ID", MOCK_ALERTING_SLACK_CHANNEL_ID)
-    monkeypatch.setenv("ITOC_TESTING_ODS_CODE", MOCK_ITOC_ODS_CODE)
+    monkeypatch.setenv("ITOC_TESTING_ODS_CODES", MOCK_ITOC_ODS_CODES)
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
