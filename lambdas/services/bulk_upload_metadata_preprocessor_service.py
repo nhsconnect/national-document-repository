@@ -10,6 +10,9 @@ from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
 from models.staging_metadata import METADATA_FILENAME
 from services.base.s3_service import S3Service
 from services.bulk_upload.metadata_general_preprocessor import MetadataGeneralPreprocessor
+from services.bulk_upload.metadata_usb_preprocessor import (
+    MetadataUsbPreprocessorService,
+)
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
 from utils.file_utils import convert_csv_dictionary_to_bytes
@@ -34,6 +37,8 @@ class MetadataPreprocessorService:
     def _initial_format_service(pre_format_type):
         if pre_format_type == LloydGeorgePreProcessFormat.GENERAL:
             return MetadataGeneralPreprocessor()
+        elif pre_format_type == LloydGeorgePreProcessFormat.USB:
+            return MetadataUsbPreprocessorService()
         else:
             return None
 

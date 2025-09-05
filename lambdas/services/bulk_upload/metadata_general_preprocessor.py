@@ -34,7 +34,7 @@ class MetadataGeneralPreprocessor:
             nhs_number, current_file_name = (
                 self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
             )
-            day, month, year, current_file_name = (
+            date, current_file_name = (
                 self.extract_date_from_bulk_upload_file_name(current_file_name)
             )
             file_extension = self.extract_file_extension_from_bulk_upload_file_name(
@@ -46,9 +46,7 @@ class MetadataGeneralPreprocessor:
                 second_document_number,
                 patient_name,
                 nhs_number,
-                day,
-                month,
-                year,
+                date,
                 file_extension,
             )
             logger.info(f"Finished processing, new file name is: {file_name}")
@@ -62,6 +60,25 @@ class MetadataGeneralPreprocessor:
     def extract_document_path(
         file_path: str,
     ) -> tuple[str, str]:
+        """
+        Extracts the document path and current file name from a given file path.
+
+        This method uses a regular expression to analyse the provided file path.
+        It identifies and splits the document path into the directory containing the file
+        and the specific document file name, verifying a valid format in the process.
+
+        Raises:
+            InvalidFileNameException: If the provided file path does not conform to the expected
+            document path format.
+
+        Args:
+            file_path: The full path of the file as a string.
+
+        Returns:
+            A tuple containing:
+            - The path to the directory where the file resides.
+            - The name of the document file within the identified directory.
+        """
         document_number_expression = r"(.*[/])*((\d+)[^0-9]*of[^0-9]*(\d+)(.*))"
 
         expression_result = regex.search(rf"{document_number_expression}", file_path)
@@ -82,6 +99,26 @@ class MetadataGeneralPreprocessor:
     def extract_nhs_number_from_bulk_upload_file_name(
         file_path: str,
     ) -> tuple[str, str]:
+        """
+        Extracts NHS number and remaining file path from a bulk upload file name.
+
+        This method processes the provided file name, parses the NHS number,
+        and separates it from the rest of the file path. If the NHS number is
+        not found, an exception is raised.
+
+        Returns:
+            A tuple containing:
+            - The NHS number as a string.
+            - The remaining file path after extracting the NHS number.
+
+        Raises:
+            InvalidFileNameException: If no valid NHS number is found within
+            the provided file name.
+
+        Parameters:
+            file_path: A string representing the file path of the bulk upload
+            document.
+        """
         nhs_number_expression = r"((?:[^_]*?\d){10})(.*)"
         expression_result = regex.search(rf"{nhs_number_expression}", file_path)
 
@@ -156,18 +193,19 @@ class MetadataGeneralPreprocessor:
             logger.info("Failed to find date in file name")
             raise InvalidFileNameException("Invalid date format")
 
-        day = "".join(regex.findall(r"\d", expression_result.group(1))).zfill(2)
-        month = "".join(regex.findall(r"\d", expression_result.group(2))).zfill(2)
+        day = "".join(regex.findall(r"\d", expression_result.group(1)))
+        month = "".join(regex.findall(r"\d", expression_result.group(2)))
         year = "".join(regex.findall(r"\d", expression_result.group(3)))
         current_file_path = expression_result.group(5)
 
         try:
-            datetime(day=int(day), month=int(month), year=int(year))
+            date = datetime(day=int(day), month=int(month), year=int(year)).date()
+            return date, current_file_path
         except ValueError as e:
             logger.info(f"Failed to parse date from filename: {e}")
             raise InvalidFileNameException("Invalid date format")
 
-        return day, month, year, current_file_path
+
 
     @staticmethod
     def extract_file_extension_from_bulk_upload_file_name(

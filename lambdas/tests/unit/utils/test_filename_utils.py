@@ -1,6 +1,9 @@
+import datetime
+
 import pytest
 
-from utils.filename_utils import extract_page_number, extract_total_pages, assemble_lg_valid_file_name_full_path
+from utils.filename_utils import extract_page_number, extract_total_pages, assemble_lg_valid_file_name_full_path, \
+    extract_document_path, extract_date_from_bulk_upload_file_name
 
 
 @pytest.mark.parametrize(
@@ -60,6 +63,7 @@ def test_correctly_assembles_valid_file_name():
     day = "22"
     month = "10"
     year = "2010"
+    datetime_object = datetime.date(int(year), int(month), int(day))
     file_extension = ".txt"
 
     expected = "/amazing-directory/1of2_Lloyd_George_Record_[Jim-Stevens]_[9000000001]_[22-10-2010].txt"
@@ -69,9 +73,69 @@ def test_correctly_assembles_valid_file_name():
         second_document_number,
         person_name,
         nhs_number,
-        day,
-        month,
-        year,
+        datetime_object,
         file_extension,
     )
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ["value", "expected"],
+    [
+        (
+                "/M89002/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                (
+                        "/M89002",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                ),
+        ),
+        (
+                "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                (
+                        "/2020 Prince of Whales 2",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                ),
+        ),
+
+        (
+                "/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                (
+                        "/",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                ),
+        ),
+        (
+                "/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                (
+                        "/",
+                        "_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                ),
+        ),
+    ],
+)
+def test_extract_document_path(value, expected):
+    actual = extract_document_path(value)
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
+        ("-12012024.txt", (datetime.date(2024, 1, 12), '.txt')),
+        ("-12.01.2024.csv", (datetime.date(2024, 1, 12), '.csv')),
+        ("-12-01-2024.txt", (datetime.date(2024, 1, 12), '.txt')),
+        ("-12-01-2024.txt", (datetime.date(2024, 1, 12), '.txt')),
+        ("-01-01-2024.txt", (datetime.date(2024, 1, 1), '.txt')),
+        ("_13-12-2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
+        ("_13.12.2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
+        ("_13122023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
+        ("_13/12/2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
+        ("01-Nov-1992.pdf", (datetime.date(1992, 11, 1), '.pdf')),
+        (" 01-Nov-1992.pdf", (datetime.date(1992, 11, 1), '.pdf')),
+    ],
+)
+def test_correctly_extract_date_from_bulk_upload_file_name(
+        input, expected
+):
+    actual = extract_date_from_bulk_upload_file_name(input)
     assert actual == expected

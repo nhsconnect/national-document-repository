@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 from freezegun import freeze_time
 
@@ -42,7 +44,7 @@ def test_validate_record_filename_successful(test_service, mocker):
     mocker.patch.object(
         test_service,
         "extract_date_from_bulk_upload_file_name",
-        return_value=("18", "09", "1974", smaller_path),
+        return_value=(datetime.date(2024, 1, 12) , smaller_path),
     )
     mocker.patch.object(
         test_service,
@@ -276,6 +278,7 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
         ),
         ("_9000000001_11_12_2025.csv", ("9000000001", "_11_12_2025.csv"), None),
         ("_900000000111_12_2025.csv", ("9000000001", "11_12_2025.csv"), None),
+        ("900-000-000111.10.2010", ("9000000001", "11.10.2010"), None),
     ],
 )
 def test_correctly_extract_nhs_number_from_bulk_upload_file_name(
@@ -302,14 +305,15 @@ def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_serv
 @pytest.mark.parametrize(
     ["input", "expected"],
     [
-        ("-12012024.txt", ("12", "01", "2024", ".txt")),
-        ("-12.01.2024.csv", ("12", "01", "2024", ".csv")),
-        ("-12-01-2024.txt", ("12", "01", "2024", ".txt")),
-        ("-12-01-2024.txt", ("12", "01", "2024", ".txt")),
-        ("-01-01-2024.txt", ("01", "01", "2024", ".txt")),
-        ("_13-12-2023.pdf", ("13", "12", "2023", ".pdf")),
-        ("_13.12.2023.pdf", ("13", "12", "2023", ".pdf")),
-        ("_13/12/2023.pdf", ("13", "12", "2023", ".pdf")),
+        ("-12012024.txt", (datetime.date(2024, 1, 12), '.txt')),
+        ("-12.01.2024.csv", (datetime.date(2024, 1, 12), '.csv')),
+        ("-12-01-2024.txt", (datetime.date(2024, 1, 12), '.txt')),
+        ("-12-01-2024.txt", (datetime.date(2024, 1, 12), '.txt')),
+        ("-01-01-2024.txt", (datetime.date(2024, 1, 1), '.txt')),
+        ("_13-12-2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
+        ("_13.12.2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
+        ("_13122023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
+        ("_13/12/2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
     ],
 )
 def test_correctly_extract_date_from_bulk_upload_file_name(
