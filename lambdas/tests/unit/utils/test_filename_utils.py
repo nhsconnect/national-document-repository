@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import (
     assemble_lg_valid_file_name_full_path,
@@ -162,8 +163,8 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format():
     ["input", "expected", "expected_exception"],
     [
         ("_-9991211234-12012024", ("9991211234", "-12012024"), None),
-        ("_-9-99/12?11\/234-12012024", ("9991211234", "-12012024"), None),
-        ("_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024"), None),
+        (r"_-9-99/12?11\/234-12012024", ("9991211234", "-12012024"), None),
+        (r"_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024"), None),
         (
             "12_12_12_12_12_12_12_2024.csv",
             "incorrect NHS number format",
@@ -336,7 +337,7 @@ def test_extract_document_number_from_bulk_upload_file_name_with_no_document_num
         ("_lloyd_george_record_person_name", "_person_name"),
         ("_LLOYD_GEORGE_RECORD_person_name", "_person_name"),
         ("_lloyd_george_record_lloyd_george_12342", "_lloyd_george_12342"),
-        ("]{\lloyd george?record///person_name", "///person_name"),
+        (r"]{\lloyd george?record///person_name", "///person_name"),
         ("_Lloyd_George-Record_person_name", "_person_name"),
         ("_Ll0yd_Ge0rge-21Rec0rd_person_name", "_person_name"),
     ],
