@@ -545,7 +545,7 @@ def get_user_input():
         help="Data file to build against: 1 for Combi 8000, 2 for Combi 300.",
     )
     parser.add_argument(
-        "--num-files", type=int, default=3, help="Number of files per patient to build."
+        "--num-files", type=int, default=1, help="Number of files per patient to build."
     )
     parser.add_argument(
         "--empty-lloydgeorge-store",
