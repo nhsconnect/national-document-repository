@@ -1,8 +1,8 @@
 # .github/workflows/terraform-dev
-name: "Z-BASE E2e Test: E2e shared actions for running tests on the NDR Backend"
+name: "TEST: Bulk Upload Validator - 300 patients 3 files"
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       build_branch:
         description: "Branch with e2e tests."
@@ -19,14 +19,16 @@ on:
     secrets:
       AWS_ASSUME_ROLE:
         required: true
+  pull_request:
+    branches:
+      - main
 
 permissions:
-  pull-requests: write
   id-token: write
   contents: read
 
 jobs:
-  e2e-test:
+  bulk-upload-test:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
@@ -58,33 +60,17 @@ jobs:
           source ./lambdas/venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
-      - name: Get APIM API Gateway Key
-        run: |
-          API_KEY_ID=$(aws apigateway get-api-keys --name-query "${SANDBOX}_apim" --query "items[0].id" --output text)
-          echo "::add-mask::$API_KEY_ID"
-          API_KEY=$(aws apigateway get-api-key --api-key $API_KEY_ID --include-value --query 'value' --output text)
-          echo "::add-mask::$API_KEY"
-          echo "NDR_API_KEY=$API_KEY" >> $GITHUB_ENV
-        env:
-          SANDBOX: ${{ inputs.sandbox }}
-
-      - name: Get MockCIS2 Token
-        run: |
-          MOCK_CIS2_KEY=$(aws ssm get-parameter --name "/auth/password/MOCK_KEY" --with-decryption --query "Parameter.Value" --output text)
-          echo "::add-mask::$MOCK_CIS2_KEY"
-          echo "MOCK_CIS2_KEY=$MOCK_CIS2_KEY" >> $GITHUB_ENV
-
       - name: Get E2e Test Variables
         run: |
-          DYNAMO_DB_TABLE="${SANDBOX}_LloydGeorgeReferenceMetadata"
-          S3_BUCKET_NAME="${SANDBOX}-lloyd-george-store"
-          API_URL="api-${SANDBOX}.access-request-fulfilment.patient-deductions.nhs.uk"
-          echo "NDR_DYNAMO_STORE=$DYNAMO_DB_TABLE" >> $GITHUB_ENV
-          echo "NDR_S3_BUCKET=$S3_BUCKET_NAME" >> $GITHUB_ENV
-          echo "NDR_API_ENDPOINT=$API_URL" >> $GITHUB_ENV
+          LG_DYNAMO_STORE="${SANDBOX}_LloydGeorgeReferenceMetadata"
+          LG_UNSTITCHED_STORE="${SANDBOX}_UnstitchedLloydGeorgeReferenceMetadata"
+          BULK_UPLOAD_REPORT_STORE="${SANDBOX}_BulkUploadReport"
+          echo "LG_METADATA_TABLE=$LG_DYNAMO_STORE" >> $GITHUB_ENV
+          echo "LG_UNSTITCHED_TABLE=$LG_UNSTITCHED_STORE" >> $GITHUB_ENV
+          echo "BULK_REPORT_TABLE=$BULK_UPLOAD_REPORT_STORE" >> $GITHUB_ENV
         env:
           SANDBOX: ${{ inputs.sandbox }}
 
-      - name: Run E2e Tests
+      - name: Bulk Upload Test
         run: |
-          make test-api-e2e
+          make test-bulk-upload-e2e
