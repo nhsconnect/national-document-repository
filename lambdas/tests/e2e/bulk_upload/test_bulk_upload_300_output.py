@@ -23,7 +23,6 @@ def test_bulk_upload_300_3_files():
             complete_uploads.append(item)
         elif item.get("UploadStatus") == "failed":
             failed_uploads.append(item)
-
             if item.get("Reason") == "Patient name does not match our records":
                 name_mismatch_rejections.append(item)
             elif item.get("Reason") == "Patient DoB does not match our records":
