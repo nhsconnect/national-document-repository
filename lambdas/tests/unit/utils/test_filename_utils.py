@@ -5,7 +5,9 @@ import pytest
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import extract_page_number, extract_total_pages, assemble_lg_valid_file_name_full_path, \
     extract_document_path, extract_date_from_bulk_upload_file_name, extract_nhs_number_from_bulk_upload_file_name, \
-    extract_patient_name_from_bulk_upload_file_name
+    extract_patient_name_from_bulk_upload_file_name, extract_document_number_bulk_upload_file_name, \
+    extract_lloyd_george_record_from_bulk_upload_file_name, extract_file_extension_from_bulk_upload_file_name, \
+    extract_document_path_for_lloyd_george_record
 
 
 @pytest.mark.parametrize(
@@ -142,6 +144,15 @@ def test_correctly_extract_date_from_bulk_upload_file_name(
     actual = extract_date_from_bulk_upload_file_name(input)
     assert actual == expected
 
+
+def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format():
+    invalid_data = "_12-13-2024.txt"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        extract_date_from_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "Invalid date format"
+
 @pytest.mark.parametrize(
     ["input", "expected", "expected_exception"],
     [
@@ -212,3 +223,165 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name():
         extract_patient_name_from_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "Invalid patient name"
+    
+
+@pytest.mark.parametrize(
+    ["value", "expected"],
+    [
+        (
+                "/M89002/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                (
+                        "/M89002/",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                ),
+        ),
+        (
+                "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                (
+                        "/2020 Prince of Whales 2/",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                ),
+        ),
+        (
+                "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+                (
+                        "/2020 Prince of Whales 2/",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+                ),
+        ),
+        (
+                "/2020of2024 Prince of Whales 2/2020 Prince of Whales 2/"
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+                (
+                        "/2020of2024 Prince of Whales 2/2020 Prince of Whales 2/",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+                ),
+        ),
+        (
+                "/M89002/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+                (
+                        "/M89002/",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+                ),
+        ),
+        (
+                "/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                (
+                        "/",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                ),
+        ),
+        (
+                "/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                (
+                        "/",
+                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+                ),
+        ),
+    ],
+)
+def test_extract_document_path(value, expected):
+    actual = extract_document_path_for_lloyd_george_record(value)
+    assert actual == expected
+
+
+def test_extract_document_path_with_no_document_path(
+        
+):
+    invalid_data = "12-12-2024"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        extract_document_path_for_lloyd_george_record(invalid_data)
+
+    assert str(exc_info.value) == "Incorrect document path format"
+
+
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
+        ("1 of 02_Lloyd_George_Record", (1, 2, "_Lloyd_George_Record")),
+        ("1of12_Lloyd_George_Record", (1, 12, "_Lloyd_George_Record")),
+        ("!~/01!of 12_Lloyd_George_Record", (1, 12, "_Lloyd_George_Record")),
+        ("X12of34YZ", (12, 34, "YZ")),
+        ("8ab12of34YZ", (12, 34, "YZ")),
+        ("8ab12of34YZ2442-ofladimus 900123", (12, 34, "YZ2442-ofladimus 900123")),
+        ("1 of 02_Lloyd_George_Record", (1, 2, "_Lloyd_George_Record")),
+        ("/9730786895/01 of 01_Lloyd_George_Record", (1, 1, "_Lloyd_George_Record")),
+        (
+                "test/nested/9730786895/01 of 01_Lloyd_George_Record",
+                (1, 1, "_Lloyd_George_Record"),
+        ),
+    ],
+)
+def test_correctly_extract_document_number_from_bulk_upload_file_name(
+        input, expected
+):
+    actual = extract_document_number_bulk_upload_file_name(input)
+    assert actual == expected
+
+
+def test_extract_document_number_from_bulk_upload_file_name_with_no_document_number(
+        
+):
+    invalid_data = "12-12-2024"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        extract_document_number_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "Incorrect document number format"
+
+
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
+        ("_Lloyd_George_Record_person_name", "_person_name"),
+        ("_lloyd_george_record_person_name", "_person_name"),
+        ("_LLOYD_GEORGE_RECORD_person_name", "_person_name"),
+        ("_lloyd_george_record_lloyd_george_12342", "_lloyd_george_12342"),
+        ("]{\lloyd george?record///person_name", "///person_name"),
+        ("_Lloyd_George-Record_person_name", "_person_name"),
+        ("_Ll0yd_Ge0rge-21Rec0rd_person_name", "_person_name"),
+    ],
+)
+def test_correctly_extract_lloyd_george_record_from_bulk_upload_file_name(
+        input, expected
+):
+    actual = extract_lloyd_george_record_from_bulk_upload_file_name(input)
+    assert actual == expected
+
+
+def test_extract_lloyd_george_from_bulk_upload_file_name_with_no_lloyd_george(
+        
+):
+    invalid_data = "12-12-2024"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        extract_lloyd_george_record_from_bulk_upload_file_name(
+            invalid_data
+        )
+
+    assert str(exc_info.value) == "Invalid Lloyd_George_Record separator"
+
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
+        (".txt", ".txt"),
+        ("cool_stuff.txt", ".txt"),
+        ("{}.[].txt", ".txt"),
+        (".csv", ".csv"),
+    ],
+)
+def test_correctly_extract_file_extension_from_bulk_upload_file_name(
+        input, expected
+):
+    actual = extract_file_extension_from_bulk_upload_file_name(input)
+    assert actual == expected
+
+
+def test_extract_file_extension_from_bulk_upload_file_name_with_incorrect_file_extension_format():
+    invalid_data = "txt"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        extract_file_extension_from_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "Invalid file extension"
