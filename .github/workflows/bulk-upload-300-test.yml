@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: "TEST: Bulk Upload Validator - 300 patients 3 files"
+name: "Test: Bulk Upload Validator - 300 patients 3 files"
 
 on:
   workflow_dispatch:
