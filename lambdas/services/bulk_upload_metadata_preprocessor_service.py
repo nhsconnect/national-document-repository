@@ -5,11 +5,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from botocore.exceptions import ClientError
-
 from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
 from models.staging_metadata import METADATA_FILENAME
 from services.base.s3_service import S3Service
-from services.bulk_upload.metadata_general_preprocessor import MetadataGeneralPreprocessor
+from services.bulk_upload.metadata_general_preprocessor import (
+    MetadataGeneralPreprocessor,
+)
 from services.bulk_upload.metadata_usb_preprocessor import (
     MetadataUsbPreprocessorService,
 )
@@ -24,7 +25,7 @@ class MetadataPreprocessorService:
     def __init__(
         self,
         practice_directory: str,
-        pre_format_type: LloydGeorgePreProcessFormat = LloydGeorgePreProcessFormat.GENERAL
+        pre_format_type: LloydGeorgePreProcessFormat = LloydGeorgePreProcessFormat.GENERAL,
     ):
         self.s3_service = S3Service()
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
@@ -134,7 +135,6 @@ class MetadataPreprocessorService:
         logger.info("Finished updating and standardizing filenames")
         return updated_rows
 
-
     def generate_renaming_map(self, metadata_rows: list[dict]):
         duplicate_counts = defaultdict(int)
         renaming_map = []
@@ -149,7 +149,9 @@ class MetadataPreprocessorService:
                 if not original_filename:
                     raise InvalidFileNameException("Filepath is missing")
 
-                validated_filename = self.pre_format_service.validate_record_filename(original_filename)
+                validated_filename = self.pre_format_service.validate_record_filename(
+                    original_filename
+                )
                 stripped_file_path = validated_filename.lstrip("/")
                 renamed_row["FILEPATH"] = (
                     f"{self.practice_directory}/{stripped_file_path}"
@@ -250,4 +252,3 @@ class MetadataPreprocessorService:
                 f"Failed to move metadata file '{file_key}' to '{destination_key}': {e}"
             )
             return False
-

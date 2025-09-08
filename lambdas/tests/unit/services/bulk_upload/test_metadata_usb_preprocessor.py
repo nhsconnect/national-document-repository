@@ -1,5 +1,4 @@
 import pytest
-
 from services.bulk_upload.metadata_usb_preprocessor import (
     MetadataUsbPreprocessorService,
 )

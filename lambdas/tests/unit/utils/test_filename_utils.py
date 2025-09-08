@@ -1,13 +1,20 @@
 import datetime
 
 import pytest
-
 from utils.exceptions import InvalidFileNameException
-from utils.filename_utils import extract_page_number, extract_total_pages, assemble_lg_valid_file_name_full_path, \
-    extract_document_path, extract_date_from_bulk_upload_file_name, extract_nhs_number_from_bulk_upload_file_name, \
-    extract_patient_name_from_bulk_upload_file_name, extract_document_number_bulk_upload_file_name, \
-    extract_lloyd_george_record_from_bulk_upload_file_name, extract_file_extension_from_bulk_upload_file_name, \
-    extract_document_path_for_lloyd_george_record
+from utils.filename_utils import (
+    assemble_lg_valid_file_name_full_path,
+    extract_date_from_bulk_upload_file_name,
+    extract_document_number_bulk_upload_file_name,
+    extract_document_path,
+    extract_document_path_for_lloyd_george_record,
+    extract_file_extension_from_bulk_upload_file_name,
+    extract_lloyd_george_record_from_bulk_upload_file_name,
+    extract_nhs_number_from_bulk_upload_file_name,
+    extract_page_number,
+    extract_patient_name_from_bulk_upload_file_name,
+    extract_total_pages,
+)
 
 
 @pytest.mark.parametrize(
@@ -87,33 +94,32 @@ def test_correctly_assembles_valid_file_name():
     ["value", "expected"],
     [
         (
-                "/M89002/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                (
-                        "/M89002",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                ),
+            "/M89002/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/M89002",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
         ),
         (
-                "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                (
-                        "/2020 Prince of Whales 2",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                ),
-        ),
-
-        (
-                "/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                (
-                        "/",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                ),
+            "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/2020 Prince of Whales 2",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
         ),
         (
-                "/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                (
-                        "/",
-                        "_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                ),
+            "/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
+        ),
+        (
+            "/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/",
+                "_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
         ),
     ],
 )
@@ -125,22 +131,20 @@ def test_extract_document_path(value, expected):
 @pytest.mark.parametrize(
     ["input", "expected"],
     [
-        ("-12012024.txt", (datetime.date(2024, 1, 12), '.txt')),
-        ("-12.01.2024.csv", (datetime.date(2024, 1, 12), '.csv')),
-        ("-12-01-2024.txt", (datetime.date(2024, 1, 12), '.txt')),
-        ("-12-01-2024.txt", (datetime.date(2024, 1, 12), '.txt')),
-        ("-01-01-2024.txt", (datetime.date(2024, 1, 1), '.txt')),
-        ("_13-12-2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
-        ("_13.12.2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
-        ("_13122023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
-        ("_13/12/2023.pdf", (datetime.date(2023, 12, 13), '.pdf')),
-        ("01-Nov-1992.pdf", (datetime.date(1992, 11, 1), '.pdf')),
-        (" 01-Nov-1992.pdf", (datetime.date(1992, 11, 1), '.pdf')),
+        ("-12012024.txt", (datetime.date(2024, 1, 12), ".txt")),
+        ("-12.01.2024.csv", (datetime.date(2024, 1, 12), ".csv")),
+        ("-12-01-2024.txt", (datetime.date(2024, 1, 12), ".txt")),
+        ("-12-01-2024.txt", (datetime.date(2024, 1, 12), ".txt")),
+        ("-01-01-2024.txt", (datetime.date(2024, 1, 1), ".txt")),
+        ("_13-12-2023.pdf", (datetime.date(2023, 12, 13), ".pdf")),
+        ("_13.12.2023.pdf", (datetime.date(2023, 12, 13), ".pdf")),
+        ("_13122023.pdf", (datetime.date(2023, 12, 13), ".pdf")),
+        ("_13/12/2023.pdf", (datetime.date(2023, 12, 13), ".pdf")),
+        ("01-Nov-1992.pdf", (datetime.date(1992, 11, 1), ".pdf")),
+        (" 01-Nov-1992.pdf", (datetime.date(1992, 11, 1), ".pdf")),
     ],
 )
-def test_correctly_extract_date_from_bulk_upload_file_name(
-        input, expected
-):
+def test_correctly_extract_date_from_bulk_upload_file_name(input, expected):
     actual = extract_date_from_bulk_upload_file_name(input)
     assert actual == expected
 
@@ -153,6 +157,7 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format():
 
     assert str(exc_info.value) == "Invalid date format"
 
+
 @pytest.mark.parametrize(
     ["input", "expected", "expected_exception"],
     [
@@ -160,9 +165,9 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format():
         ("_-9-99/12?11\/234-12012024", ("9991211234", "-12012024"), None),
         ("_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024"), None),
         (
-                "12_12_12_12_12_12_12_2024.csv",
-                "incorrect NHS number format",
-                InvalidFileNameException,
+            "12_12_12_12_12_12_12_2024.csv",
+            "incorrect NHS number format",
+            InvalidFileNameException,
         ),
         ("_9000000001_11_12_2025.csv", ("9000000001", "_11_12_2025.csv"), None),
         ("_900000000111_12_2025.csv", ("9000000001", "11_12_2025.csv"), None),
@@ -170,7 +175,7 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format():
     ],
 )
 def test_correctly_extract_nhs_number_from_bulk_upload_file_name(
-        input, expected, expected_exception
+    input, expected, expected_exception
 ):
     if expected_exception:
         with pytest.raises(expected_exception) as exc_info:
@@ -189,29 +194,28 @@ def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number():
 
     assert str(exc_info.value) == "Invalid NHS number"
 
+
 @pytest.mark.parametrize(
     ["input", "expected"],
     [
         ("_John_doe-1231", ("John_doe", "-1231")),
         ("-José María-1231", ("José María", "-1231")),
         (
-                "-Sir. Roger Guilbert the third-1231",
-                ("Sir. Roger Guilbert the third", "-1231"),
+            "-Sir. Roger Guilbert the third-1231",
+            ("Sir. Roger Guilbert the third", "-1231"),
         ),
         ("-José&María-Grandola&1231", ("José&María-Grandola", "&1231")),
         (
-                "_Jim Stevens_9000000001_22.10.2010.txt",
-                ("Jim Stevens", "_9000000001_22.10.2010.txt"),
+            "_Jim Stevens_9000000001_22.10.2010.txt",
+            ("Jim Stevens", "_9000000001_22.10.2010.txt"),
         ),
         (
-                'Dwain "The Rock" Johnson_9000000001_22.10.2010.txt',
-                ('Dwain "The Rock" Johnson', "_9000000001_22.10.2010.txt"),
+            'Dwain "The Rock" Johnson_9000000001_22.10.2010.txt',
+            ('Dwain "The Rock" Johnson', "_9000000001_22.10.2010.txt"),
         ),
     ],
 )
-def test_correctly_extract_person_name_from_bulk_upload_file_name(
-        input, expected
-):
+def test_correctly_extract_person_name_from_bulk_upload_file_name(input, expected):
     actual = extract_patient_name_from_bulk_upload_file_name(input)
     assert actual == expected
 
@@ -223,60 +227,60 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name():
         extract_patient_name_from_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "Invalid patient name"
-    
+
 
 @pytest.mark.parametrize(
     ["value", "expected"],
     [
         (
-                "/M89002/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                (
-                        "/M89002/",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                ),
+            "/M89002/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/M89002/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
         ),
         (
-                "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                (
-                        "/2020 Prince of Whales 2/",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                ),
+            "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/2020 Prince of Whales 2/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
         ),
         (
-                "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
-                (
-                        "/2020 Prince of Whales 2/",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
-                ),
-        ),
-        (
-                "/2020of2024 Prince of Whales 2/2020 Prince of Whales 2/"
+            "/2020 Prince of Whales 2/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+            (
+                "/2020 Prince of Whales 2/",
                 "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
-                (
-                        "/2020of2024 Prince of Whales 2/2020 Prince of Whales 2/",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
-                ),
+            ),
         ),
         (
-                "/M89002/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
-                (
-                        "/M89002/",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
-                ),
+            "/2020of2024 Prince of Whales 2/2020 Prince of Whales 2/"
+            "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+            (
+                "/2020of2024 Prince of Whales 2/2020 Prince of Whales 2/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+            ),
         ),
         (
-                "/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                (
-                        "/",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                ),
+            "/M89002/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+            (
+                "/M89002/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14/11/2000].pdf",
+            ),
         ),
         (
-                "/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                (
-                        "/",
-                        "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
-                ),
+            "/10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
+        ),
+        (
+            "/_10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            (
+                "/",
+                "10of10_Lloyd_George_Record_[Carol Hughes]_[1234567890]_[14-11-2000].pdf",
+            ),
         ),
     ],
 )
@@ -285,9 +289,7 @@ def test_extract_document_path(value, expected):
     assert actual == expected
 
 
-def test_extract_document_path_with_no_document_path(
-        
-):
+def test_extract_document_path_with_no_document_path():
     invalid_data = "12-12-2024"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
@@ -308,21 +310,17 @@ def test_extract_document_path_with_no_document_path(
         ("1 of 02_Lloyd_George_Record", (1, 2, "_Lloyd_George_Record")),
         ("/9730786895/01 of 01_Lloyd_George_Record", (1, 1, "_Lloyd_George_Record")),
         (
-                "test/nested/9730786895/01 of 01_Lloyd_George_Record",
-                (1, 1, "_Lloyd_George_Record"),
+            "test/nested/9730786895/01 of 01_Lloyd_George_Record",
+            (1, 1, "_Lloyd_George_Record"),
         ),
     ],
 )
-def test_correctly_extract_document_number_from_bulk_upload_file_name(
-        input, expected
-):
+def test_correctly_extract_document_number_from_bulk_upload_file_name(input, expected):
     actual = extract_document_number_bulk_upload_file_name(input)
     assert actual == expected
 
 
-def test_extract_document_number_from_bulk_upload_file_name_with_no_document_number(
-        
-):
+def test_extract_document_number_from_bulk_upload_file_name_with_no_document_number():
     invalid_data = "12-12-2024"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
@@ -344,23 +342,20 @@ def test_extract_document_number_from_bulk_upload_file_name_with_no_document_num
     ],
 )
 def test_correctly_extract_lloyd_george_record_from_bulk_upload_file_name(
-        input, expected
+    input, expected
 ):
     actual = extract_lloyd_george_record_from_bulk_upload_file_name(input)
     assert actual == expected
 
 
-def test_extract_lloyd_george_from_bulk_upload_file_name_with_no_lloyd_george(
-        
-):
+def test_extract_lloyd_george_from_bulk_upload_file_name_with_no_lloyd_george():
     invalid_data = "12-12-2024"
 
     with pytest.raises(InvalidFileNameException) as exc_info:
-        extract_lloyd_george_record_from_bulk_upload_file_name(
-            invalid_data
-        )
+        extract_lloyd_george_record_from_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "Invalid Lloyd_George_Record separator"
+
 
 @pytest.mark.parametrize(
     ["input", "expected"],
@@ -371,9 +366,7 @@ def test_extract_lloyd_george_from_bulk_upload_file_name_with_no_lloyd_george(
         (".csv", ".csv"),
     ],
 )
-def test_correctly_extract_file_extension_from_bulk_upload_file_name(
-        input, expected
-):
+def test_correctly_extract_file_extension_from_bulk_upload_file_name(input, expected):
     actual = extract_file_extension_from_bulk_upload_file_name(input)
     assert actual == expected
 

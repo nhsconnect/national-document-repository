@@ -2,7 +2,6 @@ import datetime
 import os
 
 from regex import regex
-
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException
 

@@ -2,8 +2,9 @@ import datetime
 
 import pytest
 from freezegun import freeze_time
-
-from services.bulk_upload.metadata_general_preprocessor import MetadataGeneralPreprocessor
+from services.bulk_upload.metadata_general_preprocessor import (
+    MetadataGeneralPreprocessor,
+)
 from utils.exceptions import InvalidFileNameException
 
 
@@ -43,8 +44,7 @@ def test_service(mocker, set_env):
                     "args": (
                         "_Lloyd_George_Record_[Dwayne The Rock Johnson]_[9730787506]_[18-09-1974].pdf",
                     ),
-                    "return_value":
-                        "_[Dwayne The Rock Johnson]_[9730787506]_[18-09-1974].pdf",
+                    "return_value": "_[Dwayne The Rock Johnson]_[9730787506]_[18-09-1974].pdf",
                 },
                 "extract_patient_name_from_bulk_upload_file_name": {
                     "args": (
@@ -153,9 +153,7 @@ def test_validate_record_filename_invalid(
         mocks[function_name] = mocker.patch(
             f"services.bulk_upload.metadata_general_preprocessor.{function_name}",
             **{
-                k: v
-                for k, v in details.items()
-                if k in ["return_value", "side_effect"]
+                k: v for k, v in details.items() if k in ["return_value", "side_effect"]
             },
         )
 
@@ -170,11 +168,13 @@ def test_validate_record_filename_invalid(
         else:
             mocks[function_name].assert_not_called()
 
+
 def test_validate_record_filename_invalid_digit_count(mocker, test_service, caplog):
     bad_filename = "01 of 02_Lloyd_George_Record_[John Doe]_[12345]_[01-01-2000].pdf"
 
     mocker.patch(
-        "services.bulk_upload.metadata_general_preprocessor.extract_document_path_for_lloyd_george_record", return_value=("prefix", bad_filename)
+        "services.bulk_upload.metadata_general_preprocessor.extract_document_path_for_lloyd_george_record",
+        return_value=("prefix", bad_filename),
     )
     mocker.patch(
         "services.bulk_upload.metadata_general_preprocessor.extract_document_number_bulk_upload_file_name",

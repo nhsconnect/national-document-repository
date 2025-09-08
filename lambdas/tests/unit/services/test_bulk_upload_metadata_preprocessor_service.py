@@ -6,8 +6,6 @@ import pytest
 from botocore.exceptions import ClientError
 from freezegun import freeze_time
 from msgpack.fallback import BytesIO
-
-from lambdas.models.staging_metadata import METADATA_FILENAME
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
@@ -17,6 +15,8 @@ from tests.unit.conftest import (
     TEST_BASE_DIRECTORY,
 )
 from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
+
+from lambdas.models.staging_metadata import METADATA_FILENAME
 
 
 @pytest.fixture(autouse=True)
@@ -90,9 +90,12 @@ def mock_valid_record_filename(mocker, test_service):
         side_effect=lambda original_filename: original_filename,
     )
 
+
 @freeze_time("2025-01-01T12:00:00")
 def test_process_metadata_file_exists(
-    test_service, mock_metadata_file_get_object, mock_generate_and_save_csv_file,
+    test_service,
+    mock_metadata_file_get_object,
+    mock_generate_and_save_csv_file,
 ):
     test_processed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
