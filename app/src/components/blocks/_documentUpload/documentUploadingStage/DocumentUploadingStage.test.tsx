@@ -34,7 +34,7 @@ describe('DocumentUploadCompleteStage', () => {
 
         it('should trigger start upload when page is loaded', async () => {
             render(<DocumentUploadingStage documents={documents} startUpload={mockStartUpload} />);
-    
+
             await waitFor(() => {
                 expect(mockStartUpload).toHaveBeenCalledTimes(1);
             });

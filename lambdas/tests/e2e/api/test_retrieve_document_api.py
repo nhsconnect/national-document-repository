@@ -2,6 +2,7 @@ import io
 import uuid
 
 import requests
+from syrupy.filters import paths
 from tests.e2e.conftest import (
     API_ENDPOINT,
     API_KEY,
@@ -13,7 +14,7 @@ from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 data_helper = LloydGeorgeDataHelper()
 
 
-def test_small_file(test_data, snapshot):
+def test_small_file(test_data, snapshot_json):
     lloyd_george_record = {}
     test_data.append(lloyd_george_record)
 
@@ -33,13 +34,10 @@ def test_small_file(test_data, snapshot):
     response = requests.request("GET", url, headers=headers)
     json = response.json()
 
-    del json["date"]
-    del json["id"]
-
-    assert json == snapshot
+    assert json == snapshot_json(exclude=paths("date", "id"))
 
 
-def test_large_file(test_data, snapshot):
+def test_large_file(test_data, snapshot_json):
     lloyd_george_record = {}
     test_data.append(lloyd_george_record)
 
@@ -64,14 +62,12 @@ def test_large_file(test_data, snapshot):
     expected_presign_uri = f"https://{LLOYD_GEORGE_S3_BUCKET}.s3.eu-west-2.amazonaws.com/{lloyd_george_record['nhs_number']}/{lloyd_george_record['id']}"
     assert expected_presign_uri in json["content"][0]["attachment"]["url"]
 
-    del json["date"]
-    del json["id"]
-    del json["content"][0]["attachment"]["url"]
-
-    assert json == snapshot
+    assert json == snapshot_json(
+        exclude=paths("date", "id", "content.0.attachment.url")
+    )
 
 
-def test_no_file_found(snapshot):
+def test_no_file_found(snapshot_json):
     lloyd_george_record = {}
     lloyd_george_record["id"] = str(uuid.uuid4())
 
@@ -84,10 +80,10 @@ def test_no_file_found(snapshot):
     response = requests.request("GET", url, headers=headers)
     json = response.json()
 
-    assert json == snapshot
+    assert json == snapshot_json
 
 
-def test_preliminary_file(test_data, snapshot):
+def test_preliminary_file(test_data, snapshot_json):
     lloyd_george_record = {}
     test_data.append(lloyd_george_record)
 
@@ -109,7 +105,4 @@ def test_preliminary_file(test_data, snapshot):
     response = requests.request("GET", url, headers=headers)
     json = response.json()
 
-    del json["date"]
-    del json["id"]
-
-    assert json == snapshot
+    assert json == snapshot_json(exclude=paths("date", "id"))

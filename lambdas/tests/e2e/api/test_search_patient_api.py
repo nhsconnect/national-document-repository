@@ -3,13 +3,14 @@ import logging
 import uuid
 
 import requests
+from syrupy.filters import paths
 from tests.e2e.conftest import API_ENDPOINT, API_KEY, APIM_ENDPOINT, LLOYD_GEORGE_SNOMED
 from tests.e2e.helpers.lloyd_george_data_helper import LloydGeorgeDataHelper
 
 data_helper = LloydGeorgeDataHelper()
 
 
-def test_search_patient_details(test_data, snapshot):
+def test_search_patient_details(test_data, snapshot_json):
     lloyd_george_record = {}
     test_data.append(lloyd_george_record)
 
@@ -30,20 +31,23 @@ def test_search_patient_details(test_data, snapshot):
     bundle = response.json()
     logging.info(bundle)
 
-    del bundle["entry"][0]["resource"]["id"]
-    del bundle["entry"][0]["resource"]["date"]
-    del bundle["timestamp"]
     attachment_url = bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
     assert (
         f"https://{APIM_ENDPOINT}/national-document-repository/DocumentReference/{LLOYD_GEORGE_SNOMED}~"
         in attachment_url
     )
-    del bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
 
-    assert bundle["entry"][0] == snapshot
+    assert bundle == snapshot_json(
+        exclude=paths(
+            "entry.0.resource.id",
+            "entry.0.resource.date",
+            "entry.0.resource.content.0.attachment.url",
+            "timestamp",
+        )
+    )
 
 
-def test_multiple_cancelled_search_patient_details(test_data, snapshot):
+def test_multiple_cancelled_search_patient_details(test_data, snapshot_json):
     lloyd_george_record = {}
     test_data.append(lloyd_george_record)
 
@@ -75,20 +79,20 @@ def test_multiple_cancelled_search_patient_details(test_data, snapshot):
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
-    del bundle["timestamp"]
-    del bundle["entry"][0]["resource"]["id"]
-    del bundle["entry"][0]["resource"]["date"]
-    del bundle["entry"][0]["resource"]["content"][0]["attachment"]["url"]
-    del bundle["entry"][1]["resource"]["id"]
-    del bundle["entry"][1]["resource"]["date"]
-    del bundle["entry"][1]["resource"]["content"][0]["attachment"]["url"]
+    assert bundle["entry"][0] == snapshot_json(
+        exclude=paths(
+            "resource.id", "resource.date", "resource.content.0.attachment.url"
+        )
+    )
+    assert bundle["entry"][1] == snapshot_json(
+        exclude=paths(
+            "resource.id", "resource.date", "resource.content.0.attachment.url"
+        )
+    )
 
-    assert bundle["entry"][0] == snapshot
-    assert bundle["entry"][1] == snapshot
 
-
-def test_no_records(snapshot):
-    lloyd_george_record = {}  # Initialize the dictionary
+def test_no_records(snapshot_json):
+    lloyd_george_record = {}
     lloyd_george_record["nhs_number"] = "9449305943"
 
     url = f"https://{API_ENDPOINT}/FhirDocumentReference?subject:identifier=https://fhir.nhs.uk/Id/nhs-number|{lloyd_george_record['nhs_number']}"
@@ -100,10 +104,10 @@ def test_no_records(snapshot):
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
-    assert bundle == snapshot
+    assert bundle == snapshot_json
 
 
-def test_invalid_patient(snapshot):
+def test_invalid_patient(snapshot_json):
     lloyd_george_record = {}
     lloyd_george_record["nhs_number"] = "9999999993"
 
@@ -116,4 +120,4 @@ def test_invalid_patient(snapshot):
     response = requests.request("GET", url, headers=headers)
     bundle = response.json()
 
-    assert bundle == snapshot
+    assert bundle == snapshot_json

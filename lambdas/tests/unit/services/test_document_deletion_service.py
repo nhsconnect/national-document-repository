@@ -5,6 +5,7 @@ from enums.document_retention import DocumentRetentionDays
 from enums.lambda_error import LambdaError
 from enums.snomed_codes import SnomedCodes
 from enums.supported_document_types import SupportedDocumentTypes
+from lambdas.tests.unit.helpers.data.test_stitch_trace import get_list_test_stitch_trace
 from services.document_deletion_service import DocumentDeletionService
 from tests.unit.conftest import (
     MOCK_ARF_TABLE_NAME,
@@ -26,6 +27,7 @@ from utils.lambda_exceptions import DocumentDeletionServiceException
 
 TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
 TEST_LG_DOC_STORE_REFERENCES = create_test_lloyd_george_doc_store_refs()
+TEST_STITCH_TRACE_REFERENCES = get_list_test_stitch_trace()
 TEST_NHS_NUMBER_WITH_NO_RECORD = "1234567890"
 TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD = "234567890"
 
@@ -250,7 +252,7 @@ def test_delete_specific_doc_type_when_no_record_for_given_patient(
 
 def test_delete_documents_references_in_stitch_table(mock_deletion_service):
     mock_deletion_service.stitch_service.query_stitch_trace_with_nhs_number.return_value = (
-        TEST_LG_DOC_STORE_REFERENCES
+        TEST_STITCH_TRACE_REFERENCES
     )
 
     mock_deletion_service.delete_documents_references_in_stitch_table(TEST_NHS_NUMBER)
@@ -264,7 +266,7 @@ def test_delete_documents_references_in_stitch_table(mock_deletion_service):
             key_pair={"ID": record.id},
             updated_fields={"Deleted": True},
         )
-        for record in TEST_LG_DOC_STORE_REFERENCES
+        for record in TEST_STITCH_TRACE_REFERENCES
     ]
     mock_deletion_service.document_service.dynamo_service.update_item.assert_has_calls(
         expected_calls

@@ -18,5 +18,5 @@
         "downlevelIteration": true,
         "types": ["vite/client", "vite-plugin-svgr/client"]
     },
-    "include": ["src", "vite-env.d.ts"]
+    "include": ["src", "vite-env.d.ts", "cypress/**/*.ts", "cypress/**/*.d.ts"]
 }

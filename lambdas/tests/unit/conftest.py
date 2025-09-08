@@ -4,7 +4,6 @@ import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from unittest import mock
 
 import pytest
 from botocore.exceptions import ClientError
@@ -122,6 +121,12 @@ PDF_STITCHING_SQS_URL = (
 
 TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
+MOCK_CONFLUENCE_URL = "https://confluence.example.com"
+MOCK_ALARM_HISTORY_TABLE = "test_alarm_history_table"
+MOCK_TEAMS_WEBHOOK = "test_teams_webhook"
+MOCK_SLACK_BOT_TOKEN = f"xoxb-{TEST_UUID}"
+MOCK_ALERTING_SLACK_CHANNEL_ID = "slack_channel_id"
+
 
 @pytest.fixture
 def set_env(monkeypatch):
@@ -198,6 +203,11 @@ def set_env(monkeypatch):
         "DOCUMENT_RETRIEVE_ENDPOINT_APIM", f"{APIM_API_URL}/DocumentReference"
     )
     monkeypatch.setenv("VIRUS_SCAN_STUB", "True")
+    monkeypatch.setenv("CONFLUENCE_BASE_URL", MOCK_CONFLUENCE_URL)
+    monkeypatch.setenv("ALARM_HISTORY_DYNAMODB_NAME", MOCK_ALARM_HISTORY_TABLE)
+    monkeypatch.setenv("TEAMS_WEBHOOK_URL", MOCK_TEAMS_WEBHOOK)
+    monkeypatch.setenv("SLACK_BOT_TOKEN", MOCK_SLACK_BOT_TOKEN)
+    monkeypatch.setenv("SLACK_CHANNEL_ID", MOCK_ALERTING_SLACK_CHANNEL_ID)
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
