@@ -66,7 +66,7 @@ test-api-e2e-snapshots:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e/api --snapshot-update
 
 test-bulk-upload-e2e:
-    cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e/bulk_upload -vv
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/e2e/bulk_upload -vv
 
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/unit
