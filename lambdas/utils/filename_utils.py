@@ -146,7 +146,6 @@ def extract_date_from_bulk_upload_file_name(file_path):
         remaining_file_path = expression_result.group(4)
 
         if month_part.isalpha():
-            # Handle month abbreviations e.g. "Nov"
             month = datetime.datetime.strptime(month_part, "%b").month
         else:
             month = int("".join(regex.findall(r"\d+", month_part)))

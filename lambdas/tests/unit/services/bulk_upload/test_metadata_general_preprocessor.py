@@ -36,9 +36,8 @@ def test_validate_record_filename_successful(test_service, mocker):
         "extract_patient_name_from_bulk_upload_file_name",
         return_value=("Dwayne The Rock Johnson", smaller_path),
     )
-    mocker.patch.object(
-        test_service,
-        "extract_nhs_number_from_bulk_upload_file_name",
+    mocker.patch(
+        "services.bulk_upload.metadata_general_preprocessor.extract_nhs_number_from_bulk_upload_file_name",
         return_value=("9730787506", smaller_path),
     )
     mocker.patch.object(
@@ -264,42 +263,6 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
 
     assert str(exc_info.value) == "Invalid patient name"
 
-
-@pytest.mark.parametrize(
-    ["input", "expected", "expected_exception"],
-    [
-        ("_-9991211234-12012024", ("9991211234", "-12012024"), None),
-        ("_-9-99/12?11\/234-12012024", ("9991211234", "-12012024"), None),
-        ("_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024"), None),
-        (
-                "12_12_12_12_12_12_12_2024.csv",
-                "incorrect NHS number format",
-                InvalidFileNameException,
-        ),
-        ("_9000000001_11_12_2025.csv", ("9000000001", "_11_12_2025.csv"), None),
-        ("_900000000111_12_2025.csv", ("9000000001", "11_12_2025.csv"), None),
-        ("900-000-000111.10.2010", ("9000000001", "11.10.2010"), None),
-    ],
-)
-def test_correctly_extract_nhs_number_from_bulk_upload_file_name(
-        test_service, input, expected, expected_exception
-):
-    if expected_exception:
-        with pytest.raises(expected_exception) as exc_info:
-            test_service.extract_nhs_number_from_bulk_upload_file_name(input)
-            assert str(exc_info.value) == expected
-    else:
-        actual = test_service.extract_nhs_number_from_bulk_upload_file_name(input)
-        assert actual == expected
-
-
-def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_service):
-    invalid_data = "invalid_nhs_number.txt"
-
-    with pytest.raises(InvalidFileNameException) as exc_info:
-        test_service.extract_nhs_number_from_bulk_upload_file_name(invalid_data)
-
-    assert str(exc_info.value) == "Invalid NHS number"
 
 
 @pytest.mark.parametrize(

@@ -2,8 +2,9 @@ import datetime
 
 import pytest
 
+from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import extract_page_number, extract_total_pages, assemble_lg_valid_file_name_full_path, \
-    extract_document_path, extract_date_from_bulk_upload_file_name
+    extract_document_path, extract_date_from_bulk_upload_file_name, extract_nhs_number_from_bulk_upload_file_name
 
 
 @pytest.mark.parametrize(
@@ -139,3 +140,39 @@ def test_correctly_extract_date_from_bulk_upload_file_name(
 ):
     actual = extract_date_from_bulk_upload_file_name(input)
     assert actual == expected
+
+@pytest.mark.parametrize(
+    ["input", "expected", "expected_exception"],
+    [
+        ("_-9991211234-12012024", ("9991211234", "-12012024"), None),
+        ("_-9-99/12?11\/234-12012024", ("9991211234", "-12012024"), None),
+        ("_-9-9l9/12?11\/234-12012024", ("9991211234", "-12012024"), None),
+        (
+                "12_12_12_12_12_12_12_2024.csv",
+                "incorrect NHS number format",
+                InvalidFileNameException,
+        ),
+        ("_9000000001_11_12_2025.csv", ("9000000001", "_11_12_2025.csv"), None),
+        ("_900000000111_12_2025.csv", ("9000000001", "11_12_2025.csv"), None),
+        ("900-000-000111.10.2010", ("9000000001", "11.10.2010"), None),
+    ],
+)
+def test_correctly_extract_nhs_number_from_bulk_upload_file_name(
+        input, expected, expected_exception
+):
+    if expected_exception:
+        with pytest.raises(expected_exception) as exc_info:
+            extract_nhs_number_from_bulk_upload_file_name(input)
+            assert str(exc_info.value) == expected
+    else:
+        actual = extract_nhs_number_from_bulk_upload_file_name(input)
+        assert actual == expected
+
+
+def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number():
+    invalid_data = "invalid_nhs_number.txt"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        extract_nhs_number_from_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "Invalid NHS number"

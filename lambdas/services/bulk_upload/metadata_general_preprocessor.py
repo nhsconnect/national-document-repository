@@ -4,7 +4,7 @@ from regex import regex
 
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException
-from utils.filename_utils import assemble_lg_valid_file_name_full_path
+from utils.filename_utils import assemble_lg_valid_file_name_full_path, extract_nhs_number_from_bulk_upload_file_name
 
 logger = LoggingService(__name__)
 
@@ -32,7 +32,7 @@ class MetadataGeneralPreprocessor:
                 raise InvalidFileNameException("Incorrect NHS number or date format")
 
             nhs_number, current_file_name = (
-                self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)
+                extract_nhs_number_from_bulk_upload_file_name(current_file_name)
             )
             date, current_file_name = (
                 self.extract_date_from_bulk_upload_file_name(current_file_name)
@@ -95,41 +95,6 @@ class MetadataGeneralPreprocessor:
             file_path = expression_result.group(1)
         return file_path, current_file_path
 
-    @staticmethod
-    def extract_nhs_number_from_bulk_upload_file_name(
-        file_path: str,
-    ) -> tuple[str, str]:
-        """
-        Extracts NHS number and remaining file path from a bulk upload file name.
-
-        This method processes the provided file name, parses the NHS number,
-        and separates it from the rest of the file path. If the NHS number is
-        not found, an exception is raised.
-
-        Returns:
-            A tuple containing:
-            - The NHS number as a string.
-            - The remaining file path after extracting the NHS number.
-
-        Raises:
-            InvalidFileNameException: If no valid NHS number is found within
-            the provided file name.
-
-        Parameters:
-            file_path: A string representing the file path of the bulk upload
-            document.
-        """
-        nhs_number_expression = r"((?:[^_]*?\d){10})(.*)"
-        expression_result = regex.search(rf"{nhs_number_expression}", file_path)
-
-        if expression_result is None:
-            logger.info("Failed to find NHS number in file name")
-            raise InvalidFileNameException("Invalid NHS number")
-
-        nhs_number = "".join(regex.findall(r"\d", expression_result.group(1)))
-        current_file_path = expression_result.group(2)
-
-        return nhs_number, current_file_path
 
     @staticmethod
     def extract_document_number_bulk_upload_file_name(
