@@ -12,6 +12,7 @@ on:
         description: "Which Environment type are we using"
         required: true
         type: "string"
+        default: "development"
       sandbox:
         description: "Sandbox to run the test on."
         required: true
@@ -74,4 +75,3 @@ jobs:
       - name: Bulk Upload Test
         run: |
           make test-bulk-upload-e2e
-          
