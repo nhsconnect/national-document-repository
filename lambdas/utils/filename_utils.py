@@ -42,13 +42,13 @@ def extract_total_pages(filename: str) -> int:
 
 
 def assemble_lg_valid_file_name_full_path(
-        file_path_prefix: str,
-        first_document_number: int,
-        second_document_number: int,
-        patient_name: str,
-        nhs_number: str,
-        date_object: datetime.date,
-        file_extension: str,
+    file_path_prefix: str,
+    first_document_number: int,
+    second_document_number: int,
+    patient_name: str,
+    nhs_number: str,
+    date_object: datetime.date,
+    file_extension: str,
 ) -> str:
     """
     Assembles a complete file path for a Lloyd George record file.
@@ -78,18 +78,14 @@ def assemble_lg_valid_file_name_full_path(
         Fully assembled file name including a path, details, and extension.
     """
     return (
-        f"{file_path_prefix}"
-        f"{first_document_number}of{second_document_number}"
-        f"_Lloyd_George_Record_"
-        f"[{patient_name}]_"
-        f"[{nhs_number}]_"
-        f"[{date_object.strftime("%d-%m-%Y")}]"
-        f"{file_extension}"
+        f"{file_path_prefix}{first_document_number}of{second_document_number}"
+        f"_Lloyd_George_Record_[{patient_name}]_[{nhs_number}]_"
+        f"[{date_object.strftime('%d-%m-%Y')}]{file_extension}"
     )
 
 
 def extract_document_path(
-        file_path: str,
+    file_path: str,
 ) -> tuple[str, str]:
     directory_path, file_name = os.path.split(file_path)
     if not file_name:
@@ -100,7 +96,7 @@ def extract_document_path(
 
 
 def extract_nhs_number_from_bulk_upload_file_name(
-        file_path: str,
+    file_path: str,
 ) -> tuple[str, str]:
     nhs_number_expression = r"((?:[^_]*?\d){10})(.*)"
     expression_result = regex.search(rf"{nhs_number_expression}", file_path)
@@ -116,7 +112,7 @@ def extract_nhs_number_from_bulk_upload_file_name(
 
 
 def extract_patient_name_from_bulk_upload_file_name(
-        file_path: str,
+    file_path: str,
 ) -> tuple[str, str]:
     document_number_expression = r".*?([\p{L}][^\d]*[\p{L}])(.*)"
     expression_result = regex.search(
@@ -162,7 +158,7 @@ def extract_date_from_bulk_upload_file_name(file_path):
 
 
 def extract_document_path_for_lloyd_george_record(
-        file_path: str,
+    file_path: str,
 ) -> tuple[str, str]:
     document_number_expression = r"(.*[/])*((\d+)[^0-9]*of[^0-9]*(\d+)(.*))"
 
@@ -182,7 +178,7 @@ def extract_document_path_for_lloyd_george_record(
 
 
 def extract_document_number_bulk_upload_file_name(
-        file_path: str,
+    file_path: str,
 ) -> tuple[int, int, str]:
     document_number_expression = r"[^0-9]*(\d+)[^0-9]*of[^0-9]*(\d+)(.*)"
     expression_result = regex.search(rf"{document_number_expression}", file_path)
@@ -199,12 +195,10 @@ def extract_document_number_bulk_upload_file_name(
 
 
 def extract_lloyd_george_record_from_bulk_upload_file_name(
-        file_path: str,
+    file_path: str,
 ) -> str:
     _expression = r".*?ll[oO0οՕ〇]yd.*?ge[oO0οՕ〇]rge.*?rec[oO0οՕ〇]rd(.*)"
-    lloyd_george_record = regex.search(
-        rf"{_expression}", file_path, regex.IGNORECASE
-    )
+    lloyd_george_record = regex.search(rf"{_expression}", file_path, regex.IGNORECASE)
     if lloyd_george_record is None:
         logger.info("Failed to extract Lloyd George Record from file name")
         raise InvalidFileNameException("Invalid Lloyd_George_Record separator")
@@ -215,7 +209,7 @@ def extract_lloyd_george_record_from_bulk_upload_file_name(
 
 
 def extract_file_extension_from_bulk_upload_file_name(
-        file_path: str,
+    file_path: str,
 ) -> str:
     file_extension_expression = r"(\.([^.]*))$"
     expression_result = regex.search(rf"{file_extension_expression}", file_path)
