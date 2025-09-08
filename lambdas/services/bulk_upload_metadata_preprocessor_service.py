@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from botocore.exceptions import ClientError
+
 from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
 from models.staging_metadata import METADATA_FILENAME
 from services.base.s3_service import S3Service
@@ -142,7 +143,8 @@ class MetadataPreprocessorService:
         rejected_reasons = []
 
         for original_row in metadata_rows:
-            renamed_row = self.update_date_in_row(original_row)
+            renamed_row = original_row.copy()
+            renamed_row = self.update_date_in_row(renamed_row)
             original_filename = original_row.get("FILEPATH")
 
             try:
