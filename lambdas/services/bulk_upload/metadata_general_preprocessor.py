@@ -4,7 +4,8 @@ from regex import regex
 
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException
-from utils.filename_utils import assemble_lg_valid_file_name_full_path, extract_nhs_number_from_bulk_upload_file_name
+from utils.filename_utils import assemble_lg_valid_file_name_full_path, extract_nhs_number_from_bulk_upload_file_name, \
+    extract_patient_name_from_bulk_upload_file_name
 
 logger = LoggingService(__name__)
 
@@ -24,7 +25,7 @@ class MetadataGeneralPreprocessor:
                 )
             )
             patient_name, current_file_name = (
-                self.extract_patient_name_from_bulk_upload_file_name(current_file_name)
+                extract_patient_name_from_bulk_upload_file_name(current_file_name)
             )
 
             if sum(c.isdigit() for c in current_file_name) != 18:
@@ -129,25 +130,6 @@ class MetadataGeneralPreprocessor:
 
 
         return current_file_path
-
-
-    @staticmethod
-    def extract_patient_name_from_bulk_upload_file_name(
-        file_path: str,
-    ) -> tuple[str, str]:
-        document_number_expression = r".*?([\p{L}][^\d]*[\p{L}])(.*)"
-        expression_result = regex.search(
-            rf"{document_number_expression}", file_path, regex.IGNORECASE
-        )
-
-        if expression_result is None:
-            logger.info("Failed to find the patient name in the file name")
-            raise InvalidFileNameException("Invalid patient name")
-
-        patient_name = expression_result.group(1)
-        current_file_path = expression_result.group(2)
-
-        return patient_name, current_file_path
 
     @staticmethod
     def extract_date_from_bulk_upload_file_name(file_path):

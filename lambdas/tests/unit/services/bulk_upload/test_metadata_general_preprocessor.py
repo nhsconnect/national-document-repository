@@ -31,9 +31,8 @@ def test_validate_record_filename_successful(test_service, mocker):
         "extract_lloyd_george_record_from_bulk_upload_file_name",
         return_value=("Lloyd_George_Record", smaller_path),
     )
-    mocker.patch.object(
-        test_service,
-        "extract_patient_name_from_bulk_upload_file_name",
+    mocker.patch(
+        "services.bulk_upload.metadata_general_preprocessor.extract_patient_name_from_bulk_upload_file_name",
         return_value=("Dwayne The Rock Johnson", smaller_path),
     )
     mocker.patch(
@@ -76,9 +75,8 @@ def test_validate_record_filename_invalid_digit_count(mocker, test_service, capl
         "extract_lloyd_george_record_from_bulk_upload_file_name",
         return_value=("LG", bad_filename),
     )
-    mocker.patch.object(
-        test_service,
-        "extract_patient_name_from_bulk_upload_file_name",
+    mocker.patch(
+        "services.bulk_upload.metadata_general_preprocessor.extract_patient_name_from_bulk_upload_file_name",
         return_value=("John Doe", bad_filename),
     )
 
@@ -224,44 +222,6 @@ def test_extract_lloyd_george_from_bulk_upload_file_name_with_no_lloyd_george(
         )
 
     assert str(exc_info.value) == "Invalid Lloyd_George_Record separator"
-
-
-@pytest.mark.parametrize(
-    ["input", "expected"],
-    [
-        ("_John_doe-1231", ("John_doe", "-1231")),
-        ("-José María-1231", ("José María", "-1231")),
-        (
-                "-Sir. Roger Guilbert the third-1231",
-                ("Sir. Roger Guilbert the third", "-1231"),
-        ),
-        ("-José&María-Grandola&1231", ("José&María-Grandola", "&1231")),
-        (
-                "_Jim Stevens_9000000001_22.10.2010.txt",
-                ("Jim Stevens", "_9000000001_22.10.2010.txt"),
-        ),
-        (
-                'Dwain "The Rock" Johnson_9000000001_22.10.2010.txt',
-                ('Dwain "The Rock" Johnson', "_9000000001_22.10.2010.txt"),
-        ),
-    ],
-)
-def test_correctly_extract_person_name_from_bulk_upload_file_name(
-        test_service, input, expected
-):
-    actual = test_service.extract_patient_name_from_bulk_upload_file_name(input)
-    assert actual == expected
-
-
-def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
-        test_service,
-):
-    invalid_data = "12-12-2024"
-
-    with pytest.raises(InvalidFileNameException) as exc_info:
-        test_service.extract_patient_name_from_bulk_upload_file_name(invalid_data)
-
-    assert str(exc_info.value) == "Invalid patient name"
 
 
 

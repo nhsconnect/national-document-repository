@@ -4,7 +4,8 @@ import pytest
 
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import extract_page_number, extract_total_pages, assemble_lg_valid_file_name_full_path, \
-    extract_document_path, extract_date_from_bulk_upload_file_name, extract_nhs_number_from_bulk_upload_file_name
+    extract_document_path, extract_date_from_bulk_upload_file_name, extract_nhs_number_from_bulk_upload_file_name, \
+    extract_patient_name_from_bulk_upload_file_name
 
 
 @pytest.mark.parametrize(
@@ -176,3 +177,38 @@ def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number():
         extract_nhs_number_from_bulk_upload_file_name(invalid_data)
 
     assert str(exc_info.value) == "Invalid NHS number"
+
+@pytest.mark.parametrize(
+    ["input", "expected"],
+    [
+        ("_John_doe-1231", ("John_doe", "-1231")),
+        ("-José María-1231", ("José María", "-1231")),
+        (
+                "-Sir. Roger Guilbert the third-1231",
+                ("Sir. Roger Guilbert the third", "-1231"),
+        ),
+        ("-José&María-Grandola&1231", ("José&María-Grandola", "&1231")),
+        (
+                "_Jim Stevens_9000000001_22.10.2010.txt",
+                ("Jim Stevens", "_9000000001_22.10.2010.txt"),
+        ),
+        (
+                'Dwain "The Rock" Johnson_9000000001_22.10.2010.txt',
+                ('Dwain "The Rock" Johnson', "_9000000001_22.10.2010.txt"),
+        ),
+    ],
+)
+def test_correctly_extract_person_name_from_bulk_upload_file_name(
+        input, expected
+):
+    actual = extract_patient_name_from_bulk_upload_file_name(input)
+    assert actual == expected
+
+
+def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name():
+    invalid_data = "12-12-2024"
+
+    with pytest.raises(InvalidFileNameException) as exc_info:
+        extract_patient_name_from_bulk_upload_file_name(invalid_data)
+
+    assert str(exc_info.value) == "Invalid patient name"
