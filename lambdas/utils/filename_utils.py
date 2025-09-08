@@ -154,7 +154,7 @@ def extract_date_from_bulk_upload_file_name(file_path):
         return date_object, remaining_file_path
     except (ValueError, TypeError) as e:
         logger.error(f"Failed to parse date from filename: {e}")
-        raise InvalidFileNameException(f"Invalid date format")
+        raise InvalidFileNameException("Invalid date format")
 
 
 def extract_document_path_for_lloyd_george_record(

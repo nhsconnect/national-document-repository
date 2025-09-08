@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import (
     assemble_lg_valid_file_name_full_path,
@@ -285,7 +284,7 @@ def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name():
         ),
     ],
 )
-def test_extract_document_path(value, expected):
+def test_extract_document_path_for_lloyd_george_record(value, expected):
     actual = extract_document_path_for_lloyd_george_record(value)
     assert actual == expected
 
