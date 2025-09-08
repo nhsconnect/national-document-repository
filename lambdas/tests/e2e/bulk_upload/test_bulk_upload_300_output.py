@@ -7,7 +7,7 @@ from tests.e2e.conftest import (
 
 dynamo_service = DynamoDBService()
 
-def test_bulk_upload_300_3_files():
+def test_bulk_upload_300_patients_with_3_files():
 
     #assert bulk upload report table values
     bulk_upload_table = dynamo_service.scan_whole_table(BULK_REPORT_TABLE, "Reason, UploadStatus, NhsNumber")
