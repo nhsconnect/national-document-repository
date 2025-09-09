@@ -5,9 +5,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from botocore.exceptions import ClientError
-
 from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
-from models.staging_metadata import METADATA_FILENAME
+from models.staging_metadata import METADATA_FILENAME, NHS_NUMBER_FIELD_NAME
 from services.base.s3_service import S3Service
 from services.bulk_upload.metadata_general_preprocessor import (
     MetadataGeneralPreprocessor,
@@ -34,6 +33,7 @@ class MetadataPreprocessorService:
         self.practice_directory = practice_directory
         self.processed_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         self.pre_format_service = self._initial_format_service(pre_format_type)
+        self.pre_format_type = pre_format_type
 
     @staticmethod
     def _initial_format_service(pre_format_type):
@@ -141,8 +141,29 @@ class MetadataPreprocessorService:
         renaming_map = []
         rejected_rows = []
         rejected_reasons = []
+        patients = set()
+        duplicate_nhs_numbers = set()
+        if self.pre_format_type == LloydGeorgePreProcessFormat.USB:
+            for row in metadata_rows:
+                nhs_number = row[NHS_NUMBER_FIELD_NAME]
+                if nhs_number not in patients:
+                    patients.add(nhs_number)
+                else:
+                    duplicate_nhs_numbers.add(nhs_number)
 
         for original_row in metadata_rows:
+            if self.pre_format_type == LloydGeorgePreProcessFormat.USB:
+                nhs_number = original_row[NHS_NUMBER_FIELD_NAME]
+                if nhs_number in duplicate_nhs_numbers:
+                    rejected_rows.append(original_row)
+                    rejected_reasons.append(
+                        {
+                            "FILEPATH": original_row.get("FILEPATH", "N/A"),
+                            "REASON": f"Duplicate NHS number {nhs_number} found in metadata.",
+                        }
+                    )
+                    continue
+
             renamed_row = original_row.copy()
             renamed_row = self.update_date_in_row(renamed_row)
             original_filename = original_row.get("FILEPATH")

@@ -4,6 +4,7 @@ from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
 from freezegun import freeze_time
 from msgpack.fallback import BytesIO
 from services.bulk_upload_metadata_preprocessor_service import (
@@ -16,7 +17,7 @@ from tests.unit.conftest import (
 )
 from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
 
-from lambdas.models.staging_metadata import METADATA_FILENAME
+from lambdas.models.staging_metadata import METADATA_FILENAME, NHS_NUMBER_FIELD_NAME
 
 
 @pytest.fixture(autouse=True)
@@ -547,3 +548,53 @@ def test_generate_and_save_csv_file_updated_metadata(test_service, mocker):
 
     mock_convert_csv.assert_called_once_with(csv_dict[0].keys(), csv_dict)
     mock_save_or_create_file.assert_called_once()
+
+
+def test_generate_renaming_map_for_usb_format_rejects_rows_with_duplicate_nhs_numbers(
+    set_env, mock_valid_record_filename, test_service, mock_update_date_in_row
+):
+    test_service.pre_format_type = LloydGeorgePreProcessFormat.USB
+
+    metadata_rows = [
+        {"FILEPATH": "file1.pdf", NHS_NUMBER_FIELD_NAME: "111"},
+        {"FILEPATH": "file2.pdf", NHS_NUMBER_FIELD_NAME: "222"},
+        {"FILEPATH": "file3.pdf", NHS_NUMBER_FIELD_NAME: "222"},
+        {"FILEPATH": "file4.pdf", NHS_NUMBER_FIELD_NAME: "333"},
+    ]
+
+    renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
+        metadata_rows
+    )
+
+    assert rejected_rows == [metadata_rows[1], metadata_rows[2]]
+
+    expected_rejected_reasons = [
+        {
+            "FILEPATH": "file2.pdf",
+            "REASON": "Duplicate NHS number 222 found in metadata.",
+        },
+        {
+            "FILEPATH": "file3.pdf",
+            "REASON": "Duplicate NHS number 222 found in metadata.",
+        },
+    ]
+    assert rejected_reasons == expected_rejected_reasons
+
+    expected_renaming_map = [
+        (
+            metadata_rows[0],
+            {
+                "FILEPATH": "test_practice_directory/file1.pdf",
+                NHS_NUMBER_FIELD_NAME: "111",
+            },
+        ),
+        (
+            metadata_rows[3],
+            {
+                "FILEPATH": "test_practice_directory/file4.pdf",
+                NHS_NUMBER_FIELD_NAME: "333",
+            },
+        ),
+    ]
+
+    assert renaming_map == expected_renaming_map
