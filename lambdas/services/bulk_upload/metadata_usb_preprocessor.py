@@ -5,9 +5,10 @@ from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import (
     assemble_lg_valid_file_name_full_path,
     extract_date_from_bulk_upload_file_name,
+    extract_document_number_bulk_upload_file_name,
     extract_document_path,
     extract_nhs_number_from_bulk_upload_file_name,
-    extract_patient_name_from_bulk_upload_file_name, extract_document_number_bulk_upload_file_name,
+    extract_patient_name_from_bulk_upload_file_name,
 )
 
 logger = LoggingService(__name__)
@@ -17,6 +18,11 @@ class MetadataUsbPreprocessorService:
     def validate_record_filename(self, file_path: str) -> str:
 
         directory_path, file_name = extract_document_path(file_path)
+        file_extension = os.path.splitext(file_name)[1]
+
+        if file_extension != ".pdf":
+            logger.info(f"Rejecting file as it is not a PDF: {file_path}")
+            raise InvalidFileNameException("Only PDF files are supported.")
 
         try:
             numbers = extract_document_number_bulk_upload_file_name(file_name)
@@ -44,8 +50,6 @@ class MetadataUsbPreprocessorService:
         date_of_birth_from_path, _ = extract_date_from_bulk_upload_file_name(
             remaining_path
         )
-
-        file_extension = os.path.splitext(file_name)[1]
 
         new_filename = assemble_lg_valid_file_name_full_path(
             file_path_prefix=directory_path + "/",

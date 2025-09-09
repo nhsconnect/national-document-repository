@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import (
     assemble_lg_valid_file_name_full_path,

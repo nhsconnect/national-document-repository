@@ -1,5 +1,4 @@
 import pytest
-
 from services.bulk_upload.metadata_usb_preprocessor import (
     MetadataUsbPreprocessorService,
 )
@@ -57,8 +56,8 @@ def test_service(set_env):
             "/9876543210 Test Patient Name01-Jan-2022/1of1_Lloyd_George_Record_[Test Patient Name]_[9876543210]_[01-01-2022].pdf",
         ),
         (
-                "/9876543210 Test Patient Name01-Jan-2022/1 of 1_guid_unknown.pdf",
-                "/9876543210 Test Patient Name01-Jan-2022/1of1_Lloyd_George_Record_[Test Patient Name]_[9876543210]_[01-01-2022].pdf",
+            "/9876543210 Test Patient Name01-Jan-2022/1 of 1_guid_unknown.pdf",
+            "/9876543210 Test Patient Name01-Jan-2022/1of1_Lloyd_George_Record_[Test Patient Name]_[9876543210]_[01-01-2022].pdf",
         ),
     ],
 )
@@ -79,6 +78,7 @@ def test_validate_record_filename_valid(test_service, file_path, expected):
         "/9876543210 Test Patient Name 01-01-2022-23-59-59/1 of 02_Lloyd_George_Record",
         "/9876543210 Test Patient Name 01-01-2022-23-59-59/3 of 2_Lloyd_George_Record",
         "/guid_unknown.pdf",
+        "/9876543210 Test Patient Name01-Jan-2022/1 of 1_guid_unknown.tiff",
     ],
 )
 def test_validate_record_filename_invalid(test_service, file_path):
