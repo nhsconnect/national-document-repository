@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import (
     assemble_lg_valid_file_name_full_path,
@@ -309,6 +310,7 @@ def test_extract_document_path_with_no_document_path():
         ("8ab12of34YZ2442-ofladimus 900123", (12, 34, "YZ2442-ofladimus 900123")),
         ("1 of 02_Lloyd_George_Record", (1, 2, "_Lloyd_George_Record")),
         ("/9730786895/01 of 01_Lloyd_George_Record", (1, 1, "_Lloyd_George_Record")),
+        ("some_text_1of1", (1, 1, "")),
         (
             "test/nested/9730786895/01 of 01_Lloyd_George_Record",
             (1, 1, "_Lloyd_George_Record"),
