@@ -57,6 +57,7 @@ describe('PatientSearchPage', () => {
                     screen.getByText('A 10-digit number, for example, 485 777 3456'),
                 ).toBeInTheDocument();
                 expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+                expect(screen.getByText('Go to home')).toBeInTheDocument();
             },
         );
         it.skip("displays a loading spinner when the patients details are being requested when user role is '%s'", async (role) => {
