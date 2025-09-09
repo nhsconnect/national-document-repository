@@ -1,0 +1,74 @@
+# .github/workflows/terraform-dev
+name: "Test: Bulk Upload Validator - 300 patients 3 files"
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "Branch with bulk upload tests."
+        required: true
+        type: "string"
+      environment:
+        description: "Which Environment type are we using"
+        required: true
+        type: "string"
+        default: "development"
+      sandbox:
+        description: "Sandbox to run the test on."
+        required: true
+        type: "string"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  bulk-upload-test:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          repository: "nhsconnect/national-document-repository"
+          ref: ${{ inputs.build_branch }}
+
+      - name: AWS Role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          mask-aws-account-id: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Start virtual environment
+        run: |
+          source ./lambdas/venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Get E2e Test Variables
+        run: |
+          LG_DYNAMO_STORE="${SANDBOX}_LloydGeorgeReferenceMetadata"
+          LG_UNSTITCHED_STORE="${SANDBOX}_UnstitchedLloydGeorgeReferenceMetadata"
+          BULK_UPLOAD_REPORT_STORE="${SANDBOX}_BulkUploadReport"
+          echo "LG_METADATA_TABLE=$LG_DYNAMO_STORE" >> $GITHUB_ENV
+          echo "LG_UNSTITCHED_TABLE=$LG_UNSTITCHED_STORE" >> $GITHUB_ENV
+          echo "BULK_REPORT_TABLE=$BULK_UPLOAD_REPORT_STORE" >> $GITHUB_ENV
+        env:
+          SANDBOX: ${{ inputs.sandbox }}
+
+      - name: Bulk Upload Test
+        run: |
+          make test-bulk-upload-e2e
