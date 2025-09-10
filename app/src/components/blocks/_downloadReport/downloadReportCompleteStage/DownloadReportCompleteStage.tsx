@@ -3,12 +3,13 @@ import { routes } from '../../../../types/generic/routes';
 import { Button, Card } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { JSX } from 'react';
 
 type Props = {
     report: ReportData;
 };
 
-const DownloadReportCompleteStage = (props: Props) => {
+const DownloadReportCompleteStage = (props: Props): JSX.Element => {
     useTitle({ pageTitle: 'Download complete' });
     return (
         <div className="report_download-complete">
@@ -37,7 +38,7 @@ const DownloadReportCompleteStage = (props: Props) => {
             </p>
 
             <Button href={routes.HOME} className="mr-6" data-testid="home-button">
-                Return to Home
+                Go to home
             </Button>
             <Button
                 secondary
