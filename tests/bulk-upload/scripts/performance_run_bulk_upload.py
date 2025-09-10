@@ -64,7 +64,6 @@ if __name__ == "__main__":
     search_lambda_name = f"{args.environment}_SearchPatientDetailsLambda"
 
     if args.use_v2_process:
-        bulk_upload_lambda_name = f"{args.environment}_V2BulkUploadLambda"
         bulk_upload_metadata_lambda_name = f"{args.environment}_V2BulkUploadMetadataLambda"
 
     if args.disable_pds_stub or (
