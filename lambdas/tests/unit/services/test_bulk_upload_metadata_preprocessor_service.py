@@ -6,6 +6,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
 from freezegun import freeze_time
+from models.staging_metadata import METADATA_FILENAME, NHS_NUMBER_FIELD_NAME
 from msgpack.fallback import BytesIO
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
@@ -16,8 +17,6 @@ from tests.unit.conftest import (
     TEST_BASE_DIRECTORY,
 )
 from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
-
-from lambdas.models.staging_metadata import METADATA_FILENAME, NHS_NUMBER_FIELD_NAME
 
 
 @pytest.fixture(autouse=True)
@@ -449,6 +448,27 @@ def test_generate_renaming_map_happy_path(
     )
     assert rejected_rows == []
     assert rejected_reasons == []
+
+
+def test_generate_renaming_map_(
+    test_service, mock_update_date_in_row, mock_valid_record_filename
+):
+    row1 = {"FILEPATH": "valid_file.pdf", "NHS-NO": "1111"}
+    row2 = {"FILEPATH": "valid_file.tiff", "NHS-NO": "1111"}
+    test_service.pre_format_type = LloydGeorgePreProcessFormat.USB
+    metadata = [row1, row2]
+    renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
+        metadata
+    )
+
+    assert len(renaming_map) == 1
+    assert len(rejected_rows) == 1
+    assert rejected_rows[0] == row2
+    assert (
+        rejected_reasons[0]["REASON"]
+        == "File extension .tiff is not supported. Only '.pdf' is allowed."
+    )
+    test_service.pre_format_type = LloydGeorgePreProcessFormat.GENERAL
 
 
 def test_generate_renaming_map_duplicate_file(

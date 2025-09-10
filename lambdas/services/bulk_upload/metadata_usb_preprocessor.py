@@ -61,9 +61,7 @@ class MetadataUsbPreprocessorService:
                     "Multi-part documents (e.g. 1of2) are not supported. Only '1of1' is allowed."
                 )
 
-    def _extract_metadata_from_path(
-            self, directory_path: str
-    ) -> tuple[str, str, date]:
+    def _extract_metadata_from_path(self, directory_path: str) -> tuple[str, str, date]:
         nhs_number, remaining_path = extract_nhs_number_from_bulk_upload_file_name(
             directory_path
         )

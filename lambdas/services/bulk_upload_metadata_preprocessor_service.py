@@ -145,6 +145,18 @@ class MetadataPreprocessorService:
         duplicate_nhs_numbers = set()
         if self.pre_format_type == LloydGeorgePreProcessFormat.USB:
             for row in metadata_rows:
+                file_name = row.get("FILEPATH", "")
+                file_extension = os.path.splitext(file_name)[1]
+                if file_extension != ".pdf":
+                    rejected_rows.append(row)
+                    rejected_reasons.append(
+                        {
+                            "FILEPATH": row.get("FILEPATH", "N/A"),
+                            "REASON": f"File extension {file_extension} is not supported. Only '.pdf' is allowed.",
+                        }
+                    )
+                    metadata_rows.remove(row)
+                    continue
                 nhs_number = row[NHS_NUMBER_FIELD_NAME]
                 if nhs_number not in patients:
                     patients.add(nhs_number)
