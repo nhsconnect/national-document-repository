@@ -192,6 +192,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props): 
                         type="button"
                         aria-label={`Remove ${document.file.name} from selection`}
                         className="link-button"
+                        data-testid={`remove-button-${index}`}
                         onClick={(): void => {
                             onRemove(index);
                         }}
