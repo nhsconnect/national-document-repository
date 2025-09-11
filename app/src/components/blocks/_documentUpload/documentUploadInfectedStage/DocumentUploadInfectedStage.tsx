@@ -1,8 +1,8 @@
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 
-function DocumentUploadInfectedStage() {
+const DocumentUploadInfectedStage = (): React.JSX.Element => {
     const navigate = useNavigate();
     const pageHeader = "We couldn't upload your files because we found a virus";
     useTitle({ pageTitle: pageHeader });
@@ -32,6 +32,6 @@ function DocumentUploadInfectedStage() {
             </p>
         </>
     );
-}
+};
 
 export default DocumentUploadInfectedStage;

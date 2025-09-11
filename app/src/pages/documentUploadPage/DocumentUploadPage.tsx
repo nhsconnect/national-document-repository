@@ -38,7 +38,7 @@ import DocumentUploadRemoveFilesStage from '../../components/blocks/_documentUpl
 import useConfig from '../../helpers/hooks/useConfig';
 import DocumentUploadInfectedStage from '../../components/blocks/_documentUpload/documentUploadInfectedStage/DocumentUploadInfectedStage';
 
-function DocumentUploadPage() {
+const DocumentUploadPage = (): React.JSX.Element => {
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const baseUrl = useBaseAPIUrl();
@@ -93,7 +93,7 @@ function DocumentUploadPage() {
     ]);
 
     useEffect(() => {
-        return () => {
+        return (): void => {
             window.clearInterval(intervalTimer);
         };
     }, [intervalTimer]);
@@ -101,7 +101,7 @@ function DocumentUploadPage() {
     const uploadSingleLloydGeorgeDocument = async (
         document: UploadDocument,
         uploadSession: UploadSession,
-    ) => {
+    ): Promise<void> => {
         try {
             await uploadDocumentToS3({
                 document,
@@ -117,18 +117,18 @@ function DocumentUploadPage() {
         }
     };
 
-    function markDocumentAsFailed(document: UploadDocument) {
+    const markDocumentAsFailed = (document: UploadDocument): void => {
         setSingleDocument(setDocuments, {
             id: document.id,
             state: DOCUMENT_UPLOAD_STATE.ERROR,
             progress: 0,
         });
-    }
+    };
 
     const uploadAllDocuments = (
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
-    ) => {
+    ): void => {
         uploadDocuments.forEach((document) => {
             if (document.docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
                 void uploadSingleLloydGeorgeDocument(document, uploadSession);
@@ -150,7 +150,7 @@ function DocumentUploadPage() {
         return session;
     };
 
-    const startUpload = async () => {
+    const startUpload = async (): Promise<void> => {
         try {
             let reducedDocuments = documents;
 
@@ -241,7 +241,7 @@ function DocumentUploadPage() {
         );
     };
 
-    const startIntervalTimer = (uploadDocuments: Array<UploadDocument>) => {
+    const startIntervalTimer = (uploadDocuments: Array<UploadDocument>): number => {
         return window.setInterval(async () => {
             interval.current = interval.current + 1;
             if (isLocal) {
@@ -342,7 +342,7 @@ function DocumentUploadPage() {
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_COMPLETED) + '/*'}
-                    element={<DocumentUploadCompleteStage />}
+                    element={<DocumentUploadCompleteStage documents={documents} />}
                 />
                 <Route
                     path={getLastURLPath(routeChildren.DOCUMENT_UPLOAD_INFECTED) + '/*'}
@@ -353,6 +353,6 @@ function DocumentUploadPage() {
             <Outlet />
         </div>
     );
-}
+};
 
 export default DocumentUploadPage;
