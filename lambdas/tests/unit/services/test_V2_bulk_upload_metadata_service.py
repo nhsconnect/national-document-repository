@@ -1,6 +1,5 @@
 import os
 import tempfile
-import textwrap
 from unittest.mock import call
 
 import pytest
@@ -647,28 +646,46 @@ def test_download_metadata_from_s3_raise_error_when_failed_to_download(
 
 
 def test_duplicates_csv_to_staging_metadata(mocker, metadata_service):
-    fake_csv_data = textwrap.dedent(
-        """\
-            FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD
-            /1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y12345","1234567890",
-            "LG","","03/09/2022","NEC","NEC","04/10/2023"
-            /1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y12345","1234567890",
-            "LG","","03/09/2022","NEC","NEC","04/10/2023"
-            /1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y6789","1234567890",
-            "LG","","03/09/2022","NEC","NEC","04/10/2023"
-            /1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y6789","1234567890",
-            "LG","","03/09/2022","NEC","NEC","04/10/2023"
-            1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt,"","Y12345","123456789",
-            "LG","","04/09/2022","NEC","NEC","04/10/2023"
-            1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt,"","Y6789","123456789",
-            "LG","","04/09/2022","NEC","NEC","04/10/2023"
-            1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt,"","Y12345","",
-            "LG","","04/09/2022","NEC","NEC","04/10/2023"
-            1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt,"","Y6789","",
-            "LG","","04/09/2022","NEC","NEC","04/10/2023"
-        """
+    header = (
+        "FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,SECTION,SUB-SECTION,"
+        "SCAN-DATE,SCAN-ID,USER-ID,UPLOAD"
+    )
+    line1 = (
+        '/1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y12345",'
+        '"1234567890","LG","","03/09/2022","NEC","NEC","04/10/2023"'
+    )
+    line2 = (
+        '/1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y12345",'
+        '"1234567890","LG","","03/09/2022","NEC","NEC","04/10/2023"'
+    )
+    line3 = (
+        '/1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y6789",'
+        '"1234567890","LG","","03/09/2022","NEC","NEC","04/10/2023"'
+    )
+    line4 = (
+        '/1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y6789",'
+        '"1234567890","LG","","03/09/2022","NEC","NEC","04/10/2023"'
+    )
+    line5 = (
+        '1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt,"","Y12345",'
+        '"123456789","LG","","04/09/2022","NEC","NEC","04/10/2023"'
+    )
+    line6 = (
+        '1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt,"","Y6789",'
+        '"123456789","LG","","04/09/2022","NEC","NEC","04/10/2023"'
+    )
+    line7 = (
+        '1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt,"","Y12345","","LG","","04/09/2022",'
+        '"NEC","NEC","04/10/2023"'
+    )
+    line8 = (
+        '1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt,"","Y6789","","LG","","04/09/2022",'
+        '"NEC","NEC","04/10/2023"'
     )
 
+    fake_csv_data = "\n".join(
+        [header, line1, line2, line3, line4, line5, line6, line7, line8]
+    )
     mocker.patch("builtins.open", mocker.mock_open(read_data=fake_csv_data))
     mocker.patch("os.path.isfile", return_value=True)
     mocker.patch.object(
