@@ -104,7 +104,9 @@ class V2BulkUploadMetadataService:
                         else:
                             patients[key].append(file_metadata)
                 except InvalidFileNameException as error:
-                    logger.error(f"Failed to process {row['FILEPATH']} due to error: {error}")
+                    logger.error(
+                        f"Failed to process {row['FILEPATH']} due to error: {error}"
+                    )
                     failed_entry = StagingMetadata(
                         nhs_number=nhs_number, files=patients[nhs_number, ods_code]
                     )
@@ -173,9 +175,7 @@ class V2BulkUploadMetadataService:
 
         if sum(c.isdigit() for c in current_file_name) != 18:
             logger.info("Failed to find NHS number or date")
-            raise InvalidFileNameException(
-                f"Incorrect NHS number or date format"
-            )
+            raise InvalidFileNameException("Incorrect NHS number or date format")
 
         nhs_number, current_file_name = (
             self.extract_nhs_number_from_bulk_upload_file_name(current_file_name)

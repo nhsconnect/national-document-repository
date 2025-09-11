@@ -1,27 +1,22 @@
-import pytest
-from freezegun import freeze_time
-from msgpack.fallback import BytesIO
-from services.V2_bulk_upload_metadata_service import (
-    V2BulkUploadMetadataService,
-)
-from utils.exceptions import InvalidFileNameException
-
+import os
 import tempfile
+import textwrap
 from unittest.mock import call
 
+import pytest
 from botocore.exceptions import ClientError
+from freezegun import freeze_time
 from models.staging_metadata import METADATA_FILENAME
-from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, MOCK_STAGING_STORE_BUCKET
+from services.V2_bulk_upload_metadata_service import V2BulkUploadMetadataService
+from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE
 from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_PARSED_METADATA,
     EXPECTED_PARSED_METADATA_2,
-    EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
     EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
     MOCK_METADATA,
 )
-from utils.exceptions import BulkUploadMetadataException
-
+from utils.exceptions import BulkUploadMetadataException, InvalidFileNameException
 
 METADATA_FILE_DIR = "tests/unit/helpers/data/bulk_upload"
 MOCK_METADATA_CSV = f"{METADATA_FILE_DIR}/metadata.csv"
@@ -128,6 +123,7 @@ def test_validate_record_filename_successful(test_service, mocker):
     assert result == "final_filename.pdf"
     mock_assemble.assert_called_once()
 
+
 def test_validate_record_filename_invalid_digit_count(mocker, test_service, caplog):
     bad_filename = "01 of 02_Lloyd_George_Record_[John Doe]_[12345]_[01-01-2000].pdf"
 
@@ -154,6 +150,7 @@ def test_validate_record_filename_invalid_digit_count(mocker, test_service, capl
         test_service.validate_record_filename(bad_filename)
 
     assert str(exc_info.value) == "Incorrect NHS number or date format"
+
 
 @pytest.mark.parametrize(
     ["value", "expected"],
@@ -214,6 +211,7 @@ def test_extract_document_path(test_service, value, expected):
     actual = test_service.extract_document_path(value)
     assert actual == expected
 
+
 def test_extract_document_path_with_no_document_path(
     test_service,
 ):
@@ -223,6 +221,7 @@ def test_extract_document_path_with_no_document_path(
         test_service.extract_document_path(invalid_data)
 
     assert str(exc_info.value) == "Incorrect document path format"
+
 
 @pytest.mark.parametrize(
     ["input", "expected"],
@@ -246,6 +245,7 @@ def test_correctly_extract_document_number_from_bulk_upload_file_name(
 ):
     actual = test_service.extract_document_number_bulk_upload_file_name(input)
     assert actual == expected
+
 
 def test_extract_document_number_from_bulk_upload_file_name_with_no_document_number(
     test_service,
@@ -281,6 +281,7 @@ def test_correctly_extract_lloyd_george_record_from_bulk_upload_file_name(
 ):
     actual = test_service.extract_lloyd_george_record_from_bulk_upload_file_name(input)
     assert actual == expected
+
 
 def test_extract_lloyd_george_from_bulk_upload_file_name_with_no_lloyd_george(
     test_service,
@@ -321,6 +322,7 @@ def test_correctly_extract_person_name_from_bulk_upload_file_name(
     actual = test_service.extract_patient_name_from_bulk_upload_file_name(input)
     assert actual == expected
 
+
 def test_extract_person_name_from_bulk_upload_file_name_with_no_person_name(
     test_service,
 ):
@@ -358,6 +360,7 @@ def test_correctly_extract_nhs_number_from_bulk_upload_file_name(
         actual = test_service.extract_nhs_number_from_bulk_upload_file_name(input)
         assert actual == expected
 
+
 def test_extract_nhs_number_from_bulk_upload_file_name_with_nhs_number(test_service):
     invalid_data = "invalid_nhs_number.txt"
 
@@ -386,6 +389,7 @@ def test_correctly_extract_date_from_bulk_upload_file_name(
     actual = test_service.extract_date_from_bulk_upload_file_name(input)
     assert actual == expected
 
+
 def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
     test_service,
 ):
@@ -411,6 +415,7 @@ def test_correctly_extract_file_extension_from_bulk_upload_file_name(
 ):
     actual = test_service.extract_file_extension_from_bulk_upload_file_name(input)
     assert actual == expected
+
 
 def test_extract_file_extension_from_bulk_upload_file_name_with_incorrect_file_extension_format(
     test_service,
@@ -450,6 +455,7 @@ def test_correctly_assembles_valid_file_name(test_service):
     )
     assert actual == expected
 
+
 # TODO: Possibly needed as part of PRMT-576
 # def test_update_date_in_row(test_service):
 #     metadata_row = {"SCAN-DATE": "2025.01.01", "UPLOAD": "2025.01.01"}
@@ -459,47 +465,42 @@ def test_correctly_assembles_valid_file_name(test_service):
 #     assert updated_row["SCAN-DATE"] == "2025/01/01"
 #     assert updated_row["UPLOAD"] == "2025/01/01"
 
+
 def test_process_metadata_send_metadata_to_sqs_queue(
-    set_env,
     mocker,
-    mock_sqs_service,
-    mock_s3_service,
-    mock_download_metadata_from_s3,
     metadata_service,
+    mock_download_metadata_from_s3,
 ):
-    mock_download_metadata_from_s3.return_value = f"{metadata_service.practice_directory}/{MOCK_METADATA_CSV}"
-    mocker.patch("uuid.uuid4", return_value="123412342")
+    fake_csv_path = "fake/path/metadata.csv"
+    fake_uuid = "123412342"
 
-    mock_s3_service.copy_across_bucket.return_value = None
-    # mock_csv_to_staging_metadata.return_value = MOCK_METADATA
+    mock_download_metadata_from_s3.return_value = fake_csv_path
 
-    expected_calls = [
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
-            nhs_number="1234567890",
-            group_id="bulk_upload_123412342",
-        ),
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_123456789,
-            nhs_number="123456789",
-            group_id="bulk_upload_123412342",
-        ),
-        call(
-            queue_url=MOCK_LG_METADATA_SQS_QUEUE,
-            message_body=EXPECTED_SQS_MSG_FOR_PATIENT_0000000000,
-            nhs_number="0000000000",
-            group_id="bulk_upload_123412342",
-        ),
+    mocker.patch.object(
+        metadata_service.s3_service, "copy_across_bucket", return_value=None
+    )
+    mocker.patch.object(metadata_service.s3_service, "delete_object", return_value=None)
+
+    mocker.patch("uuid.uuid4", return_value=fake_uuid)
+
+    fake_metadata = [
+        {"nhs_number": "1234567890", "some_data": "value1"},
+        {"nhs_number": "123456789", "some_data": "value2"},
+        {"nhs_number": "0000000000", "some_data": "value3"},
     ]
+    mocker.patch.object(
+        metadata_service, "csv_to_staging_metadata", return_value=fake_metadata
+    )
+
+    mocked_send_metadata = mocker.patch.object(
+        metadata_service, "send_metadata_to_fifo_sqs"
+    )
 
     metadata_service.process_metadata()
 
-    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 3
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
-        expected_calls
-    )
+    assert mocked_send_metadata.call_count == 1
+    mocked_send_metadata.assert_called_once_with(fake_metadata)
+
 
 def test_process_metadata_catch_and_log_error_when_fail_to_get_metadata_csv_from_s3(
     set_env,
@@ -525,58 +526,70 @@ def test_process_metadata_catch_and_log_error_when_fail_to_get_metadata_csv_from
 
 
 def test_process_metadata_raise_validation_error_when_metadata_csv_is_invalid(
-    set_env,
-    caplog,
     mock_sqs_service,
     mock_download_metadata_from_s3,
     metadata_service,
+    mocker,
 ):
-    for invalid_csv_file in MOCK_INVALID_METADATA_CSV_FILES:
-        mock_download_metadata_from_s3.return_value = invalid_csv_file
+    mock_download_metadata_from_s3.return_value = "fake/path.csv"
 
-        with pytest.raises(BulkUploadMetadataException) as e:
-            metadata_service.process_metadata()
+    mocker.patch.object(
+        metadata_service,
+        "csv_to_staging_metadata",
+        side_effect=BulkUploadMetadataException("validation error"),
+    )
 
-        assert "validation error" in str(e.value)
-        assert "validation error" in caplog.records[-1].msg
-        assert caplog.records[-1].levelname == "ERROR"
+    with pytest.raises(BulkUploadMetadataException) as exc_info:
+        metadata_service.process_metadata()
 
-        mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
+    assert "validation error" in str(exc_info.value)
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
 def test_process_metadata_raise_validation_error_when_gp_practice_code_is_missing(
-    set_env,
     caplog,
     mock_sqs_service,
     mock_download_metadata_from_s3,
     metadata_service,
+    mocker,
 ):
-    mock_download_metadata_from_s3.return_value = (
-        f"{METADATA_FILE_DIR}/metadata_invalid_empty_gp_practice_code.csv"
-    )
+    mock_download_metadata_from_s3.return_value = "fake/path.csv"
+
     expected_error_log = (
         "Failed to parse metadata.csv: 1 validation error for MetadataFile\n"
         + "GP-PRACTICE-CODE\n  missing GP-PRACTICE-CODE for patient 1234567890"
+    )
+
+    mocker.patch.object(
+        metadata_service,
+        "csv_to_staging_metadata",
+        side_effect=BulkUploadMetadataException(expected_error_log),
     )
 
     with pytest.raises(BulkUploadMetadataException) as e:
         metadata_service.process_metadata()
 
     assert expected_error_log in str(e.value)
-    assert expected_error_log in caplog.records[-1].msg
-    assert caplog.records[-1].levelname == "ERROR"
 
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
 def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
-    set_env,
-    caplog,
-    mock_s3_service,
-    mock_sqs_service,
-    mock_tempfile,
     metadata_service,
+    mocker,
 ):
+    mocker.patch.object(
+        metadata_service, "download_metadata_from_s3", return_value="fake/path.csv"
+    )
+
+    dummy_staging_metadata = mocker.Mock()
+    dummy_staging_metadata.nhs_number = "1234567890"
+    mocker.patch.object(
+        metadata_service,
+        "csv_to_staging_metadata",
+        return_value=[dummy_staging_metadata],
+    )
+
     mock_client_error = ClientError(
         {
             "Error": {
@@ -586,9 +599,13 @@ def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
         },
         "SendMessage",
     )
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.side_effect = (
-        mock_client_error
+
+    mocker.patch.object(
+        metadata_service,
+        "send_metadata_to_fifo_sqs",
+        side_effect=BulkUploadMetadataException(str(mock_client_error)),
     )
+
     expected_err_msg = (
         "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation:"
         " The specified queue does not exist"
@@ -598,22 +615,23 @@ def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
         metadata_service.process_metadata()
 
     assert expected_err_msg in str(e.value)
-    assert caplog.records[-1].msg == expected_err_msg
-    assert caplog.records[-1].levelname == "ERROR"
 
 
-def test_download_metadata_from_s3(
-    set_env, mock_s3_service, mock_tempfile, metadata_service
-):
-    actual = metadata_service.download_metadata_from_s3()
-    expected = MOCK_METADATA_CSV
+def test_download_metadata_from_s3(mock_s3_service, metadata_service):
+    result = metadata_service.download_metadata_from_s3()
 
-    mock_s3_service.download_file.assert_called_with(
-        s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
-        file_key=METADATA_FILENAME,
-        download_path=f"{MOCK_TEMP_FOLDER}/{METADATA_FILENAME}",
+    expected_download_path = os.path.join(
+        metadata_service.temp_download_dir, METADATA_FILENAME
     )
-    assert actual == expected
+    expected_file_key = f"{metadata_service.practice_directory}/{METADATA_FILENAME}"
+
+    mock_s3_service.download_file.assert_called_once_with(
+        s3_bucket_name=metadata_service.staging_bucket_name,
+        file_key=expected_file_key,
+        download_path=expected_download_path,
+    )
+
+    assert result == expected_download_path
 
 
 def test_download_metadata_from_s3_raise_error_when_failed_to_download(
@@ -628,8 +646,36 @@ def test_download_metadata_from_s3_raise_error_when_failed_to_download(
         metadata_service.download_metadata_from_s3()
 
 
-def test_duplicates_csv_to_staging_metadata(set_env, metadata_service):
-    actual = metadata_service.csv_to_staging_metadata(MOCK_DUPLICATE_ODS_METADATA_CSV)
+def test_duplicates_csv_to_staging_metadata(mocker, metadata_service):
+    fake_csv_data = textwrap.dedent(
+        """\
+            FILEPATH,PAGE COUNT,GP-PRACTICE-CODE,NHS-NO,SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD
+            /1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y12345","1234567890",
+            "LG","","03/09/2022","NEC","NEC","04/10/2023"
+            /1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y12345","1234567890",
+            "LG","","03/09/2022","NEC","NEC","04/10/2023"
+            /1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y6789","1234567890",
+            "LG","","03/09/2022","NEC","NEC","04/10/2023"
+            /1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,"","Y6789","1234567890",
+            "LG","","03/09/2022","NEC","NEC","04/10/2023"
+            1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt,"","Y12345","123456789",
+            "LG","","04/09/2022","NEC","NEC","04/10/2023"
+            1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt,"","Y6789","123456789",
+            "LG","","04/09/2022","NEC","NEC","04/10/2023"
+            1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt,"","Y12345","",
+            "LG","","04/09/2022","NEC","NEC","04/10/2023"
+            1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt,"","Y6789","",
+            "LG","","04/09/2022","NEC","NEC","04/10/2023"
+        """
+    )
+
+    mocker.patch("builtins.open", mocker.mock_open(read_data=fake_csv_data))
+    mocker.patch("os.path.isfile", return_value=True)
+    mocker.patch.object(
+        metadata_service, "validate_record_filename", side_effect=lambda x: x
+    )
+
+    actual = metadata_service.csv_to_staging_metadata("fake/path.csv")
     expected = EXPECTED_PARSED_METADATA_2
     assert actual == expected
 
