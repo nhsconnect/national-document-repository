@@ -52,12 +52,12 @@ def usb_preprocessor_service(set_env):
             "/9876543210Test Patient Name 01-Jan-2022/1of1_Lloyd_George_Record_[Test Patient Name]_[9876543210]_[01-01-2022].pdf",
         ),
         (
-            "/9876543210 Test Patient Name01-Jan-2022/guid_unknown.pdf",
-            "/9876543210 Test Patient Name01-Jan-2022/1of1_Lloyd_George_Record_[Test Patient Name]_[9876543210]_[01-01-2022].pdf",
+            "/9876543210 Test Patient_01-Jan-2022/guid_unknown.pdf",
+            "/9876543210 Test Patient_01-Jan-2022/1of1_Lloyd_George_Record_[Test Patient]_[9876543210]_[01-01-2022].pdf",
         ),
         (
-            "/9876543210 Test Patient Name01-Jan-2022/1 of 1_guid_unknown.pdf",
-            "/9876543210 Test Patient Name01-Jan-2022/1of1_Lloyd_George_Record_[Test Patient Name]_[9876543210]_[01-01-2022].pdf",
+            "/9876543210 Test Patient-01-Jan-2022/1 of 1_guid_unknown.pdf",
+            "/9876543210 Test Patient-01-Jan-2022/1of1_Lloyd_George_Record_[Test Patient]_[9876543210]_[01-01-2022].pdf",
         ),
     ],
 )

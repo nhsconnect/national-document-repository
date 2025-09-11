@@ -130,7 +130,7 @@ def extract_patient_name_from_bulk_upload_file_name(
 
 
 def extract_date_from_bulk_upload_file_name(file_path):
-    date_expression = r"(\D*\d{1,2})[^\w\d]*(\w{3,}|\d{1,2})[^\w\d]*(\d{4})(.*)"
+    date_expression = r"(\D+\d{1,2})[^\w\d]*(\w{3,}|\d{1,2})[^\w\d]*(\d{4})(.*)"
     expression_result = regex.search(date_expression, file_path)
 
     if not expression_result:

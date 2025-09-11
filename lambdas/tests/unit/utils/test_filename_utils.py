@@ -140,7 +140,7 @@ def test_extract_document_path(value, expected):
         ("_13.12.2023.pdf", (datetime.date(2023, 12, 13), ".pdf")),
         ("_13122023.pdf", (datetime.date(2023, 12, 13), ".pdf")),
         ("_13/12/2023.pdf", (datetime.date(2023, 12, 13), ".pdf")),
-        ("01-Nov-1992.pdf", (datetime.date(1992, 11, 1), ".pdf")),
+        ("_01-Nov-1992.pdf", (datetime.date(1992, 11, 1), ".pdf")),
         (" 01-Nov-1992.pdf", (datetime.date(1992, 11, 1), ".pdf")),
     ],
 )
@@ -172,6 +172,11 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format():
         ("_9000000001_11_12_2025.csv", ("9000000001", "_11_12_2025.csv"), None),
         ("_900000000111_12_2025.csv", ("9000000001", "11_12_2025.csv"), None),
         ("900-000-000111.10.2010", ("9000000001", "11.10.2010"), None),
+        (
+            "9876543210 Test Patient Name 01-Jan-2022",
+            ("9876543210", " Test Patient Name 01-Jan-2022"),
+            None,
+        ),
     ],
 )
 def test_correctly_extract_nhs_number_from_bulk_upload_file_name(
