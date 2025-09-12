@@ -131,7 +131,7 @@ package: format zip
 
 install:
 	npm --prefix ./app install --legacy-peer-deps
-	mv ./app/node_modules/pdfjs-dist/build/pdf.worker.min.mjs ./app/public/
+	cp ./app/node_modules/pdfjs-dist/build/pdf.worker.min.mjs ./app/public/
 
 clean-install:
 	npm --prefix ./app ci --legacy-peer-deps
