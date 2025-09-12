@@ -3,8 +3,9 @@ import os
 import pytest
 from botocore.exceptions import ClientError
 from freezegun import freeze_time
-from models.staging_metadata import METADATA_FILENAME
 from msgpack.fallback import BytesIO
+
+from models.staging_metadata import METADATA_FILENAME
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
@@ -17,9 +18,6 @@ from utils.exceptions import InvalidFileNameException, MetadataPreprocessingExce
 
 
 class TestMetadataPreprocessorService(MetadataPreprocessorService):
-    def __init__(self, practice_directory: str):
-        super().__init__(practice_directory)
-
     def validate_record_filename(self, original_filename: str, *args, **kwargs) -> str:
         return original_filename
 

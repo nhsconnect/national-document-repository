@@ -6,11 +6,12 @@ from unittest.mock import call
 
 import pytest
 from freezegun import freeze_time
+
 from models.staging_metadata import METADATA_FILENAME
 from services.bulk_upload.metadata_general_preprocessor import (
     MetadataGeneralPreprocessor,
 )
-from unit.conftest import TEST_BASE_DIRECTORY
+from tests.unit.conftest import TEST_BASE_DIRECTORY
 from utils.exceptions import InvalidFileNameException
 
 
