@@ -58,7 +58,7 @@ class MetadataUsbPreprocessorService:
                     f"Rejecting file as it is part of a multi-part document: {file_path}"
                 )
                 raise InvalidFileNameException(
-                    "Multi-part documents (e.g. 1of2) are not supported. Only '1of1' is allowed."
+                    "Multi-part documents are not supported"
                 )
 
     def _extract_metadata_from_path(self, directory_path: str) -> tuple[str, str, date]:
