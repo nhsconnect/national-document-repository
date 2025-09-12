@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from botocore.exceptions import ClientError
+
 from models.staging_metadata import METADATA_FILENAME, NHS_NUMBER_FIELD_NAME
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -25,12 +26,6 @@ class MetadataPreprocessorService(ABC):
         self.processed_folder_name = "processed"
         self.practice_directory = practice_directory
         self.processed_date = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    @abstractmethod
-    def validate_record_filename(
-        self, file_path: str, metadata_nhs_number: str = None, *args, **kwargs
-    ):
-        pass
 
     def process_metadata(self):
         file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
@@ -123,6 +118,12 @@ class MetadataPreprocessorService(ABC):
 
         logger.info("Finished updating and standardizing filenames")
         return updated_rows
+
+    @abstractmethod
+    def validate_record_filename(
+        self, file_path: str, metadata_nhs_number: str = None, *args, **kwargs
+    ):
+        pass
 
     def generate_renaming_map(self, metadata_rows: list[dict]):
         duplicate_counts = defaultdict(int)
