@@ -1,18 +1,49 @@
+import csv
 import datetime
+import os
+from io import BytesIO
+from unittest.mock import call
 
 import pytest
 from freezegun import freeze_time
+from models.staging_metadata import METADATA_FILENAME
 from services.bulk_upload.metadata_general_preprocessor import (
     MetadataGeneralPreprocessor,
 )
+from unit.conftest import TEST_BASE_DIRECTORY
 from utils.exceptions import InvalidFileNameException
 
 
 @pytest.fixture(autouse=True)
 @freeze_time("2025-01-01T12:00:00")
 def test_service(mocker, set_env):
-    service = MetadataGeneralPreprocessor()
+    service = MetadataGeneralPreprocessor(practice_directory="test_practice_directory")
     return service
+
+
+@pytest.fixture
+def mock_s3_service(mocker, test_service):
+    return mocker.patch.object(test_service, "s3_service")
+
+
+@pytest.fixture
+def mock_generate_and_save_csv_file(mocker, test_service):
+    return mocker.patch.object(test_service, "generate_and_save_csv_file")
+
+
+@pytest.fixture
+def mock_metadata_file_get_object():
+    def _mock_metadata_file_get_object(
+        test_file_path: str,
+        Bucket: str,
+        Key: str,
+    ):
+        with open(test_file_path, "rb") as file:
+            test_file_data = file.read()
+
+        return {"Body": BytesIO(test_file_data)}
+
+    return _mock_metadata_file_get_object
 
 
 @pytest.mark.parametrize(
@@ -193,3 +224,66 @@ def test_validate_record_filename_invalid_digit_count(mocker, test_service, capl
         test_service.validate_record_filename(bad_filename)
 
     assert str(exc_info.value) == "Incorrect NHS number or date format"
+
+
+@freeze_time("2025-01-01T12:00:00")
+def test_process_metadata_file_exists(
+    test_service,
+    mock_metadata_file_get_object,
+    mock_generate_and_save_csv_file,
+    mock_s3_service,
+):
+    test_processed_metadata_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        f"{METADATA_FILENAME}",
+    )
+
+    test_rejections_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        "rejected.csv",
+    )
+
+    with open(test_processed_metadata_file, "rb") as file:
+        test_file_data = file.read()
+    expected_metadata_bytes = test_file_data
+
+    with open(test_rejections_file, "rb") as file:
+        test_file_data = file.read()
+    expected_rejected_bytes = test_file_data
+
+    test_preprocessed_metadata_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        f"preprocessed_{METADATA_FILENAME}",
+    )
+
+    mock_s3_service.file_exist_on_s3.return_value = True
+    mock_s3_service.client.get_object.side_effect = (
+        lambda Bucket, Key: mock_metadata_file_get_object(
+            test_preprocessed_metadata_file, Bucket, Key
+        )
+    )
+
+    test_service.process_metadata()
+
+    expected_updated_rows = list(
+        csv.DictReader(expected_metadata_bytes.decode("utf-8-sig").splitlines())
+    )
+    expected_rejected_reasons = list(
+        csv.DictReader(expected_rejected_bytes.decode("utf-8-sig").splitlines())
+    )
+
+    expected_calls = [
+        call(
+            csv_dict=expected_updated_rows,
+            file_key=f"test_practice_directory/{METADATA_FILENAME}",
+        ),
+        call(
+            csv_dict=expected_rejected_reasons,
+            file_key="test_practice_directory/processed/2025-01-01 12:00/rejections.csv",
+        ),
+    ]
+
+    mock_generate_and_save_csv_file.assert_has_calls(expected_calls, any_order=True)

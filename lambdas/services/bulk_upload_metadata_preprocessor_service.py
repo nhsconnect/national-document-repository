@@ -1,19 +1,13 @@
 import csv
 import os
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from botocore.exceptions import ClientError
-from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
 from models.staging_metadata import METADATA_FILENAME, NHS_NUMBER_FIELD_NAME
 from services.base.s3_service import S3Service
-from services.bulk_upload.metadata_general_preprocessor import (
-    MetadataGeneralPreprocessor,
-)
-from services.bulk_upload.metadata_usb_preprocessor import (
-    MetadataUsbPreprocessorService,
-)
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException, MetadataPreprocessingException
 from utils.file_utils import convert_csv_dictionary_to_bytes
@@ -21,28 +15,22 @@ from utils.file_utils import convert_csv_dictionary_to_bytes
 logger = LoggingService(__name__)
 
 
-class MetadataPreprocessorService:
+class MetadataPreprocessorService(ABC):
     def __init__(
         self,
         practice_directory: str,
-        pre_format_type: LloydGeorgePreProcessFormat = LloydGeorgePreProcessFormat.GENERAL,
     ):
         self.s3_service = S3Service()
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
         self.processed_folder_name = "processed"
         self.practice_directory = practice_directory
         self.processed_date = datetime.now().strftime("%Y-%m-%d %H:%M")
-        self.pre_format_service = self._initial_format_service(pre_format_type)
-        self.pre_format_type = pre_format_type
 
-    @staticmethod
-    def _initial_format_service(pre_format_type):
-        if pre_format_type == LloydGeorgePreProcessFormat.GENERAL:
-            return MetadataGeneralPreprocessor()
-        elif pre_format_type == LloydGeorgePreProcessFormat.USB:
-            return MetadataUsbPreprocessorService()
-        else:
-            return None
+    @abstractmethod
+    def validate_record_filename(
+        self, file_path: str, metadata_nhs_number: str = None, *args, **kwargs
+    ):
+        pass
 
     def process_metadata(self):
         file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
@@ -141,58 +129,24 @@ class MetadataPreprocessorService:
         renaming_map = []
         rejected_rows = []
         rejected_reasons = []
-        nhs_number_counts = defaultdict(int)
-        valid_metadata_rows = []
 
-        if self.pre_format_type == LloydGeorgePreProcessFormat.USB:
-            for row in metadata_rows:
-                file_name = row.get("FILEPATH", "")
-                file_extension = os.path.splitext(file_name)[1]
-
-                if file_extension != ".pdf":
-                    rejected_rows.append(row)
-                    rejected_reasons.append(
-                        {
-                            "FILEPATH": row.get("FILEPATH", "N/A"),
-                            "REASON": f"File extension {file_extension} is not supported",
-                        }
-                    )
-                else:
-                    valid_metadata_rows.append(row)
-                    nhs_number = row[NHS_NUMBER_FIELD_NAME]
-                    nhs_number_counts[nhs_number] += 1
-        else:
-            valid_metadata_rows = metadata_rows
-
-        for original_row in valid_metadata_rows:
-            if self.pre_format_type == LloydGeorgePreProcessFormat.USB:
-                nhs_number = original_row[NHS_NUMBER_FIELD_NAME]
-                if nhs_number_counts[nhs_number] > 1:
-                    rejected_rows.append(original_row)
-                    rejected_reasons.append(
-                        {
-                            "FILEPATH": original_row.get("FILEPATH", "N/A"),
-                            "REASON": f"More than one file is found for {nhs_number}",
-                        }
-                    )
-                    continue
-
+        for original_row in metadata_rows:
             renamed_row = original_row.copy()
-            renamed_row = self.update_date_in_row(renamed_row)
             original_filename = original_row.get("FILEPATH")
 
             try:
                 if not original_filename:
                     raise InvalidFileNameException("Filepath is missing")
-
-                validated_filename = self.pre_format_service.validate_record_filename(
-                    original_filename
+                metadata_nhs_number = original_row.get(NHS_NUMBER_FIELD_NAME)
+                validated_filename = self.validate_record_filename(
+                    original_filename, metadata_nhs_number=metadata_nhs_number
                 )
                 stripped_file_path = validated_filename.lstrip("/")
                 renamed_row["FILEPATH"] = (
                     f"{self.practice_directory}/{stripped_file_path}"
                 )
                 count = duplicate_counts[validated_filename]
+                renamed_row = self.update_date_in_row(renamed_row)
 
                 if count == 0:
                     renaming_map.append((original_row, renamed_row))

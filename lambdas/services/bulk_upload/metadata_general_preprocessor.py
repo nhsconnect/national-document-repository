@@ -1,3 +1,6 @@
+from services.bulk_upload_metadata_preprocessor_service import (
+    MetadataPreprocessorService,
+)
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import (
@@ -14,11 +17,9 @@ from utils.filename_utils import (
 logger = LoggingService(__name__)
 
 
-class MetadataGeneralPreprocessor:
-    def validate_record_filename(self, file_name) -> str:
+class MetadataGeneralPreprocessor(MetadataPreprocessorService):
+    def validate_record_filename(self, file_name: str, *args, **kwargs) -> str:
         try:
-            logger.info(f"Processing file name {file_name}")
-
             file_path_prefix, current_file_name = (
                 extract_document_path_for_lloyd_george_record(file_name)
             )
