@@ -18,10 +18,7 @@ def lambda_handler(event, _context):
     practice_directory = event.get("practiceDirectory")
 
     if not practice_directory:
-        logger.info(
-            "Failed to start metadata processing due to missing practice directory"
-        )
-        return
+        practice_directory = ""
 
     logger.info(
         f"Starting metadata processing for practice directory: {practice_directory}"

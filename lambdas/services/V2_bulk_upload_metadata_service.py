@@ -42,8 +42,11 @@ class V2BulkUploadMetadataService:
 
         self.corrections = {}
         self.practice_directory = practice_directory
+        self.file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
 
     def process_metadata(self):
+        if self.practice_directory is "":
+            self.file_key = METADATA_FILENAME
         try:
             metadata_file = self.download_metadata_from_s3()
             staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
@@ -78,7 +81,7 @@ class V2BulkUploadMetadataService:
         local_file_path = os.path.join(self.temp_download_dir, METADATA_FILENAME)
         self.s3_service.download_file(
             s3_bucket_name=self.staging_bucket_name,
-            file_key=f"{self.practice_directory}/{METADATA_FILENAME}",
+            file_key=self.file_key,
             download_path=local_file_path,
         )
         return local_file_path
@@ -144,7 +147,7 @@ class V2BulkUploadMetadataService:
 
         self.s3_service.copy_across_bucket(
             self.staging_bucket_name,
-            f"{self.practice_directory}/{METADATA_FILENAME}",
+            self.file_key,
             self.staging_bucket_name,
             f"metadata/{current_datetime}.csv",
         )
