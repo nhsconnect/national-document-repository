@@ -91,18 +91,18 @@ class V2BulkUploadMetadataService:
         ) as csv_file_handler:
             csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
             for row in csv_reader:
+                nhs_number = row.get(NHS_NUMBER_FIELD_NAME)
+                ods_code = row.get(ODS_CODE)
+                file_metadata = MetadataFile.model_validate(row)
+                key = (nhs_number, ods_code)
+                if key not in patients:
+                    patients[key] = [file_metadata]
+                else:
+                    patients[key].append(file_metadata)
                 try:
                     valid_filename = self.validate_record_filename(row["FILEPATH"])
                     if valid_filename != "":
                         self.corrections.update({row["FILEPATH"]: valid_filename})
-                        file_metadata = MetadataFile.model_validate(row)
-                        nhs_number = row[NHS_NUMBER_FIELD_NAME]
-                        ods_code = row[ODS_CODE]
-                        key = (nhs_number, ods_code)
-                        if key not in patients:
-                            patients[key] = [file_metadata]
-                        else:
-                            patients[key].append(file_metadata)
                 except InvalidFileNameException as error:
                     logger.error(
                         f"Failed to process {row['FILEPATH']} due to error: {error}"
@@ -111,7 +111,7 @@ class V2BulkUploadMetadataService:
                         nhs_number=nhs_number, files=patients[nhs_number, ods_code]
                     )
                     self.dynamo_repository.write_report_upload_to_dynamo(
-                        failed_entry, UploadStatus.FAILED, str(error), ods_code
+                        failed_entry, UploadStatus.FAILED, str(error)
                     )
         return [
             StagingMetadata(
