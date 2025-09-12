@@ -6,7 +6,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from botocore.exceptions import ClientError
-
 from models.staging_metadata import METADATA_FILENAME, NHS_NUMBER_FIELD_NAME
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -17,10 +16,7 @@ logger = LoggingService(__name__)
 
 
 class MetadataPreprocessorService(ABC):
-    def __init__(
-        self,
-        practice_directory: str,
-    ):
+    def __init__(self, practice_directory: str):
         self.s3_service = S3Service()
         self.staging_store_bucket = os.getenv("STAGING_STORE_BUCKET_NAME")
         self.processed_folder_name = "processed"

@@ -3,9 +3,8 @@ import os
 import pytest
 from botocore.exceptions import ClientError
 from freezegun import freeze_time
-from msgpack.fallback import BytesIO
-
 from models.staging_metadata import METADATA_FILENAME
+from msgpack.fallback import BytesIO
 from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
