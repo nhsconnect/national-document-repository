@@ -8,7 +8,7 @@ from services.bulk_upload_metadata_preprocessor_service import (
 @pytest.fixture
 def mock_metadata_preprocessing_service(mocker):
     mocked_instance = mocker.patch(
-        "handlers.bulk_upload_metadata_preprocessor_handler.MetadataPreprocessorService",
+        "handlers.bulk_upload_metadata_preprocessor_handler.MetadataGeneralPreprocessor",
         spec=MetadataPreprocessorService,
     ).return_value
     return mocked_instance
