@@ -141,37 +141,38 @@ class MetadataPreprocessorService:
         renaming_map = []
         rejected_rows = []
         rejected_reasons = []
-        patients = set()
-        duplicate_nhs_numbers = set()
+        nhs_number_counts = defaultdict(int)
+        valid_metadata_rows = []
+
         if self.pre_format_type == LloydGeorgePreProcessFormat.USB:
             for row in metadata_rows:
                 file_name = row.get("FILEPATH", "")
                 file_extension = os.path.splitext(file_name)[1]
+
                 if file_extension != ".pdf":
                     rejected_rows.append(row)
                     rejected_reasons.append(
                         {
                             "FILEPATH": row.get("FILEPATH", "N/A"),
-                            "REASON": f"File extension {file_extension} is not supported. Only '.pdf' is allowed.",
+                            "REASON": f"File extension {file_extension} is not supported",
                         }
                     )
-                    metadata_rows.remove(row)
-                    continue
-                nhs_number = row[NHS_NUMBER_FIELD_NAME]
-                if nhs_number not in patients:
-                    patients.add(nhs_number)
                 else:
-                    duplicate_nhs_numbers.add(nhs_number)
+                    valid_metadata_rows.append(row)
+                    nhs_number = row[NHS_NUMBER_FIELD_NAME]
+                    nhs_number_counts[nhs_number] += 1
+        else:
+            valid_metadata_rows = metadata_rows
 
-        for original_row in metadata_rows:
+        for original_row in valid_metadata_rows:
             if self.pre_format_type == LloydGeorgePreProcessFormat.USB:
                 nhs_number = original_row[NHS_NUMBER_FIELD_NAME]
-                if nhs_number in duplicate_nhs_numbers:
+                if nhs_number_counts[nhs_number] > 1:
                     rejected_rows.append(original_row)
                     rejected_reasons.append(
                         {
                             "FILEPATH": original_row.get("FILEPATH", "N/A"),
-                            "REASON": f"Duplicate NHS number {nhs_number} found in metadata.",
+                            "REASON": f"More than one file is found for {nhs_number}",
                         }
                     )
                     continue

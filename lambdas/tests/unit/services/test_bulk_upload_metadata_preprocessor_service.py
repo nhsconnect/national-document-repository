@@ -450,7 +450,7 @@ def test_generate_renaming_map_happy_path(
     assert rejected_reasons == []
 
 
-def test_generate_renaming_map_(
+def test_generate_renaming_map_with_mixed_file_types(
     test_service, mock_update_date_in_row, mock_valid_record_filename
 ):
     row1 = {"FILEPATH": "valid_file.pdf", "NHS-NO": "1111"}
@@ -464,10 +464,25 @@ def test_generate_renaming_map_(
     assert len(renaming_map) == 1
     assert len(rejected_rows) == 1
     assert rejected_rows[0] == row2
-    assert (
-        rejected_reasons[0]["REASON"]
-        == "File extension .tiff is not supported. Only '.pdf' is allowed."
+    assert rejected_reasons[0]["REASON"] == "File extension .tiff is not supported"
+    test_service.pre_format_type = LloydGeorgePreProcessFormat.GENERAL
+
+
+def test_generate_renaming_map_with_not_supported_file_types(
+    test_service, mock_update_date_in_row, mock_valid_record_filename
+):
+    row1 = {"FILEPATH": "valid_file2.tiff", "NHS-NO": "1111"}
+    row2 = {"FILEPATH": "valid_file.tiff", "NHS-NO": "1111"}
+    test_service.pre_format_type = LloydGeorgePreProcessFormat.USB
+    metadata = [row1, row2]
+    renaming_map, rejected_rows, rejected_reasons = test_service.generate_renaming_map(
+        metadata
     )
+
+    assert len(renaming_map) == 0
+    assert len(rejected_rows) == 2
+    assert rejected_rows[1] == row2
+    assert rejected_reasons[1]["REASON"] == "File extension .tiff is not supported"
     test_service.pre_format_type = LloydGeorgePreProcessFormat.GENERAL
 
 
@@ -591,11 +606,11 @@ def test_generate_renaming_map_for_usb_format_rejects_rows_with_duplicate_nhs_nu
     expected_rejected_reasons = [
         {
             "FILEPATH": "file2.pdf",
-            "REASON": "Duplicate NHS number 222 found in metadata.",
+            "REASON": "More than one file is found for 222",
         },
         {
             "FILEPATH": "file3.pdf",
-            "REASON": "Duplicate NHS number 222 found in metadata.",
+            "REASON": "More than one file is found for 222",
         },
     ]
     assert rejected_reasons == expected_rejected_reasons
