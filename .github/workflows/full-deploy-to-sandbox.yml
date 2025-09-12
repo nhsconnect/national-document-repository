@@ -118,6 +118,6 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       combi_settings: "combi300"
       base_branch: ${{ inputs.build_branch }}
-      file_count: "1"
+      file_count: "3"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

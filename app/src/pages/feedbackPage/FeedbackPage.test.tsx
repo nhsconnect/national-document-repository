@@ -1,4 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+// need to use happy-dom for this test file as jsdom doesn't support DOMMatrix https://github.com/jsdom/jsdom/issues/2647
+// @vitest-environment happy-dom
+import { render, RenderResult, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -16,17 +18,17 @@ const mockedUseNavigate = vi.fn();
 const mockedAxios = axios as Mocked<typeof axios>;
 const mockedBaseURL = useBaseAPIUrl as Mock;
 const baseURL = 'http://test';
-Date.now = () => new Date('2020-01-01T00:00:00.000Z').getTime();
+Date.now = (): number => new Date('2020-01-01T00:00:00.000Z').getTime();
 
 vi.mock('react-router-dom', () => ({
-    useNavigate: () => mockedUseNavigate,
+    useNavigate: (): Mock => mockedUseNavigate,
 }));
 
-const clickSubmitButton = async () => {
+const clickSubmitButton = async (): Promise<void> => {
     await userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
 };
 
-const renderComponent = () => {
+const renderComponent = (): RenderResult => {
     return render(<FeedbackPage />);
 };
 
@@ -65,6 +67,7 @@ describe('<FeedbackPage />', () => {
 
     describe('User interactions', () => {
         it('on submit, call sendEmail() with the data that user had filled in', async () => {
+            const user = userEvent.setup();
             mockedAxios.post.mockImplementation(() =>
                 Promise.resolve({ status: 200, data: 'Success' }),
             );
@@ -79,7 +82,13 @@ describe('<FeedbackPage />', () => {
             renderComponent();
 
             await fillInForm(mockInputData);
-            await clickSubmitButton();
+
+            const submitButton = screen.getByRole('button', { name: 'Send feedback' });
+            await user.click(submitButton);
+
+            await waitFor(() => {
+                expect(document.querySelector('#error-box')).toBeNull();
+            });
 
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(baseURL + '/Feedback', mockInputData, {
@@ -92,6 +101,7 @@ describe('<FeedbackPage />', () => {
         });
 
         it("on submit, if feedback content is empty, display an error message and don't send email", async () => {
+            const user = userEvent.setup();
             const mockInputData = {
                 howSatisfied: SATISFACTION_CHOICES.Neither,
                 respondentName: 'Jane Smith',
@@ -101,16 +111,22 @@ describe('<FeedbackPage />', () => {
             renderComponent();
 
             await fillInForm(mockInputData);
-            await clickSubmitButton();
+            const button = screen.getByRole('button', { name: 'Send feedback' });
+            user.click(button);
 
             await waitFor(() => {
-                expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
+                const errorBox = document.querySelector('#error-box');
+                const errorCount = screen.getAllByText('Enter your feedback');
+                expect(errorBox).toBeVisible();
+                expect(errorCount.length).toBe(2);
             });
+
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
 
         it("on submit, if user haven't chosen an option for howSatisfied, display an error message and don't send email", async () => {
+            const user = userEvent.setup();
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 respondentName: 'Jane Smith',
@@ -120,16 +136,22 @@ describe('<FeedbackPage />', () => {
             renderComponent();
 
             await fillInForm(mockInputData);
-            await clickSubmitButton();
+            const button = screen.getByRole('button', { name: 'Send feedback' });
+            user.click(button);
 
             await waitFor(() => {
-                expect(screen.getByText('Please select an option')).toBeInTheDocument();
+                const errorCount = screen.getAllByText('Select an option');
+                const errorBox = document.querySelector('#error-box');
+                expect(errorBox).toBeVisible();
+                expect(errorCount.length).toBe(2);
             });
+
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
 
         it("on submit, if user filled in an invalid email address, display an error message and don't send email", async () => {
+            const user = userEvent.setup();
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
@@ -140,11 +162,16 @@ describe('<FeedbackPage />', () => {
             renderComponent();
 
             await fillInForm(mockInputData);
-            await clickSubmitButton();
+            const button = screen.getByRole('button', { name: 'Send feedback' });
+            user.click(button);
 
             await waitFor(() => {
-                expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
+                const errorCount = screen.getAllByText('Enter a valid email address');
+                const errorBox = document.querySelector('#error-box');
+                expect(errorCount.length).toBe(2);
+                expect(errorBox).toBeVisible();
             });
+
             expect(mockedAxios).not.toBeCalled();
             expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
@@ -167,6 +194,10 @@ describe('<FeedbackPage />', () => {
 
             await fillInForm(mockInputData);
             await clickSubmitButton();
+
+            await waitFor(() => {
+                expect(document.querySelector('#error-box')).toBeNull();
+            });
 
             await waitFor(() =>
                 expect(mockedAxios.post).toBeCalledWith(

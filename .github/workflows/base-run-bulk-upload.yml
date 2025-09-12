@@ -32,7 +32,7 @@ on:
         description: "How many files per patient to generate."
         required: false
         type: "string"
-        default: "1"
+        default: "3"
     secrets:
       AWS_ASSUME_ROLE:
         required: true

@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { act } from 'react';
+import { act, JSX } from 'react';
 import DownloadReportSelectStage from './DownloadReportSelectStage';
 import { getReportByType, REPORT_TYPE } from '../../../../types/generic/reports';
 import { LinkProps } from 'react-router-dom';
@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { routes } from '../../../../types/generic/routes';
 import downloadReport from '../../../../helpers/requests/downloadReport';
-import { beforeEach, describe, expect, it, vi, MockedFunction } from 'vitest';
+import { beforeEach, describe, expect, it, vi, MockedFunction, Mock } from 'vitest';
 
 const mockDownloadReport = downloadReport as MockedFunction<typeof downloadReport>;
 
@@ -16,15 +16,15 @@ vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual('react-router-dom');
     return {
         ...actual,
-        Link: (props: LinkProps) => <a {...props} role="link" />,
-        useNavigate: () => mockedUseNavigate,
+        Link: (props: LinkProps): JSX.Element => <a {...props} role="link" />,
+        useNavigate: (): Mock => mockedUseNavigate,
     };
 });
 vi.mock('../../../../helpers/hooks/useBaseAPIUrl');
 vi.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 vi.mock('../../../../helpers/requests/downloadReport');
 vi.mock('../../../../helpers/utils/isLocal', () => ({
-    isMock: () => false,
+    isMock: (): boolean => false,
 }));
 
 describe('DownloadReportSelectStage', () => {
@@ -47,6 +47,7 @@ describe('DownloadReportSelectStage', () => {
                 ).toBeInTheDocument();
             });
             expect(screen.queryByTestId('error-notification-banner')).not.toBeInTheDocument();
+            expect(screen.getByText('Go to home')).toBeInTheDocument();
         });
 
         it('should render error notification when download fails', async () => {
