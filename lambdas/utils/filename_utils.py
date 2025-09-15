@@ -2,6 +2,7 @@ import datetime
 import os
 
 from regex import regex
+
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException
 
@@ -187,11 +188,11 @@ def extract_document_number_bulk_upload_file_name(
         logger.info("Failed to find the document number in file name")
         raise InvalidFileNameException("Incorrect document number format")
 
-    first_document_number = int(expression_result.group(1))
-    second_document_number = int(expression_result.group(2))
+    current_document_number = int(expression_result.group(1))
+    expected_total_document_number = int(expression_result.group(2))
     current_file_path = expression_result.group(3)
 
-    return first_document_number, second_document_number, current_file_path
+    return current_document_number, expected_total_document_number, current_file_path
 
 
 def extract_lloyd_george_record_from_bulk_upload_file_name(
