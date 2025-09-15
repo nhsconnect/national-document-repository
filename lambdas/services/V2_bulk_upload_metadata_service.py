@@ -45,7 +45,7 @@ class V2BulkUploadMetadataService:
         self.file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
 
     def process_metadata(self):
-        if self.practice_directory is "":
+        if self.practice_directory == "":
             self.file_key = METADATA_FILENAME
         try:
             metadata_file = self.download_metadata_from_s3()
@@ -118,10 +118,10 @@ class V2BulkUploadMetadataService:
                     )
         return [
             StagingMetadata(
-                nhs_number=nhs_number,
-                files=patients[nhs_number, ods_code],
+                nhs_number=key[0],
+                files=value,
             )
-            for (nhs_number, ods_code) in patients
+            for (key, value) in patients.items()
         ]
 
     def send_metadata_to_fifo_sqs(
