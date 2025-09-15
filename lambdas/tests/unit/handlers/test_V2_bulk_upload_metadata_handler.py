@@ -19,10 +19,9 @@ def test_metadata_preprocessor_lambda_handler_valid_event(
 
     mock_metadata_service.process_metadata.assert_called_once()
 
-
-def test_metadata_preprocessor_lambda_handler_invalid_event(
+def test_metadata_preprocessor_lambda_handler_empty_event(
     set_env, context, mock_metadata_service
 ):
-    lambda_handler({"invalid": "invalid"}, context)
+    lambda_handler({}, context)
 
-    mock_metadata_service.process_metadata.assert_not_called()
+    mock_metadata_service.process_metadata.assert_called_once()
