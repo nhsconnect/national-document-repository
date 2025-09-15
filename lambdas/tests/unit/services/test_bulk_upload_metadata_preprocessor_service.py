@@ -118,6 +118,39 @@ def test_process_metadata_success(test_service, mocker):
     assert generate_csv_mock.called
 
 
+def test_process_metadata_move_fails(test_service, mocker):
+    mocker.patch.object(
+        test_service,
+        "get_metadata_rows_from_file",
+        return_value=[{"FILEPATH": "file1.pdf"}],
+    )
+    mocker.patch.object(
+        test_service,
+        "generate_renaming_map",
+        return_value=(
+            [({"FILEPATH": "file1.pdf"}, {"FILEPATH": "new_file1.pdf"})],
+            [],
+            [],
+        ),
+    )
+    mocker.patch.object(
+        test_service,
+        "standardize_filenames",
+        return_value=[{"FILEPATH": "new_file1.pdf"}],
+    )
+    move_file_mock = mocker.patch.object(
+        test_service, "move_original_metadata_file", return_value=False
+    )
+    delete_mock = mocker.patch.object(test_service.s3_service, "delete_object")
+    generate_csv_mock = mocker.patch.object(test_service, "generate_and_save_csv_file")
+
+    test_service.process_metadata()
+
+    move_file_mock.assert_called_once()
+    delete_mock.assert_not_called()
+    generate_csv_mock.assert_called_once()
+
+
 def test_get_metadata_csv_from_file_metadata_exists(
     test_service, mock_metadata_file_get_object
 ):
@@ -200,6 +233,22 @@ def test_move_original_metadata_file_handles_exception(test_service):
 
     assert result is False
     test_service.s3_service.copy_across_bucket.assert_called_once()
+
+
+def test_update_record_filename_no_change_in_filename(test_service, mock_s3_client):
+    original_row = {"FILEPATH": "/path/file1.pdf"}
+    updated_row = {"FILEPATH": "test_practice_directory/path/file1.pdf"}
+
+    actual_updated_row, actual_rejected_row, actual_rejected_reason = (
+        test_service.update_record_filename(original_row, updated_row)
+    )
+
+    mock_s3_client.copy_object.assert_not_called()
+    mock_s3_client.delete_object.assert_not_called()
+
+    assert actual_updated_row == updated_row
+    assert not actual_rejected_row
+    assert not actual_rejected_reason
 
 
 def test_update_record_filename_successful_update(test_service, mock_s3_client):
@@ -324,6 +373,42 @@ def test_update_and_standardize_filenames_success(test_service, mocker):
     assert mock_update.call_count == 2
     mock_update.assert_any_call(original_row1, updated_row1)
     mock_update.assert_any_call(original_row2, updated_row2)
+
+
+def test_update_and_standardize_filenames_with_rejections(test_service, mocker):
+    original_row1 = {"FILEPATH": "/path/original1.pdf"}
+    updated_row1 = {"FILEPATH": "/path/updated1.pdf"}
+    original_row2 = {"FILEPATH": "/path/original2.pdf"}
+    updated_row2 = {"FILEPATH": "/path/updated2.pdf"}
+    rejected_reason = {"REASON": "some reason"}
+
+    renaming_map = [(original_row1, updated_row1), (original_row2, updated_row2)]
+
+    mock_update = mocker.patch.object(
+        test_service,
+        "update_record_filename",
+        side_effect=[
+            (updated_row1, None, None),
+            (None, original_row2, rejected_reason),
+        ],
+    )
+
+    initial_rejected_rows = [{"FILEPATH": "initial_rejected.pdf"}]
+    initial_rejected_reasons = [{"REASON": "initial_reason"}]
+
+    result = test_service.standardize_filenames(
+        renaming_map=renaming_map,
+        rejected_rows=initial_rejected_rows,
+        rejected_reasons=initial_rejected_reasons,
+    )
+
+    assert result == [updated_row1]
+    assert mock_update.call_count == 2
+    assert initial_rejected_rows == [
+        {"FILEPATH": "initial_rejected.pdf"},
+        original_row2,
+    ]
+    assert initial_rejected_reasons == [{"REASON": "initial_reason"}, rejected_reason]
 
 
 def test_generate_renaming_map(test_service):

@@ -1,5 +1,4 @@
 import pytest
-
 from handlers.bulk_upload_metadata_preprocessor_handler import lambda_handler
 from services.bulk_upload.metadata_general_preprocessor import (
     MetadataGeneralPreprocessor,
@@ -39,9 +38,7 @@ def test_metadata_preprocessor_lambda_handler_valid_event_no_pre_format_type(
 def test_metadata_preprocessor_lambda_handler_valid_event_general_pre_format_type(
     set_env, context, mock_general_preprocessor, mock_usb_preprocessor
 ):
-    lambda_handler(
-        {"practiceDirectory": "test", "preFormatType": "GENERAL"}, context
-    )
+    lambda_handler({"practiceDirectory": "test", "preFormatType": "GENERAL"}, context)
 
     mock_general_preprocessor.process_metadata.assert_called_once()
     mock_usb_preprocessor.process_metadata.assert_not_called()
@@ -59,9 +56,7 @@ def test_metadata_preprocessor_lambda_handler_valid_event_usb_pre_format_type(
 def test_metadata_preprocessor_lambda_handler_valid_event_invalid_pre_format_type(
     set_env, context, mock_general_preprocessor, mock_usb_preprocessor
 ):
-    lambda_handler(
-        {"practiceDirectory": "test", "preFormatType": "INVALID"}, context
-    )
+    lambda_handler({"practiceDirectory": "test", "preFormatType": "INVALID"}, context)
 
     mock_general_preprocessor.process_metadata.assert_called_once()
     mock_usb_preprocessor.process_metadata.assert_not_called()
