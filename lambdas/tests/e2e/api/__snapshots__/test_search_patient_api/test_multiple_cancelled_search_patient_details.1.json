@@ -1,0 +1,46 @@
+{
+  "resource": {
+    "author": [
+      {
+        "identifier": {
+          "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+          "value": "H81109"
+        }
+      }
+    ],
+    "content": [
+      {
+        "attachment": {
+          "contentType": "application/pdf",
+          "creation": "2023-01-01",
+          "language": "en-GB",
+          "title": "1of1_Lloyd_George_Record_[Holly Lorna MAGAN]_[9449305943]_[29-05-2006].pdf"
+        }
+      }
+    ],
+    "custodian": {
+      "identifier": {
+        "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+        "value": "H81109"
+      }
+    },
+    "docStatus": "cancelled",
+    "resourceType": "DocumentReference",
+    "status": "current",
+    "subject": {
+      "identifier": {
+        "system": "https://fhir.nhs.uk/Id/nhs-number",
+        "value": "9449305943"
+      }
+    },
+    "type": {
+      "coding": [
+        {
+          "code": "16521000000101",
+          "display": "Lloyd George record folder",
+          "system": "http://snomed.info/sct"
+        }
+      ]
+    }
+  }
+}

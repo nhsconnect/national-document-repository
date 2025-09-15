@@ -6,17 +6,36 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { getFormattedDateFromString } from '../../../../helpers/utils/formatDate';
 import { getFormattedPatientFullName } from '../../../../helpers/utils/formatPatientFullName';
+import {
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import { useEffect } from 'react';
+import { allDocsHaveState } from '../../../../helpers/utils/uploadDocumentHelpers';
 
-const DocumentUploadCompleteStage = () => {
+type Props = {
+    documents: UploadDocument[];
+};
+
+const DocumentUploadCompleteStage = ({ documents }: Props): React.JSX.Element => {
     const navigate = useNavigate();
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
-    const dob: string = getFormattedDateFromString(patientDetails?.birthDate)
+    const dob: string = getFormattedDateFromString(patientDetails?.birthDate);
     const patientName = getFormattedPatientFullName(patientDetails);
 
     useTitle({ pageTitle: 'Record upload complete' });
 
+    useEffect(() => {
+        if (!allDocsHaveState(documents, DOCUMENT_UPLOAD_STATE.SUCCEEDED)) {
+            navigate(routes.HOME);
+        }
+    }, [navigate]);
+
+    if (!allDocsHaveState(documents, DOCUMENT_UPLOAD_STATE.SUCCEEDED)) {
+        return <></>;
+    }
 
     return (
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
@@ -27,9 +46,7 @@ const DocumentUploadCompleteStage = () => {
                 </div>
                 <br />
                 <div className="nhsuk-panel__body">
-                    <strong data-testid="patient-name">
-                        Patient name: {patientName}
-                    </strong>
+                    <strong data-testid="patient-name">Patient name: {patientName}</strong>
                     <br />
                     <span data-testid="nhs-number">NHS Number: {formattedNhsNumber}</span>
                     <br />
@@ -42,9 +59,9 @@ const DocumentUploadCompleteStage = () => {
                 You can now view this patient's record within this service by{' '}
                 <Link
                     to=""
-                    onClick={(e) => {
+                    onClick={(e): void => {
                         e.preventDefault();
-                        navigate(routes.SEARCH_PATIENT);
+                        navigate(routes.SEARCH_PATIENT, { replace: true });
                     }}
                     data-testid="search-patient-link"
                 >
@@ -54,7 +71,7 @@ const DocumentUploadCompleteStage = () => {
             </p>
 
             <p>
-                For information on destroying your paper records an removing the digital files from
+                For information on destroying your paper records and removing the digital files from
                 your system, read the article{' '}
                 <Link
                     to="https://future.nhs.uk/DigitalPC/view?objectId=185217477"
@@ -69,9 +86,9 @@ const DocumentUploadCompleteStage = () => {
                 data-testid="home-btn"
                 role="button"
                 href="#"
-                onClick={(e) => {
+                onClick={(e): void => {
                     e.preventDefault();
-                    navigate(routes.HOME);
+                    navigate(routes.HOME, { replace: true });
                 }}
             >
                 Go to home

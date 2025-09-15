@@ -44,10 +44,10 @@ jobs:
           mask-aws-account-id: true
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Set up Python ${{ inputs.python_version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ inputs.python_version }}
+          python-version: 3.11
 
       - name: Make virtual environment
         run: |

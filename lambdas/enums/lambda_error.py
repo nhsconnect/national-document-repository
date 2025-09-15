@@ -302,6 +302,7 @@ class LambdaError(Enum):
         "message": "Failed to fetch parameters for sending email from SSM param store",
     }
 
+
     """
        Errors for Feature Flags lambda 
     """

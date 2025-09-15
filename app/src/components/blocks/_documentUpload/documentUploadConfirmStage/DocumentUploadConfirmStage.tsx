@@ -102,8 +102,8 @@ const DocumentUploadConfirmStage = ({ documents }: Props) => {
                 setCurrentPage={setCurrentPage}
             />
 
-            <Button 
-                data-testid="confirm-button" 
+            <Button
+                data-testid="confirm-button"
                 onClick={() => navigate(routeChildren.DOCUMENT_UPLOAD_UPLOADING)}
             >
                 Confirm file order and upload files

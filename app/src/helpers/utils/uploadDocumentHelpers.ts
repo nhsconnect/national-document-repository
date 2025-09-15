@@ -18,7 +18,7 @@ type UpdateDocumentArgs = {
 export const setSingleDocument = (
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
     { id, state, progress, attempts, ref }: UpdateDocumentArgs,
-) => {
+): void => {
     setDocuments((prevState) =>
         prevState.map((document) => {
             if (document.id === id) {
@@ -36,7 +36,7 @@ export const setSingleDocument = (
 export const markDocumentsAsUploading = (
     documents: UploadDocument[],
     uploadSession: UploadSession,
-) => {
+): UploadDocument[] => {
     return documents.map((doc) => {
         const documentMetadata = uploadSession[doc.id];
         const documentReference = documentMetadata.fields.key;
@@ -49,7 +49,7 @@ export const markDocumentsAsUploading = (
     });
 };
 
-export const getUploadMessage = ({ state, progress }: UploadDocument) => {
+export const getUploadMessage = ({ state, progress }: UploadDocument): string => {
     const showProgress = state === DOCUMENT_UPLOAD_STATE.UPLOADING && progress !== undefined;
 
     if (state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
@@ -62,4 +62,11 @@ export const getUploadMessage = ({ state, progress }: UploadDocument) => {
     else {
         return 'Upload failed';
     }
+};
+
+export const allDocsHaveState = (
+    documents: UploadDocument[],
+    state: DOCUMENT_UPLOAD_STATE,
+): boolean => {
+    return !!documents?.length && documents.every((doc) => doc.state === state);
 };

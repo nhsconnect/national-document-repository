@@ -1,0 +1,19 @@
+{
+  "issue": [
+    {
+      "code": "exception",
+      "details": {
+        "coding": [
+          {
+            "code": "INVALID_SEARCH_DATA",
+            "display": "Invalid search data",
+            "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-SpineErrorOrWarningCode"
+          }
+        ]
+      },
+      "diagnostics": "Invalid patient number 9999999993",
+      "severity": "error"
+    }
+  ],
+  "resourceType": "OperationOutcome"
+}

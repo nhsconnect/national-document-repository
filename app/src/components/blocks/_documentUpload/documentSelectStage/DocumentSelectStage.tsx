@@ -1,11 +1,12 @@
 import { Button, Fieldset, Table, TextInput } from 'nhsuk-react-components';
 import { getDocument } from 'pdfjs-dist';
-import { JSX, useRef, useState } from 'react';
+import { JSX, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,
+    groupUploadErrorsByType,
     PDF_PARSING_ERROR_TYPE,
     UPLOAD_FILE_ERROR_TYPE,
 } from '../../../../helpers/utils/fileUploadErrorMessages';
@@ -17,12 +18,12 @@ import {
     FileInputEvent,
     SetUploadDocuments,
     UploadDocument,
-    UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
+import { ErrorMessageListItem } from '../../../../types/pages/genericPageErrors';
 
 export type Props = {
     setDocuments: SetUploadDocuments;
@@ -30,10 +31,13 @@ export type Props = {
     documentType: DOCUMENT_TYPE;
 };
 
+type UploadFilesError = ErrorMessageListItem<UPLOAD_FILE_ERROR_TYPE>;
+
 const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props): JSX.Element => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [noFilesSelected, setNoFilesSelected] = useState<boolean>(false);
     const scrollToRef = useRef<HTMLDivElement>(null);
+    const [lastErrorsLength, setLastErrorsLength] = useState(0);
 
     const navigate = useNavigate();
 
@@ -217,6 +221,15 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props): 
         return documents.filter((doc) => doc.error && doc.validated);
     };
 
+    useEffect(() => {
+        const currentErrorsLength = errorDocs().length;
+        if (lastErrorsLength <= currentErrorsLength) {
+            scrollToRef.current?.scrollIntoView();
+        }
+
+        setLastErrorsLength(currentErrorsLength);
+    }, [errorDocs().length, noFilesSelected]);
+
     const errorMessageList = (): UploadFilesError[] => {
         const errors: UploadFilesError[] = [];
 
@@ -247,6 +260,7 @@ const DocumentSelectStage = ({ documents, setDocuments, documentType }: Props): 
                     errorBoxSummaryId="failed-document-uploads-summary-title"
                     messageTitle="There is a problem"
                     errorMessageList={errorMessageList()}
+                    groupErrorsFn={groupUploadErrorsByType}
                     scrollToRef={scrollToRef}
                 ></ErrorBox>
             )}

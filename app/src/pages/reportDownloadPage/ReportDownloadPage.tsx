@@ -1,4 +1,4 @@
-import { Outlet, Route, Routes } from 'react-router';
+import { Outlet, Route, Routes } from 'react-router-dom';
 import useTitle from '../../helpers/hooks/useTitle';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getReportByType, REPORT_TYPE } from '../../types/generic/reports';
@@ -8,8 +8,6 @@ import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import DownloadReportSelectStage from '../../components/blocks/_downloadReport/downloadReportSelectStage/DownloadReportSelectStage';
 import DownloadReportCompleteStage from '../../components/blocks/_downloadReport/downloadReportCompleteStage/DownloadReportCompleteStage';
 
-type Props = {};
-
 const RedirectToHomePage = () => {
     const navigate = useNavigate();
     useEffect(() => {
@@ -18,7 +16,7 @@ const RedirectToHomePage = () => {
     return <></>;
 };
 
-const ReportDownloadPage = (props: Props) => {
+const ReportDownloadPage = (): React.JSX.Element => {
     useTitle({ pageTitle: 'Download report' });
     const [searchParams] = useSearchParams();
 
