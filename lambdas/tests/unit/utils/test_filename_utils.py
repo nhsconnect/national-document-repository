@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import (
     assemble_lg_valid_file_name_full_path,
@@ -183,9 +184,8 @@ def test_correctly_extract_nhs_number_from_bulk_upload_file_name(
     input, expected, expected_exception
 ):
     if expected_exception:
-        with pytest.raises(expected_exception) as exc_info:
+        with pytest.raises(expected_exception):
             extract_nhs_number_from_bulk_upload_file_name(input)
-            assert str(exc_info.value) == expected
     else:
         actual = extract_nhs_number_from_bulk_upload_file_name(input)
         assert actual == expected

@@ -6,7 +6,6 @@ from unittest.mock import call
 
 import pytest
 from freezegun import freeze_time
-
 from models.staging_metadata import METADATA_FILENAME
 from services.bulk_upload.metadata_general_preprocessor import (
     MetadataGeneralPreprocessor,
@@ -34,11 +33,7 @@ def mock_generate_and_save_csv_file(mocker, test_service):
 
 @pytest.fixture
 def mock_metadata_file_get_object():
-    def _mock_metadata_file_get_object(
-        test_file_path: str,
-        Bucket: str,
-        Key: str,
-    ):
+    def _mock_metadata_file_get_object(test_file_path: str, *args, **kwargs):
         with open(test_file_path, "rb") as file:
             test_file_data = file.read()
 

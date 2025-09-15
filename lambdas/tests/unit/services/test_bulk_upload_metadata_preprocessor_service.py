@@ -64,11 +64,7 @@ def sample_metadata_row():
 
 @pytest.fixture
 def mock_metadata_file_get_object():
-    def _mock_metadata_file_get_object(
-        test_file_path: str,
-        Bucket: str,
-        Key: str,
-    ):
+    def _mock_metadata_file_get_object(test_file_path: str, *args, **kwargs):
         with open(test_file_path, "rb") as file:
             test_file_data = file.read()
 
@@ -360,7 +356,6 @@ def test_generate_renaming_map(test_service):
     ]
     assert rejected_rows == []
     assert rejected_reasons == []
-    # assert test_service.validate_record_filename.call_count == 2
 
 
 def test_generate_renaming_map_happy_path(test_service, mock_update_date_in_row):
