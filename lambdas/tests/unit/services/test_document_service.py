@@ -3,11 +3,12 @@ from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
+from freezegun import freeze_time
+
 from enums.document_retention import DocumentRetentionDays
 from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
-from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from services.document_service import DocumentService
 from tests.unit.conftest import (
@@ -65,7 +66,7 @@ def mock_filter_expression():
 def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_references(
     mock_service, mock_dynamo_service, mock_filter_expression
 ):
-    mock_dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE
+    mock_dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE['Items']
 
     results = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, SupportedDocumentTypes.LG, mock_filter_expression
@@ -88,7 +89,7 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
 def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_references(
     mock_service, mock_dynamo_service, mock_filter_expression
 ):
-    mock_dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE
+    mock_dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE['Items']
 
     results = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, SupportedDocumentTypes.ARF, mock_filter_expression
@@ -141,7 +142,7 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
         )
     ]
 
-    mock_dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE
+    mock_dynamo_service.query_table_by_index.return_value = MOCK_SEARCH_RESPONSE['Items']
 
     results = mock_service.fetch_documents_from_table_with_nhs_number(
         nhs_number=TEST_NHS_NUMBER,

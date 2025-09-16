@@ -667,9 +667,8 @@ def test_create_document_manifest_presigned_url_missing_manifest_raises_exceptio
 def test_query_zip_trace_returns_zip_trace_object(
     manifest_service, mock_dynamo_service, mock_filter_expression
 ):
-    mock_dynamo_service.query_table_by_index.return_value = {
-        "Items": [TEST_ZIP_TRACE_DATA]
-    }
+    mock_dynamo_service.query_table_by_index.return_value = [TEST_ZIP_TRACE_DATA]
+
     expected = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
     actual = manifest_service.query_zip_trace(TEST_UUID, TEST_NHS_NUMBER)

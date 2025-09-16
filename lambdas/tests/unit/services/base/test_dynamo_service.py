@@ -4,6 +4,7 @@ from unittest.mock import call
 import pytest
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
+
 from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.base.dynamo_service import DynamoDBService
@@ -63,7 +64,7 @@ def test_query_with_requested_fields_returns_items_from_dynamo(
     expected_projection = "FileName,Created"
 
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
-    expected = MOCK_SEARCH_RESPONSE
+    expected = MOCK_SEARCH_RESPONSE['Items']
 
     actual = mock_service.query_table_by_index(
         MOCK_TABLE_NAME,
@@ -94,7 +95,7 @@ def test_query_with_requested_fields_with_filter_returns_items_from_dynamo(
     expected_filter = Attr("Deleted").eq("")
 
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
-    expected = MOCK_SEARCH_RESPONSE
+    expected = MOCK_SEARCH_RESPONSE['Items']
 
     actual = mock_service.query_table_by_index(
         MOCK_TABLE_NAME,
@@ -143,7 +144,7 @@ def test_query_with_requested_fields_raises_exception_when_fields_requested_is_n
     search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
 
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
-    expected = MOCK_SEARCH_RESPONSE
+    expected = MOCK_SEARCH_RESPONSE['Items']
 
     actual = mock_service.query_table_by_index(
         MOCK_TABLE_NAME, "test_index", "NhsNumber", TEST_NHS_NUMBER
