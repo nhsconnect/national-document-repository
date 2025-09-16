@@ -180,7 +180,7 @@ class DocumentManifestJobService:
         )
 
         try:
-            zip_trace = DocumentManifestZipTrace.model_validate(response["Items"][0])
+            zip_trace = DocumentManifestZipTrace.model_validate(response[0])
             return zip_trace
         except (KeyError, IndexError, ValidationError) as e:
             logger.error(

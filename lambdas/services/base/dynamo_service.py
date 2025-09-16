@@ -71,6 +71,16 @@ class DynamoDBService:
                 logger.error(f"Unusable results in DynamoDB: {results!r}")
                 raise DynamoServiceException("Unrecognised response from DynamoDB")
 
+            dynamodb_scan_result = results["Items"]     
+            
+            while "LastEvaluatedKey" in results:
+                start_key_for_next_page = results["LastEvaluatedKey"]
+                results = table.query(
+                    **query_params,
+                    ExclusiveStartKey=start_key_for_next_page,
+                )
+                dynamodb_scan_result += results["Items"]
+
             return results
         except ClientError as e:
             logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
