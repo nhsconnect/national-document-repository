@@ -4,6 +4,7 @@ from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.upload_status import UploadStatus
 from freezegun import freeze_time
 from models.staging_metadata import METADATA_FILENAME
 from services.V2_bulk_upload_metadata_service import V2BulkUploadMetadataService
@@ -447,3 +448,129 @@ def test_clear_temp_storage(set_env, mocker, mock_tempfile, metadata_service):
     metadata_service.clear_temp_storage()
 
     mocked_rm.assert_called_once_with(metadata_service.temp_download_dir)
+
+
+def test_process_metadata_row_success(mocker, metadata_service):
+    patients = {}
+    row = {
+        "FILEPATH": "/some/path/file.pdf",
+        "GP-PRACTICE-CODE": "Y12345",
+        "NHS-NO": "1234567890",
+        "PAGE COUNT": "5",
+        "SECTION": "LG",
+        "SUB-SECTION": "",
+        "SCAN-DATE": "01/01/2023",
+        "SCAN-ID": "SID123",
+        "USER-ID": "UID123",
+        "UPLOAD": "01/01/2023",
+    }
+
+    mock_metadata = mocker.Mock()
+    mocker.patch(
+        "services.V2_bulk_upload_metadata_service.MetadataFile.model_validate",
+        return_value=mock_metadata,
+    )
+
+    mocker.patch.object(
+        metadata_service, "validate_record_filename", return_value="corrected.pdf"
+    )
+
+    metadata_service.process_metadata_row(row, patients)
+
+    key = ("1234567890", "Y12345")
+    assert key in patients
+    assert patients[key] == [mock_metadata]
+    assert metadata_service.corrections == {"/some/path/file.pdf": "corrected.pdf"}
+
+
+def test_process_metadata_row_adds_to_existing_entry(mocker, metadata_service):
+    key = ("1234567890", "Y12345")
+    mock_metadata_existing = mocker.Mock()
+    patients = {key: [mock_metadata_existing]}
+
+    row = {
+        "FILEPATH": "/some/path/file2.pdf",
+        "GP-PRACTICE-CODE": "Y12345",
+        "NHS-NO": "1234567890",
+        "PAGE COUNT": "1",
+        "SECTION": "LG",
+        "SUB-SECTION": "",
+        "SCAN-DATE": "02/01/2023",
+        "SCAN-ID": "SID456",
+        "USER-ID": "UID456",
+        "UPLOAD": "02/01/2023",
+    }
+
+    mock_metadata = mocker.Mock()
+    mocker.patch(
+        "services.V2_bulk_upload_metadata_service.MetadataFile.model_validate",
+        return_value=mock_metadata,
+    )
+    mocker.patch.object(
+        metadata_service, "validate_record_filename", return_value="fixed_file2.pdf"
+    )
+
+    metadata_service.process_metadata_row(row, patients)
+
+    assert len(patients[key]) == 2
+    assert patients[key][1] == mock_metadata
+    assert metadata_service.corrections["/some/path/file2.pdf"] == "fixed_file2.pdf"
+
+
+def test_extract_patient_info(metadata_service):
+    row = {
+        "NHS-NO": "1234567890",
+        "GP-PRACTICE-CODE": "Y12345",
+    }
+
+    nhs_number, ods_code = metadata_service.extract_patient_info(row)
+
+    assert nhs_number == "1234567890"
+    assert ods_code == "Y12345"
+
+
+def test_validate_correct_filename_valid_filename(mocker, metadata_service):
+    row = {"FILEPATH": "valid/path/to/file.pdf"}
+    mocker.patch.object(
+        metadata_service,
+        "validate_record_filename",
+        return_value="corrected_file.pdf",
+    )
+
+    metadata_service.validate_correct_filename(row)
+
+    assert (
+        metadata_service.corrections["valid/path/to/file.pdf"] == "corrected_file.pdf"
+    )
+
+
+def test_handle_invalid_filename_writes_failed_entry_to_dynamo(
+    mocker, metadata_service
+):
+    key = ("1234567890", "Y12345")
+    row = {"FILEPATH": "bad_file.pdf"}
+    error = InvalidFileNameException("Invalid filename format")
+
+    fake_file = mocker.Mock()
+    patients = {key: [fake_file]}
+
+    mock_staging_metadata = mocker.patch(
+        "services.V2_bulk_upload_metadata_service.StagingMetadata"
+    )
+
+    mock_write = mocker.patch.object(
+        metadata_service.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+
+    metadata_service.handle_invalid_filename(row, error, key, patients)
+
+    mock_staging_metadata.assert_called_once_with(
+        nhs_number=key[0],
+        files=patients[key],
+    )
+
+    mock_write.assert_called_once_with(
+        mock_staging_metadata.return_value,
+        UploadStatus.FAILED,
+        str(error),
+    )
