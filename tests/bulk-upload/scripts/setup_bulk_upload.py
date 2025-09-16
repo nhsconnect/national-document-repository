@@ -415,7 +415,12 @@ def upload_lg_files_to_staging():
 def removing_previous_uploads():
     dynamodb = boto3.resource("dynamodb")
 
-    tables_to_truncate = [BULK_UPLOAD_TABLE_NAME, LG_TABLE_NAME, LG_STITCH_TABLE_NAME]
+    tables_to_truncate = [
+        BULK_UPLOAD_TABLE_NAME,
+        LG_TABLE_NAME,
+        LG_STITCH_TABLE_NAME,
+        LG_UNSTITCHED_TABLE_NAME,
+    ]
 
     for table_name in tables_to_truncate:
         table = dynamodb.Table(table_name)
@@ -574,6 +579,7 @@ if __name__ == "__main__":
     BULK_UPLOAD_TABLE_NAME = f"{ENVIRONMENT}_BulkUploadReport"
     LG_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeReferenceMetadata"
     LG_STITCH_TABLE_NAME = f"{ENVIRONMENT}_LloydGeorgeStitchJobMetadata"
+    LG_UNSTITCHED_TABLE_NAME = f"{ENVIRONMENT}_UnstitchedLloydGeorgeReferenceMetadata"
 
     if not args.environment:
         env_confirmation = input(
