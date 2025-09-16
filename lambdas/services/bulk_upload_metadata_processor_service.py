@@ -37,8 +37,8 @@ class BulkUploadMetadataProcessorService:
         self.sqs_service = SQSService()
         self.dynamo_repository = BulkUploadDynamoRepository()
 
-        self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
-        self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
+        self.staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
+        self.metadata_queue_url = os.getenv("METADATA_SQS_QUEUE_URL")
 
         self.temp_download_dir = tempfile.mkdtemp()
 
