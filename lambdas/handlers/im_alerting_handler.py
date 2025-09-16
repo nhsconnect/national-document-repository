@@ -20,6 +20,7 @@ logger = LoggingService(__name__)
         "ALARM_HISTORY_DYNAMODB_NAME",
         "SLACK_CHANNEL_ID",
         "SLACK_BOT_TOKEN",
+        "WORKSPACE",
     ]
 )
 def lambda_handler(event, context):

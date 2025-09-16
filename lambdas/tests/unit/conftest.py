@@ -122,6 +122,17 @@ PDF_STITCHING_SQS_URL = (
 TEST_BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
+MOCK_ITOC_ODS_CODES = "Y12345,Y12"
+MOCK_ITOC_SLACK_CHANNEL_ID = "slack_channel_id"
+MOCK_ITOC_TEST_EMAIL_ADDRESS = "itoc_testing@testing.com"
+MOCK_ITOC_TEAMS_WEBHOOK = "https://webhook.team"
+MOCK_CONFLUENCE_URL = "https://confluence.example.com"
+MOCK_ALARM_HISTORY_TABLE = "test_alarm_history_table"
+MOCK_TEAMS_WEBHOOK = "test_teams_webhook"
+MOCK_SLACK_BOT_TOKEN = f"xoxb-{TEST_UUID}"
+MOCK_ALERTING_SLACK_CHANNEL_ID = "slack_channel_id"
+
+
 @pytest.fixture
 def set_env(monkeypatch):
     monkeypatch.setenv("AWS_DEFAULT_REGION", REGION_NAME)
@@ -197,6 +208,16 @@ def set_env(monkeypatch):
         "DOCUMENT_RETRIEVE_ENDPOINT_APIM", f"{APIM_API_URL}/DocumentReference"
     )
     monkeypatch.setenv("VIRUS_SCAN_STUB", "True")
+    monkeypatch.setenv("ITOC_TESTING_SLACK_BOT_TOKEN", MOCK_SLACK_BOT_TOKEN)
+    monkeypatch.setenv("ITOC_TESTING_CHANNEL_ID", MOCK_ITOC_SLACK_CHANNEL_ID)
+    monkeypatch.setenv("ITOC_TESTING_EMAIL_ADDRESS", MOCK_ITOC_TEST_EMAIL_ADDRESS)
+    monkeypatch.setenv("ITOC_TESTING_TEAMS_WEBHOOK", MOCK_ITOC_TEAMS_WEBHOOK)
+    monkeypatch.setenv("CONFLUENCE_BASE_URL", MOCK_CONFLUENCE_URL)
+    monkeypatch.setenv("ALARM_HISTORY_DYNAMODB_NAME", MOCK_ALARM_HISTORY_TABLE)
+    monkeypatch.setenv("TEAMS_WEBHOOK_URL", MOCK_TEAMS_WEBHOOK)
+    monkeypatch.setenv("SLACK_BOT_TOKEN", MOCK_SLACK_BOT_TOKEN)
+    monkeypatch.setenv("SLACK_CHANNEL_ID", MOCK_ALERTING_SLACK_CHANNEL_ID)
+    monkeypatch.setenv("ITOC_TESTING_ODS_CODES", MOCK_ITOC_ODS_CODES)
 
 
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
@@ -339,3 +360,9 @@ def expect_not_to_raise(exception, message_when_fail=""):
     except exception:
         message_when_fail = message_when_fail or "DID RAISE {0}".format(exception)
         raise pytest.fail(message_when_fail)
+
+
+@pytest.fixture
+def mock_jwt_encode(mocker):
+    decoded_token = {"selected_organisation": {"org_ods_code": "ODS123"}}
+    yield mocker.patch("jwt.decode", return_value=decoded_token)

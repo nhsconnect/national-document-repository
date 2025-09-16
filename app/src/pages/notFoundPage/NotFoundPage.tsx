@@ -13,7 +13,7 @@ const NotFoundPage = () => {
                 The page you were looking for could not be found. It might not exist, or you do not
                 have access to it.
             </p>
-            <Link to={routes.START}>Return home</Link>
+            <Link to={routes.HOME}>Return home</Link>
         </>
     );
 };

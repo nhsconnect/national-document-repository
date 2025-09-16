@@ -330,7 +330,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: send_feedback_handler
       lambda_aws_name: SendFeedbackLambda
-      lambda_layer_names: 'core_lambda_layer'
+      lambda_layer_names: 'core_lambda_layer,alerting_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
  

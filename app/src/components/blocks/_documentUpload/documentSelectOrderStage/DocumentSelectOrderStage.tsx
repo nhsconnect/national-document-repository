@@ -1,10 +1,11 @@
 import { Button, Select, Table } from 'nhsuk-react-components';
-import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
+import { Dispatch, JSX, SetStateAction, useEffect, useRef } from 'react';
 import { FieldErrors, FieldValues, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import {
     fileUploadErrorMessages,
+    groupUploadErrorsByType,
     UPLOAD_FILE_ERROR_TYPE,
 } from '../../../../helpers/utils/fileUploadErrorMessages';
 import { routeChildren, routes } from '../../../../types/generic/routes';
@@ -13,12 +14,13 @@ import {
     DOCUMENT_TYPE,
     SetUploadDocuments,
     UploadDocument,
-    UploadFilesError,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import BackButton from '../../../generic/backButton/BackButton';
 import PatientSummary, { PatientInfo } from '../../../generic/patientSummary/PatientSummary';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DocumentUploadLloydGeorgePreview from '../documentUploadLloydGeorgePreview/DocumentUploadLloydGeorgePreview';
+import { ErrorMessageListItem } from '../../../../types/pages/genericPageErrors';
+import getMergedPdfBlob from '../../../../helpers/utils/pdfMerger';
 
 type Props = {
     documents: UploadDocument[];
@@ -28,8 +30,13 @@ type Props = {
 type FormData = {
     [key: string]: number | null;
 };
+type UploadFilesError = ErrorMessageListItem<UPLOAD_FILE_ERROR_TYPE>;
 
-const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }: Props) => {
+const DocumentSelectOrderStage = ({
+    documents,
+    setDocuments,
+    setMergedPdfBlob,
+}: Props): JSX.Element => {
     const navigate = useNavigate();
 
     const documentPositionKey = (documentId: string): string => {
@@ -39,13 +46,21 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
     const { handleSubmit, getValues, register, unregister, formState, setValue } =
         useForm<FormData>({
             reValidateMode: 'onSubmit',
-            shouldFocusError: true,
+            shouldFocusError: false,
         });
 
     const scrollToRef = useRef<HTMLDivElement>(null);
 
     const pageTitle = 'What order do you want these files in?';
     useTitle({ pageTitle });
+
+    useEffect(() => {
+        scrollToRef.current?.scrollIntoView();
+    }, [formState.errors]);
+
+    const handleErrors = (_: FieldValues): void => {
+        scrollToRef.current?.scrollIntoView();
+    };
 
     useEffect(() => {
         documents.forEach((doc) => {
@@ -128,7 +143,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         );
     };
 
-    const onRemove = (index: number) => {
+    const onRemove = (index: number): void => {
         let updatedDocList: UploadDocument[] = [...documents];
         const docToRemove = documents[index];
         const key = documentPositionKey(documents[index].id);
@@ -149,7 +164,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         setDocuments(updatedDocList);
     };
 
-    const updateDocumentPositions = () => {
+    const updateDocumentPositions = (): void => {
         const fieldValues = getValues();
 
         const updatedDocuments = documents.map((doc) => ({
@@ -160,17 +175,13 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
         setDocuments(updatedDocuments);
     };
 
-    const submitDocuments = () => {
+    const submitDocuments = (): void => {
         updateDocumentPositions();
         if (documents.length === 1) {
             navigate(routeChildren.DOCUMENT_UPLOAD_UPLOADING);
             return;
         }
         navigate(routeChildren.DOCUMENT_UPLOAD_CONFIRMATION);
-    };
-
-    const handleErrors = (_: FieldValues) => {
-        scrollToRef.current?.scrollIntoView();
     };
 
     const errorMessageList = (formStateErrors: FieldErrors<FormData>): UploadFilesError[] =>
@@ -188,6 +199,13 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
             })
             .filter((item) => item !== undefined);
 
+    const viewPdfFile = async (file: File): Promise<void> => {
+        const blob = await getMergedPdfBlob([file]);
+        const url = URL.createObjectURL(blob);
+
+        window.open(url);
+    };
+
     return (
         <>
             <BackButton />
@@ -198,6 +216,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                     errorBoxSummaryId="document-positions"
                     messageTitle="There is a problem"
                     errorMessageList={errorMessageList(formState.errors)}
+                    groupErrorsFn={groupUploadErrorsByType}
                     scrollToRef={scrollToRef}
                 />
             )}
@@ -251,7 +270,7 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                                         You have removed all files. Go back to&nbsp;
                                         <button
                                             className="govuk-link"
-                                            onClick={(e) => {
+                                            onClick={(e): void => {
                                                 e.preventDefault();
                                                 navigate(routes.DOCUMENT_UPLOAD);
                                             }}
@@ -281,22 +300,21 @@ const DocumentSelectOrderStage = ({ documents, setDocuments, setMergedPdfBlob }:
                                             )}
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <a
-                                                href={URL.createObjectURL(document.file)}
+                                            <Link
+                                                to=""
+                                                onClick={() => viewPdfFile(document.file)}
                                                 aria-label="Preview - opens in a new tab"
                                                 data-testid={`document-preview-${document.id}`}
-                                                target="_blank"
-                                                rel="noreferrer"
                                             >
                                                 View
-                                            </a>
+                                            </Link>
                                         </Table.Cell>
                                         <Table.Cell>
                                             <button
                                                 type="button"
                                                 aria-label={`Remove ${document.file.name} from selection`}
                                                 className="link-button"
-                                                onClick={() => {
+                                                onClick={(): void => {
                                                     onRemove(index);
                                                 }}
                                             >

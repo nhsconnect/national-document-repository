@@ -23,12 +23,6 @@ def mock_service(mocker):
     return mock_service
 
 
-@pytest.fixture
-def mock_jwt_encode(mocker):
-    decoded_token = {"selected_organisation": {"org_ods_code": "ODS123"}}
-    yield mocker.patch("jwt.decode", return_value=decoded_token)
-
-
 def test_lambda_handler_api_gateway_request(
     mock_service, set_env, context, mock_jwt_encode
 ):

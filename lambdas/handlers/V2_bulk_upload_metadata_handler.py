@@ -15,10 +15,7 @@ logger = LoggingService(__name__)
 )
 @handle_lambda_exceptions
 def lambda_handler(event, _context):
-    practice_directory = event.get("practiceDirectory")
-
-    if not practice_directory:
-        practice_directory = ""
+    practice_directory = event.get("practiceDirectory", "")
 
     logger.info(
         f"Starting metadata processing for practice directory: {practice_directory}"

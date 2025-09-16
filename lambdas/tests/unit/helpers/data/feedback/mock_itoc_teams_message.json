@@ -1,0 +1,37 @@
+{
+    "type": "message",
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "contentUrl": null,
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.4",
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "Medium",
+                        "weight": "Bolder",
+                        "text": "ITOC Testing",
+                        "wrap": true
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Name: ITOC"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Overall experience: Very Satisfied",
+                        "wrap": true
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Feedback: Mock feedback content",
+                        "wrap": true
+                    }
+                ]
+            }
+        }
+    ]
+}
