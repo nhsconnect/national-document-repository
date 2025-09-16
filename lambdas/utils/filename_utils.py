@@ -2,7 +2,6 @@ import datetime
 import os
 
 from regex import regex
-
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException
 
@@ -30,6 +29,7 @@ def extract_page_number(filename: str) -> int:
     page_number_as_string = filename[0:pos_to_trim]
     return int(page_number_as_string)
 
+
 def extract_total_pages(filename: str) -> int:
     """
     Extracts the total number of pages from a Lloyd George file name.
@@ -51,6 +51,7 @@ def extract_total_pages(filename: str) -> int:
     end_pos = filename.index("_")
     page_number_as_string = filename[start_pos:end_pos]
     return int(page_number_as_string)
+
 
 def assemble_lg_valid_file_name_full_path(
     file_path_prefix: str,
@@ -85,6 +86,7 @@ def assemble_lg_valid_file_name_full_path(
         f"[{date_object.strftime('%d-%m-%Y')}]{file_extension}"
     )
 
+
 def extract_document_path(
     file_path: str,
 ) -> tuple[str, str]:
@@ -106,6 +108,7 @@ def extract_document_path(
         raise InvalidFileNameException("Incorrect document path format")
 
     return directory_path, file_name
+
 
 def extract_nhs_number_from_bulk_upload_file_name(
     file_path: str,
@@ -133,6 +136,7 @@ def extract_nhs_number_from_bulk_upload_file_name(
     remaining_file_path = expression_result.group(2)
 
     return nhs_number, remaining_file_path
+
 
 def extract_patient_name_from_bulk_upload_file_name(
     file_path: str,
@@ -162,6 +166,7 @@ def extract_patient_name_from_bulk_upload_file_name(
     current_file_path = expression_result.group(2)
 
     return patient_name, current_file_path
+
 
 def extract_date_from_bulk_upload_file_name(file_path):
     """
@@ -202,6 +207,7 @@ def extract_date_from_bulk_upload_file_name(file_path):
         logger.error(f"Failed to parse date from filename: {e}")
         raise InvalidFileNameException("Invalid date format")
 
+
 def extract_document_path_for_lloyd_george_record(
     file_path: str,
 ) -> tuple[str, str]:
@@ -237,6 +243,7 @@ def extract_document_path_for_lloyd_george_record(
         file_path = expression_result.group(1)
     return file_path, current_file_path
 
+
 def extract_document_number_bulk_upload_file_name(
     file_path: str,
 ) -> tuple[int, int, str]:
@@ -254,7 +261,8 @@ def extract_document_number_bulk_upload_file_name(
 
     Example:
         file_path=1of2_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf
-        extract_document_number_bulk_upload_file_name(file_path) -> 1, 2, _Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf
+        extract_document_number_bulk_upload_file_name(file_path) ->
+        1, 2, _Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf
     """
     document_number_expression = r"[^0-9]*(\d+)[^0-9]*of[^0-9]*(\d+)(.*)"
     expression_result = regex.search(rf"{document_number_expression}", file_path)
@@ -268,6 +276,7 @@ def extract_document_number_bulk_upload_file_name(
     current_file_path = expression_result.group(3)
 
     return current_document_number, expected_total_document_number, current_file_path
+
 
 def extract_lloyd_george_record_from_bulk_upload_file_name(
     file_path: str,
@@ -297,6 +306,7 @@ def extract_lloyd_george_record_from_bulk_upload_file_name(
     current_file_path = lloyd_george_record.group(1)
 
     return current_file_path
+
 
 def extract_file_extension_from_bulk_upload_file_name(
     file_path: str,

@@ -20,7 +20,9 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, _context):
     practice_directory = event.get("practiceDirectory")
-    raw_pre_format_type = event.get("preFormatType", LloydGeorgePreProcessFormat.GENERAL)
+    raw_pre_format_type = event.get(
+        "preFormatType", LloydGeorgePreProcessFormat.GENERAL
+    )
 
     pre_processor_service = get_pre_process_service(raw_pre_format_type)
     if not practice_directory:
