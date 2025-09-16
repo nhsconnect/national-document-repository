@@ -72,7 +72,7 @@ class DynamoDBService:
                 raise DynamoServiceException("Unrecognised response from DynamoDB")
 
             dynamodb_scan_result = results["Items"]     
-            
+
             while "LastEvaluatedKey" in results:
                 start_key_for_next_page = results["LastEvaluatedKey"]
                 results = table.query(
@@ -81,7 +81,7 @@ class DynamoDBService:
                 )
                 dynamodb_scan_result += results["Items"]
 
-            return results
+            return dynamodb_scan_result
         except ClientError as e:
             logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e

@@ -115,9 +115,8 @@ class LloydGeorgeStitchJobService:
                     totalFileSizeInBytes=stitch_trace.total_file_size_in_bytes,
                 )
 
-    def validate_stitch_trace(self, response: dict) -> list[StitchTrace] | None:
+    def validate_stitch_trace(self, stitch_trace_dynamo_response: list) -> list[StitchTrace] | None:
         try:
-            stitch_trace_dynamo_response = response.get("Items", [])
             if not stitch_trace_dynamo_response:
                 return None
             return [
