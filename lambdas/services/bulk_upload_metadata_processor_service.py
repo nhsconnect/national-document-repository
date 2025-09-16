@@ -31,7 +31,7 @@ logger = LoggingService(__name__)
 unsuccessful = "Unsuccessful bulk upload"
 
 
-class V2BulkUploadMetadataService:
+class BulkUploadMetadataProcessorService:
     def __init__(self, practice_directory: str):
         self.s3_service = S3Service()
         self.sqs_service = SQSService()

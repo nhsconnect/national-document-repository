@@ -1,18 +1,18 @@
 import pytest
-from handlers.V2_bulk_upload_metadata_handler import lambda_handler
-from services.V2_bulk_upload_metadata_service import V2BulkUploadMetadataService
+from handlers.bulk_upload_metadata_processor_handler import lambda_handler
+from services.bulk_upload_metadata_processor_service import BulkUploadMetadataProcessorService
 
 
 @pytest.fixture
 def mock_metadata_service(mocker):
     mocked_instance = mocker.patch(
-        "handlers.V2_bulk_upload_metadata_handler.V2BulkUploadMetadataService",
-        spec=V2BulkUploadMetadataService,
+        "handlers.bulk_upload_metadata_processor_handler.BulkUploadMetadataProcessorService",
+        spec=BulkUploadMetadataProcessorService,
     ).return_value
     return mocked_instance
 
 
-def test_metadata_preprocessor_lambda_handler_valid_event(
+def test_metadata_processor_lambda_handler_valid_event(
     set_env, context, mock_metadata_service
 ):
     lambda_handler({"practiceDirectory": "test"}, context)
@@ -20,7 +20,7 @@ def test_metadata_preprocessor_lambda_handler_valid_event(
     mock_metadata_service.process_metadata.assert_called_once()
 
 
-def test_metadata_preprocessor_lambda_handler_empty_event(
+def test_metadata_processor_lambda_handler_empty_event(
     set_env, context, mock_metadata_service
 ):
     lambda_handler({}, context)
