@@ -4,6 +4,7 @@ from unittest.mock import call
 import pytest
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
+
 from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.base.dynamo_service import DynamoDBService
@@ -579,7 +580,7 @@ def test_dynamo_service_singleton_instance(mocker):
     assert instance_1 is instance_2
 
 
-def test_querquery_with_pagination(mock_service, mock_table):
+def test_query_with_pagination(mock_service, mock_table):
     mock_table.return_value.query.side_effect = [
         MOCK_PAGINATED_RESPONSE_1,
         MOCK_PAGINATED_RESPONSE_2,
