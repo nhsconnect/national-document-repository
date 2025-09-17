@@ -1,6 +1,8 @@
 import logging
+import sys
 
 from utils.logging_formatter import LoggingFormatter
+
 
 class LoggingService:
     audit_logger = None
@@ -9,8 +11,14 @@ class LoggingService:
         self.name = name
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
-        self.formatter = LoggingFormatter()
-        logging.Formatter.format = self.formatter.format
+
+        # Attach stdout handler if not already present
+        if not self.logger.handlers:
+            handler = logging.StreamHandler(sys.stdout)
+            handler.setFormatter(LoggingFormatter())
+            self.logger.addHandler(handler)
+
+        self.logger.propagate = True
 
     def info(self, message, custom_args: dict = None, *args, **kwargs):
         self.logger.info(message, extra={"custom_args": custom_args}, *args, **kwargs)
@@ -30,7 +38,11 @@ class LoggingService:
         self, message, custom_args: dict = None, *args, exc_info=True, **kwargs
     ):
         self.logger.exception(
-            message, exc_info, extra={"custom_args": custom_args}, *args, **kwargs
+            message,
+            exc_info=exc_info,
+            extra={"custom_args": custom_args},
+            *args,
+            **kwargs
         )
 
     def critical(self, message, custom_args: dict = None, *args, **kwargs):
