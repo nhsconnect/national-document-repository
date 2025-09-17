@@ -577,3 +577,36 @@ def test_dynamo_service_singleton_instance(mocker):
     instance_2 = DynamoDBService()
 
     assert instance_1 is instance_2
+
+
+def test_querquery_with_pagination(mock_service, mock_table):
+    mock_table.return_value.query.side_effect = [
+        MOCK_PAGINATED_RESPONSE_1,
+        MOCK_PAGINATED_RESPONSE_2,
+        MOCK_PAGINATED_RESPONSE_3,
+    ]
+    expected_result = EXPECTED_ITEMS_FOR_PAGINATED_RESULTS
+    search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
+
+    expected_calls = [
+        call(
+            KeyConditionExpression=search_key_obj,
+        ),
+        call(
+            KeyConditionExpression=search_key_obj,
+            ExclusiveStartKey={"ID": "id_token_for_page_2"},
+        ),
+        call(
+            KeyConditionExpression=search_key_obj,
+            ExclusiveStartKey={"ID": "id_token_for_page_3"},
+        ),
+    ]
+
+    actual = mock_service.query_with_pagination(
+        table_name=MOCK_TABLE_NAME,
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
+    )
+    assert expected_result == actual
+    mock_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_table.return_value.query.assert_has_calls(expected_calls)
