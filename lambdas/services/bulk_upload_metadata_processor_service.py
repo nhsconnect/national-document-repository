@@ -109,24 +109,44 @@ class BulkUploadMetadataProcessorService:
         ]
 
     def process_metadata_row(self, row: dict, patients: dict) -> None:
-        file_metadata = MetadataFile.model_validate(row)
-        nhs_number, ods_code = self.extract_patient_info(file_metadata)
-        patient_record_key = (nhs_number, ods_code)
+        nhs_number, ods_code = self.extract_patient_info(row)
+        key = (nhs_number, ods_code)
 
-        if patient_record_key not in patients:
-            patients[patient_record_key] = [file_metadata]
+        file_metadata = MetadataFile.model_validate(row)
+
+        if key not in patients:
+            patients[key] = [file_metadata]
         else:
-            patients[patient_record_key].append(file_metadata)
+            patients[key].append(file_metadata)
 
         try:
             self.validate_correct_filename(row)
         except InvalidFileNameException as error:
-            self.handle_invalid_filename(row, error, patient_record_key, patients)
+            self.handle_invalid_filename(row, error, key, patients)
 
-    def extract_patient_info(self, file_metadata: MetadataFile) -> tuple[str, str]:
-        nhs_number = file_metadata.nhs_number
-        ods_code = file_metadata.gp_practice_code
+    def extract_patient_info(self, row: dict) -> tuple[str, str]:
+        nhs_number = row.get(NHS_NUMBER_FIELD_NAME)
+        ods_code = row.get(ODS_CODE)
         return nhs_number, ods_code
+    # def process_metadata_row(self, row: dict, patients: dict) -> None:
+    #     file_metadata = MetadataFile.model_validate(row)
+    #     nhs_number, ods_code = self.extract_patient_info(file_metadata)
+    #     patient_record_key = (nhs_number, ods_code)
+    #
+    #     if patient_record_key not in patients:
+    #         patients[patient_record_key] = [file_metadata]
+    #     else:
+    #         patients[patient_record_key].append(file_metadata)
+    #
+    #     try:
+    #         self.validate_correct_filename(row)
+    #     except InvalidFileNameException as error:
+    #         self.handle_invalid_filename(row, error, patient_record_key, patients)
+    #
+    # def extract_patient_info(self, file_metadata: MetadataFile) -> tuple[str, str]:
+    #     nhs_number = file_metadata.nhs_number
+    #     ods_code = file_metadata.gp_practice_code
+    #     return nhs_number, ods_code
 
     def validate_correct_filename(
         self,
