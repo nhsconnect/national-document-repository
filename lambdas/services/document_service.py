@@ -59,15 +59,13 @@ class DocumentService:
         query_filter: Attr | ConditionBase = None,
     ) -> list[DocumentReference]:
         documents = []
-        exclusive_start_key = None
-        
-        response = self.dynamo_service.query_table_by_index(
+
+        response = self.dynamo_service.query_table(
             table_name=table,
             index_name=index_name,
             search_key=search_key,
             search_condition=search_condition,
             query_filter=query_filter,
-            exclusive_start_key=exclusive_start_key,
         )
         for item in response:
             try:

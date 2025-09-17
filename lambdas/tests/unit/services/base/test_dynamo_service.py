@@ -4,7 +4,6 @@ from unittest.mock import call
 import pytest
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
-
 from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.base.dynamo_service import DynamoDBService
@@ -64,14 +63,14 @@ def test_query_with_requested_fields_returns_items_from_dynamo(
     expected_projection = "FileName,Created"
 
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
-    expected = MOCK_SEARCH_RESPONSE['Items']
+    expected = MOCK_SEARCH_RESPONSE["Items"]
 
-    actual = mock_service.query_table_by_index(
-        MOCK_TABLE_NAME,
-        "NhsNumberIndex",
-        "NhsNumber",
-        TEST_NHS_NUMBER,
-        [
+    actual = mock_service.query_table(
+        table_name=MOCK_TABLE_NAME,
+        index_name="NhsNumberIndex",
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
+        requested_fields=[
             DocumentReferenceMetadataFields.FILE_NAME.value,
             DocumentReferenceMetadataFields.CREATED.value,
         ],
@@ -95,14 +94,14 @@ def test_query_with_requested_fields_with_filter_returns_items_from_dynamo(
     expected_filter = Attr("Deleted").eq("")
 
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
-    expected = MOCK_SEARCH_RESPONSE['Items']
+    expected = MOCK_SEARCH_RESPONSE["Items"]
 
-    actual = mock_service.query_table_by_index(
-        MOCK_TABLE_NAME,
-        "NhsNumberIndex",
-        "NhsNumber",
-        TEST_NHS_NUMBER,
-        [
+    actual = mock_service.query_table(
+        table_name=MOCK_TABLE_NAME,
+        index_name="NhsNumberIndex",
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
+        requested_fields=[
             DocumentReferenceMetadataFields.FILE_NAME.value,
             DocumentReferenceMetadataFields.CREATED.value,
         ],
@@ -120,18 +119,53 @@ def test_query_with_requested_fields_with_filter_returns_items_from_dynamo(
     assert expected == actual
 
 
+def test_query_by_index_handles_pagination(
+    mock_service, mock_table, mock_filter_expression
+):
+    mock_table.return_value.query.side_effect = [
+        MOCK_PAGINATED_RESPONSE_1,
+        MOCK_PAGINATED_RESPONSE_2,
+        MOCK_PAGINATED_RESPONSE_3,
+    ]
+    expected_result = EXPECTED_ITEMS_FOR_PAGINATED_RESULTS
+    search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
+
+    expected_calls = [
+        call(
+            KeyConditionExpression=search_key_obj,
+        ),
+        call(
+            KeyConditionExpression=search_key_obj,
+            ExclusiveStartKey={"ID": "id_token_for_page_2"},
+        ),
+        call(
+            KeyConditionExpression=search_key_obj,
+            ExclusiveStartKey={"ID": "id_token_for_page_3"},
+        ),
+    ]
+
+    actual = mock_service.query_table(
+        table_name=MOCK_TABLE_NAME,
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
+    )
+    assert expected_result == actual
+    mock_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_table.return_value.query.assert_has_calls(expected_calls)
+
+
 def test_query_with_requested_fields_raises_exception_when_results_are_empty(
     mock_service, mock_table
 ):
     mock_table.return_value.query.return_value = []
 
     with pytest.raises(DynamoServiceException):
-        mock_service.query_table_by_index(
-            MOCK_TABLE_NAME,
-            "NhsNumberIndex",
-            "NhsNumber",
-            TEST_NHS_NUMBER,
-            [
+        mock_service.query_table(
+            table_name=MOCK_TABLE_NAME,
+            index_name="NhsNumberIndex",
+            search_key="NhsNumber",
+            search_condition=TEST_NHS_NUMBER,
+            requested_fields=[
                 DocumentReferenceMetadataFields.FILE_NAME.value,
                 DocumentReferenceMetadataFields.CREATED.value,
             ],
@@ -144,10 +178,13 @@ def test_query_with_requested_fields_raises_exception_when_fields_requested_is_n
     search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
 
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
-    expected = MOCK_SEARCH_RESPONSE['Items']
+    expected = MOCK_SEARCH_RESPONSE["Items"]
 
-    actual = mock_service.query_table_by_index(
-        MOCK_TABLE_NAME, "test_index", "NhsNumber", TEST_NHS_NUMBER
+    actual = mock_service.query_table(
+        table_name=MOCK_TABLE_NAME,
+        index_name="test_index",
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
     )
     mock_table.assert_called_with(MOCK_TABLE_NAME)
     mock_table.return_value.query.assert_called_once_with(
@@ -165,7 +202,7 @@ def test_query_with_requested_fields_client_error_raises_exception(
     mock_table.return_value.query.side_effect = MOCK_CLIENT_ERROR
 
     with pytest.raises(ClientError) as actual_response:
-        mock_service.query_table_by_index(
+        mock_service.query_table(
             MOCK_TABLE_NAME,
             "NhsNumberIndex",
             "NhsNumber",
@@ -179,15 +216,13 @@ def test_query_with_requested_fields_client_error_raises_exception(
     assert expected_response == actual_response.value
 
 
-def test_query_all_fields_is_called_with_correct_parameters(mock_service, mock_table):
+def test_query_table_is_called_with_correct_parameters(mock_service, mock_table):
     mock_table.return_value.query.return_value = {
         "Items": [{"id": "fake_test_item"}],
         "Counts": 1,
     }
 
-    mock_service.query_all_fields(
-        MOCK_TABLE_NAME, "test_key_condition", "test_key_value"
-    )
+    mock_service.query_table(MOCK_TABLE_NAME, "test_key_condition", "test_key_value")
 
     mock_table.assert_called_with(MOCK_TABLE_NAME)
     mock_table.return_value.query.assert_called_once_with(
@@ -195,13 +230,11 @@ def test_query_all_fields_is_called_with_correct_parameters(mock_service, mock_t
     )
 
 
-def test_query_all_fields_raises_exception_when_results_are_empty(
-    mock_service, mock_table
-):
+def test_query_table_raises_exception_when_results_are_empty(mock_service, mock_table):
     mock_table.return_value.query.return_value = []
 
     with pytest.raises(DynamoServiceException):
-        mock_service.query_all_fields(
+        mock_service.query_table(
             MOCK_TABLE_NAME, "test_key_condition", "test_key_value"
         )
 
@@ -211,12 +244,12 @@ def test_query_all_fields_raises_exception_when_results_are_empty(
     )
 
 
-def test_query_all_fields_client_error_raises_exception(mock_service, mock_table):
+def test_query_table_client_error_raises_exception(mock_service, mock_table):
     expected_response = MOCK_CLIENT_ERROR
     mock_table.return_value.query.side_effect = MOCK_CLIENT_ERROR
 
     with pytest.raises(ClientError) as actual_response:
-        mock_service.query_all_fields(
+        mock_service.query_table(
             MOCK_TABLE_NAME, "test_key_condition", "test_key_value"
         )
 

@@ -101,7 +101,7 @@ class OdsReportService:
             ]
         results = []
         for ods_code in ods_codes:
-            response = self.dynamo_service.query_table_by_index(
+            response = self.dynamo_service.query_table(
                 table_name=self.table_name,
                 index_name="OdsCodeIndex",
                 search_key=DocumentReferenceMetadataFields.CURRENT_GP_ODS.value,

@@ -115,7 +115,9 @@ class LloydGeorgeStitchJobService:
                     totalFileSizeInBytes=stitch_trace.total_file_size_in_bytes,
                 )
 
-    def validate_stitch_trace(self, stitch_trace_dynamo_response: list) -> list[StitchTrace] | None:
+    def validate_stitch_trace(
+        self, stitch_trace_dynamo_response: list
+    ) -> list[StitchTrace] | None:
         try:
             if not stitch_trace_dynamo_response:
                 return None
@@ -148,7 +150,7 @@ class LloydGeorgeStitchJobService:
             attr_operator=AttributeOperator.EQUAL,
             filter_value=False,
         ).build()
-        response = self.dynamo_service.query_table_by_index(
+        response = self.dynamo_service.query_table(
             table_name=self.stitch_trace_table,
             index_name="NhsNumberIndex",
             search_key="NhsNumber",

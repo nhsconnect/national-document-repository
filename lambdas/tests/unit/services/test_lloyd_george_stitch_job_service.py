@@ -3,9 +3,8 @@ from unittest import mock
 
 import pytest
 from botocore.exceptions import ClientError
-from freezegun import freeze_time
-
 from enums.trace_status import TraceStatus
+from freezegun import freeze_time
 from models.stitch_trace import StitchTrace
 from services.lloyd_george_stitch_job_service import LloydGeorgeStitchJobService
 from tests.unit.conftest import STITCH_METADATA_DYNAMODB_NAME_VALUE, TEST_NHS_NUMBER
@@ -108,14 +107,14 @@ def test_query_stitch_trace_with_nhs_number(stitch_service, mocker):
         {"NhsNumber": TEST_NHS_NUMBER, "Deleted": False, "Data": "More data"},
     ]
 
-    stitch_service.dynamo_service.query_table_by_index.return_value = mock_response
+    stitch_service.dynamo_service.query_table.return_value = mock_response
 
     stitch_service.validate_stitch_trace = mocker.MagicMock(return_value=mock_response)
 
     result = stitch_service.query_stitch_trace_with_nhs_number(TEST_NHS_NUMBER)
     assert result == mock_response
 
-    stitch_service.dynamo_service.query_table_by_index.assert_called_once_with(
+    stitch_service.dynamo_service.query_table.assert_called_once_with(
         table_name=STITCH_METADATA_DYNAMODB_NAME_VALUE,
         index_name="NhsNumberIndex",
         search_key="NhsNumber",
@@ -309,11 +308,10 @@ def test_validate_latest_stitch_trace_success(stitch_service):
         nhs_number=TEST_NHS_NUMBER, expire_at=222222222, job_status=TraceStatus.FAILED
     )
 
-    mock_response =  [
-            mock_stitch_trace_1.model_dump(by_alias=True),
-            mock_stitch_trace_2.model_dump(by_alias=True),
-        ]
-
+    mock_response = [
+        mock_stitch_trace_1.model_dump(by_alias=True),
+        mock_stitch_trace_2.model_dump(by_alias=True),
+    ]
 
     result = stitch_service.validate_stitch_trace(mock_response)
 

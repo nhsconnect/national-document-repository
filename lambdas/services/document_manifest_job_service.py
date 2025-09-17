@@ -170,7 +170,7 @@ class DocumentManifestJobService:
             attr_operator=AttributeOperator.EQUAL,
             filter_value=nhs_number,
         ).build()
-        response = self.dynamo_service.query_table_by_index(
+        response = self.dynamo_service.query_table(
             table_name=self.zip_trace_table,
             index_name="JobIdIndex",
             search_key="JobId",

@@ -299,8 +299,8 @@ MOCK_DYNAMODB_ITEMS = (
 )
 
 MOCK_DYNAMODB_QUERY_RESPONSE = [
-    {"Items": [item for item in MOCK_DYNAMODB_ITEMS if item["Date"] == "20240510"]},
-    {"Items": [item for item in MOCK_DYNAMODB_ITEMS if item["Date"] == "20240511"]},
+    [item for item in MOCK_DYNAMODB_ITEMS if item["Date"] == "20240510"],
+    [item for item in MOCK_DYNAMODB_ITEMS if item["Date"] == "20240511"],
 ]
 
 EXPECTED_WEEKLY_SUMMARY = pl.DataFrame(
