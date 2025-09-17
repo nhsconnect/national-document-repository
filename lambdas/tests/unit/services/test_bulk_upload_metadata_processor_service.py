@@ -6,7 +6,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.upload_status import UploadStatus
 from freezegun import freeze_time
-from models.staging_metadata import METADATA_FILENAME
+from models.staging_metadata import METADATA_FILENAME, MetadataFile
 from services.bulk_upload_metadata_processor_service import BulkUploadMetadataProcessorService
 from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE
 from tests.unit.helpers.data.bulk_upload.test_data import (
@@ -78,6 +78,22 @@ def mock_sqs_service(mocker):
     ).return_value
     yield patched_instance
 
+@pytest.fixture
+def base_metadata_file():
+    row = {
+        "FILEPATH": "valid/path/to/file.pdf",
+        "GP-PRACTICE-CODE": "Y12345",
+        "NHS-NO": "1234567890",
+        "PAGE COUNT": "1",
+        "SECTION": "LG",
+        "SUB-SECTION": "",
+        "SCAN-DATE": "02/01/2023",
+        "SCAN-ID": "SID456",
+        "USER-ID": "UID456",
+        "UPLOAD": "02/01/2023",
+    }
+
+    return MetadataFile.model_validate(row)
 
 def test_validate_record_filename_successful(test_service, mocker):
     original_filename = "/M89002/01 of 02_Lloyd_George_Record_[Dwayne The Rock Johnson]_[9730787506]_[18-09-1974].pdf"
@@ -519,27 +535,22 @@ def test_process_metadata_row_adds_to_existing_entry(mocker, metadata_processor_
     assert metadata_processor_service.corrections["/some/path/file2.pdf"] == "fixed_file2.pdf"
 
 
-def test_extract_patient_info(metadata_processor_service):
-    row = {
-        "NHS-NO": "1234567890",
-        "GP-PRACTICE-CODE": "Y12345",
-    }
+def test_extract_patient_info(metadata_processor_service, base_metadata_file):
 
-    nhs_number, ods_code = metadata_processor_service.extract_patient_info(row)
+    nhs_number, ods_code = metadata_processor_service.extract_patient_info(base_metadata_file)
 
     assert nhs_number == "1234567890"
     assert ods_code == "Y12345"
 
 
-def test_validate_correct_filename_valid_filename(mocker, metadata_processor_service):
-    row = {"FILEPATH": "valid/path/to/file.pdf"}
+def test_validate_correct_filename_valid_filename(mocker, metadata_processor_service, base_metadata_file):
     mocker.patch.object(
         metadata_processor_service,
         "validate_record_filename",
         return_value="corrected_file.pdf",
     )
 
-    metadata_processor_service.validate_correct_filename(row)
+    metadata_processor_service.validate_correct_filename(base_metadata_file)
 
     assert (
             metadata_processor_service.corrections["valid/path/to/file.pdf"] == "corrected_file.pdf"
@@ -547,7 +558,7 @@ def test_validate_correct_filename_valid_filename(mocker, metadata_processor_ser
 
 
 def test_handle_invalid_filename_writes_failed_entry_to_dynamo(
-    mocker, metadata_processor_service
+    mocker, metadata_processor_service,
 ):
     key = ("1234567890", "Y12345")
     row = {"FILEPATH": "bad_file.pdf"}
