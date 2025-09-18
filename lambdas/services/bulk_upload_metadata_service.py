@@ -104,10 +104,9 @@ class BulkUploadMetadataService:
     def send_metadata_to_fifo_sqs(
         self, staging_metadata_list: list[StagingMetadata]
     ) -> None:
-        sqs_group_id = f"bulk_upload_{uuid.uuid4()}"
-
         for staging_metadata in staging_metadata_list:
             nhs_number = staging_metadata.nhs_number
+            sqs_group_id = f"bulk_upload_{uuid.uuid4()}_{staging_metadata.nhs_number}"
             logger.info(f"Sending metadata for patientId: {nhs_number}")
 
             self.sqs_service.send_message_with_nhs_number_attr_fifo(
