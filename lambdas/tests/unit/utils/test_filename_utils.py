@@ -171,8 +171,8 @@ def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format():
             InvalidFileNameException,
         ),
         ("_9000000001_11_12_2025.csv", ("9000000001", "_11_12_2025.csv"), None),
-        ("_900000000111_12_2025.csv", ("9000000001", "11_12_2025.csv"), None),
-        ("900-000-000111.10.2010", ("9000000001", "11.10.2010"), None),
+        ("_900000000111_12_2025.csv", None, InvalidFileNameException),
+        ("900-000-000111.10.2010", None, InvalidFileNameException),
         (
             "9876543210 Test Patient Name 01-Jan-2022",
             ("9876543210", " Test Patient Name 01-Jan-2022"),

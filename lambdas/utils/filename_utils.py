@@ -2,6 +2,7 @@ import datetime
 import os
 
 from regex import regex
+
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidFileNameException
 
@@ -125,7 +126,7 @@ def extract_nhs_number_from_bulk_upload_file_name(
     Raises:
         InvalidFileNameException: If the NHS number is invalid or not found.
     """
-    nhs_number_expression = r"((?:[^_]*?\d){10})(.*)"
+    nhs_number_expression = r"(?<!\d)((?:[^\d_]*\d){10})(?!\d)(.*)"
     expression_result = regex.search(rf"{nhs_number_expression}", file_path)
 
     if expression_result is None:
