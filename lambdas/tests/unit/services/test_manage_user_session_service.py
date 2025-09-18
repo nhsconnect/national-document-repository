@@ -236,7 +236,7 @@ def test_find_login_session(mocker, mock_service):
             }
         ],
     }
-    dynamo_service = mocker.patch.object(mock_service.db_service, "query_all_fields")
+    dynamo_service = mocker.patch.object(mock_service.db_service, "query_table")
     dynamo_service.return_value = valid_session_record
 
     actual = mock_service.find_login_session(MOCK_SESSION_ID)
@@ -248,7 +248,7 @@ def test_find_login_session_raises_auth_exception(mocker, mock_service):
     invalid_session_record = {
         "Count": 1,
     }
-    dynamo_service = mocker.patch.object(mock_service.db_service, "query_all_fields")
+    dynamo_service = mocker.patch.object(mock_service.db_service, "query_table")
     dynamo_service.return_value = invalid_session_record
 
     with pytest.raises(AuthorisationException):
