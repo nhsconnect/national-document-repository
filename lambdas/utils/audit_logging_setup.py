@@ -12,7 +12,6 @@ class LoggingService:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
 
-        # Attach stdout handler if not already present
         if not self.logger.handlers:
             handler = logging.StreamHandler(sys.stdout)
             handler.setFormatter(LoggingFormatter())
