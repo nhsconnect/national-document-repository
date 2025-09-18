@@ -106,6 +106,7 @@ class DataCollectionService:
 
         logger.info("Finish writing all data to dynamodb table")
 
+
     def scan_dynamodb_tables(self) -> list[dict]:
         all_results = []
 
