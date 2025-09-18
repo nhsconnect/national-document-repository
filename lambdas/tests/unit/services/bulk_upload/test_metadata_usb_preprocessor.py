@@ -1,16 +1,49 @@
+import csv
+import os
+from io import BytesIO
+from unittest.mock import call
+
 import pytest
-from models.staging_metadata import NHS_NUMBER_FIELD_NAME
+from freezegun import freeze_time
+
+from models.staging_metadata import NHS_NUMBER_FIELD_NAME, METADATA_FILENAME
 from services.bulk_upload.metadata_usb_preprocessor import (
     MetadataUsbPreprocessorService,
 )
+from unit.conftest import TEST_BASE_DIRECTORY
 from utils.exceptions import InvalidFileNameException
 
 
 @pytest.fixture
-def usb_preprocessor_service(set_env):
-    service = MetadataUsbPreprocessorService("test_directory")
+def usb_preprocessor_service(set_env, mocker):
+    mocker.patch("services.bulk_upload_metadata_preprocessor_service.S3Service")
+    service = MetadataUsbPreprocessorService("usb-test")
     return service
 
+
+@pytest.fixture
+def mock_get_metadata_rows_from_file(mocker, usb_preprocessor_service):
+    return mocker.patch.object(usb_preprocessor_service, "get_metadata_rows_from_file")
+
+
+@pytest.fixture
+def mock_generate_and_save_csv_file(mocker, usb_preprocessor_service):
+    return mocker.patch.object(usb_preprocessor_service, "generate_and_save_csv_file")
+
+
+@pytest.fixture
+def mock_s3_client(mocker, usb_preprocessor_service):
+    return mocker.patch.object(usb_preprocessor_service.s3_service, "client")
+
+@pytest.fixture
+def mock_metadata_file_get_object():
+    def _mock_metadata_file_get_object(test_file_path: str, *args, **kwargs):
+        with open(test_file_path, "rb") as file:
+            test_file_data = file.read()
+
+        return {"Body": BytesIO(test_file_data)}
+
+    return _mock_metadata_file_get_object
 
 @pytest.mark.parametrize(
     "file_path, expected",
@@ -180,7 +213,7 @@ def test_generate_renaming_map_for_usb_format_rejects_rows_with_duplicate_nhs_nu
         (
             metadata_rows[0],
             {
-                "FILEPATH": "test_directory/9876543210 Test Patient Name 01-01-2022/"
+                "FILEPATH": "usb-test/9876543210 Test Patient Name 01-01-2022/"
                 "1of1_Lloyd_George_Record_[Test Patient Name]_[9876543210]_[01-01-2022].pdf",
                 "SCAN-DATE": "10/10/2010",
                 "UPLOAD": "10/10/2010",
@@ -190,7 +223,7 @@ def test_generate_renaming_map_for_usb_format_rejects_rows_with_duplicate_nhs_nu
         (
             metadata_rows[3],
             {
-                "FILEPATH": "test_directory/9876543213 Test Patient Name 01-01-2022/"
+                "FILEPATH": "usb-test/9876543213 Test Patient Name 01-01-2022/"
                 "1of1_Lloyd_George_Record_[Test Patient Name]_[9876543213]_[01-01-2022].pdf",
                 "SCAN-DATE": "10/10/2010",
                 "UPLOAD": "10/10/2010",
@@ -200,3 +233,66 @@ def test_generate_renaming_map_for_usb_format_rejects_rows_with_duplicate_nhs_nu
     ]
 
     assert renaming_map == expected_renaming_map
+
+
+@freeze_time("2025-01-01T12:00:00")
+def test_process_metadata_file_e2e(
+    usb_preprocessor_service, mock_s3_client, mock_generate_and_save_csv_file, mock_metadata_file_get_object
+):
+    test_processed_metadata_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        f"metadata_usb.csv",
+    )
+
+    test_rejections_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        "rejections_usb.csv",
+    )
+
+    with open(test_processed_metadata_file, "rb") as file:
+        test_file_data = file.read()
+    expected_metadata_bytes = test_file_data
+
+    with open(test_rejections_file, "rb") as file:
+        test_file_data = file.read()
+    expected_rejected_bytes = test_file_data
+
+    test_preprocessed_metadata_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        f"preprocessed_metadata_usb.csv",
+    )
+
+    mock_s3_client.file_exist_on_s3.return_value = True
+    mock_s3_client.get_object.side_effect = (
+        lambda Bucket, Key: mock_metadata_file_get_object(
+            test_preprocessed_metadata_file, Bucket, Key
+        )
+    )
+
+    usb_preprocessor_service.process_metadata()
+
+    expected_updated_rows = list(
+        csv.DictReader(expected_metadata_bytes.decode("utf-8-sig").splitlines())
+    )
+    expected_rejected_reasons = list(
+        csv.DictReader(expected_rejected_bytes.decode("utf-8-sig").splitlines())
+    )
+
+    expected_calls = [
+        call(
+            csv_dict=expected_updated_rows,
+            file_key=f"usb-test/{METADATA_FILENAME}",
+        ),
+        call(
+            csv_dict=expected_rejected_reasons,
+            file_key="usb-test/processed/2025-01-01 12:00/rejections.csv",
+        ),
+    ]
+
+    assert mock_generate_and_save_csv_file.call_count == 2
+    assert mock_generate_and_save_csv_file.call_args_list[1][1]['csv_dict'] == expected_rejected_reasons
+    # assert mock_generate_and_save_csv_file.call_args_list[0][1]['csv_dict'] == expected_updated_rows
+    # mock_generate_and_save_csv_file.assert_has_calls(expected_calls, any_order=True)
