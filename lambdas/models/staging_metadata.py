@@ -19,6 +19,7 @@ class MetadataFile(BaseModel):
     )
 
     file_path: str = Field(alias="FILEPATH")
+    stored_file_name: Optional[str] = Field(alias= "STORED_FILE_NAME", default=None)
     page_count: str = Field(alias="PAGE COUNT")
     nhs_number: Optional[str] = Field(
         alias=NHS_NUMBER_FIELD_NAME, exclude=True, default=None
