@@ -489,6 +489,10 @@ def test_process_metadata_row_success(mocker, metadata_processor_service):
         return_value=mock_metadata,
     )
 
+    mock_metadata.nhs_number = "1234567890"
+    mock_metadata.gp_practice_code = "Y12345"
+    mock_metadata.file_path = "/some/path/file.pdf"
+
     mocker.patch.object(
         metadata_processor_service, "validate_record_filename", return_value="corrected.pdf"
     )
@@ -520,10 +524,17 @@ def test_process_metadata_row_adds_to_existing_entry(mocker, metadata_processor_
     }
 
     mock_metadata = mocker.Mock()
+
+    mock_metadata.nhs_number = "1234567890"
+    mock_metadata.gp_practice_code = "Y12345"
+    mock_metadata.file_path = "/some/path/file2.pdf"
+
     mocker.patch(
         f"{SERVICE_PATH}.MetadataFile.model_validate",
         return_value=mock_metadata,
     )
+
+
     mocker.patch.object(
         metadata_processor_service, "validate_record_filename", return_value="fixed_file2.pdf"
     )
@@ -558,10 +569,9 @@ def test_validate_correct_filename_valid_filename(mocker, metadata_processor_ser
 
 
 def test_handle_invalid_filename_writes_failed_entry_to_dynamo(
-    mocker, metadata_processor_service,
+    mocker, metadata_processor_service, base_metadata_file
 ):
     key = ("1234567890", "Y12345")
-    row = {"FILEPATH": "bad_file.pdf"}
     error = InvalidFileNameException("Invalid filename format")
 
     fake_file = mocker.Mock()
@@ -575,7 +585,7 @@ def test_handle_invalid_filename_writes_failed_entry_to_dynamo(
         metadata_processor_service.dynamo_repository, "write_report_upload_to_dynamo"
     )
 
-    metadata_processor_service.handle_invalid_filename(row, error, key, patients)
+    metadata_processor_service.handle_invalid_filename(base_metadata_file, error, key, patients)
 
     mock_staging_metadata.assert_called_once_with(
         nhs_number=key[0],
