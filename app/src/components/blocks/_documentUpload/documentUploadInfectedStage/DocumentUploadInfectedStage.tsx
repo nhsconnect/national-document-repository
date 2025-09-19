@@ -22,7 +22,7 @@ const DocumentUploadInfectedStage = (): React.JSX.Element => {
             <p>
                 <button
                     className="govuk-link"
-                    onClick={(e) => {
+                    onClick={(e): void => {
                         e.preventDefault();
                         navigate(routes.HOME, { replace: true });
                     }}
