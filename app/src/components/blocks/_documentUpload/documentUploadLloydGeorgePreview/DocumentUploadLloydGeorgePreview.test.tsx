@@ -39,8 +39,9 @@ describe('DocumentUploadCompleteStage', () => {
 
     describe('Rendering', () => {
         it('renders without documents', async () => {
-            // Ensure the async merger resolves immediately (effect will run)
-            vi.mocked(getMergedPdfBlob).mockResolvedValue(new Blob([''], { type: 'application/pdf' }));
+            vi.mocked(getMergedPdfBlob).mockResolvedValue(
+                new Blob([''], { type: 'application/pdf' }),
+            );
 
             await act(async () => {
                 render(
@@ -51,7 +52,6 @@ describe('DocumentUploadCompleteStage', () => {
                 );
             });
 
-            // When no documents are provided, viewer should not render
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
         });
 
@@ -69,10 +69,8 @@ describe('DocumentUploadCompleteStage', () => {
                 );
             });
 
-            // Await viewer render (implicit act)
             expect(await screen.findByTestId('pdf-viewer')).toBeInTheDocument();
 
-            // Ensure callback invoked with merged blob
             await waitFor(() => {
                 expect(mockSetMergedPdfBlob).toHaveBeenCalledWith(mockBlob);
             });
