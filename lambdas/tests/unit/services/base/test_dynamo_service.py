@@ -1,9 +1,10 @@
-from typing import Optional
+import copy
 from unittest.mock import call
 
 import pytest
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
+
 from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.base.dynamo_service import DynamoDBService
@@ -25,6 +26,7 @@ def mock_service(set_env, mocker):
     mocker.patch("boto3.resource")
     service = DynamoDBService()
     yield service
+    DynamoDBService.instance = None
 
 
 @pytest.fixture
@@ -54,6 +56,18 @@ def mock_filter_expression():
         filter_value="",
     ).build()
     yield filter_expression
+
+def mock_scan_implementation(
+    **kwargs
+):
+    key = kwargs.get("ExclusiveStartKey")
+    if not key:
+        return copy.deepcopy(MOCK_PAGINATED_RESPONSE_1)
+    elif key.get("ID") == "id_token_for_page_2":
+        return copy.deepcopy(MOCK_PAGINATED_RESPONSE_2)
+    elif key.get("ID") == "id_token_for_page_3":
+        return copy.deepcopy(MOCK_PAGINATED_RESPONSE_3)
+    return None
 
 
 def test_query_with_requested_fields_returns_items_from_dynamo(
@@ -492,16 +506,6 @@ def test_scan_whole_table_return_items_in_response(
 def test_scan_whole_table_handles_pagination(
     mock_service, mock_scan_method, mock_filter_expression
 ):
-    def mock_scan_implementation(
-        ExclusiveStartKey: Optional[dict[str, str]] = None, **_kwargs
-    ):
-        if not ExclusiveStartKey:
-            return MOCK_PAGINATED_RESPONSE_1
-        elif ExclusiveStartKey.get("ID") == "id_token_for_page_2":
-            return MOCK_PAGINATED_RESPONSE_2
-        elif ExclusiveStartKey.get("ID") == "id_token_for_page_3":
-            return MOCK_PAGINATED_RESPONSE_3
-
     mock_project_expression = "mock_project_expression"
     mock_scan_method.side_effect = mock_scan_implementation
 
@@ -577,3 +581,32 @@ def test_dynamo_service_singleton_instance(mocker):
     instance_2 = DynamoDBService()
 
     assert instance_1 is instance_2
+
+
+def test_query_with_pagination(mock_service, mock_table):
+    mock_table.return_value.query.side_effect = mock_scan_implementation
+    expected_result = EXPECTED_ITEMS_FOR_PAGINATED_RESULTS
+    search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
+
+    expected_calls = [
+        call(
+            KeyConditionExpression=search_key_obj,
+        ),
+        call(
+            KeyConditionExpression=search_key_obj,
+            ExclusiveStartKey={"ID": "id_token_for_page_2"},
+        ),
+        call(
+            KeyConditionExpression=search_key_obj,
+            ExclusiveStartKey={"ID": "id_token_for_page_3"},
+        ),
+    ]
+
+    actual = mock_service.query_with_pagination(
+        table_name=MOCK_TABLE_NAME,
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
+    )
+    assert expected_result == actual
+    mock_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_table.return_value.query.assert_has_calls(expected_calls)
