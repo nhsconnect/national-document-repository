@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-
 from utils.exceptions import InvalidFileNameException
 from utils.filename_utils import (
     assemble_lg_valid_file_name_full_path,
@@ -151,8 +150,7 @@ def test_correctly_extract_date_from_bulk_upload_file_name(input, expected):
 
 
 @pytest.mark.parametrize(
-    "invalid_data",
-    [" 01-Nov-11992.pdf", "_32-12-2023.pdf", "_13-13-2023.pdf"]
+    "invalid_data", [" 01-Nov-11992.pdf", "_32-12-2023.pdf", "_13-13-2023.pdf"]
 )
 def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(
     invalid_data,

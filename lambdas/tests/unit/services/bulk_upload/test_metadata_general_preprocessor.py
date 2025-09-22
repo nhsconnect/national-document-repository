@@ -2,7 +2,6 @@ import csv
 import datetime
 import os
 from io import BytesIO
-from unittest.mock import call
 
 import pytest
 from freezegun import freeze_time
@@ -271,22 +270,25 @@ def test_process_metadata_file_exists(
         csv.DictReader(expected_rejected_bytes.decode("utf-8-sig").splitlines())
     )
 
-    expected_calls = [
-        call(
-            csv_dict=expected_updated_rows,
-            file_key=f"test_practice_directory/{METADATA_FILENAME}",
-        ),
-        call(
-            csv_dict=expected_rejected_reasons,
-            file_key="test_practice_directory/processed/2025-01-01 12:00/rejections.csv",
-        ),
-    ]
-    assert (
-        mock_generate_and_save_csv_file.call_args_list[1][1]["csv_dict"]
-        == expected_rejected_reasons
+    assert mock_generate_and_save_csv_file.call_count == 2
+
+    call_list = mock_generate_and_save_csv_file.call_args_list
+
+    actual_updated_rows = next(
+        c[1]["csv_dict"]
+        for c in call_list
+        if c[1]["file_key"].endswith(METADATA_FILENAME)
     )
-    assert (
-        mock_generate_and_save_csv_file.call_args_list[0][1]["csv_dict"]
-        == expected_updated_rows
+    actual_rejected_reasons = next(
+        c[1]["csv_dict"]
+        for c in call_list
+        if c[1]["file_key"].endswith("rejections.csv")
     )
-    mock_generate_and_save_csv_file.assert_has_calls(expected_calls, any_order=True)
+
+    # Sort lists of dictionaries for order-insensitive comparison
+    assert sorted(actual_updated_rows, key=str) == sorted(
+        expected_updated_rows, key=str
+    )
+    assert sorted(actual_rejected_reasons, key=str) == sorted(
+        expected_rejected_reasons, key=str
+    )

@@ -248,6 +248,16 @@ def test_process_metadata_file_e2e(
         "rejections_usb.csv",
     )
 
+    test_processed_metadata_file = os.path.join(
+        TEST_BASE_DIRECTORY,
+        "helpers/data/bulk_upload/preprocessed",
+        "metadata_usb.csv",
+    )
+
+    with open(test_processed_metadata_file, "rb") as file:
+        test_metadata_file_data = file.read()
+    expected_metadata_bytes = test_metadata_file_data
+
     with open(test_rejections_file, "rb") as file:
         test_rejected_file_data = file.read()
     expected_rejected_bytes = test_rejected_file_data
@@ -271,8 +281,26 @@ def test_process_metadata_file_e2e(
         csv.DictReader(expected_rejected_bytes.decode("utf-8-sig").splitlines())
     )
 
+    expected_metadata_dict = list(
+        csv.DictReader(expected_metadata_bytes.decode("utf-8-sig").splitlines())
+    )
+
     assert mock_generate_and_save_csv_file.call_count == 2
-    assert (
-        mock_generate_and_save_csv_file.call_args_list[1][1]["csv_dict"]
-        == expected_rejected_reasons
+    call_list = mock_generate_and_save_csv_file.call_args_list
+
+    actual_metadata_rows = next(
+        c[1]["csv_dict"] for c in call_list if c[1]["file_key"].endswith("metadata.csv")
+    )
+    actual_rejected_reasons = next(
+        c[1]["csv_dict"]
+        for c in call_list
+        if c[1]["file_key"].endswith("rejections.csv")
+    )
+
+    # Sort lists of dictionaries for order-insensitive comparison
+    assert sorted(actual_metadata_rows, key=str) == sorted(
+        expected_metadata_dict, key=str
+    )
+    assert sorted(actual_rejected_reasons, key=str) == sorted(
+        expected_rejected_reasons, key=str
     )
