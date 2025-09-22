@@ -281,5 +281,12 @@ def test_process_metadata_file_exists(
             file_key="test_practice_directory/processed/2025-01-01 12:00/rejections.csv",
         ),
     ]
-
+    assert (
+        mock_generate_and_save_csv_file.call_args_list[1][1]["csv_dict"]
+        == expected_rejected_reasons
+    )
+    assert (
+        mock_generate_and_save_csv_file.call_args_list[0][1]["csv_dict"]
+        == expected_updated_rows
+    )
     mock_generate_and_save_csv_file.assert_has_calls(expected_calls, any_order=True)
