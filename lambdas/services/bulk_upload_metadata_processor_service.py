@@ -42,7 +42,7 @@ class BulkUploadMetadataProcessorService:
 
         self.temp_download_dir = tempfile.mkdtemp()
 
-        self.corrections = {}
+        # self.corrections = {}
         self.practice_directory = practice_directory
         self.file_key = f"{self.practice_directory}/{METADATA_FILENAME}"
         self.metadata_preprocessor_service = MetadataPreprocessorService(
@@ -119,7 +119,7 @@ class BulkUploadMetadataProcessorService:
             patients[patient_record_key].append(file_metadata)
 
         try:
-            self.validate_correct_filename(file_metadata)
+            file_metadata.stored_file_name = self.validate_correct_filename(file_metadata)
         except InvalidFileNameException as error:
             self.handle_invalid_filename(file_metadata, error, patient_record_key, patients)
 
@@ -131,10 +131,14 @@ class BulkUploadMetadataProcessorService:
     def validate_correct_filename(
         self,
         file_metadata: MetadataFile,
-    ) -> None:
-        valid_filename = self.validate_record_filename(file_metadata.file_path)
-        if valid_filename:
-            self.corrections[file_metadata.file_path] = valid_filename
+    ) -> str:
+        file_name = file_metadata.file_path
+        return self.validate_record_filename(file_name)
+        # return valid_filename
+        # if valid_filename:
+        #     self.corrections[file_metadata.file_path] = valid_filename
+        #     return valid_filename
+        # return ""
 
     def handle_invalid_filename(
         self,
@@ -244,5 +248,4 @@ class BulkUploadMetadataProcessorService:
         if file_name_correction:
             logger.info(f"Finished processing, new file name is: {file_name}")
             return file_name_correction
-        else:
-            return ""
+        return file_name

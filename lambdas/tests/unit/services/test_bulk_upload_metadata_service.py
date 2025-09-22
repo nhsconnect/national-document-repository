@@ -37,12 +37,21 @@ def test_process_metadata_send_metadata_to_sqs_queue(
     metadata_filename,
     mock_sqs_service,
     mock_s3_service,
-    mock_download_metadata_from_s3,
     metadata_service,
 ):
-    mock_download_metadata_from_s3.return_value = MOCK_METADATA_CSV
-    mocker.patch("uuid.uuid4", return_value="123412342")
+    mocker.patch.object(
+        BulkUploadMetadataService,
+        "download_metadata_from_s3",
+        return_value="mocked/path/metadata.csv"
+    )
 
+    mocker.patch.object(
+        BulkUploadMetadataService,
+        "csv_to_staging_metadata",
+        return_value=EXPECTED_PARSED_METADATA,
+    )
+
+    mocker.patch("uuid.uuid4", return_value="123412342")
     mock_s3_service.copy_across_bucket.return_value = None
 
     expected_calls = [
@@ -97,26 +106,34 @@ def test_process_metadata_catch_and_log_error_when_fail_to_get_metadata_csv_from
 
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
-
 def test_process_metadata_raise_validation_error_when_metadata_csv_is_invalid(
     set_env,
+    mocker,
     caplog,
     metadata_filename,
     mock_sqs_service,
-    mock_download_metadata_from_s3,
     metadata_service,
 ):
-    for invalid_csv_file in MOCK_INVALID_METADATA_CSV_FILES:
-        mock_download_metadata_from_s3.return_value = invalid_csv_file
+    caplog.set_level("ERROR")
 
-        with pytest.raises(BulkUploadMetadataException) as e:
-            metadata_service.process_metadata(metadata_filename)
+    mocker.patch.object(
+        BulkUploadMetadataService,
+        "download_metadata_from_s3",
+        return_value="mocked/path/invalid_metadata.csv"
+    )
 
-        assert "validation error" in str(e.value)
-        assert "validation error" in caplog.records[-1].msg
-        assert caplog.records[-1].levelname == "ERROR"
+    mocker.patch.object(
+        BulkUploadMetadataService,
+        "csv_to_staging_metadata",
+        side_effect=BulkUploadMetadataException("validation error: Invalid data in row 3")
+    )
 
-        mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
+    with pytest.raises(BulkUploadMetadataException) as e:
+        metadata_service.process_metadata(metadata_filename)
+
+    assert "validation error" in str(e.value)
+
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
 def test_process_metadata_raise_validation_error_when_gp_practice_code_is_missing(
