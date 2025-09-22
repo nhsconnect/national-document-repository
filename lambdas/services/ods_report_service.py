@@ -108,7 +108,7 @@ class OdsReportService:
                 search_condition=ods_code,
                 query_filter=NotDeleted,
             )
-            results += response
+            results.extend(response)
 
         if not results:
             logger.info("No records found for ODS code {}".format(ods_code))

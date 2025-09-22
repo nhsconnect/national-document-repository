@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timezone
+from typing import Generator
 
 from boto3.dynamodb.conditions import Attr, ConditionBase
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -48,7 +49,7 @@ class DocumentService:
             query_filter=query_filter,
         )
 
-        return documents
+        return list(documents)
 
     def fetch_documents_from_table(
         self,
@@ -57,9 +58,7 @@ class DocumentService:
         search_key: str,
         index_name: str = None,
         query_filter: Attr | ConditionBase = None,
-    ) -> list[DocumentReference]:
-        documents = []
-
+    ) -> Generator[DocumentReference, None, None]:
         response = self.dynamo_service.query_table(
             table_name=table,
             index_name=index_name,
@@ -70,12 +69,11 @@ class DocumentService:
         for item in response:
             try:
                 document = DocumentReference.model_validate(item)
-                documents.append(document)
+                yield document
             except ValidationError as e:
                 logger.error(f"Validation error on document: {item}")
                 logger.error(f"{e}")
                 continue
-        return documents
 
     def get_nhs_numbers_based_on_ods_code(self, ods_code: str) -> list[str]:
         documents = self.fetch_documents_from_table(
