@@ -1,12 +1,11 @@
 import csv
 import os
 from io import BytesIO
-from unittest.mock import call
 
 import pytest
 from freezegun import freeze_time
 
-from models.staging_metadata import NHS_NUMBER_FIELD_NAME, METADATA_FILENAME
+from models.staging_metadata import NHS_NUMBER_FIELD_NAME
 from services.bulk_upload.metadata_usb_preprocessor import (
     MetadataUsbPreprocessorService,
 )
@@ -35,6 +34,7 @@ def mock_generate_and_save_csv_file(mocker, usb_preprocessor_service):
 def mock_s3_client(mocker, usb_preprocessor_service):
     return mocker.patch.object(usb_preprocessor_service.s3_service, "client")
 
+
 @pytest.fixture
 def mock_metadata_file_get_object():
     def _mock_metadata_file_get_object(test_file_path: str, *args, **kwargs):
@@ -44,6 +44,7 @@ def mock_metadata_file_get_object():
         return {"Body": BytesIO(test_file_data)}
 
     return _mock_metadata_file_get_object
+
 
 @pytest.mark.parametrize(
     "file_path, expected",
@@ -237,12 +238,15 @@ def test_generate_renaming_map_for_usb_format_rejects_rows_with_duplicate_nhs_nu
 
 @freeze_time("2025-01-01T12:00:00")
 def test_process_metadata_file_e2e(
-    usb_preprocessor_service, mock_s3_client, mock_generate_and_save_csv_file, mock_metadata_file_get_object
+    usb_preprocessor_service,
+    mock_s3_client,
+    mock_generate_and_save_csv_file,
+    mock_metadata_file_get_object,
 ):
     test_processed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
         "helpers/data/bulk_upload/preprocessed",
-        f"metadata_usb.csv",
+        "metadata_usb.csv",
     )
 
     test_rejections_file = os.path.join(
@@ -262,7 +266,7 @@ def test_process_metadata_file_e2e(
     test_preprocessed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
         "helpers/data/bulk_upload/preprocessed",
-        f"preprocessed_metadata_usb.csv",
+        "preprocessed_metadata_usb.csv",
     )
 
     mock_s3_client.file_exist_on_s3.return_value = True
@@ -281,17 +285,8 @@ def test_process_metadata_file_e2e(
         csv.DictReader(expected_rejected_bytes.decode("utf-8-sig").splitlines())
     )
 
-    expected_calls = [
-        call(
-            csv_dict=expected_updated_rows,
-            file_key=f"usb-test/{METADATA_FILENAME}",
-        ),
-        call(
-            csv_dict=expected_rejected_reasons,
-            file_key="usb-test/processed/2025-01-01 12:00/rejections.csv",
-        ),
-    ]
-
     assert mock_generate_and_save_csv_file.call_count == 2
-    assert mock_generate_and_save_csv_file.call_args_list[1][1]['csv_dict'] == expected_rejected_reasons
-
+    assert (
+        mock_generate_and_save_csv_file.call_args_list[1][1]["csv_dict"]
+        == expected_rejected_reasons
+    )
