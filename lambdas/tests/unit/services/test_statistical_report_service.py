@@ -5,8 +5,9 @@ from unittest.mock import call
 import polars as pl
 import pytest
 from freezegun import freeze_time
-from models.report.statistics import ApplicationData
 from polars.testing import assert_frame_equal
+
+from models.report.statistics import ApplicationData
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.statistical_report_service import StatisticalReportService
@@ -103,7 +104,9 @@ def test_make_weekly_summary(set_env, mocker):
 
 def test_get_statistic_data(mock_dynamodb_service, mock_service):
     mock_service.dates_to_collect = ["20240510", "20240511"]
-    mock_dynamodb_service.query_table.side_effect = MOCK_DYNAMODB_QUERY_RESPONSE
+    mock_dynamodb_service.query_with_pagination.side_effect = (
+        MOCK_DYNAMODB_QUERY_RESPONSE
+    )
 
     actual = mock_service.get_statistic_data()
     expected = ALL_MOCKED_STATISTIC_DATA
@@ -122,9 +125,7 @@ def test_get_statistic_data(mock_dynamodb_service, mock_service):
             search_condition="20240511",
         ),
     ]
-
-    mock_dynamodb_service.query_table.assert_has_calls(expected_calls)
-
+    mock_dynamodb_service.query_with_pagination.assert_has_calls(expected_calls)
 
 def test_get_statistic_data_raise_error_if_all_data_are_empty(
     mock_dynamodb_service, mock_service

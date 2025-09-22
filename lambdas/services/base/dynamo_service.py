@@ -81,6 +81,51 @@ class DynamoDBService:
             logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e
 
+    def query_with_pagination(
+        self, table_name: str, search_key: str, search_condition: str
+    ):
+
+        try:
+            table = self.get_table(table_name)
+            results = table.query(
+                KeyConditionExpression=Key(search_key).eq(search_condition)
+            )
+            if results is None or "Items" not in results:
+                logger.error(f"Unusable results in DynamoDB: {results!r}")
+                raise DynamoServiceException("Unrecognised response from DynamoDB")
+
+            dynamodb_scan_result = results["Items"]
+
+            while "LastEvaluatedKey" in results:
+                start_key_for_next_page = results["LastEvaluatedKey"]
+                results = table.query(
+                    KeyConditionExpression=Key(search_key).eq(search_condition),
+                    ExclusiveStartKey=start_key_for_next_page,
+                )
+                dynamodb_scan_result.extend(results["Items"])
+            return dynamodb_scan_result
+
+        except ClientError as e:
+            logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
+            raise e
+
+    def query_all_fields(self, table_name: str, search_key: str, search_condition: str):
+        """
+        Allow querying dynamodb table without explicitly defining the fields to retrieve.
+        """
+        try:
+            table = self.get_table(table_name)
+            results = table.query(
+                KeyConditionExpression=Key(search_key).eq(search_condition)
+            )
+            if results is None or "Items" not in results:
+                logger.error(f"Unusable results in DynamoDB: {results!r}")
+                raise DynamoServiceException("Unrecognised response from DynamoDB")
+            return results
+        except ClientError as e:
+            logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
+            raise e
+
     def create_item(self, table_name, item):
         try:
             table = self.get_table(table_name)
