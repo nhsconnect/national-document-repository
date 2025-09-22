@@ -11,7 +11,7 @@ export default defineConfig({
         trashAssetsBeforeRuns: true,
         baseUrl: process.env.CYPRESS_BASE_URL,
         userAgent:
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
     },
     env: {
         WORKSPACE: process.env.CYPRESS_WORKSPACE ?? 'local',

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import polars as pl
 import polars.selectors as column_select
 from inflection import humanize
+
 from models.report.statistics import (
     ApplicationData,
     LoadedStatisticData,
@@ -21,6 +22,7 @@ from utils.exceptions import StatisticDataNotFoundException
 from utils.utilities import generate_date_folder_name
 
 logger = LoggingService(__name__)
+
 
 class StatisticalReportService:
     def __init__(self):
@@ -67,12 +69,12 @@ class StatisticalReportService:
         logger.info(f"The period to report: {self.dates_to_collect}")
         dynamodb_items = []
         for date in self.dates_to_collect:
-            response = self.dynamo_service.query_all_fields(
+            dynamodb_items_for_date = self.dynamo_service.query_with_pagination(
                 table_name=self.statistic_table,
                 search_key="Date",
                 search_condition=date,
             )
-            dynamodb_items.extend(response["Items"])
+            dynamodb_items.extend(dynamodb_items_for_date)
 
         loaded_data = load_from_dynamodb_items(dynamodb_items)
 
@@ -159,7 +161,9 @@ class StatisticalReportService:
                 pl.concat_list("active_user_ids_hashed")
                 .flatten()
                 .unique()
-                .map_elements(lambda col: str(col.sort().to_list()), return_dtype=pl.Utf8)
+                .map_elements(
+                    lambda col: str(col.sort().to_list()), return_dtype=pl.Utf8
+                )
                 .alias("unique_active_user_ids_hashed"),
                 pl.concat_list("active_user_ids_hashed")
                 .flatten()
@@ -179,7 +183,7 @@ class StatisticalReportService:
 
         for other_dataframe in data_to_report[1:]:
             joined_dataframe = joined_dataframe.join(
-                other_dataframe, on="ods_code", how='full', coalesce=True
+                other_dataframe, on="ods_code", how="full", coalesce=True
             )
 
         return joined_dataframe
