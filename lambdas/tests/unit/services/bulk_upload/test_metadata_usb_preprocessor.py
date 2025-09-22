@@ -4,7 +4,6 @@ from io import BytesIO
 
 import pytest
 from freezegun import freeze_time
-
 from models.staging_metadata import NHS_NUMBER_FIELD_NAME
 from services.bulk_upload.metadata_usb_preprocessor import (
     MetadataUsbPreprocessorService,
@@ -243,25 +242,15 @@ def test_process_metadata_file_e2e(
     mock_generate_and_save_csv_file,
     mock_metadata_file_get_object,
 ):
-    test_processed_metadata_file = os.path.join(
-        TEST_BASE_DIRECTORY,
-        "helpers/data/bulk_upload/preprocessed",
-        "metadata_usb.csv",
-    )
-
     test_rejections_file = os.path.join(
         TEST_BASE_DIRECTORY,
         "helpers/data/bulk_upload/preprocessed",
         "rejections_usb.csv",
     )
 
-    with open(test_processed_metadata_file, "rb") as file:
-        test_file_data = file.read()
-    expected_metadata_bytes = test_file_data
-
     with open(test_rejections_file, "rb") as file:
-        test_file_data = file.read()
-    expected_rejected_bytes = test_file_data
+        test_rejected_file_data = file.read()
+    expected_rejected_bytes = test_rejected_file_data
 
     test_preprocessed_metadata_file = os.path.join(
         TEST_BASE_DIRECTORY,
@@ -278,9 +267,6 @@ def test_process_metadata_file_e2e(
 
     usb_preprocessor_service.process_metadata()
 
-    expected_updated_rows = list(
-        csv.DictReader(expected_metadata_bytes.decode("utf-8-sig").splitlines())
-    )
     expected_rejected_reasons = list(
         csv.DictReader(expected_rejected_bytes.decode("utf-8-sig").splitlines())
     )
