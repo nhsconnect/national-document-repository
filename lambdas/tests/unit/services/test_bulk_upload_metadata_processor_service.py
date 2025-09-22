@@ -104,42 +104,42 @@ def test_validate_record_filename_successful(test_service, mocker):
     smaller_path = "[9730787506]_[18-09-1974].pdf"
 
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_document_path",
         return_value=("/M89002/", smaller_path),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_document_number_bulk_upload_file_name",
         return_value=("01", "02", smaller_path),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_lloyd_george_record_from_bulk_upload_file_name",
         return_value=("Lloyd_George_Record", smaller_path),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_patient_name_from_bulk_upload_file_name",
         return_value=("Dwayne The Rock Johnson", smaller_path),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_nhs_number_from_bulk_upload_file_name",
         return_value=("9730787506", smaller_path),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_date_from_bulk_upload_file_name",
         return_value=("18", "09", "1974", smaller_path),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_file_extension_from_bulk_upload_file_name",
         return_value="pdf",
     )
     mock_assemble = mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "assemble_valid_file_name",
         return_value="final_filename.pdf",
     )
@@ -154,22 +154,22 @@ def test_validate_record_filename_invalid_digit_count(mocker, test_service, capl
     bad_filename = "01 of 02_Lloyd_George_Record_[John Doe]_[12345]_[01-01-2000].pdf"
 
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_document_path",
         return_value=("prefix", bad_filename),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_document_number_bulk_upload_file_name",
         return_value=("01", "02", bad_filename),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_lloyd_george_record_from_bulk_upload_file_name",
         return_value=("LG", bad_filename),
     )
     mocker.patch.object(
-        test_service.metadata_preprocessor_service,
+        test_service.metadata_formatter_service,
         "extract_patient_name_from_bulk_upload_file_name",
         return_value=("John Doe", bad_filename),
     )

@@ -23,14 +23,15 @@ from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import BulkUploadMetadataException, InvalidFileNameException
+from utils.exceptions import BulkUploadMetadataException, InvalidFileNameException, LGInvalidFilesException
+from utils.lloyd_george_validator import validate_file_name
 
 logger = LoggingService(__name__)
 UNSUCCESSFUL = "Unsuccessful bulk upload"
 
 
 class BulkUploadMetadataProcessorService:
-    def __init__(self, metadata_preprocessor_service: MetadataPreprocessorService):
+    def __init__(self, metadata_formatter_service: MetadataPreprocessorService):
         self.s3_service = S3Service()
         self.sqs_service = SQSService()
         self.dynamo_repository = BulkUploadDynamoRepository()
@@ -41,13 +42,13 @@ class BulkUploadMetadataProcessorService:
         self.temp_download_dir = tempfile.mkdtemp()
 
         self.corrections = {}
-        self.practice_directory = metadata_preprocessor_service.practice_directory
+        self.practice_directory = metadata_formatter_service.practice_directory
         self.file_key = (
-            f"{metadata_preprocessor_service.practice_directory}/{METADATA_FILENAME}"
-            if metadata_preprocessor_service.practice_directory
+            f"{metadata_formatter_service.practice_directory}/{METADATA_FILENAME}"
+            if metadata_formatter_service.practice_directory
             else METADATA_FILENAME
         )
-        self.metadata_preprocessor_service = metadata_preprocessor_service
+        self.metadata_formatter_service = metadata_formatter_service
 
     def process_metadata(self):
         try:
@@ -132,9 +133,14 @@ class BulkUploadMetadataProcessorService:
         self,
         file_metadata: MetadataFile,
     ) -> None:
-        valid_filename = self.validate_record_filename(file_metadata.file_path)
-        if valid_filename:
-            self.corrections[file_metadata.file_path] = valid_filename
+        try:
+            validate_file_name(file_metadata.file_path.split("/")[-1])
+            valid_filepath = file_metadata.file_path
+        except LGInvalidFilesException as error:
+            valid_filepath = self.metadata_formatter_service.validate_record_filename(file_metadata.file_path)
+
+        if valid_filepath:
+            self.corrections[file_metadata.file_path] = valid_filepath
 
     def handle_invalid_filename(
         self,
@@ -187,64 +193,3 @@ class BulkUploadMetadataProcessorService:
     def clear_temp_storage(self):
         logger.info("Clearing temp storage directory")
         shutil.rmtree(self.temp_download_dir)
-
-    def validate_record_filename(self, file_name) -> str:
-        logger.info(f"Processing file name {file_name}")
-
-        file_path_prefix, current_file_name = (
-            self.metadata_preprocessor_service.extract_document_path(file_name)
-        )
-
-        first_document_number, second_document_number, current_file_name = (
-            self.metadata_preprocessor_service.extract_document_number_bulk_upload_file_name(
-                current_file_name
-            )
-        )
-
-        lloyd_george_record, current_file_name = (
-            self.metadata_preprocessor_service.extract_lloyd_george_record_from_bulk_upload_file_name(
-                current_file_name
-            )
-        )
-        patient_name, current_file_name = (
-            self.metadata_preprocessor_service.extract_patient_name_from_bulk_upload_file_name(
-                current_file_name
-            )
-        )
-
-        if sum(c.isdigit() for c in current_file_name) != 18:
-            logger.info("Failed to find NHS number or date")
-            raise InvalidFileNameException("Incorrect NHS number or date format")
-
-        nhs_number, current_file_name = (
-            self.metadata_preprocessor_service.extract_nhs_number_from_bulk_upload_file_name(
-                current_file_name
-            )
-        )
-        day, month, year, current_file_name = (
-            self.metadata_preprocessor_service.extract_date_from_bulk_upload_file_name(
-                current_file_name
-            )
-        )
-        file_extension = self.metadata_preprocessor_service.extract_file_extension_from_bulk_upload_file_name(
-            current_file_name
-        )
-        file_name_correction = (
-            self.metadata_preprocessor_service.assemble_valid_file_name(
-                file_path_prefix,
-                first_document_number,
-                second_document_number,
-                lloyd_george_record,
-                patient_name,
-                nhs_number,
-                day,
-                month,
-                year,
-                file_extension,
-            )
-        )
-        if file_name_correction:
-            logger.info(f"Finished processing, new file name is: {file_name}")
-            return file_name_correction
-        else:
-            return ""
