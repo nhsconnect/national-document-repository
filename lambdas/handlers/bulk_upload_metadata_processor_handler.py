@@ -1,4 +1,9 @@
-from services.bulk_upload_metadata_processor_service import BulkUploadMetadataProcessorService
+from services.bulk_upload_metadata_preprocessor_service import (
+    MetadataPreprocessorService,
+)
+from services.bulk_upload_metadata_processor_service import (
+    BulkUploadMetadataProcessorService,
+)
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -21,5 +26,7 @@ def lambda_handler(event, _context):
         f"Starting metadata processing for practice directory: {practice_directory}"
     )
 
-    metadata_service = BulkUploadMetadataProcessorService(practice_directory)
+    metadata_service = BulkUploadMetadataProcessorService(
+        MetadataPreprocessorService(practice_directory)
+    )
     metadata_service.process_metadata()
