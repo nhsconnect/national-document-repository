@@ -149,9 +149,8 @@ def test_correctly_extract_date_from_bulk_upload_file_name(input, expected):
     actual = extract_date_from_bulk_upload_file_name(input)
     assert actual == expected
 
-
-def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format():
-    invalid_data = "_12-13-2024.txt"
+@pytest.mark.parametrize("invalid_data", [" 01-Nov-11992.pdf", "_32-12-2023.pdf", "_13-13-2023.pdf", "_13-12-1899.pdf"])
+def test_extract_data_from_bulk_upload_file_name_with_incorrect_date_format(invalid_data):
 
     with pytest.raises(InvalidFileNameException) as exc_info:
         extract_date_from_bulk_upload_file_name(invalid_data)

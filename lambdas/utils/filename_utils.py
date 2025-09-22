@@ -182,11 +182,11 @@ def extract_date_from_bulk_upload_file_name(file_path):
     Raises:
         InvalidFileNameException: If the date is invalid or not found.
     """
-    date_expression = r"(\D+\d{1,2})[^\w\d]*(\w{3,}|\d{1,2})[^\w\d]*(\d{4})(.*)"
+    date_expression = r"(\D+\d{1,2})[^\w\d]*(\w{3,}|\d{1,2})[^\w\d]*(\d{4})(?!\d)(.*)"
     expression_result = regex.search(date_expression, file_path)
 
     if not expression_result:
-        raise InvalidFileNameException("Could not find a valid date in the filename.")
+        raise InvalidFileNameException("Could not find a valid date in the filename")
 
     try:
         day_str = "".join(regex.findall(r"\d+", expression_result.group(1)))

@@ -294,5 +294,4 @@ def test_process_metadata_file_e2e(
 
     assert mock_generate_and_save_csv_file.call_count == 2
     assert mock_generate_and_save_csv_file.call_args_list[1][1]['csv_dict'] == expected_rejected_reasons
-    # assert mock_generate_and_save_csv_file.call_args_list[0][1]['csv_dict'] == expected_updated_rows
-    # mock_generate_and_save_csv_file.assert_has_calls(expected_calls, any_order=True)
+
