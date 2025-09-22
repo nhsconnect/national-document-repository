@@ -69,7 +69,7 @@ class StatisticalReportService:
         logger.info(f"The period to report: {self.dates_to_collect}")
         dynamodb_items = []
         for date in self.dates_to_collect:
-            dynamodb_items_for_date = self.dynamo_service.query_with_pagination(
+            dynamodb_items_for_date = self.dynamo_service.query_table(
                 table_name=self.statistic_table,
                 search_key="Date",
                 search_condition=date,

@@ -104,7 +104,7 @@ def test_make_weekly_summary(set_env, mocker):
 
 def test_get_statistic_data(mock_dynamodb_service, mock_service):
     mock_service.dates_to_collect = ["20240510", "20240511"]
-    mock_dynamodb_service.query_with_pagination.side_effect = (
+    mock_dynamodb_service.query_table.side_effect = (
         MOCK_DYNAMODB_QUERY_RESPONSE
     )
 
@@ -125,7 +125,7 @@ def test_get_statistic_data(mock_dynamodb_service, mock_service):
             search_condition="20240511",
         ),
     ]
-    mock_dynamodb_service.query_with_pagination.assert_has_calls(expected_calls)
+    mock_dynamodb_service.query_table.assert_has_calls(expected_calls)
 
 def test_get_statistic_data_raise_error_if_all_data_are_empty(
     mock_dynamodb_service, mock_service
