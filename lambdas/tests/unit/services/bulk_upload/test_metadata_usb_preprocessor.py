@@ -10,7 +10,7 @@ from models.staging_metadata import NHS_NUMBER_FIELD_NAME, METADATA_FILENAME
 from services.bulk_upload.metadata_usb_preprocessor import (
     MetadataUsbPreprocessorService,
 )
-from unit.conftest import TEST_BASE_DIRECTORY
+from tests.unit.conftest import TEST_BASE_DIRECTORY
 from utils.exceptions import InvalidFileNameException
 
 
