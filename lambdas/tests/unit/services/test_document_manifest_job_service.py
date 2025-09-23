@@ -1,11 +1,12 @@
 from unittest.mock import call
 
 import pytest
+from freezegun import freeze_time
+
 from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from enums.trace_status import TraceStatus
-from freezegun import freeze_time
 from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
 from services.document_manifest_job_service import DocumentManifestJobService
 from tests.unit.conftest import (
@@ -687,7 +688,7 @@ def test_query_zip_trace_returns_zip_trace_object(
 def test_query_zip_trace_empty_response_raises_exception(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_table.return_value = {"Items": []}
+    mock_dynamo_service.query_table.return_value = []
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
         manifest_service.query_zip_trace(TEST_UUID, TEST_NHS_NUMBER)
@@ -700,7 +701,7 @@ def test_query_zip_trace_empty_response_raises_exception(
 def test_query_zip_trace_empty_response_object_raises_exception(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_table.return_value = {"Items": [{}]}
+    mock_dynamo_service.query_table.return_value = []
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
         manifest_service.query_zip_trace(TEST_UUID, TEST_NHS_NUMBER)
