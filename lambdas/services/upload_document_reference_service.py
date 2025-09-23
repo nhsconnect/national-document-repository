@@ -2,7 +2,6 @@ import os
 from typing import Optional
 
 from botocore.exceptions import ClientError
-
 from enums.virus_scan_result import VirusScanResult
 from models.document_reference import DocumentReference
 from services.base.s3_service import S3Service
@@ -70,7 +69,8 @@ class UploadDocumentReferenceService:
             second_document = next(documents, None)
             if second_document is not None:
                 logger.warning(
-                    f"Multiple documents found with key {document_key} in {self.table_name} table. Only the first will be processed."
+                    f"Multiple documents found with key {document_key} in {self.table_name} table. "
+                    f"Only the first will be processed."
                 )
             return document
 
