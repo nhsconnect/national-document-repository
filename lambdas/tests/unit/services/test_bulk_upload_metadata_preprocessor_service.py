@@ -18,7 +18,6 @@ from utils.exceptions import InvalidFileNameException, MetadataPreprocessingExce
 
 from lambdas.models.staging_metadata import METADATA_FILENAME
 
-
 @pytest.fixture(autouse=True)
 @freeze_time("2025-01-01T12:00:00")
 def test_service(mocker, set_env):
