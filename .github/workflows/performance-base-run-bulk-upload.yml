@@ -38,8 +38,8 @@ on:
         required: false
         type: "string"
         default: "1"
-      use_v2_process:
-        description: "Use V2 Bulk Upload Process"
+      use_bulk_upload_metadata_processor:
+        description: "Use BulkUploadMetadataProcessor Lambda"
         required: true
         type: "boolean"
         default: false
@@ -90,13 +90,13 @@ jobs:
 
       - name: Run Bulk Upload
         run: |
-          if [[ "${{inputs.use_v2_process}}" == "true" ]]; then
-            V2_FLAG="--use-v2-process"
+          if [[ "${{inputs.use_bulk_upload_metadata_processor}}" == "true" ]]; then
+            BULK_UPLOAD_METADATA_PROCESSOR_FLAG="--use-bulk-upload-metadata-processor"
           else
-            V2_FLAG=""
+            BULK_UPLOAD_METADATA_PROCESSOR_FLAG=""
           fi
           python performance_run_bulk_upload.py \
             --environment "${{ inputs.sandbox }}" \
             --start-bulk-upload\
-            "${V2_FLAG}"
+            "${BULK_UPLOAD_METADATA_PROCESSOR_FLAG}"
         working-directory: ./tests/bulk-upload/scripts
