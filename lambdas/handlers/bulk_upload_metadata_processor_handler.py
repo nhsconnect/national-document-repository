@@ -31,13 +31,13 @@ def lambda_handler(event, _context):
 
     formatter_service_class = get_formatter_service(raw_pre_format_type)
     if not practice_directory:
-        logger.info(
-            "Failed to start metadata pre-processor due to missing practice directory"
+        logger.error(
+            "Failed to start metadata processing due to missing practice directory"
         )
         return
 
     logger.info(
-        f"Starting metadata pre-processor for practice directory: {practice_directory}"
+        f"Starting metadata processing for practice directory: {practice_directory}"
     )
 
     metadata_formatter_service = formatter_service_class(practice_directory)
