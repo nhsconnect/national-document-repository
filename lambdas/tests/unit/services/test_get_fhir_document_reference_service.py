@@ -25,7 +25,9 @@ def patched_service(mocker, set_env, context):
 
 def test_get_document_reference_service(patched_service):
     documents = create_test_doc_store_refs()
-    patched_service.document_service.fetch_documents_from_table.return_value = documents
+    patched_service.document_service.fetch_documents_from_table.return_value = (
+        doc for doc in documents
+    )
 
     actual = patched_service.get_document_references(
         "3d8683b9-1665-40d2-8499-6e8302d507ff", MOCK_LG_TABLE_NAME
@@ -75,7 +77,9 @@ def test_get_presigned_url(patched_service, mocker):
 
 def test_get_document_references_empty_result(patched_service):
     # Test when no documents are found
-    patched_service.document_service.fetch_documents_from_table.return_value = []
+    patched_service.document_service.fetch_documents_from_table.return_value = (
+        n for n in []
+    )
 
     with pytest.raises(GetFhirDocumentReferenceException) as exc_info:
         patched_service.get_document_references("test-id", MOCK_LG_TABLE_NAME)

@@ -49,13 +49,12 @@ class GetFhirDocumentReferenceService:
             search_key="ID",
             query_filter=CurrentStatusFile,
         )
-        if len(documents) > 0:
-            logger.info("Document found for given id")
-            return documents[0]
-        else:
+        document = next(documents, None)
+        if document is None:
             raise GetFhirDocumentReferenceException(
                 404, LambdaError.DocumentReferenceNotFound
             )
+        return document
 
     def get_presigned_url(self, bucket_name, file_location):
         """

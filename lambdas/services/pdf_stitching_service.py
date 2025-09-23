@@ -45,12 +45,12 @@ class PdfStitchingService:
         self.document_service = DocumentService()
         self.sqs_service = SQSService()
         self.multipart_references: list[DocumentReference] = []
-        self.stitched_reference: DocumentReference = None
+        self.stitched_reference: DocumentReference | None = None
 
     def retrieve_multipart_references(
         self, nhs_number: str, doc_type: SupportedDocumentTypes
     ) -> list[DocumentReference]:
-        document_references = (
+        document_references = list(
             self.document_service.fetch_available_document_references_by_type(
                 nhs_number=nhs_number,
                 doc_type=doc_type,

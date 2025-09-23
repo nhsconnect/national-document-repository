@@ -31,7 +31,7 @@ class DocumentService:
         nhs_number: str,
         doc_type: SupportedDocumentTypes,
         query_filter: Attr | ConditionBase,
-    ) -> list[DocumentReference]:
+    ) -> Generator[DocumentReference, None, None]:
         table_name = doc_type.get_dynamodb_table_name()
 
         return self.fetch_documents_from_table_with_nhs_number(
@@ -40,7 +40,7 @@ class DocumentService:
 
     def fetch_documents_from_table_with_nhs_number(
         self, nhs_number: str, table: str, query_filter: Attr | ConditionBase = None
-    ) -> list[DocumentReference]:
+    ) -> Generator[DocumentReference, None, None]:
         documents = self.fetch_documents_from_table(
             table=table,
             index_name="NhsNumberIndex",
@@ -49,7 +49,7 @@ class DocumentService:
             query_filter=query_filter,
         )
 
-        return list(documents)
+        yield from documents
 
     def fetch_documents_from_table(
         self,
@@ -172,10 +172,12 @@ class DocumentService:
         self, nhs_number
     ) -> list[DocumentReference]:
         filter_expression = filter_uploaded_docs_and_recently_uploading_docs()
-        available_docs = self.fetch_available_document_references_by_type(
-            nhs_number,
-            SupportedDocumentTypes.LG,
-            query_filter=filter_expression,
+        available_docs = list(
+            self.fetch_available_document_references_by_type(
+                nhs_number,
+                SupportedDocumentTypes.LG,
+                query_filter=filter_expression,
+            )
         )
 
         file_in_progress_message = (

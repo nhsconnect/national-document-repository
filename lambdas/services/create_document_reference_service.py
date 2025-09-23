@@ -251,7 +251,7 @@ class CreateDocumentReferenceService:
     ) -> None:
         logger.info("Looking for previous records for this patient...")
 
-        previous_records = (
+        previous_records = list(
             self.document_service.fetch_available_document_references_by_type(
                 nhs_number=nhs_number,
                 doc_type=SupportedDocumentTypes.LG,
@@ -320,10 +320,12 @@ class CreateDocumentReferenceService:
     def fetch_incomplete_arf_upload_records(
         self, nhs_number
     ) -> list[DocumentReference]:
-        return self.document_service.fetch_available_document_references_by_type(
-            nhs_number=nhs_number,
-            doc_type=SupportedDocumentTypes.ARF,
-            query_filter=UploadIncomplete,
+        return list(
+            self.document_service.fetch_available_document_references_by_type(
+                nhs_number=nhs_number,
+                doc_type=SupportedDocumentTypes.ARF,
+                query_filter=UploadIncomplete,
+            )
         )
 
     def get_allowed_list_of_ods_codes_for_upload_pilot(self) -> list[str]:

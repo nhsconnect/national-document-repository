@@ -4,7 +4,6 @@ from typing import Optional
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from models.document_reference import DocumentReference
-from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
@@ -21,7 +20,6 @@ class UploadDocumentReferenceService:
         self.table_name = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.lg_bucket_name = os.getenv("LLOYD_GEORGE_BUCKET_NAME")
         self.document_service = DocumentService()
-        self.dynamo_service = DynamoDBService()
         self.virus_scan_service = get_virus_scan_service()
         self.s3_service = S3Service()
 
@@ -61,19 +59,14 @@ class UploadDocumentReferenceService:
                 search_key="ID",
                 query_filter=PreliminaryStatus,
             )
-            if not documents:
+            document = next(documents, None)
+            if not document:
                 logger.error(
                     f"No document with the following key found in {self.table_name} table: {document_key}"
                 )
                 logger.info("Skipping this object")
                 return None
-
-            if len(documents) > 1:
-                logger.warning(
-                    f"Multiple documents found for key {document_key}, using first one"
-                )
-
-            return documents[0]
+            return document
 
         except ClientError as e:
             logger.error(

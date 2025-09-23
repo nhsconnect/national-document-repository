@@ -5,12 +5,12 @@ from enums.fhir.fhir_issue_type import FhirIssueCoding, UKCoreSpineError
 from utils.error_response import ErrorResponse
 from utils.request_context import request_context
 
+MISSING_POST = "Missing POST request body"
+MISSING_KEY = "An error occurred due to missing key"
+RETRIEVE_DOCUMENTS = "Unable to retrieve documents for patient"
+
 
 class LambdaError(Enum):
-    MISSING_POST = "Missing POST request body"
-    MISSING_KEY = "An error occurred due to missing key"
-    RETRIEVE_DOCUMENTS = "Unable to retrieve documents for patient"
-
     def create_error_response(
         self, params: Optional[dict] = None, **kwargs
     ) -> ErrorResponse:
@@ -302,7 +302,6 @@ class LambdaError(Enum):
         "message": "Failed to fetch parameters for sending email from SSM param store",
     }
 
-
     """
        Errors for Feature Flags lambda 
     """
@@ -362,7 +361,7 @@ class LambdaError(Enum):
         "err_code": "UC_4001",
         "message": "Missing GET request query parameters",
     }
-    
+
     UploadConfirmResultFilesNotClean = {
         "err_code": "UC_4005",
         "message": "Some of the given document references are not referring to clean files",

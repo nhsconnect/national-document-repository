@@ -71,9 +71,11 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
         TEST_NHS_NUMBER, SupportedDocumentTypes.LG, mock_filter_expression
     )
 
-    assert len(results) == 3
+    results_counter = 0
     for result in results:
         assert isinstance(result, DocumentReference)
+        results_counter += 1
+    assert results_counter == 3
 
     mock_dynamo_service.query_table.assert_called_once_with(
         table_name=MOCK_LG_TABLE_NAME,
@@ -93,9 +95,11 @@ def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_ref
         TEST_NHS_NUMBER, SupportedDocumentTypes.ARF, mock_filter_expression
     )
 
-    assert len(results) == 3
+    results_counter = 0
     for result in results:
         assert isinstance(result, DocumentReference)
+        results_counter += 1
+    assert results_counter == 3
 
     mock_dynamo_service.query_table.assert_called_once_with(
         table_name=MOCK_ARF_TABLE_NAME,
@@ -114,7 +118,7 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
     result = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, SupportedDocumentTypes.LG, mock_filter_expression
     )
-    assert len(result) == 0
+    assert next(result, None) is None
     mock_dynamo_service.query_table.assert_called_once_with(
         table_name=MOCK_LG_TABLE_NAME,
         index_name="NhsNumberIndex",
@@ -145,9 +149,11 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
         query_filter=mock_filter_expression,
     )
 
-    assert len(results) == 3
+    results_counter = 0
     for result in results:
         assert isinstance(result, DocumentReference)
+        results_counter += 1
+    assert results_counter == 3
 
     mock_dynamo_service.query_table.assert_has_calls(expected_calls, any_order=True)
 
@@ -172,7 +178,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
         query_filter=mock_filter_expression,
     )
 
-    assert len(results) == 0
+    assert next(results, None) is None
 
     mock_dynamo_service.query_table.assert_has_calls(expected_calls, any_order=True)
 

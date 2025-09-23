@@ -1,6 +1,6 @@
 import os
 import uuid
-from typing import Literal
+from typing import Generator, Literal
 from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
@@ -77,7 +77,7 @@ class DocumentDeletionService:
         self,
         nhs_number: str,
         doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
-    ) -> list[DocumentReference]:
+    ) -> Generator[DocumentReference, None, None]:
         results = self.document_service.fetch_available_document_references_by_type(
             nhs_number, doc_type, NotDeleted
         )
@@ -105,7 +105,9 @@ class DocumentDeletionService:
         doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
         try:
-            results = self.get_documents_references_in_storage(nhs_number, doc_type)
+            results = list(
+                self.get_documents_references_in_storage(nhs_number, doc_type)
+            )
             if results:
                 self.document_service.delete_document_references(
                     table_name=doc_type.get_dynamodb_table_name(),

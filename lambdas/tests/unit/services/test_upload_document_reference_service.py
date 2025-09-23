@@ -48,12 +48,10 @@ def service(set_env, mock_virus_scan_service):
     with patch.multiple(
         "services.upload_document_reference_service",
         DocumentService=Mock(),
-        DynamoDBService=Mock(),
         S3Service=Mock(),
     ):
         service = UploadDocumentReferenceService()
         service.document_service = Mock()
-        service.dynamo_service = Mock()
         service.virus_scan_service = MockVirusScanService()
         service.s3_service = Mock()
         return service
@@ -79,9 +77,9 @@ def test_handle_upload_document_reference_request_success(
     """Test successful handling of the upload document reference request"""
     object_key = "staging/test-doc-id"
     object_size = 1111
-    service.document_service.fetch_documents_from_table.return_value = [
-        mock_document_reference
-    ]
+    service.document_service.fetch_documents_from_table.return_value = (
+        doc for doc in [mock_document_reference]
+    )
     service.virus_scan_service.scan_file = mocker.MagicMock(
         return_value=VirusScanResult.CLEAN
     )
@@ -109,9 +107,9 @@ def test_handle_upload_document_reference_request_with_exception(service):
 def test_fetch_document_reference_success(service, mock_document_reference):
     """Test successful document reference fetching"""
     document_key = "test-doc-id"
-    service.document_service.fetch_documents_from_table.return_value = [
-        mock_document_reference
-    ]
+    service.document_service.fetch_documents_from_table.return_value = (
+        doc for doc in [mock_document_reference]
+    )
 
     result = service._fetch_document_reference(document_key)
 
@@ -127,7 +125,7 @@ def test_fetch_document_reference_success(service, mock_document_reference):
 def test_fetch_document_reference_no_documents_found(service):
     """Test handling when no documents are found"""
     document_key = "test-doc-id"
-    service.document_service.fetch_documents_from_table.return_value = []
+    service.document_service.fetch_documents_from_table.return_value = (n for n in [])
 
     result = service._fetch_document_reference(document_key)
 
@@ -140,10 +138,13 @@ def test_fetch_document_reference_multiple_documents_warning(
     """Test handling when multiple documents are found"""
     document_key = "test-doc-id"
     mock_doc_2 = Mock(spec=DocumentReference)
-    service.document_service.fetch_documents_from_table.return_value = [
-        mock_document_reference,
-        mock_doc_2,
-    ]
+    service.document_service.fetch_documents_from_table.return_value = (
+        doc
+        for doc in [
+            mock_document_reference,
+            mock_doc_2,
+        ]
+    )
 
     result = service._fetch_document_reference(document_key)
 
@@ -368,9 +369,9 @@ def test_integration_full_workflow_clean_document(service, mock_document_referen
     """Test full workflow integration for a clean document"""
     object_key = "staging/test-doc-id"
 
-    service.document_service.fetch_documents_from_table.return_value = [
-        mock_document_reference
-    ]
+    service.document_service.fetch_documents_from_table.return_value = (
+        doc for doc in [mock_document_reference]
+    )
 
     service.handle_upload_document_reference_request(object_key)
 
