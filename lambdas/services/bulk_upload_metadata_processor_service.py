@@ -134,11 +134,6 @@ class BulkUploadMetadataProcessorService:
     ) -> str:
         file_name = file_metadata.file_path
         return self.validate_record_filename(file_name)
-        # return valid_filename
-        # if valid_filename:
-        #     self.corrections[file_metadata.file_path] = valid_filename
-        #     return valid_filename
-        # return ""
 
     def handle_invalid_filename(
         self,

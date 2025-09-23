@@ -502,7 +502,6 @@ def test_process_metadata_row_success(mocker, metadata_processor_service):
     key = ("1234567890", "Y12345")
     assert key in patients
     assert patients[key] == [mock_metadata]
-    assert metadata_processor_service.corrections == {"/some/path/file.pdf": "corrected.pdf"}
 
 
 def test_process_metadata_row_adds_to_existing_entry(mocker, metadata_processor_service):
@@ -524,7 +523,6 @@ def test_process_metadata_row_adds_to_existing_entry(mocker, metadata_processor_
     }
 
     mock_metadata = mocker.Mock()
-
     mock_metadata.nhs_number = "1234567890"
     mock_metadata.gp_practice_code = "Y12345"
     mock_metadata.file_path = "/some/path/file2.pdf"
@@ -534,16 +532,20 @@ def test_process_metadata_row_adds_to_existing_entry(mocker, metadata_processor_
         return_value=mock_metadata,
     )
 
-
-    mocker.patch.object(
-        metadata_processor_service, "validate_record_filename", return_value="fixed_file2.pdf"
+    validate_filename_mock = mocker.patch.object(
+        metadata_processor_service,
+        "validate_correct_filename",
+        return_value="validated_file2.pdf"
     )
 
     metadata_processor_service.process_metadata_row(row, patients)
 
     assert len(patients[key]) == 2
     assert patients[key][1] == mock_metadata
-    assert metadata_processor_service.corrections["/some/path/file2.pdf"] == "fixed_file2.pdf"
+
+    validate_filename_mock.assert_called_once_with(mock_metadata)
+
+    assert mock_metadata.stored_file_name == "validated_file2.pdf"
 
 
 def test_extract_patient_info(metadata_processor_service, base_metadata_file):
@@ -555,17 +557,18 @@ def test_extract_patient_info(metadata_processor_service, base_metadata_file):
 
 
 def test_validate_correct_filename_valid_filename(mocker, metadata_processor_service, base_metadata_file):
-    mocker.patch.object(
+    base_metadata_file.file_path = "valid/path/to/file.pdf"
+    validate_mock = mocker.patch.object(
         metadata_processor_service,
         "validate_record_filename",
         return_value="corrected_file.pdf",
     )
 
-    metadata_processor_service.validate_correct_filename(base_metadata_file)
+    result = metadata_processor_service.validate_correct_filename(base_metadata_file)
 
-    assert (
-            metadata_processor_service.corrections["valid/path/to/file.pdf"] == "corrected_file.pdf"
-    )
+    validate_mock.assert_called_once_with("valid/path/to/file.pdf")
+    assert result == "corrected_file.pdf"
+
 
 
 def test_handle_invalid_filename_writes_failed_entry_to_dynamo(

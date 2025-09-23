@@ -1,6 +1,8 @@
 import tempfile
 from unittest.mock import call
 
+from unittest.mock import mock_open, patch
+
 import pytest
 from botocore.exceptions import ClientError
 from freezegun import freeze_time
@@ -223,9 +225,17 @@ def test_download_metadata_from_s3_raise_error_when_failed_to_download(
 
 
 def test_csv_to_staging_metadata(set_env, metadata_service):
-    actual = metadata_service.csv_to_staging_metadata(MOCK_METADATA_CSV)
-    expected = EXPECTED_PARSED_METADATA
-    assert actual == expected
+    mock_csv_data = """FILEPATH,STORED-FILE-NAME,PAGE COUNT,GP-PRACTICE-CODE,SECTION,SUB-SECTION,SCAN-DATE,SCAN-ID,USER-ID,UPLOAD,NHS-NO
+/1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,/1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,,Y12345,LG,,03/09/2022,NEC,NEC,04/10/2023,1234567890
+/1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,/1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf,,Y12345,LG,,03/09/2022,NEC,NEC,04/10/2023,1234567890
+1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt,1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[123456789]_[25-12-2019].txt,,Y12345,LG,,04/09/2022,NEC,NEC,04/10/2023,123456789
+1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt,1of1_Lloyd_George_Record_[Jane Smith]_[1234567892]_[25-12-2019].txt,,Y12345,LG,,04/09/2022,NEC,NEC,04/10/2023,
+"""
+
+    with patch("builtins.open", mock_open(read_data=mock_csv_data)):
+        result = metadata_service.csv_to_staging_metadata("fake/path/metadata.csv")
+
+    assert result == EXPECTED_PARSED_METADATA
 
 
 def test_duplicates_csv_to_staging_metadata(set_env, metadata_service):
