@@ -4,7 +4,6 @@ from typing import Optional
 import boto3
 from boto3.dynamodb.conditions import Attr, ConditionBase, Key
 from botocore.exceptions import ClientError
-
 from utils.audit_logging_setup import LoggingService
 from utils.dynamo_utils import (
     create_expression_attribute_values,
@@ -80,7 +79,6 @@ class DynamoDBService:
         except ClientError as e:
             logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e
-
 
     def create_item(self, table_name, item):
         try:
