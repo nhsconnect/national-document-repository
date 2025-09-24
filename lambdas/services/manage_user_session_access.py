@@ -29,7 +29,7 @@ class ManageUserSessionAccess:
         )
 
         try:
-            current_session = query_response["Items"][0]
+            current_session = query_response[0]
             return current_session
         except (KeyError, IndexError):
             raise AuthorisationException(
