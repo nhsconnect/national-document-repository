@@ -14,7 +14,7 @@ vi.mock('react-router-dom', () => ({
 describe('NavLinks', () => {
     const oldWindowLocation = window.location.href;
     beforeEach(() => {
-        sessionStorage.setItem('UserSession', '');
+        localStorage.setItem('UserSession', '');
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {

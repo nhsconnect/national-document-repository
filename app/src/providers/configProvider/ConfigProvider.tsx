@@ -49,7 +49,7 @@ const ConfigProvider = ({ children, configOverride, setConfigOverride }: Props) 
               userRole: REPOSITORY_ROLE.GP_ADMIN,
           }
         : null;
-    const storedConfig = sessionStorage.getItem('AppConfig');
+    const storedConfig = localStorage.getItem('AppConfig');
     const currentConfig: GlobalConfig = storedConfig ? JSON.parse(storedConfig) : emptyConfig;
     const [config, setConfig] = useState<GlobalConfig>({
         mockLocal: {
@@ -65,7 +65,7 @@ const ConfigProvider = ({ children, configOverride, setConfigOverride }: Props) 
     });
 
     useEffect(() => {
-        sessionStorage.setItem('AppConfig', JSON.stringify(config) ?? emptyConfig);
+        localStorage.setItem('AppConfig', JSON.stringify(config) ?? emptyConfig);
     }, [config, emptyConfig]);
 
     return (

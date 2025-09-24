@@ -12,7 +12,7 @@ vi.mock('react-router-dom', () => ({
 describe('PhaseBanner', () => {
     beforeEach(() => {
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
-        window.sessionStorage.clear();
+        window.localStorage.clear();
     });
     afterEach(() => {
         vi.clearAllMocks();

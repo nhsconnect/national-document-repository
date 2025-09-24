@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 const guardPage = '/';
 describe('NonAuthGuard', () => {
     beforeEach(() => {
-        sessionStorage.setItem('UserSession', '');
+        localStorage.setItem('UserSession', '');
 
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });

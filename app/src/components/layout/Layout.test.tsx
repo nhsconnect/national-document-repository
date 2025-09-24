@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('Layout', () => {
     beforeEach(() => {
-        window.sessionStorage.clear();
+        window.localStorage.clear();
         document.documentElement.scrollTo = vi.fn();
     });
     describe('Accessibility', () => {

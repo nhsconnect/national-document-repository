@@ -33,7 +33,7 @@ const originalWindowLocation = window.location;
 describe('AuthCallbackPage', () => {
     beforeEach(() => {
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
-        sessionStorage.setItem('FeatureFlags', '');
+        localStorage.setItem('FeatureFlags', '');
         Object.defineProperty(window, 'location', {
             configurable: true,
             enumerable: true,

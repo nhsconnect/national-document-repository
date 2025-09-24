@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('useConfig', () => {
     beforeEach(() => {
-        sessionStorage.setItem('FeatureFlags', '');
+        localStorage.setItem('FeatureFlags', '');
         import.meta.env.VITE_ENVIRONMENT = 'vitest';
     });
     afterEach(() => {

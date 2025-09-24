@@ -25,7 +25,7 @@ const SessionProvider = ({ children, sessionOverride, setSessionOverride }: Prop
         [sessionOverride],
     );
 
-    const userSessionValue = sessionStorage.getItem('UserSession');
+    const userSessionValue = localStorage.getItem('UserSession');
     const userSession: Session = userSessionValue ? JSON.parse(userSessionValue) : emptySession;
     const [session, setSession] = useState<Session>({
         ...userSession,
@@ -34,7 +34,7 @@ const SessionProvider = ({ children, sessionOverride, setSessionOverride }: Prop
     });
 
     useEffect(() => {
-        sessionStorage.setItem('UserSession', JSON.stringify(session) ?? emptySession);
+        localStorage.setItem('UserSession', JSON.stringify(session) ?? emptySession);
     }, [session, emptySession]);
 
     return (
