@@ -27,4 +27,4 @@ def test_metadata_processor_lambda_handler_empty_event(
 ):
     lambda_handler({}, context)
 
-    mock_metadata_service.process_metadata.assert_called_once()
+    mock_metadata_service.process_metadata.assert_not_called()

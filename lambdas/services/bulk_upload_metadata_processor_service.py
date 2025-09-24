@@ -41,7 +41,6 @@ class BulkUploadMetadataProcessorService:
 
         self.temp_download_dir = tempfile.mkdtemp()
 
-        self.corrections = {}
         self.practice_directory = metadata_formatter_service.practice_directory
         self.file_key = (
             f"{metadata_formatter_service.practice_directory}/{METADATA_FILENAME}"
@@ -142,7 +141,7 @@ class BulkUploadMetadataProcessorService:
         return valid_filepath
 
     def handle_invalid_filename(
-        self,
+            self,
         file_metadata: MetadataFile,
         error: InvalidFileNameException,
         key: tuple[str, str],
