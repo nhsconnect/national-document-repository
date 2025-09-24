@@ -35,7 +35,7 @@ MOCK_TEMP_FOLDER = "tests/unit/helpers/data/bulk_upload"
 
 SERVICE_PATH = "services.bulk_upload_metadata_processor_service"
 
-class TestMetadataPreprocessorService(MetadataPreprocessorService):
+class MockMetadataPreprocessorService(MetadataPreprocessorService):
     def validate_record_filename(self, original_filename: str, *args, **kwargs) -> str:
         return "corrected.pdf"
 
@@ -47,7 +47,7 @@ def test_service(mocker, set_env, mock_tempfile):
     mocker.patch("services.bulk_upload_metadata_processor_service.SQSService")
     mocker.patch("services.bulk_upload_metadata_processor_service.BulkUploadDynamoRepository")
     service = BulkUploadMetadataProcessorService(
-        TestMetadataPreprocessorService(practice_directory="test_practice_directory")
+        MockMetadataPreprocessorService(practice_directory="test_practice_directory")
     )
     mocker.patch.object(service, "s3_service")
     return service
@@ -66,9 +66,8 @@ def mock_download_metadata_from_s3(mocker):
 
 
 @pytest.fixture
-def mock_s3_service(mocker):
-    patched_instance = mocker.patch(f"{SERVICE_PATH}.S3Service").return_value
-    yield patched_instance
+def mock_s3_service(test_service):
+    return test_service.s3_service
 
 
 @pytest.fixture
@@ -79,9 +78,8 @@ def mock_tempfile(mocker):
 
 
 @pytest.fixture
-def mock_sqs_service(mocker):
-    patched_instance = mocker.patch(f"{SERVICE_PATH}.SQSService").return_value
-    yield patched_instance
+def mock_sqs_service(test_service):
+    return test_service.sqs_service
 
 
 @pytest.fixture
