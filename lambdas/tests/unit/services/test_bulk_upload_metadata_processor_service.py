@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 from enums.upload_status import UploadStatus
 from freezegun import freeze_time
 from models.staging_metadata import METADATA_FILENAME, MetadataFile
-from services.bulk_upload.metadata_general_preprocessor import MetadataGeneralPreprocessor
+from services.bulk_upload_metadata_preprocessor_service import MetadataPreprocessorService
 from services.bulk_upload_metadata_processor_service import (
     BulkUploadMetadataProcessorService,
 )
@@ -35,12 +35,19 @@ MOCK_TEMP_FOLDER = "tests/unit/helpers/data/bulk_upload"
 
 SERVICE_PATH = "services.bulk_upload_metadata_processor_service"
 
+class TestMetadataPreprocessorService(MetadataPreprocessorService):
+    def validate_record_filename(self, original_filename: str, *args, **kwargs) -> str:
+        return "corrected.pdf"
+
 
 @pytest.fixture(autouse=True)
 @freeze_time("2025-01-01T12:00:00")
-def test_service(mocker, set_env):
+def test_service(mocker, set_env, mock_tempfile):
+    mocker.patch("services.bulk_upload_metadata_processor_service.S3Service")
+    mocker.patch("services.bulk_upload_metadata_processor_service.SQSService")
+    mocker.patch("services.bulk_upload_metadata_processor_service.BulkUploadDynamoRepository")
     service = BulkUploadMetadataProcessorService(
-        MetadataGeneralPreprocessor(practice_directory="test_practice_directory")
+        TestMetadataPreprocessorService(practice_directory="test_practice_directory")
     )
     mocker.patch.object(service, "s3_service")
     return service
@@ -93,87 +100,6 @@ def base_metadata_file():
     }
 
     return MetadataFile.model_validate(row)
-
-
-def test_validate_record_filename_successful(test_service, mocker):
-    original_filename = "/M89002/01 of 02_Lloyd_George_Record_[Dwayne The Rock Johnson]_[9730787506]_[18-09-1974].pdf"
-    smaller_path = "[9730787506]_[18-09-1974].pdf"
-
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_document_path",
-        return_value=("/M89002/", smaller_path),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_document_number_bulk_upload_file_name",
-        return_value=("01", "02", smaller_path),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_lloyd_george_record_from_bulk_upload_file_name",
-        return_value=("Lloyd_George_Record", smaller_path),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_patient_name_from_bulk_upload_file_name",
-        return_value=("Dwayne The Rock Johnson", smaller_path),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_nhs_number_from_bulk_upload_file_name",
-        return_value=("9730787506", smaller_path),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_date_from_bulk_upload_file_name",
-        return_value=("18", "09", "1974", smaller_path),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_file_extension_from_bulk_upload_file_name",
-        return_value="pdf",
-    )
-    mock_assemble = mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "assemble_valid_file_name",
-        return_value="final_filename.pdf",
-    )
-
-    result = test_service.validate_record_filename(original_filename)
-
-    assert result == "final_filename.pdf"
-    mock_assemble.assert_called_once()
-
-
-def test_validate_record_filename_invalid_digit_count(mocker, test_service, caplog):
-    bad_filename = "01 of 02_Lloyd_George_Record_[John Doe]_[12345]_[01-01-2000].pdf"
-
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_document_path",
-        return_value=("prefix", bad_filename),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_document_number_bulk_upload_file_name",
-        return_value=("01", "02", bad_filename),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_lloyd_george_record_from_bulk_upload_file_name",
-        return_value=("LG", bad_filename),
-    )
-    mocker.patch.object(
-        test_service.metadata_formatter_service,
-        "extract_patient_name_from_bulk_upload_file_name",
-        return_value=("John Doe", bad_filename),
-    )
-
-    with pytest.raises(InvalidFileNameException) as exc_info:
-        test_service.validate_record_filename(bad_filename)
-
-    assert str(exc_info.value) == "Incorrect NHS number or date format"
 
 
 # TODO: Possibly needed as part of PRMT-576
@@ -417,9 +343,6 @@ def test_duplicates_csv_to_staging_metadata(mocker, test_service):
     )
     mocker.patch("builtins.open", mocker.mock_open(read_data=fake_csv_data))
     mocker.patch("os.path.isfile", return_value=True)
-    mocker.patch.object(
-        test_service, "validate_record_filename", side_effect=lambda x: x
-    )
 
     actual = test_service.csv_to_staging_metadata("fake/path.csv")
     expected = EXPECTED_PARSED_METADATA_2
@@ -503,12 +426,6 @@ def test_process_metadata_row_success(mocker, test_service):
     mock_metadata.gp_practice_code = "Y12345"
     mock_metadata.file_path = "/some/path/file.pdf"
 
-    mocker.patch.object(
-        test_service,
-        "validate_record_filename",
-        return_value="corrected.pdf",
-    )
-
     test_service.process_metadata_row(row, patients)
 
     key = ("1234567890", "Y12345")
@@ -550,19 +467,13 @@ def test_process_metadata_row_adds_to_existing_entry(
         return_value=mock_metadata,
     )
 
-    mocker.patch.object(
-        test_service,
-        "validate_record_filename",
-        return_value="fixed_file2.pdf",
-    )
-
     test_service.process_metadata_row(row, patients)
 
     assert len(patients[key]) == 2
     assert patients[key][1] == mock_metadata
     assert (
             test_service.corrections["/some/path/file2.pdf"]
-            == "fixed_file2.pdf"
+            == "corrected.pdf"
     )
 
 
@@ -573,23 +484,6 @@ def test_extract_patient_info(test_service, base_metadata_file):
 
     assert nhs_number == "1234567890"
     assert ods_code == "Y12345"
-
-
-def test_validate_correct_filename_valid_filename(
-    mocker, test_service, base_metadata_file
-):
-    mocker.patch.object(
-        test_service,
-        "validate_record_filename",
-        return_value="corrected_file.pdf",
-    )
-
-    test_service.validate_correct_filename(base_metadata_file)
-
-    assert (
-            test_service.corrections["valid/path/to/file.pdf"]
-            == "corrected_file.pdf"
-    )
 
 
 def test_handle_invalid_filename_writes_failed_entry_to_dynamo(
