@@ -112,7 +112,7 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
     )
     mocker.patch.object(LoginService, "issue_auth_token", return_value=expected_jwt)
 
-    dynamo_state_query_result = {"Count": 1, "Items": [{"id": "state"}]}
+    dynamo_state_query_result = [{"id": "state"}]
 
     mocker.patch.object(
         DynamoDBService, "query_table", return_value=dynamo_state_query_result

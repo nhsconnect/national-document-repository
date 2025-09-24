@@ -144,7 +144,7 @@ class LoginService:
             table_name=state_table_name, search_key="State", search_condition=state
         )
 
-        state_match = "Count" in query_response and query_response["Count"] == 1
+        state_match = len(query_response) == 1
 
         if state_match:
             try:
