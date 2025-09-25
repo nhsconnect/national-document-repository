@@ -22,7 +22,7 @@ if (import.meta.env.VITE_ENVIRONMENT === 'development' && !cypress) {
             allowCookies: true,
             enableXRay: false,
         };
-        const session = sessionStorage.getItem('UserSession');
+        const session = localStorage.getItem('UserSession');
         const APPLICATION_ID: string = import.meta.env.VITE_MONITOR_ACCOUNT_ID || '';
         const APPLICATION_VERSION: string = '1.0.0';
         const APPLICATION_REGION: string = import.meta.env.VITE_AWS_REGION || 'eu-west-2';
