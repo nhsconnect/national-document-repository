@@ -126,7 +126,8 @@ class BulkUploadService:
 
         try:
             file_names = [
-                os.path.basename(metadata.file_path)
+                metadata.stored_file_name if metadata.stored_file_name
+                else os.path.basename(metadata.file_path)
                 for metadata in staging_metadata.files
             ]
             request_context.patient_nhs_no = staging_metadata.nhs_number
