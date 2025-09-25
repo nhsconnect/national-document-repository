@@ -54,7 +54,6 @@ class BulkUploadMetadataProcessorService:
             metadata_file = self.download_metadata_from_s3()
             staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
             logger.info("Finished parsing metadata")
-            logger.info(f"my staging metadata list is:{staging_metadata_list}")
 
             self.send_metadata_to_fifo_sqs(staging_metadata_list)
             logger.info("Sent bulk upload metadata to sqs queue")
@@ -118,7 +117,9 @@ class BulkUploadMetadataProcessorService:
             patients[patient_record_key].append(file_metadata)
 
         try:
-            file_metadata.stored_file_name = self.validate_correct_filename(file_metadata)
+            file_metadata = file_metadata.model_copy(
+                update={"stored_file_name": self.validate_correct_filename(file_metadata)}
+            )
         except InvalidFileNameException as error:
             self.handle_invalid_filename(
                 file_metadata, error, patient_record_key, patients
@@ -170,7 +171,7 @@ class BulkUploadMetadataProcessorService:
 
             self.sqs_service.send_message_with_nhs_number_attr_fifo(
                 queue_url=self.metadata_queue_url,
-                message_body=staging_metadata.model_dump_json(by_alias=True),
+                message_body=staging_metadata.model_dump_json(by_alias=True, exclude_unset=False),
                 nhs_number=nhs_number,
                 group_id=sqs_group_id,
             )

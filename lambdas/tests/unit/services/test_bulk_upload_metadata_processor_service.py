@@ -424,11 +424,21 @@ def test_process_metadata_row_success(mocker, test_service):
     mock_metadata.gp_practice_code = "Y12345"
     mock_metadata.file_path = "/some/path/file.pdf"
 
+    mocker.patch.object(
+        test_service,
+        "validate_correct_filename",
+        return_value="corrected.pdf",
+    )
+
     test_service.process_metadata_row(row, patients)
 
     key = ("1234567890", "Y12345")
+
     assert key in patients
     assert patients[key] == [mock_metadata]
+    assert mock_metadata.stored_file_name == "corrected.pdf"
+
+
 
 
 def test_process_metadata_row_adds_to_existing_entry(
