@@ -1,8 +1,9 @@
 from enums.lloyd_george_pre_process_format import LloydGeorgePreProcessFormat
-from services.bulk_upload.metadata_general_preprocessor import MetadataGeneralPreprocessor
-from services.bulk_upload.metadata_usb_preprocessor import MetadataUsbPreprocessorService
-from services.bulk_upload_metadata_preprocessor_service import (
-    MetadataPreprocessorService,
+from services.bulk_upload.metadata_general_preprocessor import (
+    MetadataGeneralPreprocessor,
+)
+from services.bulk_upload.metadata_usb_preprocessor import (
+    MetadataUsbPreprocessorService,
 )
 from services.bulk_upload_metadata_processor_service import (
     BulkUploadMetadataProcessorService,

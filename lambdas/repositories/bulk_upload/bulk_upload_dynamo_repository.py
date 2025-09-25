@@ -42,7 +42,7 @@ class BulkUploadDynamoRepository:
                 nhs_number=nhs_number,
                 reason=reason,
                 file_path=file.file_path,
-                stored_file_name= "Avocado",
+                stored_file_name="",
                 pds_ods_code=pds_ods_code,
                 uploader_ods_code=file.gp_practice_code,
             )
