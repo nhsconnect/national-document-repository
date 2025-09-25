@@ -111,19 +111,21 @@ class BulkUploadMetadataProcessorService:
         nhs_number, ods_code = self.extract_patient_info(file_metadata)
         patient_record_key = (nhs_number, ods_code)
 
-        if patient_record_key not in patients:
-            patients[patient_record_key] = [file_metadata]
-        else:
-            patients[patient_record_key].append(file_metadata)
-
         try:
             file_metadata = file_metadata.model_copy(
                 update={"stored_file_name": self.validate_correct_filename(file_metadata)}
             )
+            # file_metadata.stored_file_name = self.validate_correct_filename(file_metadata)
         except InvalidFileNameException as error:
             self.handle_invalid_filename(
                 file_metadata, error, patient_record_key, patients
             )
+            return
+
+        if patient_record_key not in patients:
+            patients[patient_record_key] = [file_metadata]
+        else:
+            patients[patient_record_key].append(file_metadata)
 
     def extract_patient_info(self, file_metadata: MetadataFile) -> tuple[str, str]:
         nhs_number = file_metadata.nhs_number
