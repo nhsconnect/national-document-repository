@@ -9,11 +9,7 @@ from typing import Iterable
 import pydantic
 from botocore.exceptions import ClientError
 from enums.upload_status import UploadStatus
-from models.staging_metadata import (
-    METADATA_FILENAME,
-    MetadataFile,
-    StagingMetadata,
-)
+from models.staging_metadata import METADATA_FILENAME, MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
 )
@@ -23,7 +19,11 @@ from services.bulk_upload_metadata_preprocessor_service import (
     MetadataPreprocessorService,
 )
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import BulkUploadMetadataException, InvalidFileNameException, LGInvalidFilesException
+from utils.exceptions import (
+    BulkUploadMetadataException,
+    InvalidFileNameException,
+    LGInvalidFilesException,
+)
 from utils.lloyd_george_validator import validate_file_name
 
 logger = LoggingService(__name__)
@@ -112,7 +112,9 @@ class BulkUploadMetadataProcessorService:
         patient_record_key = (nhs_number, ods_code)
 
         try:
-            file_metadata.stored_file_name = self.validate_correct_filename(file_metadata)
+            file_metadata.stored_file_name = self.validate_correct_filename(
+                file_metadata
+            )
         except InvalidFileNameException as error:
             self.handle_invalid_filename(
                 file_metadata, error, patient_record_key, patients
@@ -136,13 +138,15 @@ class BulkUploadMetadataProcessorService:
         try:
             validate_file_name(file_metadata.file_path.split("/")[-1])
             valid_filepath = file_metadata.file_path
-        except LGInvalidFilesException as error:
-            valid_filepath = self.metadata_formatter_service.validate_record_filename(file_metadata.file_path)
+        except LGInvalidFilesException:
+            valid_filepath = self.metadata_formatter_service.validate_record_filename(
+                file_metadata.file_path
+            )
 
         return valid_filepath
 
     def handle_invalid_filename(
-            self,
+        self,
         file_metadata: MetadataFile,
         error: InvalidFileNameException,
         key: tuple[str, str],
@@ -170,7 +174,9 @@ class BulkUploadMetadataProcessorService:
 
             self.sqs_service.send_message_with_nhs_number_attr_fifo(
                 queue_url=self.metadata_queue_url,
-                message_body=staging_metadata.model_dump_json(by_alias=True, exclude_unset=False),
+                message_body=staging_metadata.model_dump_json(
+                    by_alias=True, exclude_unset=False
+                ),
                 nhs_number=nhs_number,
                 group_id=sqs_group_id,
             )
