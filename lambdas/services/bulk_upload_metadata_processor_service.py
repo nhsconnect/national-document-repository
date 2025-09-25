@@ -54,6 +54,7 @@ class BulkUploadMetadataProcessorService:
             metadata_file = self.download_metadata_from_s3()
             staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
             logger.info("Finished parsing metadata")
+            logger.info(f"my staging metadata list is:{staging_metadata_list}")
 
             self.send_metadata_to_fifo_sqs(staging_metadata_list)
             logger.info("Sent bulk upload metadata to sqs queue")
