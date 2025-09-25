@@ -49,9 +49,9 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--use-v2-process",
+        "--use-bulk-upload-metadata-processor",
         action="store_true",
-        help="Use the V2 process",
+        help="Use BulkUploadMetadataProcessor Lambda",
     )
 
     args = parser.parse_args()
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     bulk_upload_metadata_lambda_name = f"{args.environment}_BulkUploadMetadataLambda"
     search_lambda_name = f"{args.environment}_SearchPatientDetailsLambda"
 
-    if args.use_v2_process:
+    if args.use_bulk_upload_metadata_processor:
         bulk_upload_metadata_lambda_name = f"{args.environment}_BulkUploadMetadataProcessor"
 
     if args.disable_pds_stub or (
