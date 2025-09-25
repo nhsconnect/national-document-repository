@@ -112,9 +112,6 @@ class BulkUploadMetadataProcessorService:
         patient_record_key = (nhs_number, ods_code)
 
         try:
-            # file_metadata = file_metadata.model_copy(
-            #     update={"stored_file_name": self.validate_correct_filename(file_metadata)}
-            # )
             file_metadata.stored_file_name = self.validate_correct_filename(file_metadata)
         except InvalidFileNameException as error:
             self.handle_invalid_filename(
