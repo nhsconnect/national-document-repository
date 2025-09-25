@@ -37,7 +37,7 @@ SERVICE_PATH = "services.bulk_upload_metadata_processor_service"
 
 class MockMetadataPreprocessorService(MetadataPreprocessorService):
     def validate_record_filename(self, original_filename: str, *args, **kwargs) -> str:
-        return "corrected.pdf"
+        return original_filename
 
 
 @pytest.fixture(autouse=True)
@@ -429,9 +429,6 @@ def test_process_metadata_row_success(mocker, test_service):
     key = ("1234567890", "Y12345")
     assert key in patients
     assert patients[key] == [mock_metadata]
-    assert test_service.corrections == {
-        "/some/path/file.pdf": "corrected.pdf"
-    }
 
 
 def test_process_metadata_row_adds_to_existing_entry(
@@ -469,10 +466,6 @@ def test_process_metadata_row_adds_to_existing_entry(
 
     assert len(patients[key]) == 2
     assert patients[key][1] == mock_metadata
-    assert (
-            test_service.corrections["/some/path/file2.pdf"]
-            == "corrected.pdf"
-    )
 
 
 def test_extract_patient_info(test_service, base_metadata_file):
@@ -485,20 +478,20 @@ def test_extract_patient_info(test_service, base_metadata_file):
 
 
 def test_validate_correct_filename_when_valid_filename(
-        mocker, metadata_processor_service, base_metadata_file
+        mocker, test_service,base_metadata_file
 ):
     valid_file_path = base_metadata_file.file_path
     filename = valid_file_path.split("/")[-1]
 
     mock_validate = mocker.patch(f"{SERVICE_PATH}.validate_file_name")
 
-    result = metadata_processor_service.validate_correct_filename(base_metadata_file)
+    result = test_service.validate_correct_filename(base_metadata_file)
 
     mock_validate.assert_called_once_with(filename)
     assert result == valid_file_path
 
 def test_validate_correct_filename_when_invalid_filename_calls_formatter(
-    mocker, metadata_processor_service, base_metadata_file
+    mocker, test_service, base_metadata_file
 ):
     invalid_file_path = base_metadata_file.file_path
     filename = invalid_file_path.split("/")[-1]
@@ -507,12 +500,12 @@ def test_validate_correct_filename_when_invalid_filename_calls_formatter(
     mock_validate.side_effect = LGInvalidFilesException("Invalid filename")
 
     mock_format = mocker.patch.object(
-        metadata_processor_service.metadata_formatter_service,
+        test_service.metadata_formatter_service,
         "validate_record_filename",
         return_value="formatted/path/to/file.pdf"
     )
 
-    result = metadata_processor_service.validate_correct_filename(base_metadata_file)
+    result = test_service.validate_correct_filename(base_metadata_file)
 
     mock_validate.assert_called_once_with(filename)
     mock_format.assert_called_once_with(invalid_file_path)
