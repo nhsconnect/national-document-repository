@@ -22,14 +22,14 @@ class ManageUserSessionAccess:
         logger.info(
             f"Retrieving session for session ID ending in: {redact_id_to_last_4_chars(ndr_session_id)}"
         )
-        query_response = self.db_service.query_all_fields(
+        query_response = self.db_service.query_table(
             table_name=self.session_table_name,
             search_key="NDRSessionId",
             search_condition=ndr_session_id,
         )
 
         try:
-            current_session = query_response["Items"][0]
+            current_session = query_response[0]
             return current_session
         except (KeyError, IndexError):
             raise AuthorisationException(
