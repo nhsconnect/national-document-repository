@@ -60,6 +60,7 @@ def test_create_successful_upload():
 
     assert actual == expected
 
+
 def test_create_failed_upload():
     expected = MOCK_DATA_FAILED_UPLOAD
     actual = BulkUploadReport(
